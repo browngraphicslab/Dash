@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using DashShared;
 
 // ReSharper disable CheckNamespace
@@ -40,10 +41,8 @@ namespace Dash
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
             var results = new ListController<FieldControllerBase>();
-            var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
-
-            var stringScriptToExecute = $"{exec}({DSL.GetFuncName<ParseSearchStringToDishOperatorController>()}(\"{searchQuery}\"))";
-            outputs[ResultsKey] = TypescriptToOperatorParser.Interpret(stringScriptToExecute); 
+            results.AddRange(Search.Parse(searchQuery).Select(res => res.ViewDocument).ToList());
+            outputs[ResultsKey] = results;
         }
     }
 }

@@ -129,17 +129,6 @@ namespace Dash
             }
         }
 
-        public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
-            DocumentController searchResultsDictionary, string originalSearch)
-        {
-            var lists = searchResultsDictionary.EnumFields(true).Select(kvp => kvp.Value).OfType<ListController<DocumentController>>().Select(list => list.TypedData).ToList();
-
-            foreach (var list in lists.Where(i => i.Any()).OrderBy(i => i.Count))
-            {
-                yield return SearchHelper.ChooseHelpfulSearchResult(list, originalSearch);
-            }
-        }
-
         private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
@@ -151,33 +140,6 @@ namespace Dash
             var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
-
-        //private void ExecuteSearch(AutoSuggestBox searchBox)
-        //{
-        //    if (searchBox == null)
-        //    {
-        //        return;
-        //    }
-
-
-        //    var text = searchBox.Text.ToLower();
-        //    (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
-
-        //    var maxSearchResultSize = 75;
-
-        //    var vms = SearchHelper.SearchOverCollection(text);
-        //    //var listController = OperatorScriptParser.Interpret("exec(Script:parseSearchString(Query:'" + text + "'))") as BaseListController;
-        //    //var vms = listController.Data;
-
-        //    var first = vms
-        //        .Where(doc =>
-        //            doc.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
-        //        .Take(maxSearchResultSize).ToArray();
-        //    foreach (var searchResultViewModel in first)
-        //    {
-        //        (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Add(searchResultViewModel);
-        //    }
-        //}
 
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
@@ -329,72 +291,19 @@ namespace Dash
         /// </summary>
         public static class SearchHelper
         {
-            ///// <summary>
-            ///// this criteria simple tells us which key and value pair to look at
-            ///// </summary>
-            //private class SpecialSearchCriteria
-            //{
-            //    public string SearchCategory { get; set; }
-            //    public string SearchText { get; set; }
-            //}
-            ///*
-            //private class SearchCriteria : EntityBase
-            //{
-            //    public string SearchText { get; set; }
-            //}
-
-            //private interface ISearchFilter<T> where T: SearchHelper
-            //{
-            //    public bool Valid(DocumentNode node, T criteria)
-            //}*/
-
-            //public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts,
-            //    DocumentController collectionDocument)
-            //{
-            //    if (MainPage.Instance.MainDocument == null)
-            //    {
-            //        return null;
-            //    }
-
-            //    return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())),
-            //        collectionDocument));
-            //}
-
             /// <summary>
-            /// TODO NICK
+            /// this criteria simple tells us which key and value pair to look at
             /// </summary>
-            /// <param name="resultDocs"></param>
-            /// <param name="originalSearch"></param>
-            /// <returns></returns>
-            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
+            private class SpecialSearchCriteria
             {
-                var docsAsList = resultDocs.ToList();
-                Debug.Assert(docsAsList.Any());
-                return docsAsList.FirstOrDefault();
+                public string SearchCategory { get; set; }
+                public string SearchText { get; set; }
             }
 
-            //public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
-            //    DocumentController collectionDocument = null, DocumentController thisController = null)
-            //{
-            //    if (MainPage.Instance.MainDocument == null) return null;
-
-
-            //    return CleanByType(SearchByParts(searchString.ToLower(), thisController)
-            //        .Where(vm => collectionDocument == null ||
-            //                     (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
-            //}
-
-            //public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
-            //    List<DocumentController> collectionDocuments = null)
-            //{
-            //    if (MainPage.Instance.MainDocument == null)
-            //    {
-            //        return null;
-            //    }
-
-            //    return CleanByType(SearchByParts(searchString.ToLower())
-            //        .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
-            //}
+            private class SearchCriteria : EntityBase
+            {
+                public string SearchText { get; set; }
+            }
 
             public static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)
             {
@@ -404,175 +313,12 @@ namespace Dash
                 return new SearchResultViewModel(title, helpText, res.ViewDocument, null, true);
             }
 
-            /*
-            public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string search)
-            {
-                var srmvs = LocalSearch(search);
-                List<DocumentController> list = new List<DocumentController>();
-                foreach (var srvm in srmvs)
-                {
-                    var doc = new DocumentController();
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ViewDocument.Id), true);
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(srvm.Title), true);
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.ContextualText), true);
-                    list.Add(doc);
-                }
-                return list;
-            }
-            */
-            //public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string singleTerm)
-            //{
-            //    var tree = DocumentTree.MainPageTree;
-            //    var srmvs = GetRatedSearchResultsForSingleTermSearch(singleTerm);
-            //    var list = new List<DocumentController>();
-            //    foreach (var srvm in srmvs)
-            //    {
-            //        var node = tree.Nodes[srvm.ResultDocumentViewId];
-            //        var doc = new DocumentController();
-            //        doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, srvm.ResultDocumentViewId, true);
-            //        // not sure what the purpose of the commented out code below is for
-            //        doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, node.ViewDocument.Title /*+ " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")*/, true);
-            //        // For future: Maybe find a way to insert "Matched: " or some helpful text disambiguating the help text from the text
-            //        doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, /*"Matched: " + */srvm.HelpfulText, true);
-            //        list.Add(doc);
-            //    }
-            //    return list;
-            //}
-
-            //private static IEnumerable<RatedSearchResult> GetRatedSearchResultsForSingleTermSearch(string singleTerm)
-            //{
-            //    //TODO TFS fill this in from scratch
-            //    return LocalSearch(singleTerm).Select(i => new RatedSearchResult()
-            //    {
-            //        HelpfulText = i.ContextualText,
-            //        ResultDocumentViewId = i.ViewDocument.Id,
-            //        Rating = 1
-            //    });
-            //}
-
-            private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
-            {
-                SearchResultViewModel Convert(SearchResultViewModel vm)
-                {
-                    var docType = vm.ViewDocument.GetDataDocument().DocumentType.Type;
-                    if (vm.IsLikelyUsefulContextText || docType == null) return vm;
-
-
-                    switch (docType.ToLower())
-                    {
-                        case "collected docs note":
-                            vm.ContextualText = "Found in Collection";
-                            break;
-                    }
-                    return vm;
-                }
-
-                return vms.Select(Convert);
-            }
-
             ///// <summary>
-            ///// returns a list of result view models based upon a textual search that looks at all the parts of the input text
+            ///// Supposed to handle all searches that are for key-value specified searches.   currenly just returns the generic special search.
+            ///// If more search capabilities are desired, probably should put them in here.
             ///// </summary>
-            ///// <param name="text"></param>
+            ///// <param name="criteria"></param>
             ///// <returns></returns>
-            //private static List<SearchResultViewModel> SearchByParts(string text,
-            //    DocumentController thisController = null)
-            //{
-            //    var thisControllerId = thisController?.Id?.ToLower();
-
-            //    var parts = new List<string>();
-            //    var curr = "";
-            //    var inQuotes = false;
-            //    foreach (var character in text)
-            //    {
-            //        if (character.Equals(' '))
-            //        {
-            //            if (inQuotes)
-            //            {
-            //                curr += character;
-            //            }
-            //            else
-            //            {
-            //                parts.Add(curr);
-            //                curr = "";
-            //            }
-            //        }
-            //        else if (character.Equals('"'))
-            //        {
-            //            if (inQuotes)
-            //            {
-            //                parts.Add(curr);
-            //                curr = "";
-            //            }
-
-            //            inQuotes = !inQuotes;
-            //        }
-            //        else
-            //        {
-            //            curr += character;
-            //        }
-            //    }
-
-            //    parts.Add(curr);
-            //    parts = parts.Where(i => !string.IsNullOrEmpty(i) && !string.IsNullOrWhiteSpace(i)).ToList();
-
-
-            //    List<SearchResultViewModel> mainList = null;
-            //    foreach (var searchPart in parts) //text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
-            //    {
-            //        var criteria = GetSpecialSearchCriteria(searchPart);
-            //        if (criteria != null && criteria.SearchText == "this" && thisController != null)
-            //        {
-            //            criteria.SearchText = thisControllerId ?? "";
-            //        }
-
-            //        var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
-            //        mainList = mainList ?? searchResult;
-            //        if (criteria == null)
-            //        {
-            //            var temp =
-            //                mainList; //if there is no criteria, swap the order of lists so that this is the primary vm provider
-            //            mainList = searchResult;
-            //            searchResult = temp;
-            //        }
-
-            //        int index = 0;
-            //        foreach (var existingVm in mainList.ToArray())
-            //        {
-            //            var valid = false;
-            //            foreach (var vm in searchResult)
-            //            {
-            //                if (existingVm.ViewDocument.Equals(vm.ViewDocument))
-            //                {
-            //                    valid = true;
-            //                    if (!existingVm.IsLikelyUsefulContextText && vm.IsLikelyUsefulContextText)
-            //                    {
-            //                        mainList.Remove(existingVm);
-            //                        mainList.Insert(index, vm);
-            //                    }
-
-            //                    break;
-            //                }
-            //            }
-
-            //            if (!valid)
-            //            {
-            //                mainList.Remove(existingVm);
-            //            }
-
-            //            index++;
-            //        }
-            //    }
-
-            //    return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
-            //}
-
-            /// <summary>
-            /// Supposed to handle all searches that are for key-value specified searches.   currenly just returns the generic special search.
-            /// If more search capabilities are desired, probably should put them in here.
-            /// </summary>
-            /// <param name="criteria"></param>
-            /// <returns></returns>
             //private static IEnumerable<SearchResultViewModel> SpecialSearch(SpecialSearchCriteria criteria)
             //{
             //    if (criteria.SearchCategory == "in")
@@ -600,7 +346,7 @@ namespace Dash
             //                                       (tree.GetNodeFromViewId(vm.ViewDocument.Id).DataDocument
             //                                           .EnumFields(false)
             //                                           .Any(f => (f.Value is RichTextController) && !
-            //                                                         ((RichTextController) f.Value)
+            //                                                         ((RichTextController)f.Value)
             //                                                         .SearchForStringInRichText(criteria.SearchText)
             //                                                         .StringFound)));
             //}
@@ -649,11 +395,11 @@ namespace Dash
             //                                       .Contains(collectionNameToFind));
             //}
 
-            /// <summary>
-            /// Get the search results for a part of search trying to specify keys/value pairs
-            /// </summary>
-            /// <param name="criteria"></param>
-            /// <returns></returns>
+            ///// <summary>
+            ///// Get the search results for a part of search trying to specify keys/value pairs
+            ///// </summary>
+            ///// <param name="criteria"></param>
+            ///// <returns></returns>
             //private static IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
             //{
             //    var documentTree = DocumentTree.MainPageTree;
@@ -720,11 +466,11 @@ namespace Dash
             //    return tree.GetNodeFromViewId(collection.Id)?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
             //}
 
-            /// <summary>
-            /// More direct search for types.  not currently used since we put the type of documents in their fields
-            /// </summary>
-            /// <param name="criteria"></param>
-            /// <returns></returns>
+            ///// <summary>
+            ///// More direct search for types.  not currently used since we put the type of documents in their fields
+            ///// </summary>
+            ///// <param name="criteria"></param>
+            ///// <returns></returns>
             //private static IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
             //{
             //    var documentTree = DocumentTree.MainPageTree;
@@ -748,34 +494,13 @@ namespace Dash
             //}
 
 
-            /// <summary>
-            /// returns the criteria object for kvp special search specification, null if not a request for a special search
-            /// </summary>
-            /// <param name="searchText"></param>
-            /// <returns></returns>
-            //private static SpecialSearchCriteria GetSpecialSearchCriteria(string searchText)
-            //{
-            //    //searchText = searchText.Replace(" ", "");
-            //    var split = searchText.Split(':');
-            //    if (split.Count() == 2)
-            //    {
-            //        return new SpecialSearchCriteria()
-            //        {
-            //            SearchCategory = split[0],
-            //            SearchText = split[1]
-            //        };
-            //    }
 
-            //    return null;
-            //}
-
-
-            /// <summary>
-            /// searches but only through the content controller
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="searchString"></param>
-            /// <returns></returns>
+            ///// <summary>
+            ///// searches but only through the content controller
+            ///// </summary>
+            ///// <param name="sender"></param>
+            ///// <param name="searchString"></param>
+            ///// <returns></returns>
             //private static IEnumerable<SearchResultViewModel> LocalSearch(string searchString)
             //{
             //    var documentTree = DocumentTree.MainPageTree;
@@ -848,7 +573,7 @@ namespace Dash
             //            {
             //                countToResults[1] = new List<SearchResultViewModel>();
             //            }
-            //            countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
+            //            countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test", "test", true));
             //        }
             //    }
 
@@ -856,46 +581,46 @@ namespace Dash
             //    //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
             //}
 
-            /// <summary>
-            /// creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
-            /// </summary>
-            /// <param name="documentTree"></param>
-            /// <param name="dataDocumentController"></param>
-            /// <param name="bottomText"></param>
-            /// <param name="titleText"></param>
+            ///// <summary>
+            ///// creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
+            ///// </summary>
+            ///// <param name = "documentTree" ></ param >
+            ///// < param name="dataDocumentController"></param>
+            ///// <param name = "bottomText" ></ param >
+            ///// < param name="titleText"></param>
             //    /// <returns></returns>
             //    private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree,
             //        DocumentController dataDocumentController, string bottomText, string titleText,
             //        bool isLikelyUsefulContextText = false)
+            //{
+            //    var vms = new List<SearchResultViewModel>();
+            //    var preTitle = "";
+
+            //    var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
+            //    foreach (var documentNode in documentNodes ?? new DocumentNode[0])
             //    {
-            //        var vms = new List<SearchResultViewModel>();
-            //        var preTitle = "";
-
-            //        var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
-            //        foreach (var documentNode in documentNodes ?? new DocumentNode[0])
+            //        if (documentNode?.Parents?.FirstOrDefault() != null)
             //        {
-            //            if (documentNode?.Parents?.FirstOrDefault() != null)
-            //            {
-            //                preTitle = " >  " +
-            //                    ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
-            //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
-            //                               ? "?"
-            //                               : documentNode.Parents.First().DataDocument
-            //                                   .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
-            //                         ;
-            //            }
-
-            //            var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
-            //                dataDocumentController.Id,
-            //                documentNode?.ViewDocument ?? dataDocumentController,
-            //                documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
-            //            vms.Add(vm);
+            //            preTitle = " >  " +
+            //                ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+            //                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
+            //                           ? "?"
+            //                           : documentNode.Parents.First().DataDocument
+            //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
+            //                     ;
             //        }
 
-            //        return vms.ToArray();
+            //        var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
+            //            dataDocumentController.Id,
+            //            documentNode?.ViewDocument ?? dataDocumentController,
+            //            documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
+            //        vms.Add(vm);
             //    }
+
+            //    return vms.ToArray();
             //}
-        }
+        //}
+    }
     }
 }
 
