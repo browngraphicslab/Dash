@@ -398,7 +398,7 @@ namespace Dash
 			        return;
 		        }
 
-		        _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
+		        _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540)).Document;
 
 		        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
 		        //creates a doc controller for the image(s)
