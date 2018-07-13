@@ -405,7 +405,7 @@ namespace Dash
         {
             var dc = new RichTextNote("PDF " + _internalViewer.VerticalOffset).Document;
             dc.GetDataDocument().SetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, _internalViewer.VerticalOffset, true);
-            dc.SetRegionDefinition(LayoutDocument);
+            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.RegionBox);
             
             return dc;
         }

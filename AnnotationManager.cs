@@ -17,6 +17,13 @@ namespace Dash
 		private UIElement    _element;
 		private MenuFlyout   _linkFlyout;
 
+	    public enum AnnotationType
+	    {
+            None,
+            RegionBox,
+            TextSelection
+	    }
+
 		public AnnotationManager(UIElement uiElement)
 		{
 			_element = uiElement;

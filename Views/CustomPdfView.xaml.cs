@@ -234,7 +234,7 @@ namespace Dash
         public DocumentController GetDocControllerFromSelectedRegion()
         {
             var dc = new RichTextNote("PDF " + ScrollViewer.VerticalOffset).Document;
-            dc.SetRegionDefinition(LayoutDocument);
+            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.RegionBox);
 
             return dc;
         }
@@ -289,7 +289,7 @@ namespace Dash
             _selectedRectangles.Remove(index);
         }
 
-        private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(80, 0xB4, 0xD5, 0xFF));
+        private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
 
         private void SelectIndex(int index)
         {
@@ -395,7 +395,7 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionEnded?.Invoke(sender, e);
+            NewRegionEnded?.Invoke(sender, e);
             //var currentPoint = e.GetCurrentPoint(PageItemsControl);
             //var pos = currentPoint.Position;
             //UpdateSelection(pos);
@@ -419,7 +419,7 @@ namespace Dash
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionMoved?.Invoke(sender, e);
+            NewRegionMoved?.Invoke(sender, e);
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             var pos = currentPoint.Position;
             UpdateSelection(pos);
@@ -429,7 +429,7 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionStarted?.Invoke(sender, e);
+            NewRegionStarted?.Invoke(sender, e);
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (!currentPoint.Properties.IsLeftButtonPressed)
             {
@@ -485,10 +485,12 @@ namespace Dash
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
                     Clipboard.SetContent(dataPackage);
+                    e.Handled = true;
                 }
                 else if(e.Key == VirtualKey.A)
                 {
                     SelectElements(0, _selectableElements.Count - 1);
+                    e.Handled = true;
                 }
             }
         }

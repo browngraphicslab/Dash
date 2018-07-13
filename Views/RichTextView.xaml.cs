@@ -534,7 +534,7 @@ namespace Dash
 
             //otherwise, make a new doc controller for the selection
             var dc = new RichTextNote(selection.Text).Document;
-            dc.SetRegionDefinition(LayoutDocument);
+            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
             var s1 = selection.StartPosition;
             var s2 = selection.EndPosition;
             createRTFHyperlink(dc, ref s1, ref s2, false, false);

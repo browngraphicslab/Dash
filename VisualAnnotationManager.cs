@@ -62,8 +62,9 @@ namespace Dash
 
             _dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
             if (_dataRegions == null) return;
-            foreach (var region in _dataRegions.TypedData)
+            foreach (var region in _dataRegions)
             {
+                var data = region.GetDataDocument();
                 var topLeft = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
                 var bottomRight = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
 
