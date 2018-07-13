@@ -37,7 +37,7 @@ namespace Dash
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option
-            DishReplView.NewVariable(variableName);
+            // DishReplView.NewVariable(variableName);  // bcz: causes a crash in the KeyValue Pane
         }
 
         public virtual void SetVariable(string variableName, FieldControllerBase valueToSet)
