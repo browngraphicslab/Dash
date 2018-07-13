@@ -79,12 +79,8 @@ namespace Dash
         // follows the document in the workspace, and heuristically determines if it's too far away and should be docked
 	    private void FollowDocument(DocumentController target, Point pos)
 	    {
-			var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), false);
-			var docview = _element.GetFirstAncestorOfType<DocumentView>();
-			var pt = new Point(docview.ViewModel.XPos + docview.ActualWidth, docview.ViewModel.YPos);
-
 
 			// we only want to pan when the document isn't currently on the screen
 			if (nearestOnScreen == null)
@@ -101,8 +97,19 @@ namespace Dash
 				}
 				else
 				{
-					var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
-					MainPage.Instance.DockManager.Dock(target, dir);
+					// see if it's already docked
+					var dv = MainPage.Instance.DockManager.GetDockedView(target);
+
+					// if not docked
+					if (dv == null)
+					{
+						var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
+						MainPage.Instance.DockManager.Dock(target, dir);
+					}
+					else
+					{
+						dv.ContainedDocumentView.ViewModel.SearchHighlightState = new Thickness(8);
+					}
 				}
 		    }
 			
