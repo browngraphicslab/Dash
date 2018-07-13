@@ -987,8 +987,7 @@ namespace Dash
 
         private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
         {
-
-
+			
             var docView = sender as DocumentView;
             if (!DocumentViews.Contains(docView))
             {
@@ -996,6 +995,18 @@ namespace Dash
                 DocumentViews.Add(docView);
                 docView.hideEllipses();
             }
+
+			//manually resize video/audio to a standard size to counteract strange MediaPlayer ActualSize innaccuracies
+	        if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo == TypeInfo.Video)
+	        {
+				docView.ViewModel.DocumentController.SetWidth(250);
+				docView.ViewModel.DocumentController.SetHeight(150);
+	        } else if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo ==
+	                   TypeInfo.Audio)
+	        {
+		        docView.ViewModel.DocumentController.SetWidth(250);
+		        docView.ViewModel.DocumentController.SetHeight(100);
+			}
 
             // hacky way of resizing bounds, bob and tyler are working on improving resizing in general
             var currPos = docView.ViewModel.DocumentController
@@ -1030,6 +1041,8 @@ namespace Dash
                 docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
                     new PointController(currPos.X, xWorkspace.Height - calculatedHeight - 1), true);
             }
+
+
 
             //updates and generates bounds for the children inside the template canvas
             var bounds = new Rect(0, 0, xWorkspace.Width,
@@ -1796,19 +1809,24 @@ namespace Dash
                     xItem.IsChecked = false;
                     xAll.IsChecked = false;
                 }
-
-
             }
             else
             {
+
                 if (!(arrow == xGridOverlayArrow))
                 {
                     arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
                         easingType: EasingType.Default).Start();
-                }
+
+                    //close all drop downs
+                    if (xAddItemsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAddItemsHeader, new RoutedEventArgs());
+                    if (xAlignmentButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAlignmentHeader, new RoutedEventArgs());
+                    if (xOptionsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xOptionsHeader, new RoutedEventArgs());
+                } 
                 
                 buttonStack.Visibility = Visibility.Visible;
                 fade?.Begin();
+				
             }
         }
 
@@ -1950,6 +1968,7 @@ namespace Dash
                 xWorkspace.Clip = new RectangleGeometry {Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height)};
                 Bounds.Width = 70;
                 Bounds.Height = 70;
+				PositionEllipses();
                 return;
             }
 
@@ -1992,7 +2011,7 @@ namespace Dash
             {
                 Bounds.Width = 70;
                 Bounds.Height = 70;
-                return;
+               
             }
             else
             {
@@ -2173,7 +2192,6 @@ namespace Dash
 
             //update key
             DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-
             xItemsControlList.ItemsSource = ViewCopiesList;
 
         }

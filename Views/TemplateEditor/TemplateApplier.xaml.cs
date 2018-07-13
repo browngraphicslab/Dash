@@ -23,6 +23,7 @@ namespace Dash
     {
         public ObservableCollection<DocumentViewModel> Templates;
         public ObservableCollection<TemplateRecord> TemplateRecords;
+	    public ObservableCollection<DocumentController> AddedTemplateControllers;
         private DocumentController _document;
 
         public TemplateApplier(DocumentController doc,
@@ -33,13 +34,15 @@ namespace Dash
             _document = doc;
             Templates = new ObservableCollection<DocumentViewModel>();
             TemplateRecords = new ObservableCollection<TemplateRecord>();
+			AddedTemplateControllers = new ObservableCollection<DocumentController>();
 
-            foreach (var dvm in documentViewModels)
+			foreach (var dvm in documentViewModels)
             {
-                if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm))
+                if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm) && !AddedTemplateControllers.Contains(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true)))
                 {
                     var tr = new TemplateRecord(dvm, this);
                     TemplateRecords.Add(tr);
+					AddedTemplateControllers.Add(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true));
                     tr.Tapped += Template_Picked;
                 }
             }
@@ -61,7 +64,8 @@ namespace Dash
             // retrieve the layout document of the template box from the template record
             var template = tr.TemplateViewModel;
             if (template == null) return;
-            var newLayoutDoc = template.LayoutDocument.GetDataInstance();
+			//NOTE: had to make LayoutDocument instead of LayoutDocument.DataInstance so list of templates would not have repeats
+            var newLayoutDoc = template.LayoutDocument;
 
             // set the new layout document's context to the selected document's data doc
             newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
