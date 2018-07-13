@@ -14,7 +14,5 @@
         {
             return "Unknown execution error occurred.  Function called: " + FunctionName;
         }
-
-        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

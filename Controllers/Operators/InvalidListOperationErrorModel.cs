@@ -49,6 +49,6 @@ namespace Dash {
             return $" Exception:\n            InvalidListOperation: {_operation}\n      Feedback:\n            {feedback}";
         }
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
+       // public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

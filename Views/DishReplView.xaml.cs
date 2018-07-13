@@ -147,7 +147,8 @@ namespace Dash
         {
             var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
             var outputData = output.Value;
-            var dataBox = new DataBox(outputData).Document;
+            DocumentController dataBox = new DataBox(outputData).Document;
+            dataBox.SetWidth(80.0);
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;

@@ -20,6 +20,5 @@ namespace Dash
             return Error;
         }
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

@@ -14,6 +14,6 @@ namespace Dash
 
         public override string GetHelpfulString() => $" Exception:\n            AbsentPhrases\n      Feedback:\n            \'{_targetText}\' does not contain any of the specified phrases: {_formattedAbsentees}";
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
+        //public override DocumentController GetErrorDoc() => base.GetErrorDoc();
     }
 }

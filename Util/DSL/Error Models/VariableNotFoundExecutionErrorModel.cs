@@ -10,6 +10,6 @@
         public override string GetHelpfulString() => $" Exception:\n            UndefinedVariable\n      Feedback:\n            <{VariableName}> is not currently defined.\n" +
                                                      $"            Declare definition with <var {VariableName} = __> syntax or convert to string.";
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
+       // public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }
