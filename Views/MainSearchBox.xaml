@@ -28,63 +28,50 @@
             />
         </Border>
 
-        <TextBox PlaceholderText="Search"
-                        TextChanged="XSearchBox_OnTextChanged"
-                        KeyUp="XAutoSuggestBox_OnKeyUp"
-                        Name="xSearchBox"
+        <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
+                        TextChanged="AutoSuggestBox_TextChanged"
+                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        Name="xAutoSuggestBox"
                         GotFocus="XAutoSuggestBox_OnGotFocus"
                         Grid.Column="1"
-                        Style="{StaticResource AutoFontSize}"
+                        TextBoxStyle="{StaticResource AutoFontSize}"
                         Width="300"
                         VerticalAlignment="Center"
                         DragEnter="XAutoSuggestBox_OnDragEnter"
                         Drop="XAutoSuggestBox_OnDrop"
                         AllowDrop="True"
-                        />
+                        >
+            <AutoSuggestBox.ItemTemplate>
 
-        <Popup x:Name="xSuggestionsPopup" Canvas.ZIndex="-1">
-            <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
-                          HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
-                <Border x:Name="xSuggestionsContainer" Background="LightGray">
-                    <Border.RenderTransform>
-                        <TranslateTransform x:Name="xUpwardTransform"/>
-                    </Border.RenderTransform>
-                    <ListView x:Name="xSuggestions" IsItemClickEnabled="True" ItemClick="XSuggestions_OnItemClick" MaxHeight="200">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="dash:SearchResultViewModel">
-                                <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="32"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border
-                                        Background="Transparent"
-                                        DragStarting="SearchResult_OnDragStarting"
-                                        CanDrag="True">
-                                        <TextBlock x:Name="xCollDragIcon"
-                                                   FontFamily="{StaticResource FontAwesome}"
-                                                   Foreground="{StaticResource TitleText}"
-                                                   FontSize="15"
-                                                   Text="{StaticResource DocumentIcon}"
-                                                   HorizontalAlignment="Stretch"
-                                                   VerticalAlignment="Center"
-                                                   Height="32"
-                                                   Width="32" />
-                                    </Border>
-                                    <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
+                <DataTemplate x:DataType="dash:SearchResultViewModel">
+                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border
+                            Background="Transparent"
+                            DragStarting="SearchResult_OnDragStarting"
+                            CanDrag="True">
+                            <TextBlock x:Name="xCollDragIcon"
+                                       FontFamily="{StaticResource FontAwesome}"
+                                       Foreground="{StaticResource TitleText}"
+                                       FontSize="15"
+                                       Text="{StaticResource DocumentIcon}"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Center"
+                                       Height="32"
+                                       Width="32" />
+                        </Border>
+                        <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
 
-                                        <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
-                                        <TextBlock Text="{Binding ContextualText}"></TextBlock>
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                        <ListView.ItemContainerTransitions>
-                            <TransitionCollection />
-                        </ListView.ItemContainerTransitions>
-                    </ListView>
-                </Border>
-            </ScrollViewer>
-        </Popup>
+                            <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
+                            <TextBlock Text="{Binding ContextualText}"></TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
     </Grid>
 </UserControl>
