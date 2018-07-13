@@ -11,6 +11,7 @@ using Windows.System;
 using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
+using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -170,6 +171,34 @@ namespace Dash
                 contextMenu.Items.Add(separatorTwo);
                 elementsToBeRemoved.Add(separatorTwo);
 
+                // add the item to create a repl
+                var newRepl = new MenuFlyoutItem() { Text = "Create Scripting REPL" };
+                newRepl.Click += (sender, e) =>
+                {
+                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+                    var note = new DishReplBox(where.X, where.Y, 300, 400).Document;
+                    Actions.DisplayDocument(ViewModel, note, where);
+                };
+                contextMenu.Items.Add(newRepl);
+                elementsToBeRemoved.Add(newRepl);
+
+
+                // add the item to create a scripting view
+                var newScriptEdit = new MenuFlyoutItem() { Text = "Create Script Editor" };
+                newScriptEdit.Click += (sender, e) =>
+                {
+                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+                    var note = new DishScriptBox(where.X, where.Y, 300, 400).Document;
+                    Actions.DisplayDocument(ViewModel, note, where);
+                };
+                contextMenu.Items.Add(newScriptEdit);
+                elementsToBeRemoved.Add(newScriptEdit);
+
+                // add another horizontal separator
+                var separatorThree = new MenuFlyoutSeparator();
+                contextMenu.Items.Add(separatorThree);
+                elementsToBeRemoved.Add(separatorThree);
+
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
                 var icon2 = new FontAwesome
@@ -262,6 +291,11 @@ namespace Dash
         #region Menu
         public void SetView(CollectionViewType viewType)
         {
+            if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            }
             _viewType = viewType;
             switch (_viewType)
             {

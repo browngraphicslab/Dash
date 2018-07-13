@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents after a given time
     /// </summary>
-    [OperatorType("after")]
+    [OperatorType(Op.Name.after)]
     public class GetAllDocsAfterTime : OperatorController
     {
         //Input keys
@@ -41,11 +41,12 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
+
         private static readonly KeyController TypeKey = new KeyController("After", "C902F10A-454E-40C0-A2C8-9B2FC9711A9B");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
 

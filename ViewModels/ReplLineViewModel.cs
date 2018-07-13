@@ -1,25 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Input;
+using Dash.Annotations;
+using Flurl.Util;
 
 namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-        //TODO have this value be dragged out onto the workspace
+
         //this is the stored value of every line;
-        private FieldControllerBase _value;
+
+        public FieldControllerBase Value { get; set; }
+
+        private string _lineText = "";
+        public string LineText
+        {
+            get =>  _lineText;
+            set
+            {
+                SetProperty(ref _lineText, value);
+            }
+        }
+        
+
+        private string _lineValueText = "";
+        public string LineValueText
+        {
+            get => "     " + _lineValueText;
+            set => SetProperty(ref _lineValueText, value);
+        }
+
+
+        public string GetLineText()
+        {
+            return _lineText;
+
+        }
+
+        private FieldControllerBase _outputValue;
+
+        private bool _editTextValue = false;
+
+        public bool EditTextValue
+        {
+            get => _editTextValue;
+            set
+            {
+                _editTextValue = value;
+                OnPropertyChanged();
+                OnPropertyChanged("NotEditTextValue");
+            }
+        }
+
+        public bool NotEditTextValue => !_editTextValue;
+
+
         public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
         {
             _outputValue = outputValue;
             LineText = lineText;
             LineValueText = GetValueFromResult(value);
-            _value = value;
+            Value = value;
+
+           
         }
 
-        private string GetValueFromResult(FieldControllerBase controller)
+
+        public string GetValueFromResult(FieldControllerBase controller)
         {
             string result;
             try
@@ -30,6 +83,9 @@ namespace Dash
                     {
                         var r = (ReferenceController)controller;
                         result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
+                    } else if (controller is FunctionOperatorController)
+                    {
+                        result = (controller as FunctionOperatorController).getFunctionString();
                     }
                     else
                     {
@@ -47,7 +103,7 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                result = e.GetHelpfulString();
+                result = "      \nException: " + e.GetHelpfulString();
             }
             catch (Exception e)
             {
@@ -57,27 +113,6 @@ namespace Dash
             return result;
         }
 
-        private string _lineText = "";
-        public string LineText
-        {
-            get => ">> "+_lineText;
-            set => SetProperty(ref _lineText, value);
-        }
 
-        private string _lineValueText = "";
-        public string LineValueText
-        {
-            get => "     " + _lineValueText;
-            set => SetProperty(ref _lineValueText, value);
-        }
-
-
-        public string GetLineText()
-        {
-            return _lineText;
-
-        }
-
-        private FieldControllerBase _outputValue;
     }
 }

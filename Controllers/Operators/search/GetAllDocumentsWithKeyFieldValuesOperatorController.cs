@@ -12,8 +12,8 @@ namespace Dash
     /// <summary>
     /// operator to get all documents with a given field and value of that field
     /// </summary>
-    [OperatorType("keyFieldQuery")]
-    public class GetAllDocumentsWithKeyFieldValuesOperatorController : OperatorController
+    [OperatorType(Op.Name.key_field_query, Op.Name.kv)]
+    public sealed class GetAllDocumentsWithKeyFieldValuesOperatorController : OperatorController
     {
 
         //Input keys
@@ -23,10 +23,8 @@ namespace Dash
         //Output keys
         public static readonly KeyController ResultsKey = new KeyController("Results");
 
-        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+
         public GetAllDocumentsWithKeyFieldValuesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
@@ -48,7 +46,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data?.ToLower();
             var toReturn = new ListController<DocumentController>();

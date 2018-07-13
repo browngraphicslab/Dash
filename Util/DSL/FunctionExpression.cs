@@ -6,54 +6,100 @@ namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
-        private string _opName;
-        private Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly List<ScriptExpression> _parameters;
+        private readonly string _funcName;
+        private readonly Op.Name _opName;
 
-        public FunctionExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public FunctionExpression(List<ScriptExpression> parameters, string func)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _funcName = func;
+            _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public FunctionExpression(Op.Name op, List<ScriptExpression> parameters)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            foreach (var parameter in _parameters)
-            {
-                inputs.Add(parameter.Key, parameter.Value?.Execute(state));
-            }
+            _funcName = op.ToString();
+            _parameters = parameters;
+        }
 
+        public override FieldControllerBase Execute(Scope scope)
+        {
+            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
+            var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
+            var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
+            var opName = Op.Parse(_funcName);
+            
             try
             {
-                var output = OperatorScript.Run(_opName, inputs, state);
-                return output;
+                //use user defined function
+                if (userFunction != null)
+                {
+                    //functions shouldn't have acess to any variables outside function
+                    scope = new ReturnScope();
+
+                    //check if user defiend function
+                    var output = OperatorScript.Run(userFunction, inputs, scope);
+                    return output;
+                }
+
+                if (opName != Op.Name.invalid)
+                {
+                    scope = new ReturnScope(scope);
+
+                    var output = OperatorScript.Run(opName, inputs, scope);
+                    return output;
+                }
             }
-            catch (Exception e)
+            catch (ReturnException)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                return scope.GetReturn;
             }
+            catch (ScriptExecutionException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
+            }
+
+            return new TextController("");
         }
 
-        public string GetOperatorName()
+        public Op.Name GetOperatorName() => Op.Parse(_funcName);
+
+
+        public List<ScriptExpression> GetFuncParams() => _parameters;
+
+        public override FieldControllerBase CreateReference(Scope scope)
         {
-            return _opName;
+            //TODO
+            return null;
+            //return OperatorScript.CreateDocumentForOperator(
+            //    _parameters.Select(
+            //        kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.CreateReference(scope))), _opName); //recursive linq
         }
 
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse(_funcName));
 
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
+        public override string ToString()
         {
-            return _parameters;
+            var concat = "";
+            foreach (var param in _parameters)
+            {
+                switch (param)
+                {
+                    case VariableExpression varExp:
+                        concat += varExp.GetVariableName() + " ";
+                        break;
+                    case LiteralExpression litExp:
+                        concat += litExp.GetField() + " ";
+                        break;
+                }
+            }
+
+            return concat;
         }
-
-
-        public override FieldControllerBase CreateReference(ScriptState state)
-        {
-            return OperatorScript.CreateDocumentForOperator(
-                _parameters.Select(
-                    kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key,
-                        kvp.Value.CreateReference(state))), _opName); //recursive linq
-        }
-
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
     }
 }
+

@@ -278,7 +278,7 @@ namespace Dash
                 switch (largs.ListAction)
                 {
                     case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                        AddLinks(largs.ChangedDocuments);
+                        AddLinks(largs.NewItems);
                         // update side panel (by removing and adding it)
                         var panel = ParentGraph.xInfoPanel.Children.FirstOrDefault(i => i is NodeConnectionsView);
                         if (panel != null)

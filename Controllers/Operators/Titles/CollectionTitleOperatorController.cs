@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("colTitle")]
+    [OperatorType(Op.Name.coll_title)]
     public class CollectionTitleOperatorController : OperatorController
     {
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -39,7 +39,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             TextController output = null;
             

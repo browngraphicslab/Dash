@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("rtfTitle")]
+    [OperatorType(Op.Name.rtf_title)]
     public class RichTextTitleOperatorController : OperatorController
     {
         public RichTextTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -42,7 +42,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             string computedTitle = null;
 

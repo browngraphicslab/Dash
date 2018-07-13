@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("string")]
+    [OperatorType(Op.Name.to_string, Op.Name.print)]
     public class ToStringOperatorController : OperatorController
     {
         //Input keys
@@ -18,10 +18,7 @@ namespace Dash
         public static readonly KeyController ResultStringKey = new KeyController("String");
 
 
-        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public ToStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -46,14 +43,10 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var input = inputs[InputKey];
-            if (input != null)
-            {
-                var inputString = input.GetValue(null).ToString();
-                outputs[ResultStringKey] = new TextController(inputString);
-            }
+            if (input != null) outputs[ResultStringKey] = new TextController(input.GetValue(null).ToString());
         }
     }
 }

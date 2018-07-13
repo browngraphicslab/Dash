@@ -57,17 +57,14 @@ namespace Dash
 
         private void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
-            if (searchBox == null)
-            {
-                return;
-            }
+            if (searchBox == null) return;
 
             //first unhightlight old results
             unHighlightAllDocs();
 
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             var text = searchBox.Text; //.ToLower();
-            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
+            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Clear();
 
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -75,7 +72,7 @@ namespace Dash
                 return;
             }
 
-            var maxSearchResultSize = 75;
+            const int maxSearchResultSize = 75;
             DocumentController resultDict = null;
             try
             {
@@ -88,16 +85,12 @@ namespace Dash
                 resultDict = interpreted as DocumentController;
             }
           
-            catch (DSLException e)
+            catch (DSLException)
             {
                 Debug.WriteLine("Search Failed");
             }
             
-            if (resultDict == null)
-            {
-                return;
-            }
-            
+            if (resultDict == null) return;
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
@@ -455,7 +448,7 @@ namespace Dash
 
             private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
             {
-                Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
+               Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
                     var type = vm.ViewDocument.GetDataDocument().DocumentType?.Type?.ToLower();
                     if (vm.IsLikelyUsefulContextText|| type == null)
@@ -790,8 +783,8 @@ namespace Dash
                 var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
-                    int foundCount = 0;
-                    string lastTopText = "";
+                    var foundCount = 0;
+                    var lastTopText = "";
                     StringSearchModel lastKeySearch = null;
                     StringSearchModel lastFieldSearch = null;
 
@@ -875,7 +868,7 @@ namespace Dash
                 bool isLikelyUsefulContextText = false)
             {
                 var vms = new List<SearchResultViewModel>();
-                string preTitle = "";
+                var preTitle = "";
 
                 var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
                 foreach (var documentNode in documentNodes ?? new DocumentNode[0])

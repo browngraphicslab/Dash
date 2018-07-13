@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
+using Dash.Controllers;
 using DashShared;
 using Newtonsoft.Json;
 
@@ -18,6 +19,10 @@ namespace Dash
             [typeof(DocumentController)] = TypeInfo.Document,
             [typeof(KeyController)] = TypeInfo.Key,
             [typeof(OperatorController)] = TypeInfo.Operator,
+            [typeof(VideoController)] = TypeInfo.Video,
+            [typeof(AudioController)] = TypeInfo.Audio,
+            [typeof(BoolController)] = TypeInfo.Bool,
+            [typeof(DateTimeController)] = TypeInfo.DateTime,
 
             [typeof(FieldControllerBase)] = TypeInfo.Any
         };

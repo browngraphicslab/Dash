@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("keys")]
+    [OperatorType(Op.Name.get_keys, Op.Name.keys)]
     public class GetKeysOfDocumentOperatorController : OperatorController
     {
         public GetKeysOfDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -43,9 +43,10 @@ namespace Dash
         {
             [ResultKeysKey] = TypeInfo.List,
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (doc != null)

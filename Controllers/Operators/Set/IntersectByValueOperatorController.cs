@@ -4,7 +4,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("intersectByValue")]
+    [OperatorType(Op.Name.intersect_by_value)]
     public class IntersectByValueOperatorController : OperatorController
     {
         //Input keys
@@ -45,7 +45,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
             var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
