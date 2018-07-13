@@ -10,6 +10,7 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Dash.Views;
 
 namespace Dash
@@ -106,9 +107,10 @@ namespace Dash
 						var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
 						MainPage.Instance.DockManager.Dock(target, dir);
 					}
+					// if it's already docked, then highlight it instead of docking it again
 					else
 					{
-						dv.ContainedDocumentView.ViewModel.SearchHighlightState = new Thickness(8);
+						dv.FlashSelection();
 					}
 				}
 		    }

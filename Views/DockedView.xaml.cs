@@ -201,6 +201,11 @@ namespace Dash
         {
             NestedLengthChanged?.Invoke(this, new GridSplitterEventArgs { NewLength = GetNestedViewSize(), DocumentToUpdate = NestedView.ContainedDocumentController });
         }
+
+	    public void FlashSelection()
+	    {
+		    xFlashAnimation.Begin();
+	    }
     }
 
     public class GridSplitterEventArgs : EventArgs
