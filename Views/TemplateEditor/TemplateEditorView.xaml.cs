@@ -376,7 +376,7 @@ namespace Dash
                 var title = "MyTemplate";
                 
 	            var number = MainPage.Instance.MainDocument
-	                .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey).Data.Count;
+	                .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)?.Data.Count + 1 ?? 1;
                 // append the number to the title
                 title += number.ToString();
 
@@ -708,10 +708,16 @@ namespace Dash
                             new NumberController(i.ActualWidth)));
                     dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
                 }
+                
+                if (!templateList.Contains(workingDoc))
+                {
+                    templateList.Add(workingDoc);
+                    MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+                }
 
                 foreach (var template in templateList.Data.Cast<DocumentController>())
                 {
-                    if (template.GetActiveLayout().Title.Equals(DataDocument.Title))
+                    if (template.Equals(workingDoc) || template.GetActiveLayout().Title.Equals(DataDocument.Title))
                     {
                         // set the active layout of the working document to the dataDocCopy (which is the template)
                         template.SetField(KeyStore.ActiveLayoutKey, dataDocCopy,
@@ -723,12 +729,6 @@ namespace Dash
                             new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
                             true);
                     }
-                }
-
-                if (!templateList.Contains(workingDoc))
-                {
-                    templateList.Add(workingDoc);
-                    MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
                 }
 
                 //update template style
@@ -1211,12 +1211,25 @@ namespace Dash
                         }
 
                         var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
-                        DocumentViewModels.Remove(dvm);
+                        DocumentControllers.Remove(dvm.DocumentController);
                         var newDoc = DocumentControllers.First(doc =>
-                            doc.Equals(_selectedDocument.ViewModel.DocumentController));
+                            doc.Equals(selectedDoc));
                         newDoc.SetField(KeyStore.DataKey, newRef, true);
-                        var newDvm = new DocumentViewModel(newDoc);
-                        DocumentViewModels.Add(newDvm);
+                        DocumentControllers.Add(newDoc);
+
+                        var templateList =
+                            MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
+                                KeyStore.TemplateListKey) ?? new ListController<DocumentController>();
+                        foreach (var template in templateList.Data.Cast<DocumentController>())
+                        {
+                            if ((template.GetActiveLayout()?.Equals(DataDocument) ?? false) || template.Equals(workingDoc))
+                            {
+                                // set the active layout of the working document to the dataDocCopy (which is the template)
+                                template.SetField(KeyStore.ActiveLayoutKey, DataDocument.GetDataInstance(),
+                                    true); // changes workingDoc to template box
+                            }
+                        }
+
                         _selectedDocument = null;
                     }
                 }

@@ -1004,8 +1004,15 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-           
-          
+
+            if (ViewModel.DocumentController.GetActiveLayout()?.DocumentType.Equals(TemplateBox.DocumentType) ?? false)
+            {
+                var templateList = MainPage.Instance.MainDocument
+                    .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey);
+                templateList?.Remove(ViewModel.DocumentController);
+                MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+            }
+            
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
         }
 
