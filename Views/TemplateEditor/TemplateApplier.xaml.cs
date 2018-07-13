@@ -63,54 +63,6 @@ namespace Dash
             if (template == null) return;
             var newLayoutDoc = template.LayoutDocument.GetDataInstance();
 
-            // TODO: can we delete this code or should we leave it here just in case? -sy
-            //newDataDoc.SetField(KeyStore.DocumentContextKey, Document.GetDataDocument(), true);
-
-            //foreach (var doc in newLayoutDoc.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-            //    .TypedData)
-            //{
-            //    // if either is true, then the layout doc needs to be abstracted
-            //    if (doc.GetField<PointerReferenceController>(KeyStore.DataKey) != null || doc.GetDataDocument().Equals(Document))
-            //    {
-            //        var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
-            //        if (specificKey == null) continue;
-
-            //        if (newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey)
-            //                .GetField(specificKey) != null)
-            //        {
-            //            // set the layout doc's context to a reference of the data doc's context
-            //            doc.SetField(KeyStore.DocumentContextKey,
-            //                new DocumentReferenceController(
-            //                    newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey),
-            //                    KeyStore.DocumentContextKey),
-            //                true);
-            //        }
-            //        else
-            //        {
-            //            // set the layout doc's context to a reference of the data doc's context
-            //            doc.SetField(KeyStore.DocumentContextKey,
-            //                new DocumentReferenceController(newDataDoc,
-            //                    KeyStore.DocumentContextKey),
-            //                true);
-            //        }
-
-            //        // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
-            //        doc.SetField(KeyStore.DataKey,
-            //            new PointerReferenceController(
-            //                doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
-            //    }
-
-                //// create new viewmodel with a copy of document, set editor to this
-                //var dvm =
-                //    new DocumentViewModel(doc, new Context(doc));
-                //// adds layout doc to list of layout docs
-                //var datakey = Document.GetField<DocumentController>(KeyStore.TemplateEditorKey)
-                //    .GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                //datakey.Add(dvm.LayoutDocument);
-                //Document.GetField<DocumentController>(KeyStore.TemplateEditorKey)
-                //    .SetField(KeyStore.DataKey, datakey, true);
-            //}
-
             // set the new layout document's context to the selected document's data doc
             newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
             // set the position to match the old position
