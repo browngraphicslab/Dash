@@ -8,6 +8,8 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using System.Diagnostics;
+using Windows.System;
+using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -15,6 +17,7 @@ namespace Dash
 {
     public sealed partial class MainSearchBox
     {
+        #region Definitions and Initilization 
         public const int MaxSearchResultSize = 75;
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
@@ -24,42 +27,204 @@ namespace Dash
         public MainSearchBox()
         {
             InitializeComponent();
-            xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+            xSuggestions.ItemsSource = new ObservableCollection<SearchResultViewModel>();
         }
+        #endregion
 
-        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        #region Events
+        private void XSearchBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (sender.Text.Equals("Dash.SearchResultViewModel"))
+            xSuggestionsPopup.Visibility = Visibility.Visible;
+
+            if (xSearchBox.Text.Equals("Dash.SearchResultViewModel"))
             {
-                sender.Text = _currentSearch;
+                xSearchBox.Text = _currentSearch;
                 return;
             }
 
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                //Set the ItemsSource to be your filtered dataset
-                //sender.ItemsSource = dataset;
+            //if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            //{
+            //Set the ItemsSource to be your filtered dataset
+            //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+            ExecuteDishSearch(xSearchBox.Text);
 
-            }
+            //}
 
-            _currentSearch = sender.Text.ToLower();
+            _currentSearch = xSearchBox.Text.ToLower();
+
         }
 
-        private static void ExecuteDishSearch(AutoSuggestBox searchBox)
+        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            if (searchBox == null) return;
+            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            MainPage.Instance.HighlightDoc(docTapped, true);
+        }
+
+        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            MainPage.Instance.HighlightDoc(docTapped, false);
+        }
+
+
+
+
+        private void XSuggestions_OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            var a = sender;
+        }
+
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                sender.Text = _currentSearch;
+                if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
+                if (resultVm.DocumentCollection != null)
+                {
+                    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
+                    {
+                        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
+                    }
+                }
+
+                MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(resultVm.ViewDocument);
+            }
+            else
+            {
+                sender.Text = _currentSearch;
+                // Use args.QueryText to determine what to do.
+            }
+        }
+
+        private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Up)
+            {
+                xSearchBox.Text = _currentSearch;
+                //if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
+                //if (resultVm.DocumentCollection != null)
+                //{
+                //    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                //    if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
+                //    {
+                //        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
+                //    }
+                //}
+
+                //MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(resultVm.ViewDocument);
+            }
+        }
+
+
+        private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_currentSearch))
+            {
+                ExecuteDishSearch(xSearchBox.Text);
+            }
+        }
+
+        /// <summary>
+        /// Called when we drag a single result from search
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var dragModel =
+                new DragDocumentModel(
+                    ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
+            // get the sender's view docs and set the key for the drag to a static const
+            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
+
+            // set the allowed operations
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Copy;
+        }
+
+        public void ShowCollectionDrag(bool show)
+        {
+            if (show)
+            {
+                xCollectionDragBorder.Visibility = Visibility.Visible;
+                ;
+            }
+            else
+            {
+                xCollectionDragBorder.Visibility = Visibility.Collapsed;
+                ;
+            }
+        }
+
+        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
+            }
+        }
+
+        //// Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
+        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                var doc = dragData.DraggedDocument;
+                xSearchBox.Text = xSearchBox.Text + doc.Id;
+                /*
+                var listKeys = doc.EnumDisplayableFields()
+                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                if (listKeys.Count == 1)
+                {
+                    var currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    if (!string.IsNullOrWhiteSpace(currText))
+                    {
+                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
+                    }
+                }
+                */
+            }
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Called when we drag the entire search collection
+        /// </summary>
+        private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            //    // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+            //    var docs = SearchHelper.SearchOverCollection(_currentSearch)
+            //        .Select((srvm) => srvm.ViewDocument.GetViewCopy());
+
+            //    args.Data.Properties[nameof(DragCollectionFieldModel)] =
+            //        new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
+
+            //    // set the allowed operations
+            //    args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            //    args.Data.RequestedOperation = DataPackageOperation.Copy;
+
+        }
+
+
+        #endregion
+
+        #region Searching
+        private void ExecuteDishSearch(string text)
+        {
 
             UnHighlightAllDocs();
 
-            //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
-            string text = searchBox.Text; //.ToLower();
-
-            var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)xSuggestions.ItemsSource;
             itemsSource?.Clear();
 
             if (string.IsNullOrWhiteSpace(text)) return;
@@ -84,6 +249,28 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             foreach (var searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
+
+            //xSuggestions.ItemsSource = first;
+            xSuggestionsPopup.Visibility = Visibility.Visible;
+
+        }
+
+        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
+        {
+            var maxSearchResultSize = 75;
+            //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
+
+            //var first = vms
+            //    .Where(doc =>
+            //        doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
+            //    .Take(maxSearchResultSize).ToArray();
+            //foreach (var searchResultViewModel in first)
+            //{
+            //    return searchResultViewModel.ViewDocument;
+            //}
+
+            return null;
+
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs)
@@ -128,164 +315,9 @@ namespace Dash
                 }
             }
         }
+        #endregion
 
-        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
-            MainPage.Instance.HighlightDoc(docTapped, true);
-        }
-
-        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
-            MainPage.Instance.HighlightDoc(docTapped, false);
-        }
-
-        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
-        {
-            var maxSearchResultSize = 75;
-            //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
-
-            //var first = vms
-            //    .Where(doc =>
-            //        doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
-            //    .Take(maxSearchResultSize).ToArray();
-            //foreach (var searchResultViewModel in first)
-            //{
-            //    return searchResultViewModel.ViewDocument;
-            //}
-
-            return null;
-
-        }
-
-        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            // Set sender.Text. You can use args.SelectedItem to build your text string.
-            if (args.SelectedItem is SearchResultViewModel resultVM)
-            {
-
-            }
-        }
-
-
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion != null)
-            {
-                sender.Text = _currentSearch;
-                if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
-                if (resultVm.DocumentCollection != null)
-                {
-                    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                    if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
-                    {
-                        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
-                    }
-                }
-
-                MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(resultVm.ViewDocument);
-            }
-            else
-            {
-                sender.Text = _currentSearch;
-                // Use args.QueryText to determine what to do.
-            }
-        }
-
-        private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(_currentSearch))
-            {
-                ExecuteDishSearch(sender as AutoSuggestBox);
-            }
-        }
-
-        /// <summary>
-        /// Called when we drag the entire search collection
-        /// </summary>
-        private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            //    // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            //    var docs = SearchHelper.SearchOverCollection(_currentSearch)
-            //        .Select((srvm) => srvm.ViewDocument.GetViewCopy());
-
-            //    args.Data.Properties[nameof(DragCollectionFieldModel)] =
-            //        new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
-
-            //    // set the allowed operations
-            //    args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            //    args.Data.RequestedOperation = DataPackageOperation.Copy;
-
-        }
-
-    /// <summary>
-    /// Called when we drag a single result from search
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="args"></param>
-    private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            var dragModel =
-                new DragDocumentModel(
-                    ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
-            // get the sender's view docs and set the key for the drag to a static const
-            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
-
-            // set the allowed operations
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-
-        public void ShowCollectionDrag(bool show)
-        {
-            if (show)
-            {
-                xCollectionDragBorder.Visibility = Visibility.Visible;
-                ;
-            }
-            else
-            {
-                xCollectionDragBorder.Visibility = Visibility.Collapsed;
-                ;
-            }
-        }
-
-        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                e.AcceptedOperation = DataPackageOperation.Link;
-            }
-        }
-
-        //// Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
-        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.DraggedDocument;
-                xAutoSuggestBox.Text = xAutoSuggestBox.Text + doc.Id;
-                /*
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                if (listKeys.Count == 1)
-                {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
-                    if (!string.IsNullOrWhiteSpace(currText))
-                    {
-                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
-                    }
-                }
-                */
-            }
-
-            e.Handled = true;
-        }
-
-
+        #region SearchHelper Class
         /// <summary>
         /// public static class for encapsulating all the search code
         /// </summary>
@@ -621,6 +653,10 @@ namespace Dash
             //}
         //}
     }
+#endregion
+
+
+
     }
 }
 
