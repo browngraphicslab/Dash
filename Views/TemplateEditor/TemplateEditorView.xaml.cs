@@ -1809,15 +1809,20 @@ namespace Dash
                     xItem.IsChecked = false;
                     xAll.IsChecked = false;
                 }
-
-
             }
             else
             {
-                arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+				//close all drop downs
+				if (xAddItemsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAddItemsHeader, new RoutedEventArgs());
+	            if (xAlignmentButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAlignmentHeader, new RoutedEventArgs());
+	            if (xOptionsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xOptionsHeader, new RoutedEventArgs());
+
+				//open desired one
+				arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
                     easingType: EasingType.Default).Start();
                 buttonStack.Visibility = Visibility.Visible;
                 fade?.Begin();
+				
             }
         }
 
