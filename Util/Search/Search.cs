@@ -8,6 +8,9 @@ namespace Dash
 {
     public class Search
     {
+        //TODO: Type-Based Search
+        //TODO: Search in collections - check out "collected docs note in viewdocument.getdatadocument.documenttype.type
+
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
@@ -59,6 +62,9 @@ namespace Dash
                 if (!string.IsNullOrEmpty(relatedString))
                 {
                     int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
+                    //TODO: ugly code in the following 2 lines, fix later
+                    if (ind < 0)
+                        return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
                     var pre = 0;
                     while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
 
@@ -133,10 +139,19 @@ namespace Dash
                 return SearchByKeyValuePair(new KeyController(name), paramName, negate);
             }
             var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
-            if (resultDocs is BaseListController resultList) return resultList.Data.Select(fcb => new SearchResult());
+            if (resultDocs is BaseListController resultList)
+            {
+                var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument));
+                //return resultList.Data.Select(fcb => new SearchResult(fcb));
+
+                //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching-
+                //maybe make documentNode a FieldControllerBase?
+                string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
+                return res.Select(node => new SearchResult(node, $" >> { name }", trimParam, 1));
+            }
 
             // Don't think this line should be reached
-            return null;
+            return new List<SearchResult>();
         }
 
         private static int FindNextDivider(string inputString)
@@ -312,6 +327,7 @@ namespace Dash
         {
             //probably won't work
             //return search1.Union(search2);
+
             var search1List = search1.ToList();
             var joined = search1List.Where(result => search2.Any(node => node.ViewDocument == result.ViewDocument)).ToList();
 
@@ -324,38 +340,6 @@ namespace Dash
             }
             return joined;
         }
-
-        /*
-            * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
-            */
-        //private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText, bool isLikelyUsefulContextText = false)
-        //{
-        //    var vms = new List<SearchResultViewModel>();
-        //    var preTitle = "";
-
-        //    var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
-        //    foreach (var documentNode in documentNodes ?? new DocumentNode[0])
-        //    {
-        //        if (documentNode?.Parents?.FirstOrDefault() != null)
-        //        {
-        //            preTitle = " >  " +
-        //                ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
-        //                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
-        //                           ? "?"
-        //                           : documentNode.Parents.First().DataDocument
-        //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
-        //                     ;
-        //        }
-
-        //        var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
-        //            dataDocumentController.Id,
-        //            documentNode?.ViewDocument ?? dataDocumentController,
-        //            documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
-        //        vms.Add(vm);
-        //    }
-
-        //    return vms.ToArray();
-        //}
 
         public static IEnumerable<SearchResult> SearchByAlias(string id, bool avoidDuplicateViews = false)
         {

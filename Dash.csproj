@@ -200,7 +200,6 @@
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
-    <Compile Include="Controllers\Operators\search\ParseSearchStringToDishOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
@@ -237,10 +236,6 @@
     <Compile Include="Controllers\Operators\search\GetAllDocsByAlias.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
     <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
@@ -486,7 +481,7 @@
     <Compile Include="Views\DishScriptEditView.cs" />
     <Compile Include="Views\DishScriptEditView.xaml.cs">
       <DependentUpon>DishScriptEditView.xaml</DependentUpon>
-      </Compile>
+    </Compile>
     <Compile Include="Views\CustomPdfView.xaml.cs">
       <DependentUpon>CustomPdfView.xaml</DependentUpon>
     </Compile>
