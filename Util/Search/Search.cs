@@ -10,6 +10,7 @@ namespace Dash
     {
         //TODO: Type-Based Search
         //TODO: Search in collections - check out "collected docs note in viewdocument.getdatadocument.documenttype.type
+        //TODO: ModifiedTime not existing until document is modified
 
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
@@ -136,8 +137,20 @@ namespace Dash
                 name = "inside";
             }
 
-            //this returns a string that more closely follows function syntax
-            if (!DSL.FuncNameExists(name))
+            // Not really sure what the point of it is, but it was in MainSearchBox, so I adapted it to the new search
+            if (name == "rtf" ||
+                name == "rt" ||
+                name == "richtext" ||
+                name == "richtextformat")
+            {
+                var res = DocumentTree.MainPageTree.Where(node =>
+                node.DataDocument.EnumFields().Any(f => f.Value is RichTextController &&
+                ((RichTextController)f.Value).SearchForStringInRichText(paramName).StringFound));
+                return res.Select(node => new SearchResult(node, $" >> { name }", "\"" + paramName + "\"", 1));
+            }
+
+                //this returns a string that more closely follows function syntax
+                if (!DSL.FuncNameExists(name))
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName, negate);
             }
@@ -147,12 +160,21 @@ namespace Dash
                 var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
                 if (resultDocs is BaseListController resultList)
                 {
-                    var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument));
+                    var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument) ||
+                    resultList.Data.Contains(node.DataDocument));
                     //return resultList.Data.Select(fcb => new SearchResult(fcb));
 
                     //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching
                     string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
-                    string newParam = "";
+                    switch (name)
+                    {
+                        case "before":
+                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                        case "after":
+                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                        default:
+                            break;
+                    }
                     return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
                 }
             }
@@ -391,174 +413,6 @@ namespace Dash
         //    }
 
         //    return vms.ToArray();
-        //}
-
-        ///// <summary>
-        ///// Supposed to handle all searches that are for key-value specified searches.   currenly just returns the generic special search.
-        ///// If more search capabilities are desired, probably should put them in here.
-        ///// </summary>
-        ///// <param name="criteria"></param>
-        ///// <returns></returns>
-        //private static IEnumerable<SearchResultViewModel> SpecialSearch(SpecialSearchCriteria criteria)
-        //{
-        //    if (criteria.SearchCategory == "in")
-        //    {
-        //        return CollectionMembershipSearch(criteria);
-        //    }
-        //    if (criteria.SearchCategory == "near")
-        //    {
-        //        return GroupMembershipSearch(criteria);
-        //    }
-        //    if (criteria.SearchCategory == "rtf" ||
-        //        criteria.SearchCategory == "rt" ||
-        //        criteria.SearchCategory == "richtext" ||
-        //        criteria.SearchCategory == "richtextformat")
-        //    {
-        //        return RichTextContains(criteria);
-        //    }
-        //    return GenericSpecialSearch(criteria);
-        //}
-
-        //private static IEnumerable<SearchResultViewModel> RichTextContains(SpecialSearchCriteria criteria)
-        //{
-        //    var tree = DocumentTree.MainPageTree;
-        //    return LocalSearch("").Where(vm => tree.GetNodeFromViewId(vm?.ViewDocument?.Id) != null &&
-        //                                       (tree.GetNodeFromViewId(vm.ViewDocument.Id).DataDocument
-        //                                           .EnumFields(false)
-        //                                           .Any(f => (f.Value is RichTextController) && !
-        //                                                         ((RichTextController)f.Value)
-        //                                                         .SearchForStringInRichText(criteria.SearchText)
-        //                                                         .StringFound)));
-        //}
-
-        //private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
-        //{
-        //    var tree = DocumentTree.MainPageTree;
-        //    var local = LocalSearch(criteria.SearchText).ToArray();
-        //    return local
-        //        .SelectMany(i => (tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0]).Concat(tree.GetNodesFromDataDocumentId(i.ViewDocument.GetDataDocument().Id)?.SelectMany(k => k.GroupPeers) ?? new DocumentNode[0]))
-        //        .DistinctBy(d => d.Id).SelectMany(i => MakeAdjacentSearchResultViewModels(i, criteria, tree, null));
-        //    /*
-        //    var tree = DocumentTree.MainPageTree;
-        //    var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null).ToArray();
-        //    var map = new Dictionary<DocumentNode, SearchResultViewModel>();
-        //    foreach (var vm in localSearch)
-        //    {
-        //        foreach(var peer in tree[vm.ViewDocument.Id].GroupPeers)
-        //        {
-        //            map[peer] = vm;
-        //        }
-        //    }
-        //    var allPeers = localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).DistinctBy(i => i.Id).ToArray();
-
-        //    return allPeers.Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));*/
-        //}
-
-        //private static SearchResultViewModel[] MakeAdjacentSearchResultViewModels(DocumentNode node,
-        //    SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)
-        //{
-        //    return CreateSearchResults(tree, node.DataDocument,
-        //        "Found near: " + (foundVm?.Title ?? criteria.SearchText),
-        //        node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data);
-        //}
-
-
-        ///// <summary>
-        ///// Get the search results for a part of search trying to specify keys/value pairs
-        ///// </summary>
-        ///// <param name="criteria"></param>
-        ///// <returns></returns>
-        //private static IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
-        //{
-        //    var documentTree = DocumentTree.MainPageTree;
-
-        //    var negateCategory = criteria.SearchCategory.StartsWith('!');
-        //    var searchCategory = criteria.SearchCategory.TrimStart('!');
-
-        //    List<DocumentController> docControllers = new List<DocumentController>();
-        //    foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
-        //    {
-        //        var hasField = false;
-        //        foreach (var kvp in documentController.EnumFields())
-        //        {
-        //            var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
-        //            if (!contains) continue;
-        //            hasField = true;
-        //            var stringSearch = kvp.Value.SearchForString(criteria.SearchText);
-        //            if ((stringSearch.StringFound && !negateCategory) || (!stringSearch.StringFound && negateCategory))
-        //            {
-        //                docControllers.Add(documentController);
-        //            }
-        //        }
-        //        if (negateCategory && string.IsNullOrEmpty(criteria.SearchText) && !hasField)
-        //        {
-        //            foreach (var kvp in documentController.GetDataDocument().EnumFields())
-        //            {
-        //                var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
-        //                if (contains)
-        //                {
-        //                    hasField = true;
-        //                }
-        //            }
-        //            if (!hasField)
-        //                docControllers.Add(documentController);
-        //        }
-        //    }
-
-        //    var results = new List<SearchResultViewModel>();
-        //    foreach (var docController in docControllers)
-        //    {
-        //        var title = docController.Title;
-
-        //        if (documentTree.GetNodeFromViewId(docController.Id) != null && documentTree.GetNodeFromViewId(docController.Id).DataDocument
-        //                .GetField<ListController<DocumentController>>(KeyStore.DataKey) != null)
-        //        {
-        //            title = GetTitleOfCollection(documentTree, docController) ?? "?";
-        //        }
-        //        var url = docController.GetLongestViewedContextUrl();
-        //        url = url == null
-        //            ? ""
-        //            : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
-        //        url = url == null ? url : "Context: " + url;
-        //        results.AddRange(CreateSearchResults(documentTree, docController.GetDataDocument(), url ?? docController.DocumentType.Type, title));
-        //    }
-        //    return results;
-        //}
-
-        //private static string GetTitleOfCollection(DocumentTree tree, DocumentController collection)
-        //{
-        //    if (tree == null || collection == null)
-        //    {
-        //        return null;
-        //    }
-        //    return tree.GetNodeFromViewId(collection.Id)?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
-        //}
-
-        ///// <summary>
-        ///// More direct search for types.  not currently used since we put the type of documents in their fields
-        ///// </summary>
-        ///// <param name="criteria"></param>
-        ///// <returns></returns>
-        //private static IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
-        //{
-        //    var documentTree = DocumentTree.MainPageTree;
-        //    List<DocumentController> docControllers = new List<DocumentController>();
-        //    foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
-        //    {
-        //        if (documentController.DocumentType.Type.ToLower().Contains(criteria.SearchText))
-        //        {
-        //            docControllers.Add(documentController);
-        //        }
-        //    }
-        //    var results = new List<SearchResultViewModel>();
-        //    foreach (var docController in docControllers)
-        //    {
-        //        var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.ImageFieldKey,
-        //            null);
-        //        var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
-        //        results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));
-        //    }
-        //    return results;
         //}
     }
 }

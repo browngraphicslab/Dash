@@ -300,7 +300,7 @@ namespace Dash
                 var vms = new List<SearchResultViewModel>();
                 foreach (var res in searchRes)
                 {
-                    var newVm = SearchHelper.DocumentSearchResultToViewModel(res);
+                    var newVm = DocumentSearchResultToViewModel(res);
                     var parent = res.Node.Parent?.ViewDocument;
                     if (parent != null) newVm.DocumentCollection = parent;
                     vms.Add(newVm);
@@ -356,39 +356,15 @@ namespace Dash
                 }
         }
 
+        private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)
+        {
+            string title = res.ViewDocument.ToString().Substring(1) + res.TitleAppendix; // .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey)?.Data;
+            string helpText = res.RelevantText;
+
+            return new SearchResultViewModel(title, helpText, res.ViewDocument, null, true);
+        }
+
         #endregion
-
-        #region SearchHelper Class
-        /// <summary>
-        /// public static class for encapsulating all the search code
-        /// </summary>
-        public static class SearchHelper
-            {
-                /// <summary>
-                /// this criteria simple tells us which key and value pair to look at
-                /// </summary>
-                private class SpecialSearchCriteria
-                {
-                    public string SearchCategory { get; set; }
-                    public string SearchText { get; set; }
-                }
-
-                private class SearchCriteria : EntityBase
-                {
-                    public string SearchText { get; set; }
-                }
-
-                public static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)
-                {
-                    string title = res.ViewDocument.ToString().Substring(1) + res.TitleAppendix; // .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey)?.Data;
-                    string helpText = res.RelevantText;
-
-                    return new SearchResultViewModel(title, helpText, res.ViewDocument, null, true);
-                }
-            }
-#endregion
-
-
     }
 }
 

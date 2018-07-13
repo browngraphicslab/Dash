@@ -62,13 +62,8 @@ namespace Dash
 
                 if (!string.IsNullOrEmpty(time))
                 {
-                    var allResults =
-                        DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as
-                            ListController<DocumentController>;
-
-                    Debug.Assert(allResults != null);
-
-                    var data = allResults.TypedData;
+                    var allResults = DocumentTree.MainPageTree;
+                    var data = allResults.Select(node => node.DataDocument).ToList();
                     for (int i = 0; i < data.Count; i++)
                     {
                         var docTimeS = data[i].GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;

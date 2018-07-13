@@ -60,20 +60,11 @@ namespace Dash
 
                 if (!string.IsNullOrEmpty(time))
                 {
-                    var allResults =
-                        DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as
-                            ListController<DocumentController>;
+                    var allResults = DocumentTree.MainPageTree;
 
-                    Debug.Assert(allResults != null);
-
-                    var data = allResults.TypedData;
+                    var data = allResults.Select(node => node.DataDocument).ToList();
                     for (int i = 0; i < data.Count; i++)
                     {
-                        var datum = data[i];
-                        if (datum.Title.Equals("zgz"))
-                        {
-                            var a = 2;
-                        }
                         //get time paratmeter in doc and make it into DateTime
                         var docTimeS = data[i].GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
                             //data[i].GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey) .Data;
