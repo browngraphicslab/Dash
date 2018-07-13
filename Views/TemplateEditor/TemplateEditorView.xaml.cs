@@ -1964,6 +1964,7 @@ namespace Dash
                 xWorkspace.Clip = new RectangleGeometry {Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height)};
                 Bounds.Width = 70;
                 Bounds.Height = 70;
+				PositionEllipses();
                 return;
             }
 
@@ -2006,7 +2007,7 @@ namespace Dash
             {
                 Bounds.Width = 70;
                 Bounds.Height = 70;
-                return;
+               
             }
             else
             {
