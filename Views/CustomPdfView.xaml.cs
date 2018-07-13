@@ -220,7 +220,6 @@ namespace Dash
 
 	    private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionEnded?.Invoke(sender, e);
             //if (_selectionStart == null)
             //{
             //    return;
@@ -242,11 +241,6 @@ namespace Dash
             //        break;
             //    }
             //}
-        }
-
-        private void ItemsControl_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            NewRegionMoved?.Invoke(sender, e);
         }
 
         private BoundsExtractionStrategy.SelectableElement _selectionStart;
@@ -283,8 +277,6 @@ namespace Dash
         }
 
         public event PointerEventHandler NewRegionStarted;
-        public event PointerEventHandler NewRegionMoved;
-        public event PointerEventHandler NewRegionEnded;
 
         private void updatePageSpacingAndScrollPosition()
         {

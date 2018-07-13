@@ -19,7 +19,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <local:AnnotationOverlay x:Name="xAnnotations" PointerPressed="ItemsControl_PointerPressed" PointerMoved="ItemsControl_PointerMoved" PointerReleased="ItemsControl_PointerReleased"></local:AnnotationOverlay>
+            <local:AnnotationOverlay x:Name="xAnnotations" PointerPressed="ItemsControl_PointerPressed" PointerReleased="ItemsControl_PointerReleased"></local:AnnotationOverlay>
             <Viewbox HorizontalAlignment="Stretch" Stretch="UniformToFill">
                 <Canvas x:Name="TestSelectionCanvas"></Canvas>
             </Viewbox>

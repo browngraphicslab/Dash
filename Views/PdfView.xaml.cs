@@ -39,8 +39,6 @@ namespace Dash
 
         // events to communicate with the VisualAnnotationManager
         public event PointerEventHandler NewRegionStarted;
-        public event PointerEventHandler NewRegionMoved;
-        public event PointerEventHandler NewRegionEnded;
         
         public double ZoomFactor => xPdfView.Zoom / 100.0;
         private Size pdfNativeSize
@@ -87,8 +85,6 @@ namespace Dash
                 _annotationManager.NewRegionMade += OnNewRegionMade;
                 _annotationManager.RegionRemoved += OnRegionRemoved;
                 xAnnotations.PointerPressed += XAnnotations_PointerPressed;
-                xAnnotations.PointerMoved += XAnnotations_PointerMoved;
-                xAnnotations.PointerReleased += XAnnotations_PointerReleased;
                 var doc = DataContext as DocumentController;
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 GetInternalScrollViewer().ChangeView(null, curOffset ?? 0.0, null);
@@ -432,17 +428,6 @@ namespace Dash
         public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
         {
             _annotationManager.RegionSelected(region, pt, chosenDoc);
-        }
-
-
-        private void XAnnotations_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            NewRegionEnded?.Invoke(sender, e);
-        }
-
-        private void XAnnotations_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            NewRegionMoved?.Invoke(sender, e);
         }
 
         private void XAnnotations_PointerPressed(object sender, PointerRoutedEventArgs e)

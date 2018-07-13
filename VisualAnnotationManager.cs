@@ -54,11 +54,13 @@ namespace Dash
             _regionState = RegionVisibilityState.Hidden;
             _docCtrl = dc;
             _element = element;
-            _element.NewRegionStarted += Element_OnNewRegionStarted;
-            _element.NewRegionMoved += Element_OnNewRegionMoved;
-            _element.NewRegionEnded += Element_OnNewRegionEnded;
-            //_element.ContentLoaded += Element_OnLoaded;
-            _overlay = overlay;
+	        var fe = element as FrameworkElement;
+	        fe.PointerPressed += Element_OnNewRegionStarted;
+	        fe.PointerMoved += Element_OnNewRegionMoved;
+	        fe.PointerReleased += Element_OnNewRegionEnded;
+	        fe.PointerExited += Element_OnNewRegionEnded;
+			//_element.ContentLoaded += Element_OnLoaded;
+			_overlay = overlay;
 
             _dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
             if (_dataRegions == null) return;
@@ -80,28 +82,24 @@ namespace Dash
 
             //reset and get rid of the region preview
             _overlay.SetDuringPreviewSize(new Size(0, 0));
+
             // what do the following two lines accomplish
             _overlay.DuringVisibility = Visibility.Collapsed;
             _overlay.DuringVisibility = Visibility.Visible;
-
-            //if not selecting an already selected region, collapse preview boxes
-            if (!(_overlay.PostColumn1ActualWidth < pos.X) || !(pos.X < _overlay.PostColumn1ActualWidth + _overlay.PostColumn2ActualWidth) || !(_overlay.PostRow1ActualHeight < pos.Y) || !(pos.Y < _overlay.PostRow1ActualHeight + _overlay.PostRow2ActualHeight))
+			
+            DeselectRegions();
+            
+            //delete if control is pressed
+            if (MainPage.Instance.IsAltPressed())
             {
-                DeselectRegions();
+                DeleteRegion(_selectedRegion);
+                _isPreviousRegionSelected = false;
+                return;
             }
-            else
-            {
-                //delete if control is pressed
-                if (MainPage.Instance.IsAltPressed())
-                {
-                    DeleteRegion(_selectedRegion);
-                    _isPreviousRegionSelected = false;
-                    return;
-                }
-                //select otherwise
-                //if (xLinkStack.Visibility == Visibility.Collapsed)
-                if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
-            }
+            //select otherwise
+            //if (xLinkStack.Visibility == Visibility.Collapsed)
+            if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
+            
         }
 
         private void Element_OnNewRegionMoved(object sender, PointerRoutedEventArgs e)
@@ -123,8 +121,9 @@ namespace Dash
             }
         }
 
-        private void Element_OnNewRegionEnded(object sender, PointerRoutedEventArgs e)
+        private void Element_OnNewRegionEnded(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
         {
+	        if (!_isDragging) return;
             _overlay.DuringVisibility = Visibility.Collapsed;
 
             if (MainPage.Instance.IsCtrlPressed())
@@ -141,17 +140,17 @@ namespace Dash
             _overlay.PostVisibility = Visibility.Visible;
         }
 
-        private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            this.RegionSelected((RegionBox) sender, e.GetCurrentPoint(MainPage.Instance).Position);
+            this.RegionSelected((RegionBox) sender, e.GetPosition(MainPage.Instance));
             e.Handled = true;
         }
 
         //shows region when user hovers over it
         private void Region_OnPointerEntered(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region)
+            if (sender is RegionBox region && !_isDragging)
             {
                 region.Show();
             }
@@ -160,7 +159,7 @@ namespace Dash
         //hides region when user's cursor leaves it if region visibility mode is hidden
         private void Region_OnPointerExited(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region)
+            if (sender is RegionBox region && !_isDragging)
             {
                 if (_regionState == RegionVisibilityState.Hidden) region.Hide();
             }
@@ -375,7 +374,7 @@ namespace Dash
         private RegionBox SetUpNewRegionBox(RegionBox newBox)
         {
             _overlay.AddRegion(newBox);
-            newBox.PointerPressed += xRegion_OnPointerPressed;
+            newBox.Tapped += xRegion_OnTapped;
             newBox.PointerEntered += Region_OnPointerEntered;
             newBox.PointerExited += Region_OnPointerExited;
             _visualRegions.Add(newBox);

@@ -25,9 +25,6 @@ namespace Dash
         DocumentController GetDocControllerFromSelectedRegion();
         VisualAnnotationManager GetAnnotationManager();
 
-        // Invoke these when the region preview boxes should be altered
-        event PointerEventHandler NewRegionStarted;
-        event PointerEventHandler NewRegionMoved;
-        event PointerEventHandler NewRegionEnded;
+	    event PointerEventHandler NewRegionStarted;
     }
 }
