@@ -15,7 +15,7 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("6C91F9CB-C2D9-4C89-8112-39B15D799396", "Dish Script Box");
         private static readonly string PrototypeId = "6C91F9CB-C2D9-4C89-8112-39B15D799396";
 
-        public DishScriptBox(double x = 0, double y = 0, double w = 200, double h = 20, string text = "")
+        public DishScriptBox(double x = 0, double y = 0, double w = 300, double h = 400, string text = "")
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
             SetupDocument(DocumentType, PrototypeId, "DishScriptBox Prototype Layout", fields);

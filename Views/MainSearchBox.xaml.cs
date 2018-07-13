@@ -219,18 +219,39 @@ namespace Dash
        
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xSearchCode.Visibility == Visibility.Visible)
+            if (xSearchCodeBox.Visibility == Visibility.Visible)
             {
                 //collapse search bar
-                xSearchCode.Visibility = Visibility.Collapsed;
+                xSearchCodeBox.Visibility = Visibility.Collapsed;
                 xArrow.Glyph = "\uE937";
             }
             else
             {
                 //open search bar
-                xSearchCode.Visibility = Visibility.Visible;
+                xSearchCodeBox.Visibility = Visibility.Visible;
                 xArrow.Glyph = "\uE936";
             }
+        }
+
+        private IEnumerable<DocumentController> runSearch()
+        {
+            string text = xAutoSuggestBox.Text;
+
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+            itemsSource?.Clear();
+
+            IEnumerable<SearchResult> searchRes;
+            try
+            {
+                searchRes = Search.Parse(text).ToList();
+            }
+            catch (Exception e2)
+            {
+                searchRes = new List<SearchResult>();
+            }
+            var allDocs = searchRes.Select(f => f.ViewDocument).ToList();
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            return allDocs.Where(f => f != MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey));
         }
 
         private void XSearchCode_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -238,24 +259,7 @@ namespace Dash
             if (e.Key == VirtualKey.Enter)
             {
                 //excute code on each result               
-                string text = xAutoSuggestBox.Text; 
-
-                var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
-                itemsSource?.Clear();
-
-                IEnumerable<SearchResult> searchRes;
-                try
-                {
-                    searchRes = Search.Parse(text).ToList();
-                }
-                catch (Exception e2)
-                {
-                    searchRes = new List<SearchResult>();
-                }
-                var allDocs = searchRes.Select(f => f.ViewDocument).ToList();
-                if (string.IsNullOrWhiteSpace(text)) return;
-
-                var docs = allDocs.Where(f => f != MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey));
+                var docs = runSearch();
 
                 //create script
                 var code = xSearchCode.Text;
@@ -268,6 +272,38 @@ namespace Dash
                 dsl.Run(script, true);
             }
         }
+
+
+        private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var text = xAutoSuggestBox.Text;
+
+            //open DishScriptEditView with search text
+            var script = "var docs = search(\""+ text +"\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+
+            var note = new DishScriptBox(0,0,300,400, script);
+            
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(note.Document, true);
+
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+        private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var text = xAutoSuggestBox.Text;
+
+            //open DishScriptEditView with search text
+            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+
+
+            var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            var panPos = collection.GetField<PointController>(KeyStore.PanPositionKey).Data;
+            var zoom = collection.GetField<PointController>(KeyStore.PanZoomKey).Data;
+            var note = new DishScriptBox((800- panPos.X) / zoom.X, (500 -panPos.Y) / zoom.Y, 300, 400, script);
+
+            collection.AddToListField(KeyStore.DataKey, note.Document);
+        }
+
 
         #endregion
 
