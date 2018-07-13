@@ -143,15 +143,6 @@ namespace Dash
         #endregion
 
         #region Helper Functions
-        private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
-            var outputData = output.Value;
-            var dataBox = new DataBox(outputData).Document;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -927,5 +918,9 @@ namespace Dash
         #endregion
 
 
+        private void UIElement_OnDragStarting2(UIElement sender, DragStartingEventArgs args)
+        {
+            var a = sender;
+        }
     }
 }

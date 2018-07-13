@@ -28,7 +28,7 @@
                     <ItemsControl VerticalAlignment="Stretch"  ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True" >
+                                <Grid Margin="0,0,0,5" >
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="30" />
                                         <RowDefinition Height="*" />
@@ -50,7 +50,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text=" " Grid.Column="0" />
-                                        <local:ReplLineNode Grid.Column="1"></local:ReplLineNode>
+                                        <local:ReplLineNode Grid.Column="1" DragStarting="UIElement_OnDragStarting2"></local:ReplLineNode>
                                     </Grid>
                                 </Grid>
                             </DataTemplate>

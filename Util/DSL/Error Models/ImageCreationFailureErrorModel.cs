@@ -14,6 +14,5 @@ namespace Dash
                 "\n            The resource might be invalid or protected. Consider making your addition with the menu toolbar.";
         }
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

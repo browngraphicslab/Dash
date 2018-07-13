@@ -21,6 +21,5 @@ namespace Dash
             return $" Exception:\n            IndexOutOfBounds\n      Feedback:\n            Cannot access {access}. {valid}";
         }
 
-        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

@@ -27,9 +27,7 @@ namespace Dash
 
         public override string GetHelpfulString() => "";
 
-        public override DocumentController GetErrorDoc() => BuildErrorDoc();
-
-        public DocumentController BuildErrorDoc()
+        public override DocumentController BuildErrorDoc()
         {
             _errorDoc = new DocumentController();
 
