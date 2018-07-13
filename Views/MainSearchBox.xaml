@@ -43,7 +43,7 @@
                         AllowDrop="True"
                         >
             <AutoSuggestBox.ItemTemplate>
-                
+
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
                         <Grid.ColumnDefinitions>

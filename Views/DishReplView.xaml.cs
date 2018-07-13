@@ -916,11 +916,5 @@ namespace Dash
             xSuggestionsPopup.Visibility = Visibility.Collapsed;
         }
         #endregion
-
-
-        private void UIElement_OnDragStarting2(UIElement sender, DragStartingEventArgs args)
-        {
-            var a = sender;
-        }
     }
 }
