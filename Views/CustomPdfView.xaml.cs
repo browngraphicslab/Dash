@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -44,22 +49,32 @@ namespace Dash
             set { SetValue(PdfUriProperty, value); }
         }
 
-        public double PageSpacing
+        private double _pdfMaxWidth;
+        public double PdfMaxWidth
         {
-            get => _pageSpacing;
-            private set
+            get => _pdfMaxWidth;
+            set
             {
-                _pageSpacing = value;
+                _pdfMaxWidth = value;
                 OnPropertyChanged();
             }
         }
 
-        private double _pdfPageSpacing = 20;
+        private double _pdfTotalHeight;
+        public double PdfTotalHeight
+        {
+            get => _pdfTotalHeight;
+            set
+            {
+                _pdfTotalHeight = value;
+                OnPropertyChanged();
+            }
+        }
 
         public event EventHandler DocumentLoaded;
 
-        private List<Image> _pages;
-        public List<Image> Pages
+        private ObservableCollection<ImageSource> _pages = new ObservableCollection<ImageSource>();
+        public ObservableCollection<ImageSource> Pages
         {
             get => _pages;
             set
@@ -72,13 +87,9 @@ namespace Dash
         private List<BoundsExtractionStrategy.SelectableElement> _selectableElements;
 
         private VisualAnnotationManager _annotationManager;
-        private double _maxPdfPageWidth = 1;
 
-        private double _scrollRatio; // scroll bar position as a ratio of its location to the size of the scrollable document
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
-
-        private PdfDocument _pdfDocument;
 
         private WPdf.PdfDocument _wPdfDocument;
 
@@ -106,6 +117,7 @@ namespace Dash
             {
                 return;
             }
+            Pages.Clear();
 
             StorageFile file;
             try
@@ -128,48 +140,62 @@ namespace Dash
             DocumentLoaded?.Invoke(this, new EventArgs());
 
             PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
-            _pdfDocument = new PdfDocument(reader);
+            var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
-            for (int i = 1; i <= _pdfDocument.GetNumberOfPages(); ++i)
+            double maxWidth = 0;
+            for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
-                var page = _pdfDocument.GetPage(i);
+                var page = pdfDocument.GetPage(i);
                 var size = page.GetPageSize();
-                _maxPdfPageWidth = Math.Max(_maxPdfPageWidth, size.GetWidth());
+                maxWidth = Math.Max(maxWidth, size.GetWidth());
                 strategy.SetPage(i - 1, offset, size);
-                offset += page.GetPageSize().GetHeight() + _pdfPageSpacing;
+                offset += page.GetPageSize().GetHeight() + 10;
                 processor.ProcessPageContent(page);
             }
 
-            TestSelectionCanvas.Width = _maxPdfPageWidth;
-            TestSelectionCanvas.Height = offset - _pdfPageSpacing;
+            PdfMaxWidth = maxWidth;
+            PdfTotalHeight = offset - 10;
 
             _selectableElements = strategy.GetSelectableElements();
+            reader.Close();
+            pdfDocument.Close();
+
+            var scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
+            if (scrollRatio != null)
+            {
+                ScrollViewer.UpdateLayout();
+                ScrollViewer.ChangeView(null, scrollRatio.Data * ScrollViewer.ExtentHeight, null, true);
+            }
         }
 
-        private async Task RenderPdf(double ?targetWidth)
+        private async Task RenderPdf(double? targetWidth)
         {
-            List<Image> pages = new List<Image>((int)_wPdfDocument.PageCount);
             var options = new WPdf.PdfPageRenderOptions();
+            bool add = _wPdfDocument.PageCount != Pages.Count;
+            if (add)
+            {
+                Pages.Clear();
+            }
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
             {
                 var stream = new InMemoryRandomAccessStream();
-                if (targetWidth != null)
-                {
-                    options.DestinationWidth  = (uint) (targetWidth * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width / _maxPdfPageWidth);
-                    options.DestinationHeight = (uint) (options.DestinationWidth *
-                    _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height /
-                        _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width );
-                }
+                var widthRatio = targetWidth == null ? 1 : targetWidth / PdfMaxWidth;
+                options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
+                options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
                 await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
                 var source = new BitmapImage();
                 await source.SetSourceAsync(stream);
-                Image page = new Image() { Source = source };
-                pages.Add(page);
+                if (add)
+                {
+                    Pages.Add(source);
+                }
+                else
+                {
+                    Pages[(int)i] = source;
+                }
             }
-
-            Pages = pages;
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -208,112 +234,265 @@ namespace Dash
         public DocumentController GetDocControllerFromSelectedRegion()
         {
             var dc = new RichTextNote("PDF " + ScrollViewer.VerticalOffset).Document;
-            dc.SetRegionDefinition(LayoutDocument);
+            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.RegionBox);
 
             return dc;
         }
 
-        private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+        #region Selection
+
+        private double GetMinRectDist(Rect r, Point p, out Point closest)
+        {
+            var x1Dist = p.X - r.Left;
+            var x2Dist = p.X - r.Right;
+            var y1Dist = p.Y - r.Top;
+            var y2Dist = p.Y - r.Bottom;
+            x1Dist *= x1Dist;
+            x2Dist *= x2Dist;
+            y1Dist *= y1Dist;
+            y2Dist *= y2Dist;
+            closest.X = x1Dist < x2Dist ? r.Left : r.Right;
+            closest.Y = y1Dist < y2Dist ? r.Top : r.Bottom;
+            return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
+        }
+
+        private BoundsExtractionStrategy.SelectableElement GetClosestElementInDirection(Point p, Point dir)
+        {
+            BoundsExtractionStrategy.SelectableElement ele = null;
+            double closestDist = double.PositiveInfinity;
+            foreach (var selectableElement in _selectableElements)
+            {
+                var b = selectableElement.Bounds;
+                if (b.Contains(p))
+                {
+                    return selectableElement;
+                }
+                var dist = GetMinRectDist(b, p, out var closest);
+                if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
+                {
+                    ele = selectableElement;
+                    closestDist = dist;
+                }
+            }
+
+            return ele;
+        }
+
+        private void DeselectIndex(int index)
+        {
+            if (!_selectedRectangles.ContainsKey(index))
+            {
+                return;
+            }
+
+            TestSelectionCanvas.Children.Remove(_selectedRectangles[index]);
+            _selectedRectangles.Remove(index);
+        }
+
+        private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
+
+        private void SelectIndex(int index)
+        {
+            if (_selectedRectangles.ContainsKey(index))
+            {
+                return;
+            }
+
+            var ele = _selectableElements[index];
+            var rect = new Rectangle
+            {
+                Width = ele.Bounds.Width,
+                Height = ele.Bounds.Height
+            };
+            Canvas.SetLeft(rect, ele.Bounds.Left);
+            Canvas.SetTop(rect, ele.Bounds.Top);
+            rect.Fill = _selectionBrush;
+
+            TestSelectionCanvas.Children.Add(rect);
+
+            _selectedRectangles[index] = rect;
+        }
+
+        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
+        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
+        private void SelectElements(int startIndex, int endIndex)
+        {
+            if (_currentSelectionStart == -1)
+            {
+                Debug.Assert(_currentSelectionEnd == -1);
+                for (var i = startIndex; i <= endIndex; ++i)
+                {
+                    SelectIndex(i);
+                }
+            }
+            else
+            {
+                for (var i = startIndex; i < _currentSelectionStart; ++i)
+                {
+                    SelectIndex(i);
+                }
+                for (var i = _currentSelectionStart; i < startIndex; ++i)
+                {
+                    DeselectIndex(i);
+                }
+                for (var i = _currentSelectionEnd + 1; i <= endIndex; ++i)
+                {
+                    SelectIndex(i);
+                }
+                for (var i = endIndex + 1; i <= _currentSelectionEnd; ++i)
+                {
+                    DeselectIndex(i);
+                }
+            }
+
+            _currentSelectionStart = startIndex;
+            _currentSelectionEnd = endIndex;
+
+        }
+
+        private void UpdateSelection(Point mousePos)
+        {
+            if (_selectionStartPoint.HasValue)
+            {
+                if (Math.Abs(_selectionStartPoint.Value.X - mousePos.X) < 3 &&
+                    Math.Abs(_selectionStartPoint.Value.Y - mousePos.Y) < 3)
+                {
+                    return;
+                }
+                var dir = new Point(mousePos.X - _selectionStartPoint.Value.X, mousePos.Y - _selectionStartPoint.Value.Y);
+                var startEle = GetClosestElementInDirection(_selectionStartPoint.Value, dir);
+                if (startEle == null)
+                {
+                    return;
+                }
+                var currentEle = GetClosestElementInDirection(mousePos, new Point(-dir.X, -dir.Y));
+                if (currentEle == null)
+                {
+                    return;
+                }
+                SelectElements(Math.Min(startEle.Index, currentEle.Index), Math.Max(startEle.Index, currentEle.Index));
+            }
+        }
+
+        private void ClearSelection()
+        {
+            _currentSelectionStart = -1;
+            _currentSelectionEnd = -1;
+            _selectionStartPoint = null;
+            _selectedRectangles.Clear();
+            TestSelectionCanvas.Children.Clear();
+        }
+
+        private void EndSelection()
+        {
+            _selectionStartPoint = null;
+        }
+
+        #endregion
+
+        #region Region/Selection Events
+
+        private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             NewRegionEnded?.Invoke(sender, e);
-            //if (_selectionStart == null)
-            //{
-            //    return;
-            //}
-            //var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            //var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
-            //pos.X = pos.X * ratio;
-            //pos.Y = pos.Y * ratio;
-            //foreach (var selectableElement in _selectableElements)
-            //{
-            //    if (selectableElement.Bounds.Contains(pos))
-            //    {
-            //        int startIndex = Math.Min(selectableElement.Index, _selectionStart.Index);
-            //        int endIndex = Math.Max(selectableElement.Index, _selectionStart.Index);
-            //        for (int i = startIndex; i <= endIndex; ++i)
-            //        {
-            //            AddRect(_selectableElements[i]);
-            //        }
-            //        break;
-            //    }
-            //}
+            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            //var pos = currentPoint.Position;
+            //UpdateSelection(pos);
+            EndSelection();
         }
 
-        private void ItemsControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void XPdfGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            EndSelection();
+        }
+
+        private void XPdfGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            EndSelection();
+        }
+
+        private void XPdfGrid_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            EndSelection();
+        }
+
+        private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             NewRegionMoved?.Invoke(sender, e);
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var pos = currentPoint.Position;
+            UpdateSelection(pos);
         }
 
-        private BoundsExtractionStrategy.SelectableElement _selectionStart;
-        private double _pageSpacing;
+        private Point? _selectionStartPoint;
 
-        private void ItemsControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             NewRegionStarted?.Invoke(sender, e);
-            //var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            //var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
-            //pos.X = pos.X * ratio;
-            //pos.Y = pos.Y * ratio;
-            //foreach (var selectableElement in _selectableElements)
-            //{
-            //    if (selectableElement.Bounds.Contains(pos))
-            //    {
-            //        _selectionStart = selectableElement;
-            //        break;
-            //    }
-            //}
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+            ClearSelection();
+
+            var pos = currentPoint.Position;
+            _selectionStartPoint = pos;
         }
 
-        private void AddRect(BoundsExtractionStrategy.SelectableElement element)
-        {
-            Rectangle r = new Rectangle
-            {
-                Width = element.Bounds.Width,
-                Height = element.Bounds.Height,
-            };
-            Canvas.SetLeft(r, element.Bounds.X);
-            Canvas.SetTop(r, element.Bounds.Y);
-            r.Fill = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0));
-            TestSelectionCanvas.Children.Add(r);
-        }
+        #endregion
 
         public event PointerEventHandler NewRegionStarted;
         public event PointerEventHandler NewRegionMoved;
         public event PointerEventHandler NewRegionEnded;
 
-        private void updatePageSpacingAndScrollPosition()
-        {
-            var ratio = PageItemsControl.ActualWidth / _maxPdfPageWidth;
-            PageSpacing = _pdfPageSpacing * ratio;
-            var scrollPos = _scrollRatio * TestSelectionCanvas.Height * PageItemsControl.ActualWidth / _maxPdfPageWidth;
-            ScrollViewer.ChangeView(null, scrollPos, null, true);
-        }
-
+        // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
+        private double _scrollRatio;
         private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            updatePageSpacingAndScrollPosition();
+            ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _scrollRatio = e.FinalView.VerticalOffset / (TestSelectionCanvas.Height * PageItemsControl.ActualWidth /  _maxPdfPageWidth); 
+            _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
             LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
-        }
-
-        private void ScrollViewer_OnLayoutUpdated(object sender, object e)
-        {
-            if (ScrollViewer.ExtentHeight != 0 && !double.IsNaN((TestSelectionCanvas.Height)))
-            {
-                ScrollViewer.LayoutUpdated -= ScrollViewer_OnLayoutUpdated;
-                _scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
-                updatePageSpacingAndScrollPosition();
-                Control.SizeChanged += CustomPdfView_OnSizeChanged;
-            }
         }
 
         public async void UnFreeze()
         {
-            await RenderPdf(PageItemsControl.ActualWidth);
+            await RenderPdf(ScrollViewer.ActualWidth);
+        }
+
+        private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                if (e.Key == VirtualKey.C && _currentSelectionStart != -1)
+                {
+                    Debug.Assert(_currentSelectionEnd != -1);
+                    Debug.Assert(_currentSelectionEnd >= _currentSelectionStart);
+                    StringBuilder sb = new StringBuilder();
+                    for (var i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
+                    {
+                        var selectableElement = _selectableElements[i];
+                        if (selectableElement.ElementType == BoundsExtractionStrategy.ElementType.Text)
+                        {
+                            sb.Append((string)selectableElement.Contents);
+                        }
+                    }
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(sb.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    e.Handled = true;
+                }
+                else if(e.Key == VirtualKey.A)
+                {
+                    SelectElements(0, _selectableElements.Count - 1);
+                    e.Handled = true;
+                }
+            }
         }
     }
 }

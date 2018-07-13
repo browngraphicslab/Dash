@@ -423,7 +423,7 @@ namespace Dash
             // the bitmap streaming to crop doesn't work yet
 	        var imNote = new ImageNote(_imgctrl.ImageSource, xAnnotations.GetTopLeftPoint(),
 	                xAnnotations.GetDuringPreviewActualSize()).Document;
-            imNote.SetRegionDefinition(_docCtrl);
+            imNote.SetRegionDefinition(_docCtrl, Dash.AnnotationManager.AnnotationType.RegionBox);
 
 	        return imNote;
 	    }
