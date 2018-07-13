@@ -37,8 +37,16 @@
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <TextBox x:Name="xSearchCode" Grid.Row="1" Visibility="Collapsed" PlaceholderText="Run on each doc"
-                     KeyUp="XSearchCode_OnKeyUp"></TextBox>
+            <Grid x:Name="xSearchCodeBox" Grid.Row="1"  Visibility="Collapsed" BorderThickness="1.5" BorderBrush="Gray">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="235"></ColumnDefinition>
+                    <ColumnDefinition Width="15"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <FontIcon x:Name="xDragScript" FontFamily="Segoe MDL2 Assets" Glyph="&#xE70F;" Grid.Column="1"
+                          FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
+                <TextBox x:Name="xSearchCode" PlaceholderText="Run on each doc" Grid.Column="0" Background="White" BorderThickness="0"
+                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
+            </Grid>
 
             <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                     TextChanged="AutoSuggestBox_TextChanged"
