@@ -71,20 +71,13 @@ namespace Dash
                     var data = allResults.TypedData;
                     for (int i = 0; i < data.Count; i++)
                     {
-                        //get time paratmeter in doc and make it into DateTime
-                        var docTimeS = data[i]
-                            .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey) .Data;
-                        if(!DateTime.TryParse(docTimeS, out DateTime docTime))
-                        {
-                            continue;
-                        }
+                        var docTimeS = data[i].GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
 
                         //return all docs after givenTime
-                        if (docTime > givenTime)
+                        if (docTimeS > givenTime)
                         {
                             toReturn.Add(data[i]);
                         }
-
                     }
 
                 }

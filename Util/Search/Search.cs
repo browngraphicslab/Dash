@@ -138,19 +138,25 @@ namespace Dash
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName, negate);
             }
-            var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
-            if (resultDocs is BaseListController resultList)
+            try
             {
-                var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument));
-                //return resultList.Data.Select(fcb => new SearchResult(fcb));
+                paramName = paramName.Trim('"');
+                var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
+                if (resultDocs is BaseListController resultList)
+                {
+                    var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument));
+                    //return resultList.Data.Select(fcb => new SearchResult(fcb));
 
-                //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching-
-                //maybe make documentNode a FieldControllerBase?
-                string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
-                return res.Select(node => new SearchResult(node, $" >> { name }", trimParam, 1));
+                    //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching
+                    string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
+                    string newParam = "";
+                    return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
+                }
             }
-
-            // Don't think this line should be reached
+            catch (Exception e)
+            {
+                return new List<SearchResult>();
+            }
             return new List<SearchResult>();
         }
 
@@ -314,19 +320,19 @@ namespace Dash
             }
         }
 
-        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
             IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
         {
             //probably won't work
-            //return search1.Intersect(search2);
+            //return search1.Union(search2);
 
             return (search1.Concat(search2)).DistinctBy(node => node.ViewDocument);
         }
 
-        private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
         {
             //probably won't work
-            //return search1.Union(search2);
+            //return search1.Intersection(search2);
 
             var search1List = search1.ToList();
             var joined = search1List.Where(result => search2.Any(node => node.ViewDocument == result.ViewDocument)).ToList();

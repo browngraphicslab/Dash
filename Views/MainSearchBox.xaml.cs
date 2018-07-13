@@ -8,6 +8,7 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using System.Diagnostics;
+using System;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -64,7 +65,14 @@ namespace Dash
 
             if (string.IsNullOrWhiteSpace(text)) return;
 
-            var searchRes = Search.Parse(text).ToList();
+            IEnumerable<SearchResult> searchRes;
+            try
+            {
+                searchRes = Search.Parse(text).ToList();
+            } catch(Exception e)
+            {
+                searchRes = new List<SearchResult>();
+            }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
 
             //highlight doc results
