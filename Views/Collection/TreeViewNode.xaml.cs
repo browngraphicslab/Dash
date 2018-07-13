@@ -51,24 +51,32 @@ namespace Dash
         {
             this.InitializeComponent();
         }
+
+        private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        {
+            var dvm = ViewModel;
+            var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
+            if (snapshots != null && XSnapshotArrowBlock.Visibility == Visibility.Collapsed)
+            {
+                var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
+                SnapshotTreeView.SortCriterion = null;
+                SnapshotTreeView.DataContext = snapshotCollectionViewModel;
+                SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
+                XSnapshotArrowBlock.Visibility = Visibility.Visible;
+                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+            }
+        }
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            oldViewModel?.DocumentController.GetDataDocument().RemoveFieldUpdatedListener(KeyStore.SnapshotsKey, snapshotsFieldUpdated);
             if (Equals(args.NewValue, oldViewModel))
             {
                 var dvm = (DocumentViewModel)args.NewValue;
                 if (dvm != null)
                 {
-                    var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
-                    if (snapshots != null && XSnapshotArrowBlock.Visibility == Visibility.Collapsed)
-                    {
-                        var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
-                        SnapshotTreeView.SortCriterion = null;
-                        SnapshotTreeView.DataContext = snapshotCollectionViewModel;
-                        SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                        XSnapshotArrowBlock.Visibility = Visibility.Visible;
-                        XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-                    }
+                    dvm.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.SnapshotsKey, snapshotsFieldUpdated);
+                    snapshotsFieldUpdated(null, null, null);
                 }
                 return;
             }
@@ -254,7 +262,7 @@ namespace Dash
         {
             DeleteDocument();
         }
-
+        
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             UndoManager.StartBatch();
@@ -263,6 +271,7 @@ namespace Dash
             XTextBox.Focus(FocusState.Keyboard);
             XTextBox.SelectAll();
         }
+        
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
         {
