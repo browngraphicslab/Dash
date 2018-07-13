@@ -70,6 +70,13 @@ namespace Dash
                 _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
             // set the selected document's active layout to the new layout document
             _document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
+            
+            var templateList = MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+            if (!templateList.Contains(_document))
+            {
+                templateList.Add(_document);
+                MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+            }
         }
 
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)

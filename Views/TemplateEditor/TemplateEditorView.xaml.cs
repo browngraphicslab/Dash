@@ -370,29 +370,8 @@ namespace Dash
 	            // use a default title
 	            var title = "MyTemplate";
 
-                // gets the parents collection's list of document view models
-	            var parentViewModels = docView.ParentCollection.ViewModel.DocumentViewModels;
-                // finds all of the viewmodels that are template boxes
-	            var templateViewModels = parentViewModels
-	                .Where(dvm => dvm.DocumentController.GetActiveLayout()?.DocumentType
-	                                  .Equals(TemplateBox.DocumentType) ?? false).ToList();
-                // finds all of the templates whose names are default (start with MyTemplate)
-	            var defaultNamedTemplateViewModels =
-	                templateViewModels.Where(tvm => tvm.DocumentController.Title.StartsWith(title));
-                // retrieves a list of the templates titles
-	            var templateTitles = defaultNamedTemplateViewModels.Select(tvm => tvm.DocumentController.Title);
-                // finds all the viewmodels that are template editor boxes
-	            var templateEditorViewModels =
-	                parentViewModels.Where(
-	                    dvm => dvm.DocumentController.DocumentType.Equals(TemplateEditorBox.DocumentType) &&
-	                           !dvm.DocumentController.Equals(LayoutDocument));
-                // finds all the template editor viewmodels that aren't represented in the list of template viewmodels
-	            var missingTemplateEditorViewModels =
-	                templateEditorViewModels.Where(tevm => !templateTitles.Contains(tevm.DocumentController.Title));
-                // count both and add 1 (so we start counting at 1 and not 0)
-	            var number = templateViewModels.Count(tvm => tvm.DocumentController.Title.StartsWith(title)) +
-	                         missingTemplateEditorViewModels.Count(tevm => tevm.DocumentController.Title
-	                             .StartsWith(title)) + 1;
+	            var number = MainPage.Instance.MainDocument
+	                .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey).Data.Count;
                 // append the number to the title
 	            title += number.ToString();
 
@@ -739,22 +718,20 @@ namespace Dash
 			    foreach (var doc in DocumentControllers)
 			    {
 					InitialDocumentControllers.Add(doc);
-			    }
-				
-		        // layout document's data key holds the document that we are currently working on
-		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		        }
 		        // make a copy of the data document
 		        var dataDocCopy = DataDocument.GetDataInstance();
-		        // loop through each layout document and try to abstract it out when necessary
+                
+		        var templateList = MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+
+		        // layout document's data key holds the document that we are currently working on
+		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 
 		        // set the dataDocCopy's document context key to the working document's data document
 		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
 		        // set the position of the data copy to the working document's position
 		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
 		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
-				
-				//dataDocCopy.SetField(KeyStore.TemplateStyleKey,
-				//    style, true);
 
 		        if (xItemsControlGrid.Visibility == Visibility.Visible)
 		        {
@@ -766,17 +743,29 @@ namespace Dash
 		                GridRoot.ColumnDefinitions.Select(i =>
 		                    new NumberController(i.ActualWidth)));
 		            dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
-		        }  
-                
-		        // set the active layout of the working document to the dataDocCopy (which is the template)
-		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-		        // let the working doc's title be the template's title
-		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-		            true);
-				
-			    //update template style
+		        }
+
+                foreach (var template in templateList.Data.Cast<DocumentController>())
+                {
+                    if (template.GetActiveLayout().Title.Equals(DataDocument.Title))
+                    {
+                        // set the active layout of the working document to the dataDocCopy (which is the template)
+                        template.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
+                        template.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+                            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+                        // let the working doc's title be the template's title
+                        template.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                            true);
+                    }
+                }
+
+		        if (!templateList.Contains(workingDoc))
+		        {
+		            templateList.Add(workingDoc);
+		            MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+		        }
+
+		        //update template style
 			    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
 			        TemplateConstants.ListView)
 			    {
@@ -785,23 +774,28 @@ namespace Dash
 			}
 		    else
 		    {
-		        // layout document's data key holds the document that we are currently working on
-		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                var dataDocCopy = DataDocument.MakeCopy(null, new List<KeyController> {KeyStore.DocumentContextKey});
+		        var templateList = MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
 
-		        // set the dataDocCopy's document context key to the working document's data document
-		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-		        // set the position of the data copy to the working document's position
-		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
-		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+		        foreach (var template in templateList.Data.Cast<DocumentController>())
+		        {
+		            if (template.GetActiveLayout().Title.Equals(DataDocument.Title))
+		            {
+		                var dataDocCopy = DataDocument.MakeCopy(null, new List<KeyController> { KeyStore.DocumentContextKey });
+		                // set the dataDocCopy's document context key to the working document's data document
+		                dataDocCopy.SetField(KeyStore.DocumentContextKey, template.GetDataDocument(), true);
+		                // set the position of the data copy to the working document's position
+		                dataDocCopy.SetField(KeyStore.PositionFieldKey,
+		                    template.GetField<PointController>(KeyStore.PositionFieldKey), true);
 
-		        // set the active layout of the working document to the dataDocCopy (which is the template)
-		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-		        // let the working doc's title be the template's title
-		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-		            true);
+		                // set the active layout of the working document to the dataDocCopy (which is the template)
+		                template.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
+		                template.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+		                    this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+		                // let the working doc's title be the template's title
+		                template.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+		                    true);
+                    }
+		        }
             }
         }
 
