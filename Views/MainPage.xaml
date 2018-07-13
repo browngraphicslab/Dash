@@ -25,19 +25,16 @@
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         
         <!-- MainDocView -->
-        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <local:DockingFrame.DocumentContent>
                 <Grid>
                     <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
-                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,-10,0">
                             <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                         </Grid>
-                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
-                        </Button>
-                        <Button Name="xBackButton" VerticalAlignment="Stretch">
-                            <SymbolIcon Symbol="Back"/>
+                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch" Background="{ThemeResource WindowsBlue}" Margin="10">
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White"/>
                         </Button>
                     </StackPanel>
                 </Grid>

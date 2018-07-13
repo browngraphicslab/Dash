@@ -72,7 +72,7 @@ namespace Dash
             xDockFrame.Loaded += (s, e) => xDockFrame.DocController = MainDocument;
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
-            xBackButton.Tapped += (s, e) => GoBack();
+            //xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
             
