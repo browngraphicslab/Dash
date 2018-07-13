@@ -1450,7 +1450,8 @@ namespace Dash
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
             var applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
-            _flyout.Content = applier;
+          
+           
             if (_flyout.IsInVisualTree())
             {
                 _flyout.Hide();

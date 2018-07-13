@@ -25,6 +25,7 @@ namespace Dash
         public DocumentViewModel TemplateViewModel { get; private set; }
         private TemplateApplier _applier;
         private DocumentViewModel _dvm;
+        private bool _favorited;
 
         /// <summary>
         ///     creates a record view of a template, useful when viewing template
@@ -41,6 +42,7 @@ namespace Dash
 
             _applier = applier;
             _dvm = templateViewModel;
+            _favorited = false;
 
             // if null is passed into the first parameter
             if (templateViewModel != null)
@@ -52,7 +54,7 @@ namespace Dash
                 template.SetField(KeyStore.ActiveLayoutKey, dataDoc, true);
                 var templateView = template.MakeViewUI(null);
                 templateView.Loaded += TemplateView_Loaded;
-                xPanel.Children.Add(templateView);
+                
 
                 // binds the template title to the title of the template's layout doc
                 var binding = new FieldBinding<TextController>()
@@ -101,6 +103,8 @@ namespace Dash
         {
             xApply.Visibility = Visibility.Visible;
             xDelete.Visibility = Visibility.Visible;
+            xStarButton.Margin = new Thickness(10, 0, 0, 0);
+
         }
 
 
@@ -108,6 +112,26 @@ namespace Dash
         {
             xApply.Visibility = Visibility.Collapsed;
             xDelete.Visibility = Visibility.Collapsed;
+            xStarButton.Margin = new Thickness(0, 0, 0, 0);
+
+        }
+
+        private void XFavorite_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+            if (xStar.Opacity == 0.5)
+            {
+                
+                xStar.Foreground = new SolidColorBrush(Color.FromArgb(255, 243, 166, 33));
+                xStar.Opacity = 1;
+                _favorited = true;
+            }
+            else
+            {
+                xStar.Opacity = 0.5;
+                xStar.Foreground = new SolidColorBrush(Colors.Gray);
+                _favorited = false;
+            }
         }
     }
 }

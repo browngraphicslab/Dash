@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,7 +24,8 @@ namespace Dash
     {
         public ObservableCollection<DocumentViewModel> Templates;
         public ObservableCollection<TemplateRecord> TemplateRecords;
-	    public ObservableCollection<DocumentController> AddedTemplateControllers;
+        public ObservableCollection<TemplateRecord> Favorites;
+        public ObservableCollection<DocumentController> AddedTemplateControllers;
         private DocumentController _document;
 
         public TemplateApplier(DocumentController doc,
@@ -31,6 +33,7 @@ namespace Dash
         {
             this.InitializeComponent();
 
+            //selected document
             _document = doc;
             Templates = new ObservableCollection<DocumentViewModel>();
             TemplateRecords = new ObservableCollection<TemplateRecord>();
@@ -57,6 +60,8 @@ namespace Dash
             var tr = sender as TemplateRecord;
             tr.showButtons();
            
+
+
         }
 
         public void Apply_Template(TemplateRecord tr)

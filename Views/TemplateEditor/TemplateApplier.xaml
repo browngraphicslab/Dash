@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="280">
 
-    <Grid Width="250" Height="300" Background="White" Margin="0 10 0 0">
+    <Grid Width="250" Height="300" Background="{StaticResource AccentGreenLight}" Margin="0 10 0 0">
         <StackPanel Width= "250" Height="300" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center">
             
             <TextBox x:Name="xSearchBox" PlaceholderText="Search"
@@ -18,7 +18,7 @@
                             Style="{StaticResource AutoFontSize}"
                             Width="230" RelativePanel.AlignTopWithPanel="True"
                             VerticalAlignment="Top"
-                            AllowDrop="True" />
+                            AllowDrop="True"/>
             <ListView x:Name="xListView" Width="230" RelativePanel.Below="xSearchBox" Margin="0 10 0 0"  ItemsSource="{x:Bind TemplateRecords}">
             </ListView>
 
