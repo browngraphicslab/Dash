@@ -34,8 +34,8 @@ namespace Dash
                 //set autoplay to false so the vid doesn't play automatically
                 AutoPlay = false,
                 AreTransportControlsEnabled = true,
-                MinWidth = 250,
-                MinHeight = 100
+                MinWidth = 200,
+                MinHeight = 50
             };
 
             // setup bindings on the audio

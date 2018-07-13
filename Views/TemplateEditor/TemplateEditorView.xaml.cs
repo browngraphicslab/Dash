@@ -1069,10 +1069,7 @@ namespace Dash
 					var dataPackageView = Clipboard.GetContent();
 					var richtext = await dataPackageView.GetRtfAsync();
 					var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
-
-
-
-
+					
 					var strings = text.Split(new char[] { '\r' });
 					foreach (var str in html.Split(new char[] { '\r' }))
 					{
