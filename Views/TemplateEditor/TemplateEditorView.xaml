@@ -759,7 +759,7 @@
                           
 
                             <!-- BACKGROUND -->
-                            <StackPanel Orientation="Horizontal" Margin="8,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                            <StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
                                 <TextBlock Foreground="LightGray" FontSize="14"  > Background</TextBlock>
                                 <Rectangle x:Name="xBackgroundColorPreviewBox" Width="16" Height="16" Fill="White" Margin="36,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
 
@@ -794,9 +794,20 @@
 
                                 </ToggleButton>
                                 <!--GRID SIZE DROP DOWN -->
-                                <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="12" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
+                                <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
                                     <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
                                     <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
+                                </ComboBox>
+
+                                <ComboBox x:Name="xAspectRatioComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XAspectRatioComboBox_OnSelectionChanged">
+                                    <!--<ComboBoxItem x:Name="xOriginal">Original</ComboBoxItem>-->
+                                    <ComboBoxItem >Square</ComboBoxItem>
+                                    <ComboBoxItem >2:3</ComboBoxItem>
+                                    <ComboBoxItem >3:4</ComboBoxItem>
+                                    <ComboBoxItem >3:5</ComboBoxItem>
+                                    <ComboBoxItem >4:5</ComboBoxItem>
+                                    <ComboBoxItem >5:7</ComboBoxItem>
+                                    <ComboBoxItem >9:16</ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
 

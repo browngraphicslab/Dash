@@ -2136,13 +2136,9 @@ namespace Dash
                         xListButton.IsChecked = false;
                         xGridButton.IsChecked = false;
                     }
-                    xGridLeftDragger.Visibility = Visibility.Collapsed;
-                    xGridTopDragger.Visibility = Visibility.Collapsed;
-                    xRulerCorner.Visibility = Visibility.Collapsed;
-                   
-                    xItemsControlCanvas.ItemsSource = DocumentViewModels;
+                    
 
-                    this.FormatTemplateIntoFreeform();
+                    FormatTemplateIntoFreeform();
                     break;
 
                 case "xListButton":
@@ -2151,7 +2147,7 @@ namespace Dash
                         xFreeFormButton.IsChecked = false;
                         xGridButton.IsChecked = false;
                     }
-                    this.FormatTemplateIntoList();
+                    FormatTemplateIntoList();
                     break;
 
                 case "xGridButton":
@@ -2164,54 +2160,27 @@ namespace Dash
                     //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
 
                     // make visible the dragging starters on the left and top of the outer workspace
-                    xGridLeftDragger.Visibility = Visibility.Visible;
-                    xGridTopDragger.Visibility = Visibility.Visible;
-                    xRulerCorner.Visibility = Visibility.Visible;
-
-                    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-                    xItemsControlList.Visibility = Visibility.Collapsed;
-                    xItemsControlGrid.Visibility = Visibility.Visible;
-
-                    xItemsControlGrid.ItemsSource = DocumentViewModels;
-
-                    //update key
-                    DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey,
-                        new NumberController(TemplateConstants.GridView), true);
+                    FormatTemplateIntoGrid();
                     break;
             }
         }
-
-        //private void XFreeFormButton_OnChecked(object sender, RoutedEventArgs e)
-        //{
-           
-
-        //    xGridLeftDragger.Visibility = Visibility.Collapsed;
-        //    xGridTopDragger.Visibility = Visibility.Collapsed;
-        //    xRulerCorner.Visibility = Visibility.Collapsed;
-        //    //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
-        //    //update
-        //    xItemsControlCanvas.ItemsSource = DocumentViewModels;
-
-        //    this.FormatTemplateIntoFreeform();
-        //}
-
+       
         private void FormatTemplateIntoFreeform()
         {
+
+            xGridLeftDragger.Visibility = Visibility.Collapsed;
+            xGridTopDragger.Visibility = Visibility.Collapsed;
+            xRulerCorner.Visibility = Visibility.Collapsed;
+
+            xItemsControlCanvas.ItemsSource = DocumentViewModels;
             xItemsControlCanvas.Visibility = Visibility.Visible;
             xItemsControlList.Visibility = Visibility.Collapsed;
-
-           
-
+            
             //update key
             DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView),
                 true);
         }
-
-        //private void XListButton_OnChecked(object sender, RoutedEventArgs e)
-        //{
-        //    this.FormatTemplateIntoList();
-
-        //}
+        
 
         private void FormatTemplateIntoList()
         {
@@ -2229,27 +2198,23 @@ namespace Dash
 
         }
 
-        //TODO:MAY HAVE TO CHANGE TO BE USER CONTROL INSTEAD OF GRID TO ACCOUNT FOR USER INTERACTION
-        //private void XGridButton_OnChecked(object sender, RoutedEventArgs e)
-        //{
-        //    //set TemplateStyle key to Grid
-        //    //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
+        private void FormatTemplateIntoGrid()
+        {
+            xGridLeftDragger.Visibility = Visibility.Visible;
+            xGridTopDragger.Visibility = Visibility.Visible;
+            xRulerCorner.Visibility = Visibility.Visible;
 
-        //    // make visible the dragging starters on the left and top of the outer workspace
-        //    xGridLeftDragger.Visibility = Visibility.Visible;
-        //    xGridTopDragger.Visibility = Visibility.Visible;
-        //    xRulerCorner.Visibility = Visibility.Visible;
+            xItemsControlCanvas.Visibility = Visibility.Collapsed;
+            xItemsControlList.Visibility = Visibility.Collapsed;
+            xItemsControlGrid.Visibility = Visibility.Visible;
 
-        //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-        //    xItemsControlList.Visibility = Visibility.Collapsed;
-        //    xItemsControlGrid.Visibility = Visibility.Visible;
+            xItemsControlGrid.ItemsSource = DocumentViewModels;
 
-        //    xItemsControlGrid.ItemsSource = DocumentViewModels;
+            //update key
+            DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey,
+                new NumberController(TemplateConstants.GridView), true);
+        }
 
-        //    //update key
-        //    DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey,
-        //        new NumberController(TemplateConstants.GridView), true);
-        //}
 
         ItemsPanelTemplate ItemsPanelTemplateType(Type panelType)
         {
@@ -2773,7 +2738,49 @@ namespace Dash
         */
 
 
-        
+        private void XAspectRatioComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combo = sender as ComboBox;
+            var size = new Size();
+            if (combo != null)
+            {
+                var selected = xAspectRatioComboBox.SelectedIndex;
+
+                switch (selected)
+                {
+                    case 0:
+                       size.Width = 400;
+                       size.Height = 400;
+                        break;
+                    case 1:
+                        size.Width = 400;
+                        size.Height = 267;
+                        break;
+                    case 2:
+                        size.Width = 400;
+                        size.Height = 300;
+                        break;
+                    case 3:
+                        size.Width = 400;
+                        size.Height = 240;
+                        break;
+                    case 4:
+                        size.Width = 400;
+                        size.Height = 320;
+                        break;
+                    case 5:
+                        size.Width = 400;
+                        size.Height = 286;
+                        break;
+                    case 6:
+                        size.Width = 400;
+                        size.Height = 225;
+                        break;
+                }
+
+                ResizeCanvas(size);
+            }
+        }
     }
 
 }
