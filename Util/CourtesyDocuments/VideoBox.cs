@@ -37,7 +37,7 @@ namespace Dash
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
 				AreTransportControlsEnabled = true,
-                MinWidth = 250,
+                MinWidth = 200,
                 MinHeight = 100
 			};
 
