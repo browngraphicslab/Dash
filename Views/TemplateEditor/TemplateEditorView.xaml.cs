@@ -587,34 +587,116 @@ namespace Dash
 			}
 		}
 
-		private void TemplateAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
+		private void TemplateHorizontalAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
 			var button = sender as AppBarButton;
-			var alignment = this.ButtonNameToAlignment(button?.Name); 
+			var alignment = this.ButtonNameToHorizontalAlignment(button?.Name); 
 
 			//for each document, align according to what button was pressed
 			foreach (var dvm in DocumentViewModels)
 			{
-				AlignItem(alignment, dvm);
+				HorizontalAlignItem(alignment, dvm);
 			}
 
 		}
-        
-		private void ItemAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
-		{
-		    e.Handled = true;
-			var button = sender as AppBarButton;
-			var alignment = this.ButtonNameToAlignment(button?.Name);
 
-			if (_selectedDocument != null) AlignItem(alignment, _selectedDocument?.ViewModel);
-		}
+	    private void AlignmentToggleControl_OnChecked(object sender, RoutedEventArgs e)
+	    {
+	        var toggle = sender as ToggleButton;
+	        switch (toggle.Name)
+	        {
+	            case "xItem":
+	                if ((bool)xItem.IsChecked)
+	                {
+	                    xAll.IsChecked = false;
+	                }
+	                xAlignmentButtons.Visibility = Visibility.Visible;
+	                break;
+	            case "xAll":
+	                if ((bool)xAll.IsChecked)
+	                {
+	                    xItem.IsChecked = false;
+	                }
+	                xAlignmentButtons.Visibility = Visibility.Visible;
+	                break;
+	        }
+	    }
+
+	    private void VerticalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
+	    {
+	        var button = sender as AppBarButton;
+	        var alignment = this.ButtonNameToVerticalAlignment(button?.Name);
+
+	        if ((bool) xItem.IsChecked)
+	        {
+	            e.Handled = true;
+	            if (_selectedDocument != null) VerticalAlignItem(alignment, _selectedDocument?.ViewModel);
+	        }
+	        else if ((bool)xAll.IsChecked)
+            {
+	            foreach (var dvm in DocumentViewModels)
+	            {
+	                VerticalAlignItem(alignment, dvm);
+	            }
+            }
+        }
+
+	    private void HorizontalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
+	    {
+	        var button = sender as AppBarButton;
+	        var alignment = this.ButtonNameToHorizontalAlignment(button?.Name);
+
+
+	        if ((bool)xItem.IsChecked)
+	        {
+	            e.Handled = true;
+	            if (_selectedDocument != null) HorizontalAlignItem(alignment, _selectedDocument?.ViewModel);
+            }
+	        else if((bool) xAll.IsChecked)
+	        {
+	            foreach (var dvm in DocumentViewModels)
+	            {
+	                HorizontalAlignItem(alignment, dvm);
+	            }
+	        }
+        }
+     //   private void TemplateVerticalAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
+	    //{
+	    //    var button = sender as AppBarButton;
+	    //    var alignment = this.ButtonNameToVerticalAlignment(button?.Name);
+
+	    //    //for each document, align according to what button was pressed
+	    //    foreach (var dvm in DocumentViewModels)
+	    //    {
+	    //        VerticalAlignItem(alignment, dvm);
+	    //    }
+
+	    //}
+
+  //      private void ItemHorizontalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
+		//{
+		//    e.Handled = true;
+		//	var button = sender as AppBarButton;
+		//	var alignment = this.ButtonNameToHorizontalAlignment(button?.Name);
+
+		//	if (_selectedDocument != null) HorizontalAlignItem(alignment, _selectedDocument?.ViewModel);
+		//}
+
+	    //private void ItemVerticalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
+	    //{
+	    //    e.Handled = true;
+	    //    var button = sender as AppBarButton;
+	    //    var alignment = this.ButtonNameToVerticalAlignment(button?.Name);
+
+	    //    if (_selectedDocument != null) VerticalAlignItem(alignment, _selectedDocument?.ViewModel);
+     //   }
 
         /// <summary>
         ///     determines which horizontal alignment enum to return
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-		private HorizontalAlignment ButtonNameToAlignment(string name)
+		private HorizontalAlignment ButtonNameToHorizontalAlignment(string name)
 		{
 			if (name == "xAlignLeft" || name == "xAlignItemLeft")
 			{
@@ -634,7 +716,27 @@ namespace Dash
 			}
 		}
 
-		private void AlignItem(HorizontalAlignment alignment, DocumentViewModel dvm)
+	    private VerticalAlignment ButtonNameToVerticalAlignment(string name)
+	    {
+	        if (name == "xAlignItemTop")
+	        {
+	            return VerticalAlignment.Top;
+	        }
+	        else if (name == "xAlignItemVerticalCenter")
+	        {
+	            return VerticalAlignment.Center;
+	        }
+	        else if (name == "xAlignItemBottom")
+	        {
+	            return VerticalAlignment.Bottom;
+	        }
+	        else
+	        {
+	            return VerticalAlignment.Stretch;
+	        }
+	    }
+
+        private void HorizontalAlignItem(HorizontalAlignment alignment, DocumentViewModel dvm)
 		{
             // aligns the item to the appropriate side and sets the position value of that item appropriately
 			var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
@@ -662,17 +764,72 @@ namespace Dash
 						new TextController(alignment.ToString()), true);
 					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
 					break;
+                case HorizontalAlignment.Stretch:
+                    var width = xWorkspace.Width * 0.9;
+                    var height = dvm.ActualSize.Y;
+                    point = new PointController(0, point.Data.Y);
+                    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
+                        new TextController(alignment.ToString()), true);
+                    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
+                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
+
+                    break;
 			}
 
 			dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
 
 		}
 
+	    private void VerticalAlignItem(VerticalAlignment alignment, DocumentViewModel dvm)
+	    {
+	        // aligns the item to the appropriate side and sets the position value of that item appropriately
+	        var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
+	        switch (alignment)
+	        {
+	            case VerticalAlignment.Top:
+	                point = new PointController(point.Data.X, 0);
+	                dvm.LayoutDocument.SetField(KeyStore.VerticalAlignmentKey,
+	                    new TextController(alignment.ToString()), true);
+	                dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
+	                break;
+
+	            case VerticalAlignment.Center:
+	                var centerY = (xWorkspace.Height - dvm.LayoutDocument.GetActualSize().Value.Y) / 2;
+	                point = new PointController(point.Data.X, centerY);
+	                dvm.LayoutDocument.SetField(KeyStore.VerticalAlignmentKey,
+	                    new TextController(alignment.ToString()), true);
+	                dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
+	                break;
+
+	            case VerticalAlignment.Bottom:
+	                var rightY = xWorkspace.Height - dvm.LayoutDocument.GetActualSize().Value.Y;
+	                point = new PointController(point.Data.X, rightY);
+	                dvm.LayoutDocument.SetField(KeyStore.VerticalAlignmentKey,
+	                    new TextController(alignment.ToString()), true);
+	                dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
+	                break;
+                case VerticalAlignment.Stretch:
+                    var height = xWorkspace.Height * 0.9;
+                    var width = dvm.ActualSize.X;
+                    point = new PointController(point.Data.X, 0);
+                    dvm.LayoutDocument.SetField(KeyStore.VerticalAlignmentKey,
+                        new TextController(alignment.ToString()), true);
+                    dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
+                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
+                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
+                    break;
+	        }
+
+	        dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
+
+	    }
+
 
 
         #region Borders
 
-		private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
+        private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
 		{
 			// TODO: Consider if we really need this and want to put in the work to save borders for documents -sy
 			//double left = 0;
@@ -920,7 +1077,7 @@ namespace Dash
 			xKeyBox.Text = text;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 
-			if (xFormatItemsButtonStack.Visibility == Visibility.Collapsed) ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
+			if (xAlignmentButtonStack.Visibility == Visibility.Collapsed) ExpandButtonOnClick(xAlignmentHeader, new RoutedEventArgs());
 
 		}
 
@@ -1537,9 +1694,9 @@ namespace Dash
 	                arrow = xAddItemsArrow;
 	                animation = xFadeAnimation;
 	                break;
-	            case "xFormatItemsHeader":
-	                stack = xFormatItemsButtonStack;
-	                arrow = xFormatItemsArrow;
+	            case "xAlignmentHeader":
+	                stack = xAlignmentButtonStack;
+	                arrow = xAlignmentArrow;
 	                animation = xFadeAnimationFormat;
 		            break;
 	            case "xOptionsHeader":
@@ -1562,6 +1719,13 @@ namespace Dash
 				arrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
 					easingType: EasingType.Default).Start();
 				buttonStack.Visibility = Visibility.Collapsed;
+			    if (buttonStack == xAlignmentButtonStack)
+			    {
+			        xAlignmentButtons.Visibility = Visibility.Collapsed;
+			        xItem.IsChecked = false;
+			        xAll.IsChecked = false;
+			    }
+
 
 			}
 			else
@@ -2453,6 +2617,7 @@ namespace Dash
 
                     xActivate.IsChecked = true;
                     DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+                 
                     ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
                     break;
 	            case "xPreview":
@@ -2471,9 +2636,12 @@ namespace Dash
 		/*
 		private void XWorkspace_OnPointerPressed_(object sender, PointerRoutedEventArgs e)
 		{
-			if (xFormatItemsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
+			if (xAlignmentButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAlignmentHeader, new RoutedEventArgs());
 		}
 		*/
+	    
+
+
 	}
 
 }

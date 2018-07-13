@@ -118,6 +118,7 @@
             <x:String x:Key="ImageDocumentIcon">&#xf1c5;</x:String>
             <x:String x:Key="VideoDocumentIcon">&#xf1c8;</x:String>
             <x:String x:Key="AudioDocumentIcon">&#xf1c7;</x:String>
+            <x:String x:Key="PdfDocumentIcon">&#xf1c1;</x:String> 
             <x:String x:Key="TextIcon">&#xf15c;</x:String>
             <x:String x:Key="DefaultIcon">&#xf1c3;</x:String>
             <x:String x:Key="SaveIcon">&#xf0c7;</x:String>

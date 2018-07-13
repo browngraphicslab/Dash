@@ -28,6 +28,6 @@ namespace DashShared
         Reference = PointerReference | DocumentReference,
 
         Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle |
-              Key | Video | DateTime | Audio | Bool
+              Key | Video | DateTime | Audio | Bool | AccessStream | Template | Reference
     }
 }

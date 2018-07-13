@@ -86,7 +86,7 @@
                                     <VisualState x:Name="Checked">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundCheckedPressed}"/>
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#334f43"/>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPressed}"/>
@@ -216,6 +216,7 @@
                     <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource MinusIcon}" />
                 </Button>
             </StackPanel>
+            <fontIcons:FontAwesome Icon="ICursor" Foreground="White" Width="20" Margin="0 0 60 0"/>
             <local:EditableTextBlock Foreground="White" Width="200" FontSize="16" HorizontalAlignment="Center" x:Name="xTitleBlock" />
         </Grid>
 
@@ -483,7 +484,7 @@
 
                     <StackPanel x:Name="xToggleControl" Orientation="Horizontal" Margin="5,10,0,20" HorizontalAlignment="Left" VerticalAlignment="Center">
 
-                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
+                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#416857" Checked="ToggleControl_OnChecked">
 
                             <StackPanel Orientation="Vertical">
                                 <TextBlock x:Name="xActivateIcon" FontSize="14" Foreground="White"
@@ -493,7 +494,7 @@
                             </StackPanel>
 
                         </ToggleButton>
-                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
+                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#416857" Checked="ToggleControl_OnChecked">
                             <StackPanel Orientation="Vertical">
                                 <TextBlock x:Name="xPreviewIcon" FontSize="14" Foreground="White"
                                            FontFamily="{StaticResource FontAwesome}" Text="{StaticResource PreviewIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
@@ -525,100 +526,184 @@
                                 <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick"  >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FontIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Text" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton Height="46" Width="42.5" Click="ImageButton_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ImageIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Image" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton  Height="46" Width="42.5" Click="VideoButton_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource VideoIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Video" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton Height="46" Width="42.5" Click="AudioButton_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource AudioIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Audio" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" >
                                 <AppBarButton Height="46" Width="42.5" Click="AddList_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0" 
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add List" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton Height="46" Width="42.5" Click="AddGrid_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Grid" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton  Height="46" Width="42.5" Click="AddFreeform_OnClick">
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Freeform" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                                 <AppBarButton Height="46" Width="42.5" >
                                     <TextBlock FontSize="18" Foreground="Gray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Document" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
 
                     <!--Format Items Drop Down-->
-                    <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" Tapped="TappedHandler">
+                    <StackPanel x:Name="XAlignmentGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" Tapped="TappedHandler">
                         <StackPanel.Resources>
                             <Storyboard x:Name="xFadeAnimationFormat">
                                 <DoubleAnimation
-                                Storyboard.TargetName="xFormatItemsButtonStack"
+                                Storyboard.TargetName="xAlignmentButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
                             </Storyboard>
                         </StackPanel.Resources>
                         <!--Header-->
-                        <StackPanel  x:Name="xFormatItemsHeader" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                            <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Item</TextBlock>
+                        <StackPanel  x:Name="xAlignmentHeader" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <fontIcons:FontAwesome x:Name="xAlignmentArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Alignment</TextBlock>
                         </StackPanel>
+                        
+                        
                         <!--StackPanel for Format buttons-->
-                        <StackPanel x:Name="xFormatItemsButtonStack"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xAlignmentButtonStack"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+
+                            <StackPanel x:Name="xAlignmentToggleControl" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xItem" Height="35" Width="85" Background="#416857" Checked="AlignmentToggleControl_OnChecked">
+                                    
+                                        <TextBlock HorizontalAlignment="Right" FontSize="14" Foreground="White" Text="Item" Margin="0 -5 0 0"></TextBlock>
+                                   
+
+                                </ToggleButton>
+                                <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xAll" Height="35" Width="85" Background="#416857" Checked="AlignmentToggleControl_OnChecked">
+                                   
+                                        <TextBlock HorizontalAlignment="Left" FontSize="14" Foreground="White" Text="All" Margin="0 -5 0 0"></TextBlock>
+                                 </ToggleButton>
+                                
+                            </StackPanel>
+                            <StackPanel x:Name="xAlignmentButtons" Orientation="Vertical" Visibility="Collapsed">
                             <!--ALIGNMENT-->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
-                                <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
+                                <AppBarButton x:Name="xAlignItemLeft"  Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
                                     <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Left" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
-                                <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
+                                <AppBarButton x:Name="xAlignItemCenter" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
                                     <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Center" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
-                                <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="ItemAlignmentButton_OnChecked">
+                                <AppBarButton x:Name="xAlignItemRight" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
                                     <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
-                                </AppBarButton>
-                            </StackPanel>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Right" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
 
-                            <!-- ARRANGEMENT TODO: NEED TO CHANGE SYMBOLS FOR ARRANGEMENT-->
-                            <StackPanel Orientation="Horizontal" Width="170" HorizontalAlignment="Left" >
-                                <AppBarButton x:Name="xPushForward" Height="40" Width="58" >
-                                    <fontIcons:FontAwesome  Icon="AngleRight" Foreground="LightGray" />
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
-                                    />
-                                    </ToolTipService.ToolTip>
                                 </AppBarButton>
-                                <AppBarButton x:Name="xSendToFront" Height="40" Width="57" >
-                                    <fontIcons:FontAwesome  Icon="AngleDoubleRight" Foreground="LightGray"  />
+                                <AppBarButton x:Name="xAlignItemJustify" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignJustify" Foreground="LightGray" />
                                     <ToolTipService.ToolTip>
-                                        <ToolTip Content="Send Item to Front" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
-                                    />
-                                    </ToolTipService.ToolTip>
-                                </AppBarButton>
-                                <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" >
-                                    <fontIcons:FontAwesome Icon="AngleDoubleLeft" Foreground="LightGray"   />
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip Content="Send Item to Back" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
-                                    />
+                                        <ToolTip Content="Stretch" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
                                     </ToolTipService.ToolTip>
                                 </AppBarButton>
 
+
                             </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" >
+                                <AppBarButton x:Name="xAlignItemTop"  Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome Icon="LongArrowUp" Foreground="LightGray"   />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Top" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemVerticalCenter" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="Compress" Foreground="LightGray"  />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Center" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemBottom" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="LongArrowDown" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Bottom" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemVerticalStretch" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="ArrowsV" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Stretch" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+
+                                </AppBarButton>
+
+
+                                </StackPanel>
+                            </StackPanel>
+
 
                         </StackPanel>
-                    </StackPanel>
+
+                        </StackPanel>
 
                     <!--Format Template Drop Down--><!--
                     <StackPanel x:Name="XFormatTemplateGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
@@ -718,13 +803,36 @@
                         <StackPanel x:Name="xOptionsButtonStack" IsHitTestVisible="True" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
 
                             <!--TEMPLATE STYLE -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" Margin="10,0,0,0" Spacing="12">
-                                <AppBarButton x:Name="xFreeFormButton" Icon="Caption"  Height="43" Width="40" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" Click="XFreeFormButton_OnChecked" />
-                                <AppBarButton x:Name="xListButton" Height="43" Width="43" Icon="List" Click="XListButton_OnChecked"/>
-                                <AppBarButton x:Name="xGridButton" Height="43" Width="43" Icon="ViewAll" Click="XGridButton_OnChecked"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" >
+                                <AppBarButton x:Name="xFreeFormButton" Height="46" Width="56" HorizontalAlignment="Left"  VerticalAlignment="Center" Click="XFreeFormButton_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Freeform Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xListButton" Height="46" Width="57" Click="XListButton_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="List Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xGridButton" Height="46" Width="56" Click="XGridButton_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Grid Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
                             </StackPanel>
 
-                            <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
+                           
+
+                            <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>--><!--
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
                                 <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
                                     <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
@@ -735,12 +843,13 @@
                                 <AppBarButton x:Name="xAlignRight" Height="48" Width="58" Tapped="TemplateAlignmentButton_OnChecked">
                                     <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
                                 </AppBarButton>
-                            </StackPanel>
+                            </StackPanel>-->
 
                             <!-- BACKGROUND -->
-                            <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
-                                <TextBlock Foreground="LightGray" FontSize="13"  > Background</TextBlock>
-                                <Rectangle x:Name="xBackgroundColorPreviewBox" Width="18" Height="18" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+                            <StackPanel Orientation="Horizontal" Margin="8,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                                <TextBlock Foreground="LightGray" FontSize="14"  > Background</TextBlock>
+                                <Rectangle x:Name="xBackgroundColorPreviewBox" Width="16" Height="16" Fill="White" Margin="36,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+
                                     <!--colorpicker flyout-->
                                     <FlyoutBase.AttachedFlyout>
                                         <Flyout x:Name="xBackgroundColorFlyout" >
@@ -766,38 +875,34 @@
 
                             </StackPanel>
 
-                            <!-- BORDERS TODO: ADD POPOUT AND SLIDER FOR THICKNESS 
-                            <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
-                                <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
-                                <Rectangle x:Name="xBorderColorPreviewBox" Width="18" Height="18" Fill="White" Margin="70,0,0,0"></Rectangle>
-                            </StackPanel> -->
-
-                           
-
-
-                            <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
-                                <Button.Flyout>
-                                    <Flyout x:Name="xUploadTemplateFlyout"/>
-                                </Button.Flyout>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
-                                    <TextBlock FontSize="18" Foreground="LightGray"
-                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
-                                </StackPanel>
-                            </Button>
-
-                            <!-- DESIGN GRID-->
-                            <StackPanel Orientation="Horizontal" Margin="8,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
+                            <StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
                                 <!--<TextBlock Foreground="LightGray" FontSize="13"  >Grid</TextBlock>-->
-                                <AppBarToggleButton x:Name="xDesignGridVisibilityButton"  Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" Background="Gray">
-                                    <SymbolIcon Symbol="ViewAll" Width="25" Height="25" Margin="1,-15,0,0" Visibility="Visible"/>
-                                </AppBarToggleButton>
+                                <ToggleButton x:Name="xDesignGridVisibilityButton" Style="{StaticResource ToggleButtonStyler}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" Background="Gray">
+
+                                </ToggleButton>
                                 <!--GRID SIZE DROP DOWN -->
                                 <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="12" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
                                     <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
                                     <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
+
+
+
+
+                            <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
+                                <Button.Flyout>
+                                    <Flyout x:Name="xUploadTemplateFlyout"/>
+                                </Button.Flyout>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <TextBlock FontSize="14" Foreground="LightGray">Upload Template</TextBlock>
+                                    <TextBlock FontSize="18" Foreground="LightGray"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}" Margin="-2 0 0 0"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- DESIGN GRID-->
+                            
                         </StackPanel>
 
                         <!--Apply Template button!-->

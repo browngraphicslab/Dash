@@ -165,6 +165,8 @@ namespace Dash
 
                 var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
 
+                
+
                 switch (type)
                 {
                     case TypeInfo.Image:
@@ -183,10 +185,18 @@ namespace Dash
                     case TypeInfo.Document:
                         xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
                         break;
+                    case TypeInfo.Template:
+                        xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+                        break;
                     default:
                         xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
                         break;
 
+                }
+
+                if (type.Equals(TypeInfo.Template))
+                {
+                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                 }
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
