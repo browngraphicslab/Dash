@@ -517,7 +517,7 @@
                         </StackPanel.Resources>
                         <!--Header-->
                         <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                            <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock x:Name="xAddItemsArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                         </StackPanel>
                         <!--StackPanel for buttons-->
@@ -606,7 +606,7 @@
                         </StackPanel.Resources>
                         <!--Header-->
                         <StackPanel  x:Name="xAlignmentHeader" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                            <fontIcons:FontAwesome x:Name="xAlignmentArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock x:Name="xAlignmentArrow"  FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Alignment</TextBlock>
                         </StackPanel>
                         
@@ -720,7 +720,7 @@
                         </StackPanel.Resources>
                         <!--Header-->
                         <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                            <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock x:Name="xOptionsArrow"  FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                         </StackPanel>
                         <!--StackPanel for Option buttons-->
@@ -759,8 +759,8 @@
                           
 
                             <!-- BACKGROUND -->
-                            <StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
-                                <TextBlock Foreground="LightGray" FontSize="14"  > Background</TextBlock>
+                            <StackPanel Orientation="Horizontal" Margin="6,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                                <TextBlock Foreground="White" FontSize="14"  > Background</TextBlock>
                                 <Rectangle x:Name="xBackgroundColorPreviewBox" Width="16" Height="16" Fill="White" Margin="36,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
 
                                     <!--colorpicker flyout-->
@@ -788,19 +788,26 @@
 
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
-                               
-                                <ToggleButton x:Name="xDesignGridVisibilityButton" Style="{StaticResource ToggleButtonStyler}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" Background="Gray">
+                            <!--<StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
 
+                                <ToggleButton x:Name="xDesignGridVisibilityButton" Padding="-10 -10 -10 -10" Style="{StaticResource ToggleButtonStyler}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" >
+                                    <TextBlock FontSize="18" Foreground="White" 
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridOverlayIcon}" Margin="-10 -8 -10 -10"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Grid Overlay" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
                                 </ToggleButton>
-                                <!--GRID SIZE DROP DOWN -->
-                                <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
+                                --><!--GRID SIZE DROP DOWN -->
+                                <!--<ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
                                     <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
                                     <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
-                                </ComboBox>
+                                </ComboBox>-->
 
-                                <ComboBox x:Name="xAspectRatioComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XAspectRatioComboBox_OnSelectionChanged">
-                                    <!--<ComboBoxItem x:Name="xOriginal">Original</ComboBoxItem>-->
+                               
+
+                                <!--<ComboBox x:Name="xAspectRatioComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XAspectRatioComboBox_OnSelectionChanged">
+                                    --><!--<ComboBoxItem x:Name="xOriginal">Original</ComboBoxItem>--><!--
                                     <ComboBoxItem >Square</ComboBoxItem>
                                     <ComboBoxItem >2:3</ComboBoxItem>
                                     <ComboBoxItem >3:4</ComboBoxItem>
@@ -808,10 +815,43 @@
                                     <ComboBoxItem >4:5</ComboBoxItem>
                                     <ComboBoxItem >5:7</ComboBoxItem>
                                     <ComboBoxItem >9:16</ComboBoxItem>
-                                </ComboBox>
+                                </ComboBox>--><!--
+                                
+
+                              
+                            </StackPanel>-->
+
+                            <StackPanel x:Name="XGridOverlay" Width="148" Orientation="Vertical"  Background="#416857" Margin="0 0 0 0">
+                                <StackPanel.Resources>
+                                    <Storyboard x:Name="xFadeAnimationGrid">
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="xGridOverlayButtonStack"
+                                            Storyboard.TargetProperty="Opacity"
+                                            From="0.0" To="1.0" Duration="0:0:.5"
+                                        />
+                                    </Storyboard>
+                                </StackPanel.Resources>
+                                <!--Header-->
+                               
+                                <!--StackPanel for buttons-->
+
+                                <StackPanel  x:Name="xGridOverlayHeader" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Height="36"  Tapped="ExpandButtonOnClick" >
+                                    <TextBlock FontSize="14" HorizontalAlignment="Left" Foreground="White" Margin="-4 2 0 0">Grid Overlay</TextBlock>
+                                    <TextBlock x:Name="xGridOverlayArrow" FontSize="20" FontFamily="{StaticResource FontAwesome}" Margin="20 2 0 0" Text="{StaticResource GridOverlayIcon}" Foreground="White" Width="40" />
+
+                                </StackPanel>
+
+                                <StackPanel x:Name="xGridOverlayButtonStack" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                                    <Button x:Name="xSmall" Height="40" Width="74" Foreground="White" Background="#334f43" Click="XGridOverlayButton_OnClicked">
+                                        <TextBlock Foreground="White">Small</TextBlock></Button>
+                                    <Button x:Name="xLarge" Height="40" Width="74" Foreground="White" Background="#334f43" Click="XGridOverlayButton_OnClicked"><TextBlock Foreground="White">Large</TextBlock></Button>
+                                </StackPanel>
+
+
                             </StackPanel>
 
-
+                            <!--<TextBox x:Name="xWidthControl" KeyDown="XWidthControl_OnKeyDown"></TextBox>
+                            <TextBox x:Name="xHeightControl" KeyDown="XHeightControl_OnKeyDown"></TextBox>-->
 
 
                             <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
@@ -819,9 +859,9 @@
                                     <Flyout x:Name="xUploadTemplateFlyout"/>
                                 </Button.Flyout>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock FontSize="14" Foreground="LightGray">Upload Template</TextBlock>
-                                    <TextBlock FontSize="18" Foreground="LightGray"
-                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}" Margin="-2 0 0 0"/>
+                                    <TextBlock FontSize="14" Foreground="White" Margin="-2 0 0 0">Upload Template</TextBlock>
+                                    <TextBlock FontSize="18" Foreground="White"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}" Margin="-4 0 0 0"/>
                                 </StackPanel>
                             </Button>
 

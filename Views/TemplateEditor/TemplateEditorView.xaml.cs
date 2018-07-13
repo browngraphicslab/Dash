@@ -365,8 +365,8 @@ namespace Dash
             var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
             xWorkspace.Background = backgroundColor;
             xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
-            xDesignGridSizeComboBox.SelectedIndex = 0;
-            xDesignGridVisibilityButton.IsChecked = false;
+            //xDesignGridSizeComboBox.SelectedIndex = 0;
+            //xDesignGridVisibilityButton.IsChecked = false;
 
             // if the title key doesn't exist or is empty
             if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
@@ -894,14 +894,11 @@ namespace Dash
                     dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
                     break;
                 case HorizontalAlignment.Stretch:
-                    var width = xWorkspace.Width * 0.9;
-                    var height = dvm.ActualSize.Y;
-                    point = new PointController(0, point.Data.Y);
+                    var width = double.NaN;
                     dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
                         new TextController(alignment.ToString()), true);
-                    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+                    dvm.LayoutDocument.SetField<BoolController>(KeyStore.UseHorizontalAlignmentKey, true, true);
                     dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
-                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
 
                     break;
             }
@@ -939,13 +936,11 @@ namespace Dash
                     dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
                     break;
                 case VerticalAlignment.Stretch:
-                    var height = xWorkspace.Height * 0.9;
-                    var width = dvm.ActualSize.X;
-                    point = new PointController(point.Data.X, 0);
+
+                    var height = double.NaN;
                     dvm.LayoutDocument.SetField(KeyStore.VerticalAlignmentKey,
                         new TextController(alignment.ToString()), true);
-                    dvm.LayoutDocument.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true), true);
-                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
+                    dvm.LayoutDocument.SetField<BoolController>(KeyStore.UseVerticalAlignmentKey, true, true);
                     dvm.LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
                     break;
             }
@@ -1785,7 +1780,7 @@ namespace Dash
         {
             var button = sender as StackPanel;
             StackPanel stack = null;
-            FontAwesome arrow = null;
+            TextBlock arrow = null;
             Storyboard animation = null;
             //toggle visibility of sub-buttons according to what header button was pressed
             switch (button?.Name)
@@ -1805,12 +1800,17 @@ namespace Dash
                     arrow = xOptionsArrow;
                     animation = xFadeAnimationOptions;
                     break;
+                case "xGridOverlayHeader":
+                    stack = xGridOverlayButtonStack;
+                    arrow = xGridOverlayArrow;
+                    animation = xFadeAnimationGrid;
+                    break;
             }
 
             if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
         }
 
-        private void ToggleButtonState(StackPanel buttonStack, FontAwesome arrow, Storyboard fade)
+        private void ToggleButtonState(StackPanel buttonStack, TextBlock arrow, Storyboard fade)
         {
             var centX = (float) xAddItemsArrow.ActualWidth / 2;
             var centY = (float) xAddItemsArrow.ActualHeight / 2;
@@ -1826,15 +1826,24 @@ namespace Dash
                     xItem.IsChecked = false;
                     xAll.IsChecked = false;
                 }
-
-
             }
             else
             {
-                arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-                    easingType: EasingType.Default).Start();
+
+                if (!(arrow == xGridOverlayArrow))
+                {
+                    arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                        easingType: EasingType.Default).Start();
+
+                    //close all drop downs
+                    if (xAddItemsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAddItemsHeader, new RoutedEventArgs());
+                    if (xAlignmentButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xAlignmentHeader, new RoutedEventArgs());
+                    if (xOptionsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xOptionsHeader, new RoutedEventArgs());
+                } 
+                
                 buttonStack.Visibility = Visibility.Visible;
                 fade?.Begin();
+				
             }
         }
 
@@ -1976,6 +1985,7 @@ namespace Dash
                 xWorkspace.Clip = new RectangleGeometry {Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height)};
                 Bounds.Width = 70;
                 Bounds.Height = 70;
+				PositionEllipses();
                 return;
             }
 
@@ -2018,7 +2028,7 @@ namespace Dash
             {
                 Bounds.Width = 70;
                 Bounds.Height = 70;
-                return;
+               
             }
             else
             {
@@ -2105,52 +2115,28 @@ namespace Dash
 */
 
         //changes size of grid when user selects size from drop down
-        private void XDesignGridSizeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var combo = sender as ComboBox;
-            xDesignGridVisibilityButton.IsChecked = true;
-            if (combo != null)
-            {
-                //if they select "SMALL"
-                if (xDesignGridSizeComboBox.SelectedIndex == 0)
-                {
-                    xDesignGridSmall.Visibility = Visibility.Visible;
-                    xDesignGridLarge.Visibility = Visibility.Collapsed;
-                }
-                //if they select "LARGE"
-                else
-                {
-                    xDesignGridLarge.Visibility = Visibility.Visible;
-                    xDesignGridSmall.Visibility = Visibility.Collapsed;
-                }
-            }
-        }
+
 
         //makes chosen grid visible
-        private void XDesignGridVisibilityButton_OnChecked(object sender, RoutedEventArgs e)
+        private void XGridOverlayButton_OnClicked(object sender, RoutedEventArgs e)
         {
+
+            var button = sender as Button;
             //if small grid is chosen
-            if (xDesignGridSizeComboBox.SelectedIndex == 0)
+            if (button.Equals(xSmall))
             {
                 xDesignGridSmall.Visibility = Visibility.Visible;
+                xDesignGridLarge.Visibility = Visibility.Collapsed;
             }
             //if large grid is chosen
-            else
+            else if (button.Equals(xLarge))
             {
                 xDesignGridLarge.Visibility = Visibility.Visible;
+                xDesignGridSmall.Visibility = Visibility.Collapsed;
             }
-
-            xDesignGridSizeComboBox.Background = new SolidColorBrush(Colors.LightGray);
         }
 
-        //collapses both design grids
-        private void XDesignGridVisibilityButton_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            xDesignGridSmall.Visibility = Visibility.Collapsed;
-            xDesignGridLarge.Visibility = Visibility.Collapsed;
 
-            xDesignGridSizeComboBox.Background = new SolidColorBrush(Colors.Gray);
-        }
 
 
         #region Template Style Handlers
@@ -2767,49 +2753,50 @@ namespace Dash
         */
 
 
-        private void XAspectRatioComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var combo = sender as ComboBox;
-            var size = new Size();
-            if (combo != null)
-            {
-                var selected = xAspectRatioComboBox.SelectedIndex;
+        //private void XAspectRatioComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    var combo = sender as ComboBox;
+        //    var size = new Size();
+        //    if (combo != null)
+        //    {
+        //        var selected = xAspectRatioComboBox.SelectedIndex;
 
-                switch (selected)
-                {
-                    case 0:
-                       size.Width = 400;
-                       size.Height = 400;
-                        break;
-                    case 1:
-                        size.Width = 400;
-                        size.Height = 267;
-                        break;
-                    case 2:
-                        size.Width = 400;
-                        size.Height = 300;
-                        break;
-                    case 3:
-                        size.Width = 400;
-                        size.Height = 240;
-                        break;
-                    case 4:
-                        size.Width = 400;
-                        size.Height = 320;
-                        break;
-                    case 5:
-                        size.Width = 400;
-                        size.Height = 286;
-                        break;
-                    case 6:
-                        size.Width = 400;
-                        size.Height = 225;
-                        break;
-                }
+        //        switch (selected)
+        //        {
+        //            case 0:
+        //               size.Width = 400;
+        //               size.Height = 400;
+        //                break;
+        //            case 1:
+        //                size.Width = 400;
+        //                size.Height = 267;
+        //                break;
+        //            case 2:
+        //                size.Width = 400;
+        //                size.Height = 300;
+        //                break;
+        //            case 3:
+        //                size.Width = 400;
+        //                size.Height = 240;
+        //                break;
+        //            case 4:
+        //                size.Width = 400;
+        //                size.Height = 320;
+        //                break;
+        //            case 5:
+        //                size.Width = 400;
+        //                size.Height = 286;
+        //                break;
+        //            case 6:
+        //                size.Width = 400;
+        //                size.Height = 225;
+        //                break;
+        //        }
 
-                ResizeCanvas(size);
-            }
-        }
+        //        ResizeCanvas(size);
+        //    }
+        //}
+       
     }
 
 }
