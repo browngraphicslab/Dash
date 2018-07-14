@@ -162,17 +162,22 @@ namespace Dash
         /// </summary>
         Storyboard _storyboard1, _storyboard2;
 
-        public void Move(TranslateTransform translate)
+        public void SetTransform(TranslateTransform translate, ScaleTransform scale)
         {
             var composite = new TransformGroup();
-            composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
+            //composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
+            if (scale != null)
+            {
+                composite.Children.Add(scale);
+            }
             composite.Children.Add(translate);
 
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = matrix.M11;
         }
 
-        public void MoveAnimated(TranslateTransform translate, ScaleTransform scale = null)
+        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale)
         {
             //get rendering postion of _itemsPanelCanvas, 2x3 matrix
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
@@ -197,9 +202,12 @@ namespace Dash
             _storyboard2?.Children.Clear();
             _storyboard2 = new Storyboard { Duration = duration };
 
-            //get offset values (bottom row of matrixx)
+            //get offset values (bottom row of matrix)
             var startX = _transformBeingAnimated.Matrix.OffsetX;
             var startY = _transformBeingAnimated.Matrix.OffsetY;
+
+            var startzoomX = _transformBeingAnimated.Matrix.M11;
+            var startzoomY = _transformBeingAnimated.Matrix.M22;
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
@@ -215,8 +223,9 @@ namespace Dash
             //TODO: make accurate zoom animations - need to adjust translation in accordance with zoom
             var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 10.0, "MatrixTransform.Matrix.M11", duration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 10.0, "MatrixTransform.Matrix.M22", duration);
+            //the higher number, the more it xooms, but doesn't actually change final view 
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, startzoomX, scale.GetMatrix().M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, startzoomY, scale.GetMatrix().M22, "MatrixTransform.Matrix.M22", duration);
 
             zoomOutAnimationX.AutoReverse = true;
             zoomOutAnimationY.AutoReverse = true;
@@ -296,9 +305,9 @@ namespace Dash
             //Create initial composite transform
             var composite = new TransformGroup();
             if (!abs)
-                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
-            composite.Children.Add(scaleDelta); // add the new scaling
+                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform            
             composite.Children.Add(translateDelta); // add the new translate
+            composite.Children.Add(scaleDelta); // add the new scaling
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
