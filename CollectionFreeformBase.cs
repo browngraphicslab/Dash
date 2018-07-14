@@ -32,6 +32,7 @@ using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
 using Dash.Views;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 {
@@ -171,7 +172,7 @@ namespace Dash
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
-        public void MoveAnimated(TranslateTransform translate)
+        public void MoveAnimated(TranslateTransform translate, ScaleTransform scale = null)
         {
             //get rendering postion of _itemsPanelCanvas, 2x3 matrix
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
@@ -206,11 +207,16 @@ namespace Dash
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
-            //TODO: make accurate zoom animations
+
+            var matrixScale = new MatrixTransform() {Matrix = scale?.GetMatrix() ?? new Matrix(1,0,0,1,0,0)};
+            DoubleAnimation animateScaleX = MakeAnimationElement(matrixScale, 1, 0, "MatrixTransform.Matrix.M11", duration);
+            DoubleAnimation animateScaleY = MakeAnimationElement(matrixScale, 1, 0, "MatrixTransform.Matrix.M22", duration);
+
+            //TODO: make accurate zoom animations - need to adjust translation in accordance with zoom
             var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 10.0, "MatrixTransform.Matrix.M11", duration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 10.0, "MatrixTransform.Matrix.M22", duration);
 
             zoomOutAnimationX.AutoReverse = true;
             zoomOutAnimationY.AutoReverse = true;
@@ -221,11 +227,11 @@ namespace Dash
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (false && scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
-            {
+            //if (scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
+            //{
                 _storyboard1.Children.Add(zoomOutAnimationX);
                 _storyboard1.Children.Add(zoomOutAnimationY);
-            }
+            //}
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
