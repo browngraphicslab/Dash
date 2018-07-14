@@ -173,11 +173,13 @@ namespace Dash
 
         public void MoveAnimated(TranslateTransform translate)
         {
+            //get rendering postion of _itemsPanelCanvas, 2x3 matrix
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
             {
                 return;
             }
+            //set transformBeingAnimated to matrix of old
             _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
 
             Debug.Assert(_transformBeingAnimated != null);
@@ -194,7 +196,7 @@ namespace Dash
             _storyboard2?.Children.Clear();
             _storyboard2 = new Storyboard { Duration = duration };
 
-
+            //get offset values (bottom row of matrixx)
             var startX = _transformBeingAnimated.Matrix.OffsetX;
             var startY = _transformBeingAnimated.Matrix.OffsetY;
 
@@ -204,7 +206,7 @@ namespace Dash
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
-
+            //TODO: make accurate zoom animations
             var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
             var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
@@ -251,9 +253,11 @@ namespace Dash
             var toReturn = new DoubleAnimation();
             toReturn.EnableDependentAnimation = true;
             toReturn.Duration = duration;
+            //Storyboard.TargetProperty targets a particular property of the element as named by Storyboard.TargetName
             Storyboard.SetTarget(toReturn, matrix);
             Storyboard.SetTargetProperty(toReturn, name);
 
+            //The animation progresses from the value specified by the From property to the value specified by the To property
             toReturn.From = from;
             toReturn.To = to;
 

@@ -403,25 +403,30 @@ namespace Dash
             {
                 return false;
             }
+            //loop through each doc in collection
             foreach (var dm in collection.ViewModel.DocumentViewModels)
             {
                 var dmd = dm.DocumentController.GetDataDocument();
                 var dd = document.GetDataDocument();
+                //if this doc is given document
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+                    //get center point of doc where you want to go, TransformToVisual gets a transform that can transform coords from canvas to MainDocView
+                    //so shift is doc center point in MainDocView cord system
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
                     if (animated)
+                        //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
+                else if ((dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
                 {
                     if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformBase, document, animated, compareDataDocuments))
                         return true;
