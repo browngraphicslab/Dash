@@ -191,7 +191,6 @@ namespace Dash
             Debug.Assert(_transformBeingAnimated != null);
             var milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
-            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds / 2.0));
 
             //Clear storyboard
             _storyboard1?.Stop();
@@ -202,45 +201,25 @@ namespace Dash
             _storyboard2?.Children.Clear();
             _storyboard2 = new Storyboard { Duration = duration };
 
-            //get offset values (bottom row of matrix)
-            var startX = _transformBeingAnimated.Matrix.OffsetX;
-            var startY = _transformBeingAnimated.Matrix.OffsetY;
+            var startMatrix = _transformBeingAnimated.Matrix;
+            var scaleMatrix = scale.GetMatrix();
 
-            var startzoomX = _transformBeingAnimated.Matrix.M11;
-            var startzoomY = _transformBeingAnimated.Matrix.M22;
-
-            // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
-            translateAnimationX.AutoReverse = false;
-            translateAnimationY.AutoReverse = false;
-
-
-            var matrixScale = new MatrixTransform() {Matrix = scale?.GetMatrix() ?? new Matrix(1,0,0,1,0,0)};
-            DoubleAnimation animateScaleX = MakeAnimationElement(matrixScale, 1, 0, "MatrixTransform.Matrix.M11", duration);
-            DoubleAnimation animateScaleY = MakeAnimationElement(matrixScale, 1, 0, "MatrixTransform.Matrix.M22", duration);
-
-            //TODO: make accurate zoom animations - need to adjust translation in accordance with zoom
-            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
             //the higher number, the more it xooms, but doesn't actually change final view 
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, startzoomX, scale.GetMatrix().M11, "MatrixTransform.Matrix.M11", duration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, startzoomY, scale.GetMatrix().M22, "MatrixTransform.Matrix.M22", duration);
+            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
 
-            zoomOutAnimationX.AutoReverse = true;
-            zoomOutAnimationY.AutoReverse = true;
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
 
-            zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
-            zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
-
-
+            if (scale != null)
+            {
+                _storyboard1.Children.Add(zoomAnimationX);
+                _storyboard1.Children.Add(zoomAnimationY);
+            }
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            //if (scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
-            //{
-                _storyboard1.Children.Add(zoomOutAnimationX);
-                _storyboard1.Children.Add(zoomOutAnimationY);
-            //}
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
@@ -261,6 +240,7 @@ namespace Dash
         {
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = matrix.M11;
         }
         protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
