@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -145,6 +146,62 @@ namespace Dash
             {
                 _textbox.TriggerEdit();
                 _giveTextBoxFocusUponFlyoutClosing = false;
+            }
+        }
+
+        private double distSqr(Point a, Point b)
+        {
+            return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
+        }
+
+        private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
+        {
+           //draw lines between members of presentation 
+            var docs = PinnedNodesListView.Items?.ToList();
+          
+            for(var i=0; i < docs?.Count - 1; i++)
+            {
+                //use bounds to find closest sides on each neighboring doc
+                //get midpoitns of every side of both docs
+                var docA = (docs[i] as DocumentViewModel).Bounds;
+                var docAsides = new List<Point>();
+                //the order goes left, top, right, bottom - in regualr UWP fashion
+                docAsides.Add(new Point(docA.Left, docA.Y + docA.Height / 2));
+                docAsides.Add(new Point(docA.X + docA.Width / 2, docA.Top));
+                docAsides.Add(new Point(docA.Right, docA.Y + docA.Height / 2));
+                docAsides.Add(new Point(docA.X + docA.Width / 2, docA.Bottom));
+
+                var docB = (docs[i + 1] as DocumentViewModel).Bounds;
+                var docBsides = new List<Point>();
+                docBsides.Add(new Point(docB.Left, docB.Y + docB.Height / 2));
+                docBsides.Add(new Point(docB.X + docB.Width / 2, docB.Top));
+                docBsides.Add(new Point(docB.Right, docB.Y + docB.Height / 2));
+                docBsides.Add(new Point(docB.X + docB.Width / 2, docB.Bottom));
+
+                var minDist = Double.PositiveInfinity;
+                Point startPoint;
+                Point endPoint;
+                //TODO: get control points as some amount out from side - maybe have docAsides and B have a pair of points instead
+                Point startControlPt;
+                Point endControlPt;
+
+
+                foreach (var aside in docAsides)
+                {
+                    foreach (var bside in docBsides)
+                    {
+                        var dist = distSqr(aside, bside);
+                        if (dist < minDist)
+                        {
+                            minDist = dist;
+                            startPoint = aside;
+                            endPoint = bside;
+                        }
+                    }
+                }
+
+                var segment = new BezierSegment() { Point3=endPoint};
+                //MainPage.Instance.xCanvas.Children.Add();
             }
         }
     }
