@@ -12,13 +12,16 @@
     d:DesignWidth="400">
 
     <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height ="*"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <StackPanel>
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
             <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
                 <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3"/>
                 <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
                 <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="ResetButton" Icon="Undo" Label="Reset" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3"/>
             </CommandBar>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -55,12 +58,18 @@
                                     <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1">
+                                    <SymbolIcon Symbol="Delete"/>
+                                </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="1">
+            <AppBarButton x:Name="ResetButton" Icon="Zoom" Label="Re-Focus" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3" IsCompact="False" Margin="10"/>
+            <AppBarButton x:Name="ShowLinesButton" Icon="Go" Label="Show Lines" IsEnabled="True" IsCompact="False" Margin="10"/>
         </StackPanel>
     </Grid>
 </UserControl>
