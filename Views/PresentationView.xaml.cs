@@ -165,6 +165,7 @@ namespace Dash
                 //get midpoitns of every side of both docs
                 var docA = (docs[i] as DocumentViewModel).Bounds;
                 var docAsides = new List<Point>();
+                var test = Tuple.Create(1, 2);
                 //the order goes left, top, right, bottom - in regualr UWP fashion
                 docAsides.Add(new Point(docA.Left, docA.Y + docA.Height / 2));
                 docAsides.Add(new Point(docA.X + docA.Width / 2, docA.Top));
@@ -196,6 +197,7 @@ namespace Dash
                             minDist = dist;
                             startPoint = aside;
                             endPoint = bside;
+                            //TODO: use Item1 and Item2 to get tuple elements
                         }
                     }
                 }
