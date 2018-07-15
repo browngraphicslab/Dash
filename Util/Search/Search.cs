@@ -381,7 +381,8 @@ namespace Dash
             return filteredNodes.Select(node => new SearchResult(node, "", id));
         }
 
-        public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id) ?? new DocumentController();
+        public static DocumentController SearchIndividualById(string id) =>
+            ContentController<FieldModel>.GetController<DocumentController>(id);
 
         /*
          * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result

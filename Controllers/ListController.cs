@@ -235,17 +235,14 @@ namespace Dash
         public override string ToString()
         {
             const int cutoff = 5;
+            if (Count == 0)
+            {
+                return "[<empty>]";
+            }
 
-            int initialLength = TypedData.Count;
-            var copy = new List<T>(TypedData);
-            bool condense = initialLength > cutoff;
+            var suffix = Count > cutoff ? $", ... +{Count - cutoff}" : "";
 
-            if (condense) while (copy.Count > cutoff) { copy.RemoveAt(cutoff); }
-
-            string suffix = condense ? $", ... +{initialLength - cutoff}" : "";
-            string str = $"[{string.Join(", ", copy)}{suffix}]";
-
-            return str.Equals("[]") ? "[<empty>]" : str;
+            return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
         public override object GetValue(Context context) => TypedData.ToList();

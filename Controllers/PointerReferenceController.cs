@@ -47,7 +47,7 @@ namespace Dash
 
         public override FieldReference GetFieldReference() => new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
 
-        public override FieldControllerBase GetReference() => DocumentReference;
+        public override FieldControllerBase GetDocumentReference() => DocumentReference;
 
         public override string ToString() => $"pRef[{DocumentReference}, {FieldKey}]";
 

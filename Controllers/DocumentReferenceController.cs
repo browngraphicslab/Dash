@@ -81,7 +81,7 @@ namespace Dash
         // todo: more meaningful tostring here
         public override string ToString() => $"dRef[{DocumentController}, {FieldKey}]";
 
-        public override FieldControllerBase GetReference() => DocumentController;
+        public override FieldControllerBase GetDocumentReference() => DocumentController;
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {

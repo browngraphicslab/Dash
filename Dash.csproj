@@ -475,6 +475,7 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ActionTextBox.cs" />
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />

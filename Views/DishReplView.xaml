@@ -16,7 +16,8 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="50" x:Name="TextGrid" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
                             Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
@@ -30,7 +31,7 @@
                             <DataTemplate>
                                 <Grid Margin="0,0,0,5" >
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="30" />
+                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid Grid.Row="0">
@@ -57,17 +58,14 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <TextBox Name="xTextBox" Grid.Row="2" Height="{x:Bind TextHeight, Mode=OneWay}" Background="White" FontSize="18"
+                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="18"
                             PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
-                </TextBox>
-                <Popup x:Name="xSuggestionsPopup" Grid.Row="2" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
+                </local:ActionTextBox>
+                <Popup x:Name="xSuggestionsPopup" Grid.Row="3" Canvas.ZIndex="-1">
                     <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
                         <Border x:Name="xSuggestionsContainer" Background="LightGray">
-                            <Border.RenderTransform>
-                                <TranslateTransform x:Name="xUpwardTransform"/>
-                            </Border.RenderTransform>
                             <ListView x:Name="xSuggestions" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
@@ -92,3 +90,4 @@
     </Grid>
 
 </UserControl>
+

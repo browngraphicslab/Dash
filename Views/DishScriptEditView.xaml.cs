@@ -178,13 +178,29 @@ namespace Dash
 
         #endregion
 
+        public static string StringDiff(string a, string b)
+        {
+            //a is the longer string
+            var aL = a.ToCharArray();
+            var bL = b?.ToCharArray();
+            for (var i = 0; i < aL.Length; i++)
+            {
+                if (i < bL?.Length && aL[i] == bL[i]) continue;
+
+                return aL[i].ToString();
+
+            }
+
+            return a;
+        }
+
         #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             DishReplView view = new DishReplView(_scope);
             view.FinishFunctionCall(xTextBox.Text, xTextBox);
 
-            var textDiff = DishReplView.StringDiff(xTextBox.Text, _currentText);
+            var textDiff = StringDiff(xTextBox.Text, _currentText);
             switch (textDiff)
             {
                 case "\"" when xTextBox.Text.Length > _currentText.Length:

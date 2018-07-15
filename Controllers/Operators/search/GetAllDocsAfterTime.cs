@@ -55,27 +55,24 @@ namespace Dash
 
             if (!DateTime.TryParse(time, out DateTime givenTime))
             {
-                Debug.WriteLine("Invalid time input");
+                return;
             }
-            else
+
+            if (!string.IsNullOrEmpty(time))
             {
-
-                if (!string.IsNullOrEmpty(time))
+                var allResults = DocumentTree.MainPageTree;
+                var data = allResults.Select(node => node.ViewDocument).ToList();
+                foreach (var t in data)
                 {
-                    var allResults = DocumentTree.MainPageTree;
-                    var data = allResults.Select(node => node.DataDocument).ToList();
-                    for (int i = 0; i < data.Count; i++)
+                    var docTimeS = t.GetDataDocument().GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
+
+                    //return all docs after givenTime
+                    if (docTimeS > givenTime)
                     {
-                        var docTimeS = data[i].GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
-
-                        //return all docs after givenTime
-                        if (docTimeS > givenTime)
-                        {
-                            toReturn.Add(data[i]);
-                        }
+                        toReturn.Add(t);
                     }
-
                 }
+
             }
 
             outputs[ResultsKey] = toReturn;

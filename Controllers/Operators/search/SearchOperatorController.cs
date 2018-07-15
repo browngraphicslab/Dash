@@ -7,7 +7,7 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.search)]
-    public sealed class SearchOperatorController : OperatorController
+    public class SearchOperatorController : OperatorController
     {
         public SearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

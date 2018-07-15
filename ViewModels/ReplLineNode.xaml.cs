@@ -79,7 +79,7 @@ namespace Dash
                     }
                     break;
                 case ReferenceController r:
-                    var rf = r.GetReference();
+                    var rf = r.GetDocumentReference();
                     var deref = r.Dereference(null);
                     xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                     {

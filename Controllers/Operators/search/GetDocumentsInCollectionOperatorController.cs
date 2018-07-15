@@ -7,7 +7,7 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.coll, Op.Name.inside)]
-    public sealed class GetDocumentsInCollectionOperatorController : OperatorController
+    public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
         public static readonly KeyController TextKey = new KeyController("Term");
@@ -47,8 +47,9 @@ namespace Dash
             var term = searchTerm.Data.ToLower();
             var tree = DocumentTree.MainPageTree;
 
-            var final = tree.Where(doc => doc.Parent?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data?.ToLower()?.Contains(term) == true).ToList();
-            outputs[ResultsKey] = new ListController<DocumentController>(final.Select(d => d.ViewDocument));
+            var final = tree.Where(doc => doc.DataDocument.Title?.ToLower().Contains(term) == true);
+            var docs = final.SelectMany(node => node.Children, (colNode, documentNode) => documentNode.ViewDocument);
+            outputs[ResultsKey] = new ListController<DocumentController>(docs.Distinct());
         }
 
         public override FieldControllerBase GetDefaultController() => new GetDocumentsInCollectionOperatorController();
