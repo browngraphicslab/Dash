@@ -104,6 +104,11 @@ namespace Dash
             xRegionsGrid.Children.Add(box);
         }
 
+        public void AddCanvasRegion(FrameworkElement element)
+        {
+            xRegionsCanvas.Children.Add(element);
+        }
+
         public void RemoveRegion(RegionBox box)
         {
             xRegionsGrid.Children.Remove(box);

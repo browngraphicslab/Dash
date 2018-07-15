@@ -401,11 +401,11 @@ namespace Dash
             linkFlyout.ShowAt(this);
         }
 
-        public DocumentController GetDocControllerFromSelectedRegion()
+        public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
         {
             var dc = new RichTextNote("PDF " + _internalViewer.VerticalOffset).Document;
             dc.GetDataDocument().SetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, _internalViewer.VerticalOffset, true);
-            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.RegionBox);
+            dc.SetRegionDefinition(LayoutDocument, annotationType);
             
             return dc;
         }

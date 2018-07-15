@@ -668,6 +668,7 @@
     <Compile Include="Views\PresentationViewTextBox.xaml.cs">
       <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SelectableElement.cs" />
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
