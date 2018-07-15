@@ -67,16 +67,7 @@ namespace Dash
             newTemplate.FieldModelUpdated +=
                 delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
                 {
-                    if (MainPage.Instance.MainDocument
-                            .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
-                            .Contains(newTemplate) && _document.GetField(KeyStore.ActiveLayoutKey) != null)
-                    {
-                        _document.RemoveField(KeyStore.ActiveLayoutKey);
-                    }
-                    else
-                    {
-                        SetTemplate(newTemplate.GetDataInstance());
-                    }
+                    SetTemplate(newTemplate.GetDataInstance());
                 };
                 //template.LayoutDocument.GetDataInstance();
         }
