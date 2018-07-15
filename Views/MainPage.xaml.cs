@@ -106,6 +106,13 @@ namespace Dash
                 }
                 LoadSettings();
 
+                var presentationItems =
+                    MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                if (presentationItems != null)
+                {
+                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
+                }
+
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
@@ -683,9 +690,9 @@ namespace Dash
             xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
         }
 
-        public void PinToPresentation(DocumentViewModel viewModel)
+        public void PinToPresentation(DocumentController dc)
         {
-            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
         }

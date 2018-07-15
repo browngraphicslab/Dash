@@ -5,8 +5,8 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
     xmlns:system="using:System"
-    xmlns:views="using:Dash.Views"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -19,23 +19,26 @@
         <StackPanel>
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
             <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
-                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
-                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3"/>
+
+                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
+                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarToggleButton Icon="RepeatAll" Label="Repeat" Checked="RepeatButton_OnChecked" Unchecked="RepeatButton_OnUnchecked" Width="50"/>
+
             </CommandBar>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <ListView ItemsSource="{x:Bind ViewModel.PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                <ListView ItemsSource="{Binding PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="system:Int32">
                             <TextBlock Text="{x:Bind}" FontSize="20" Foreground="LightGray"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
+                <ListView x:Name="PinnedNodesListView" ItemsSource="{Binding PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
                           AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click" RightTapped="PinnedNodesListView_OnRightTapped">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -51,7 +54,7 @@
                         </MenuFlyout>
                     </ListView.Resources>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:DocumentViewModel">
+                        <DataTemplate x:DataType="dash:DocumentController">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -60,7 +63,7 @@
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
                                 <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1">
                                     <SymbolIcon Symbol="Delete"/>
-                                </Button>
+                                    </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

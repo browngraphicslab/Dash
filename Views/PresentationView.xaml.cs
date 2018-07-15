@@ -26,26 +26,16 @@ namespace Dash
     public sealed partial class PresentationView : UserControl
     {
         public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
+
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
         private bool _giveTextBoxFocusUponFlyoutClosing = false;
+        private bool _repeat = false;
 
         public PresentationView()
         {
             this.InitializeComponent();
             DataContext = new PresentationViewModel();
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
-
-            // only move back if there is a step to go back to
-            if (selectedIndex != 0)
-            {
-                PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex - 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
-            }
         }
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e)
@@ -66,7 +56,7 @@ namespace Dash
                     // zoom to first item in the listview
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
-                    NavigateToDocument((DocumentViewModel)PinnedNodesListView.SelectedItem);
+                    NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -78,35 +68,49 @@ namespace Dash
             ResetBackNextButtons();
         }
 
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedIndex = PinnedNodesListView.SelectedIndex;
+
+            // only move back if there is a step to go back to
+            if (selectedIndex != 0)
+                PinnedNodesListView.SelectedIndex = selectedIndex - 1;
+            else if (_repeat)
+                PinnedNodesListView.SelectedIndex = PinnedNodesListView.Items.Count - 1;
+
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+        }
+
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             int selectedIndex = PinnedNodesListView.SelectedIndex;
 
             // can only move forward if there's a node to move forward to
             if (selectedIndex != PinnedNodesListView.Items.Count - 1)
-            {
-                PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex + 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
-            }
+                PinnedNodesListView.SelectedIndex = selectedIndex + 1;
+            else if (_repeat)
+                PinnedNodesListView.SelectedIndex = 0;
+
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
 
         // remove from viewmodel
         private void DeletePin(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).Tag as DocumentViewModel);
+            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            DocumentViewModel viewModel = (DocumentViewModel) e.ClickedItem;
-            NavigateToDocument(viewModel);
+            DocumentController dc = (DocumentController) e.ClickedItem;
+            NavigateToDocument(dc);
         }
 
         // helper method for moving the mainpage screen
-        private void NavigateToDocument(DocumentViewModel viewModel)
+        private void NavigateToDocument(DocumentController dc)
         {
-            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(viewModel.DocumentController);
+            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc);
         }
 
         // these buttons are only enabled when the presentation is playing
@@ -123,7 +127,7 @@ namespace Dash
         // if user strays in middle of presentation, hitting this will bring them back to the selected node
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -152,7 +156,7 @@ namespace Dash
                 _giveTextBoxFocusUponFlyoutClosing = false;
             }
         }
-
+        
         #region Presenation Lines
         private List<UIElement> _paths = new List<UIElement>();
 
@@ -169,30 +173,41 @@ namespace Dash
 
             //use bounds to find closest sides on each neighboring doc
             //get midpoitns of every side of both docs
-            var docA = (docs[i] as DocumentViewModel).Bounds;
+            var docA = (docs[i] as DocumentController);
+            var docAPos = docA.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+            var docASize = docA.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docAsides = new List<Tuple<Point, Point>>();
-            var docAy = docA.Y + docA.Height / 2;
-            var docAx = docA.X + docA.Width / 2;
+            var docAy = docAPos.Y + docASize.Y / 2;
+            var docAx = docAPos.X + docASize.X / 2;
+            var docALeft = docAPos.X;
+            var docARight = docAPos.X + docASize.X;
+            var docATop = docAPos.Y;
+            var docABottom = docAPos.Y + docASize.Y;
 
-            var docB = (docs[i + 1] as DocumentViewModel).Bounds;
+            var docB = (docs[i + 1] as DocumentController);
+            var docBPos = docB.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+            var docBSize = docB.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docBsides = new List<Tuple<Point, Point>>();
-            var docBy = docB.Y + docB.Height / 2;
-            var docBx = docB.X + docB.Width / 2;
+            var docBy = docBPos.Y + docBSize.Y / 2;
+            var docBx = docBPos.X + docBSize.X / 2;
+            var docBLeft = docBPos.X;
+            var docBRight = docBPos.X + docBSize.X;
+            var docBTop = docBPos.Y;
+            var docBBottom = docBPos.Y + docBSize.Y;
 
             var offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
 
             //the order goes left, top, right, bottom - in regualr UWP fashion
-            docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
-            docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top - offset)));
-            docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
-            docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom + offset)));
-
-
-            //the order goes left, top, right, bottom - in regualr UWP fashion
-            docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - offset, docBy)));
-            docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top - offset)));
-            docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + offset, docBy)));
-            docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom + offset)));
+            docAsides.Add(Tuple.Create(new Point(docALeft, docAy), new Point(docALeft - offset, docAy)));
+            docAsides.Add(Tuple.Create(new Point(docAx, docATop), new Point(docAx, docATop - offset)));
+            docAsides.Add(Tuple.Create(new Point(docARight, docAy), new Point(docARight + offset, docAy)));
+            docAsides.Add(Tuple.Create(new Point(docAx, docABottom), new Point(docAx, docABottom + offset)));
+           
+             //the order goes left, top, right, bottom - in regualr UWP fashion
+             docBsides.Add(Tuple.Create(new Point(docBLeft, docBy), new Point(docBLeft - offset, docBy)));
+            docBsides.Add(Tuple.Create(new Point(docBx, docBTop), new Point(docBx, docBTop - offset)));
+            docBsides.Add(Tuple.Create(new Point(docBRight, docBy), new Point(docBRight + offset, docBy)));
+            docBsides.Add(Tuple.Create(new Point(docBx, docBBottom), new Point(docBx, docBBottom + offset)));
 
             var minDist = Double.PositiveInfinity;
             Point startPoint;
@@ -228,12 +243,12 @@ namespace Dash
             {
                 foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
                 {
-                    if (Equals(docs[i] as DocumentViewModel, doc.ViewModel))
+                    if (Equals(docs[i] as DocumentController, doc.ViewModel.DocumentController))
                     {
                         docViewA = col.GetCanvas();
                     }
 
-                    if (Equals(docs[i + 1] as DocumentViewModel, doc.ViewModel))
+                    if (Equals(docs[i + 1] as DocumentController, doc.ViewModel.DocumentController))
                     {
                         docViewB = col.GetCanvas();
                     }
@@ -433,7 +448,7 @@ namespace Dash
 
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
-                    viewModelPinnedNode.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
                 }
 
                 foreach (var coll in allCollections)
@@ -454,7 +469,7 @@ namespace Dash
 
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
-                    viewModelPinnedNode.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
                 }
 
                 foreach (var coll in allCollections)
@@ -467,5 +482,15 @@ namespace Dash
             }
         }
         #endregion
+
+        private void RepeatButton_OnChecked(object sender, RoutedEventArgs e)
+        {
+            _repeat = true;
+        }
+
+        private void RepeatButton_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            _repeat = false;
+        }
     }
 }

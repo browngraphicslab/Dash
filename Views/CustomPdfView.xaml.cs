@@ -183,7 +183,7 @@ namespace Dash
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
             {
                 var stream = new InMemoryRandomAccessStream();
-                var widthRatio = targetWidth == null ? 1 : targetWidth / PdfMaxWidth;
+                var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
                 options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
                 options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
                 await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
