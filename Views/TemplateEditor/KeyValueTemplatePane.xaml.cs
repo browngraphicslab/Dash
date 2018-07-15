@@ -29,7 +29,6 @@ namespace Dash
 			this.InitializeComponent();
 
 			this.FormatPane(editor);
-			
 		}
 
 		private void FormatPane(TemplateEditorView editor)

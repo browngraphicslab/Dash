@@ -239,7 +239,7 @@ namespace Dash
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
-          
+
             xFreeFormButton.IsChecked = true;
 
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
@@ -329,7 +329,10 @@ namespace Dash
             // gets the view of the working document's view model
             var workingDocView = workingDocViewModel?.Content.GetFirstAncestorOfType<DocumentView>();
             // listen for when the document view starts fading out
-            workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+            if (workingDocView != null)
+            {
+                workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+            }
             //xWorkspace.Children.Add(TemplateLayout);
 
             //initialize layout documents on workspace
@@ -374,9 +377,10 @@ namespace Dash
             {
                 // use a default title
                 var title = "MyTemplate";
-                
-	            var number = MainPage.Instance.MainDocument
-	                .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)?.Data.Count + 1 ?? 1;
+
+                var number = MainPage.Instance.MainDocument
+                                 .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)?.Data.Count +
+                             1 ?? 1;
                 // append the number to the title
                 title += number.ToString();
 
@@ -441,8 +445,7 @@ namespace Dash
         private void FormatUploadTemplateFlyout()
         {
             xUploadTemplateFlyout.Content = new TemplateApplier(
-                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-                this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey));
         }
 
         /// <summary>
@@ -688,7 +691,14 @@ namespace Dash
 
                 if (workingDoc.GetActiveLayout() != null)
                 {
-                    workingDoc.SetActiveLayout(dataDocInstance, true, true);
+                    var currLayout =
+                        MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
+                                KeyStore.TemplateListKey)
+                            ?.First(temp => temp.Equals(workingDoc.GetActiveLayout()));
+                    var newFields = DataDocument.EnumFields();
+                    currLayout.SetFields(newFields, true);
+
+                    currLayout.SetPosition(workingDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data);
                     workingDoc.SetField(KeyStore.TitleKey,
                         new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
                         true);
@@ -702,13 +712,13 @@ namespace Dash
                     var mainDoc = MainPage.Instance.MainDocument;
                     if (mainDoc.GetField(KeyStore.TemplateListKey) != null)
                     {
-                        mainDoc.AddToListField(KeyStore.TemplateListKey, new DocumentReferenceController(workingDoc, KeyStore.ActiveLayoutKey));
+                        mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
                     }
                     else
                     {
                         mainDoc.SetField(KeyStore.TemplateListKey,
-                            new ListController<DocumentReferenceController>(), true);
-                        mainDoc.AddToListField(KeyStore.TemplateListKey, new DocumentReferenceController(workingDoc, KeyStore.ActiveLayoutKey));
+                            new ListController<DocumentController>(), true);
+                        mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
                     }
                 }
                 //update template style
@@ -726,6 +736,16 @@ namespace Dash
             {
                 var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
                 DataDocument = DataDocument.MakeCopy(null, new List<KeyController>{KeyStore.DocumentContextKey});
+                Clear();
+                DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
+                foreach (var doc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey))
+                {
+                    DocumentControllers.Add(doc);
+                    var dvm =
+                        new DocumentViewModel(doc, new Context(doc));
+                    DocumentViewModels.Add(dvm);
+                }
+                DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
                 // get a deep copy of the current data document
                 // change the data document to that deep copy
             }
@@ -1939,8 +1959,7 @@ namespace Dash
         private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
         {
             xUploadTemplateFlyout.Content = new TemplateApplier(
-                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-                this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey));
             xUploadTemplateFlyout.ShowAt(xUploadTemplateButton);
         }
 

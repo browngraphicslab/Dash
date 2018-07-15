@@ -1004,18 +1004,6 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-
-            if (ViewModel.DocumentController.GetActiveLayout()?.DocumentType.Equals(TemplateBox.DocumentType) ?? false)
-            {
-                var templateList = MainPage.Instance.MainDocument
-                    .GetField<ListController<DocumentReferenceController>>(KeyStore.TemplateListKey);
-                var templateReference = templateList?.First(tempRef =>
-                    tempRef.DocumentController.Equals(ViewModel.DocumentController));
-                if (templateReference != null)
-                {
-                    MainPage.Instance.MainDocument.RemoveFromListField(KeyStore.TemplateListKey, templateReference);
-                }
-            }
             
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
         }
@@ -1460,7 +1448,7 @@ namespace Dash
 
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
-            var applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
+            var applier = new TemplateApplier(ViewModel.LayoutDocument);
             _flyout.Content = applier;
             if (_flyout.IsInVisualTree())
             {
