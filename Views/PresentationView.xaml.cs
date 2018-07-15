@@ -156,6 +156,8 @@ namespace Dash
             return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
         }
 
+        private List<Windows.UI.Xaml.Shapes.Path> _paths = new List<Windows.UI.Xaml.Shapes.Path>();
+
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
         {
             var canvas = MainPage.Instance.xCanvas;
@@ -169,7 +171,7 @@ namespace Dash
 
                 for (var i = 0; i < docs?.Count - 1; i++)
                 {
-                    var offset = 55;
+                    
 
                     //use bounds to find closest sides on each neighboring doc
                     //get midpoitns of every side of both docs
@@ -177,21 +179,26 @@ namespace Dash
                     var docAsides = new List<Tuple<Point, Point>>();
                     var docAy = docA.Y + docA.Height / 2;
                     var docAx = docA.X + docA.Width / 2;
-                    //the order goes left, top, right, bottom - in regualr UWP fashion
-                    docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
-                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top + offset)));
-                    docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
-                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom - offset)));
 
                     var docB = (docs[i + 1] as DocumentViewModel).Bounds;
                     var docBsides = new List<Tuple<Point, Point>>();
                     var docBy = docB.Y + docB.Height / 2;
                     var docBx = docB.X + docB.Width / 2;
+
+                    var offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
+
+                    //the order goes left, top, right, bottom - in regualr UWP fashion
+                    docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
+                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top - offset)));
+                    docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
+                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom + offset)));
+
+                    
                     //the order goes left, top, right, bottom - in regualr UWP fashion
                     docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - offset, docBy)));
-                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top + offset)));
+                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top - offset)));
                     docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + offset, docBy)));
-                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom - offset)));
+                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom + offset)));
 
                     var minDist = Double.PositiveInfinity;
                     Point startPoint;
@@ -217,7 +224,8 @@ namespace Dash
                     }
 
 
-                    var docView = MainPage.Instance.MainDocView;
+                    var col = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>();
+                    var docView = col.GetCanvas();
 
 
                     //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
@@ -244,9 +252,11 @@ namespace Dash
                     {
                         Data = pathGeo,
                         Stroke = new SolidColorBrush(Windows.UI.Colors.Black),
-                        StrokeThickness = 3
+                        StrokeThickness = 2
 
                     };
+
+                    _paths.Add(path);
 
                     canvas.Children.Add(path);
                 }
@@ -257,9 +267,8 @@ namespace Dash
                 ShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 //remove all paths
                 //TODO: there may be better way - not all are removed
-                var c = canvas.Children;
-                var paths = canvas.Children.OfType<Windows.UI.Xaml.Shapes.Path>();
-                foreach (var path in paths)
+
+                foreach (var path in _paths)
                 {
                     canvas.Children.Remove(path);
                 }

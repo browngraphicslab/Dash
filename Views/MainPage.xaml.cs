@@ -412,7 +412,7 @@ namespace Dash
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+                    var center = new Point(MainDocView.ActualWidth / 2, MainDocView.ActualHeight / 2);
                     //get center point of doc where you want to go
                     var shift = new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,

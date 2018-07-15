@@ -156,6 +156,7 @@ namespace Dash
             return snap;
         }
 
+        
         #region Manipulation
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
@@ -204,20 +205,6 @@ namespace Dash
             var startMatrix = _transformBeingAnimated.Matrix;
             var scaleMatrix = scale.GetMatrix();
 
-<<<<<<< HEAD
-=======
-            var startX = _transformBeingAnimated.Matrix.OffsetX;
-            var startY = _transformBeingAnimated.Matrix.OffsetY;
-
-            // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, startY + translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
-            translateAnimationX.AutoReverse = false;
-            translateAnimationY.AutoReverse = false;
-
-
-            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
->>>>>>> 08f6be8424f3edf4bb7d1986cad5c3105e86387c
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
             //the higher number, the more it xooms, but doesn't actually change final view 
             var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
