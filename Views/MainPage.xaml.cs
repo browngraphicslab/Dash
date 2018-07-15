@@ -52,11 +52,11 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
 
-            InitializeComponent();
-
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
+
+            InitializeComponent();
 
 
             Loaded += (s, e) =>
@@ -695,6 +695,8 @@ namespace Dash
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
+
+            xPresentationView.DrawLinesWithNewDocs();
         }
 
 

@@ -31,11 +31,19 @@ namespace Dash
         private PresentationViewTextBox _textbox;
         private bool _giveTextBoxFocusUponFlyoutClosing = false;
         private bool _repeat = false;
+        private List<UIElement> _paths = new List<UIElement>();
 
         public PresentationView()
         {
             this.InitializeComponent();
             DataContext = new PresentationViewModel();
+
+            ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+
+     
+            //remove all paths
+            DrawLines();
+            RemoveLines();
         }
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e)
@@ -98,6 +106,8 @@ namespace Dash
         private void DeletePin(object sender, RoutedEventArgs e)
         {
             ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
+
+            DrawLinesWithNewDocs();
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
@@ -158,7 +168,7 @@ namespace Dash
         }
         
         #region Presenation Lines
-        private List<UIElement> _paths = new List<UIElement>();
+       
 
 
         private double distSqr(Point a, Point b)
@@ -432,6 +442,25 @@ namespace Dash
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
             UpdatePaths();
+        }
+
+        public void DrawLinesWithNewDocs()
+        {
+            if ((ShowLinesButton.Background as SolidColorBrush).Color.ToString() != "#FFFFFFFF")
+            {
+                //show lines
+                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
+                {
+                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                }
+
+                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
+                {
+                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                }
+
+                DrawLines();
+            }
         }
 
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
