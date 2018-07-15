@@ -31,10 +31,7 @@
 
         private StringSearchModel() { }
 
-        public static StringSearchModel False
-        {
-            get { return new StringSearchModel() {StringFound = false}; }
-        }
+        public static StringSearchModel False { get; } = new StringSearchModel {StringFound = false};
 
         public override string ToString()
         {

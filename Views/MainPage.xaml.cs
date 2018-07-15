@@ -432,11 +432,10 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
 
-            if (!(FocusManager.GetFocusedElement() is RichEditBox))
+            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox))
             {
                 var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
                 if (ctrlDown)

@@ -195,12 +195,14 @@
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
-    <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
+    <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
+    <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
@@ -229,21 +231,14 @@
     <Compile Include="Controllers\Operators\GetKeysOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
-    <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsByAlias.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
     <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
@@ -276,7 +271,6 @@
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
-    <Compile Include="Models\RatedSearchResult.cs" />
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
@@ -396,6 +390,7 @@
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
+    <Compile Include="Util\Search\Search.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\StateCropControl.xaml.cs">
       <DependentUpon>StateCropControl.xaml</DependentUpon>
@@ -447,6 +442,9 @@
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\DishReplViewModel.cs" />
     <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineNode.xaml.cs">
+      <DependentUpon>ReplLineNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
@@ -476,13 +474,13 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ActionTextBox.cs" />
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
-    <Compile Include="Views\DishScriptEditView.cs" />
     <Compile Include="Views\DishScriptEditView.xaml.cs">
       <DependentUpon>DishScriptEditView.xaml</DependentUpon>
-      </Compile>
+    </Compile>
     <Compile Include="Views\CustomPdfView.xaml.cs">
       <DependentUpon>CustomPdfView.xaml</DependentUpon>
     </Compile>
@@ -935,6 +933,10 @@
     <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewModels\ReplLineNode.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Collection\CollectionStandardView.xaml">
       <SubType>Designer</SubType>

@@ -115,13 +115,7 @@ namespace Dash
                 find_single,
 
                 search,
-                union_search,
-                intersect_search,
-                negation_search,
-
                 intersect_by_value,
-                process_search_results,
-                parse_search_string,
 
                 // misc
                 map,
@@ -346,12 +340,7 @@ namespace Dash
             [Name.find_s] = "",
             [Name.find_single] = "",
             [Name.search] = "",
-            [Name.union_search] = "",
-            [Name.intersect_search] = "",
-            [Name.negation_search] = "",
             [Name.intersect_by_value] = "",
-            [Name.process_search_results] = "",
-            [Name.parse_search_string] = "",
             [Name.map] = "",
             [Name.exec] = "",
             [Name.exec_to_string] = "",

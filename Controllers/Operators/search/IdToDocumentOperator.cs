@@ -54,7 +54,7 @@ namespace Dash
             
             try
             {
-                outputs[DocKey] = ContentController<FieldModel>.GetController<DocumentController>(id);
+                outputs[DocKey] = Search.SearchIndividualById(id);
             }
             catch (Exception e)
             {

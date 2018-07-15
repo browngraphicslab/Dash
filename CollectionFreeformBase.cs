@@ -200,7 +200,7 @@ namespace Dash
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, startY + translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
