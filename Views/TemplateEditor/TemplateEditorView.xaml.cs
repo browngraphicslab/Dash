@@ -666,6 +666,57 @@ namespace Dash
             }
         }
 
+        private void AddGridData(DocumentController dataDocument)
+        {
+            if (xItemsControlGrid.Visibility == Visibility.Visible)
+            {
+                var rowInfo = new ListController<NumberController>(
+                    GridRoot.RowDefinitions.Select(i =>
+                        new NumberController(i.ActualHeight)));
+                dataDocument.SetField(KeyStore.RowInfoKey, rowInfo, true);
+                var colInfo = new ListController<NumberController>(
+                    GridRoot.ColumnDefinitions.Select(i =>
+                        new NumberController(i.ActualWidth)));
+                dataDocument.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+            }
+        }
+
+        private void ResetLayout()
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            var currLayout =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
+                        KeyStore.TemplateListKey)
+                    ?.First(temp => temp.Equals(workingDoc.GetActiveLayout()));
+            var newFields = DataDocument.EnumFields();
+            currLayout.SetFields(newFields, true);
+
+            currLayout.SetPosition(workingDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data);
+            workingDoc.SetField(KeyStore.TitleKey,
+                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                true);
+        }
+
+        private void InitializeLayout(DocumentController dataDocument)
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocument, true);
+            workingDoc.SetField(KeyStore.TitleKey,
+                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                true);
+            var mainDoc = MainPage.Instance.MainDocument;
+            if (mainDoc.GetField(KeyStore.TemplateListKey) != null)
+            {
+                mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
+            }
+            else
+            {
+                mainDoc.SetField(KeyStore.TemplateListKey,
+                    new ListController<DocumentController>(), true);
+                mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
+            }
+        }
+
 		// called when apply changes button is clicked
         private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
         {
@@ -677,78 +728,31 @@ namespace Dash
                 dataDocInstance.SetField(KeyStore.PositionFieldKey,
                     workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
 
-                if (xItemsControlGrid.Visibility == Visibility.Visible)
-                {
-                    var rowInfo = new ListController<NumberController>(
-                        GridRoot.RowDefinitions.Select(i =>
-                            new NumberController(i.ActualHeight)));
-                    dataDocInstance.SetField(KeyStore.RowInfoKey, rowInfo, true);
-                    var colInfo = new ListController<NumberController>(
-                        GridRoot.ColumnDefinitions.Select(i =>
-                            new NumberController(i.ActualWidth)));
-                    dataDocInstance.SetField(KeyStore.ColumnInfoKey, colInfo, true);
-                }
+                AddGridData(dataDocInstance);
 
                 if (workingDoc.GetActiveLayout() != null)
                 {
-                    var currLayout =
-                        MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
-                                KeyStore.TemplateListKey)
-                            ?.First(temp => temp.Equals(workingDoc.GetActiveLayout()));
-                    var newFields = DataDocument.EnumFields();
-                    currLayout.SetFields(newFields, true);
-
-                    currLayout.SetPosition(workingDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data);
-                    workingDoc.SetField(KeyStore.TitleKey,
-                        new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-                        true);
+                    ResetLayout();
                 }
                 else
                 {
-                    workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocInstance, true);
-                    workingDoc.SetField(KeyStore.TitleKey,
-                        new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-                        true);
-                    var mainDoc = MainPage.Instance.MainDocument;
-                    if (mainDoc.GetField(KeyStore.TemplateListKey) != null)
-                    {
-                        mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
-                    }
-                    else
-                    {
-                        mainDoc.SetField(KeyStore.TemplateListKey,
-                            new ListController<DocumentController>(), true);
-                        mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
-                    }
+                    InitializeLayout(dataDocInstance);
                 }
+
                 //update template style
                 if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
                     TemplateConstants.ListView)
                 {
                     this.FormatTemplateIntoList();
                 }
-
-                // set the working document's prototype to be the current data document
-                // var prototype = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey).GetAllPrototypes()
-                //    .Skip(1).First();
             }
             else
             {
-                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                DataDocument = DataDocument.MakeCopy(null, new List<KeyController>{KeyStore.DocumentContextKey});
-                Clear();
-                DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
-                foreach (var doc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey))
-                {
-                    DocumentControllers.Add(doc);
-                    var dvm =
-                        new DocumentViewModel(doc, new Context(doc));
-                    DocumentViewModels.Add(dvm);
-                }
-                DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
-                // get a deep copy of the current data document
-                // change the data document to that deep copy
+                UnlinkEditor();
             }
+
+            #region Old Code To Apply Templates
+
             //if (sender != null)
             //{
             //    var toggle = sender as ToggleButton;
@@ -851,6 +855,23 @@ namespace Dash
             //        }
             //    }
             //}
+
+            #endregion
+        }
+
+        private void UnlinkEditor()
+        {
+            DataDocument = DataDocument.MakeCopy(null, new List<KeyController> { KeyStore.DocumentContextKey });
+            Clear();
+            DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
+            foreach (var doc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey))
+            {
+                DocumentControllers.Add(doc);
+                var dvm =
+                    new DocumentViewModel(doc, new Context(doc));
+                DocumentViewModels.Add(dvm);
+            }
+            DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
 
         private void HorizontalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
@@ -1938,6 +1959,13 @@ namespace Dash
             // if we have an active layout
             if (workingDoc.GetField(KeyStore.ActiveLayoutKey) is DocumentController activeLayout)
             {
+                var template = MainPage.Instance.MainDocument
+                    .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
+                    ?.First(temp => temp.Equals(activeLayout));
+                if (template != null)
+                {
+                    MainPage.Instance.MainDocument.RemoveFromListField(KeyStore.TemplateListKey, template);
+                }
                 // remove it
                 workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
                 // remove the active layout's document context
