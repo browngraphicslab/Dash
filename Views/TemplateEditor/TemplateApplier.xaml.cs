@@ -67,7 +67,18 @@ namespace Dash
             newTemplate.FieldModelUpdated +=
                 delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
                 {
-                    SetTemplate(newTemplate.GetDataInstance());
+                    if (MainPage.Instance.MainDocument
+                            .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
+                            .First(temp => temp.Equals(template))
+                            .GetField<ListController<DocumentController>>(KeyStore.DataKey).Count == 0)
+                    {
+                        // TODO: figure out a way to remove active layouts -sy
+                        SetTemplate(newTemplate.GetDataInstance());
+                    }
+                    else
+                    {
+                        SetTemplate(newTemplate.GetDataInstance());
+                    }
                 };
                 //template.LayoutDocument.GetDataInstance();
         }

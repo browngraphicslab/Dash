@@ -32,6 +32,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
 using Line = Windows.UI.Xaml.Shapes.Line;
+using Path = System.IO.Path;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -252,21 +253,6 @@ namespace Dash
                     .Skip(1).First();
                 DataDocument.SetField(KeyStore.DocumentContextKey, workingDoc, true);
 
-                foreach (var layoutDoc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-                    .TypedData)
-                {
-                    var matchingDoc = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-                        .TypedData
-                        .FirstOrDefault(i => i.Equals(layoutDoc));
-                    int test = 0;
-                    var binding = new FieldBinding<PointController>
-                    {
-                        Document = matchingDoc,
-                        Key = KeyStore.PositionFieldKey,
-                        Mode = BindingMode.TwoWay
-                    };
-                }
-
                 //check template style, override current template format if necessary
                 if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
                         .GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
@@ -408,8 +394,8 @@ namespace Dash
                     .Equals(TemplateBox.DocumentType) ?? false)
             {
                 // set the width to the working doc's width field if the width field is less than 500, otherwise 500
-                xWorkspace.Width = workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500;
-                xWorkspace.Height = workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500;
+                ResizeCanvas(new Size(workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500,
+                    workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500));
             }
             else
             {
@@ -746,7 +732,7 @@ namespace Dash
                     this.FormatTemplateIntoList();
                 }
             }
-            else
+            else if ((bool) xPreview.IsChecked)
             {
                 UnlinkEditor();
             }
@@ -997,13 +983,12 @@ namespace Dash
                         new TextController(alignment.ToString()), true);
                     dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
                     break;
+
                 case HorizontalAlignment.Stretch:
-                    var width = double.NaN;
                     dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
                         new TextController(alignment.ToString()), true);
                     dvm.LayoutDocument.SetField<BoolController>(KeyStore.UseHorizontalAlignmentKey, true, true);
-                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
-
+                    dvm.Width = double.NaN;
                     break;
             }
 
@@ -1221,6 +1206,37 @@ namespace Dash
                         break;
                 }
             }
+
+
+            // determine if a vertical alignment key exists
+            if (sender.GetField<BoolController>(KeyStore.UseVerticalAlignmentKey)?.Data ?? false)
+            {
+                switch (sender.GetField<TextController>(KeyStore.VerticalAlignmentKey)?.Data)
+                {
+                    case nameof(VerticalAlignment.Top):
+                        // determine if the position field is appropriate for the alignment it uses
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y != 0)
+                        {
+                            // if the position is invalid, then remove the alignment
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                    case nameof(VerticalAlignment.Center):
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y !=
+                            (xWorkspace.Width - sender.GetActualSize().Value.Y) / 2)
+                        {
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                    case nameof(VerticalAlignment.Bottom):
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y !=
+                            xWorkspace.Width - sender.GetActualSize().Value.Y)
+                        {
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                }
+            }
         }
 
         private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
@@ -1243,8 +1259,10 @@ namespace Dash
             var text = "";
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             var doc = _selectedDocument.ViewModel.DocumentController;
+            var docData = doc.GetField<PointerReferenceController>(KeyStore.DataKey);
             // if the document is related to the working document
-            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            if ((docData?.GetDocumentController(null).Equals(workingDoc) ?? false) ||
+                (docData?.GetDocumentController(null).Equals(workingDoc.GetDataDocument()) ?? false))
             {
                 // display a # before displaying what key it is
                 text = "#";
@@ -1288,8 +1306,8 @@ namespace Dash
                             _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
                                 KeyStore.DataKey);
                         var selectedDoc = _selectedDocument.ViewModel.DocumentController;
-                        if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) ||
-                            selectedDoc.GetDataDocument().Equals(workingDoc))
+                        if ((selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).Equals(workingDoc.GetDataDocument()) ?? false) ||
+                            (selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).GetDataDocument().Equals(workingDoc) ?? false))
                         {
                             newRef.FieldKey = specificKey;
                         }
@@ -1964,12 +1982,12 @@ namespace Dash
                     ?.First(temp => temp.Equals(activeLayout));
                 if (template != null)
                 {
-                    MainPage.Instance.MainDocument.RemoveFromListField(KeyStore.TemplateListKey, template);
+                    template.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
                 }
                 // remove it
-                workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
+                //workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
                 // remove the active layout's document context
-                activeLayout.RemoveField(KeyStore.DocumentContextKey);
+                //activeLayout.RemoveField(KeyStore.DocumentContextKey);
             }
         }
 
@@ -2824,35 +2842,42 @@ namespace Dash
             Debug.WriteLine("DRAG COMPLETED");
         }
 
-
-
-        private void ToggleControl_OnChecked(object sender, RoutedEventArgs e)
+        private void XActivate_Clicked(object sender, RoutedEventArgs e)
         {
-            var toggle = sender as ToggleButton;
-            switch (toggle.Name)
-            {
-                case "xActivate":
-                    if ((bool) xPreview.IsChecked)
-                    {
-                        xPreview.IsChecked = false;
-                    }
+            xActivate.IsChecked = true;
+            xPreview.IsChecked = false;
 
-                    xActivate.IsChecked = true;
-                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+            DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+            ApplyChanges_OnClicked(null, null);
+        }
 
-                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
-                    break;
-                case "xPreview":
-                    if ((bool) xActivate.IsChecked)
-                    {
-                        xActivate.IsChecked = false;
-                    }
+        private void XPreview_Clicked(object sender, RoutedEventArgs e)
+        {
+            xPreview.IsChecked = true;
+            xActivate.IsChecked = false;
 
-                    xPreview.IsChecked = true;
-                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
-                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
-                    break;
-            }
+            DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
+            ApplyChanges_OnClicked(null, null);
+        }
+
+        private void XActivate_MaintainChecked(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            xActivate.IsChecked = true;
+            xPreview.IsChecked = false;
+        }
+
+        private void XPreview_MaintainChecked(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            xPreview.IsChecked = true;
+            xActivate.IsChecked = false;
+        }
+
+        private void XApplyButton_OnClick(object sender, PointerRoutedEventArgs e)
+        {
+            xActivate.IsChecked = true;
+            ApplyChanges_OnClicked(null, null);
         }
 
         //IF WE WANT TO CLOSE THE FORMAT ITEMS DROP DOWN WHEN THE ITEM LOSES FOCUS
@@ -2907,7 +2932,7 @@ namespace Dash
         //        ResizeCanvas(size);
         //    }
         //}
-       
+
     }
 
 }
