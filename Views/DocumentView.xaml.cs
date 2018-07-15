@@ -179,7 +179,7 @@ namespace Dash
             void ResizeHandles_restorePointerTracking()
             {
                 if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                    ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
+                    ViewModel.DecorationState = xBottomRightResizeControl.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
 
@@ -192,22 +192,29 @@ namespace Dash
 
                 UndoManager.EndBatch();
             }
-            ResizeHandleTopLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
-            ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
-            ResizeHandleBottomLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
-            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
 
-            foreach (var handle in new Ellipse[] { ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft, ResizeHandleTopRight })
+            xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
+            xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
+            xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
+            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+
+            foreach (var handle in new Rectangle[]
             {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+            })
+            {
+                handle.ManipulationMode = ManipulationModes.All;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
                 handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
                 handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
                 handle.PointerPressed += (s, e) =>
-         {
-             CapturePointer(e.Pointer);
-             ManipulationMode = ManipulationModes.None;
-             e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-         };
+                {
+                    CapturePointer(e.Pointer);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                };
             }
 
             // setup OperatorEllipse 
@@ -675,10 +682,15 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             if (this != MainPage.Instance.MainDocView) return;
             view.xOuterGrid.BorderThickness = new Thickness(0);
-            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+            })
+            {
+                handle.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
