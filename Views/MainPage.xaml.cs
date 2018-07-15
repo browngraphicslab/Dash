@@ -112,7 +112,7 @@ namespace Dash
                     MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
                 if (presentationItems != null)
                 {
-                    xPresentationView.ViewModel = new PresentationViewModel(presentationItems);
+                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
                 }
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);

@@ -20,11 +20,7 @@ namespace Dash.Views
 {
     public sealed partial class PresentationView : UserControl
     {
-        public PresentationViewModel ViewModel
-        {
-            get => DataContext as PresentationViewModel;
-            set => DataContext = value;
-        }
+        public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
 
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
@@ -96,7 +92,7 @@ namespace Dash.Views
         // remove from viewmodel
         private void DeletePin(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).Tag as DocumentController);
+            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.

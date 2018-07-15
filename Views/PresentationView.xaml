@@ -29,7 +29,7 @@
                 <ListView ItemsSource="{Binding PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="system:Int32">
-                            <TextBlock Text="{x:Bind}" FontSize="20" Foreground="LightGray"/>
+                            <TextBlock Text="{x:Bind Mode=OneWay}" FontSize="20" Foreground="LightGray"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -56,7 +56,7 @@
                                     <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
+                                <Button Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

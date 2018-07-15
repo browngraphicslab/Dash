@@ -8,11 +8,23 @@ using System.Threading.Tasks;
 
 namespace Dash.Views
 {
-    public class PresentationViewModel
+    public class PresentationViewModel : ViewModelBase
     {
-        public ObservableCollection<DocumentController> PinnedNodes { get; set; } = new ObservableCollection<DocumentController>();
-        public ObservableCollection<int> PinNumbers { get; set; } = new ObservableCollection<int>();
+        public ObservableCollection<DocumentController> PinnedNodes
+        {
+            get => _pinnedNodes;
+            set => SetProperty(ref _pinnedNodes, value);
+        }
+
+        public ObservableCollection<int> PinNumbers
+        {
+            get => _pinNumbers;
+            set => SetProperty(ref _pinNumbers, value);
+        }
+
         private ListController<DocumentController> _listController = null;
+        private ObservableCollection<DocumentController> _pinnedNodes = new ObservableCollection<DocumentController>();
+        private ObservableCollection<int> _pinNumbers = new ObservableCollection<int>();
 
         public PresentationViewModel()
         {
