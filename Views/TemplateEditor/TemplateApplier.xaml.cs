@@ -76,6 +76,14 @@ namespace Dash
         {
             // set the new layout document's context to the selected document's data doc
             templateToSet.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
+
+            //foreach (var layoutDoc in templateToSet.GetField<ListController<DocumentController>>(KeyStore.DataKey)
+            //    .TypedData)
+            //{
+            //    (layoutDoc.GetField<PointerReferenceController>(KeyStore.DataKey).DocumentReference as
+            //        DocumentReferenceController).ChangeFieldDoc(_document.GetDataDocument());
+            //}
+
             // set the position to match the old position
             templateToSet.SetField(KeyStore.PositionFieldKey,
                 _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
