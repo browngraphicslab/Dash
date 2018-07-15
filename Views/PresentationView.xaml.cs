@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -164,8 +165,7 @@ namespace Dash
         private void drawLines()
         {
             var canvas = MainPage.Instance.xCanvas;
-            var docView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().GetCanvas();
-
+ 
             //draw lines between members of presentation 
             var docs = PinnedNodesListView.Items?.ToList();
 
@@ -221,11 +221,30 @@ namespace Dash
                     }
                 }
 
+                //get right collection
+                Canvas docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().GetCanvas();
+                Canvas docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().GetCanvas();
+                var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>().Reverse();
+               foreach (var col in allCollections)
+                {
+                    foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
+                    {
+                        if (Equals(docs[i] as DocumentViewModel, doc.ViewModel))
+                        {
+                            docViewA = col.GetCanvas();
+                        }
+                        if (Equals(docs[i + 1] as DocumentViewModel, doc.ViewModel))
+                        {
+                            docViewB = col.GetCanvas();
+                        }
+                    }
+                }
+
                 //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-                startPoint = docView.TransformToVisual(canvas).TransformPoint(startPoint);
-                endPoint = docView.TransformToVisual(canvas).TransformPoint(endPoint);
-                startControlPt = docView.TransformToVisual(canvas).TransformPoint(startControlPt);
-                endControlPt = docView.TransformToVisual(canvas).TransformPoint(endControlPt);
+                startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+                endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+                startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
+                endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
 
                 //create nest of elements to show segment
                 var segment =
@@ -307,7 +326,8 @@ namespace Dash
 
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var track = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().ViewModel.ContainerDocument;         
+            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>();
+        
 
             if ((ShowLinesButton.Background as SolidColorBrush).Color.ToString() == "#FFFFFFFF")
             {
@@ -316,8 +336,13 @@ namespace Dash
 
                 drawLines();
 
-                track.AddFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
-                track.AddFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
+                foreach (var coll in allCollections)
+                {
+                    var track = coll.ViewModel.ContainerDocument;
+
+                    track.AddFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
+                    track.AddFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
+                }
             }
             else
             {
@@ -326,9 +351,14 @@ namespace Dash
 
                 //remove all paths
                 removeLines();
-              
-                track.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
-                track.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
+
+                foreach (var coll in allCollections)
+                {
+                    var track = coll.ViewModel.ContainerDocument;
+
+                    track.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
+                    track.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
+                }
             }
         }
         #endregion
