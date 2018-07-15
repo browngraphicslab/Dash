@@ -162,89 +162,185 @@ namespace Dash
             return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
         }
 
-        private void drawLines()
+        private List<Point> GetFourBeizerPoints(int i)
         {
             var canvas = MainPage.Instance.xCanvas;
- 
+            var docs = PinnedNodesListView.Items;
+
+            //use bounds to find closest sides on each neighboring doc
+            //get midpoitns of every side of both docs
+            var docA = (docs[i] as DocumentViewModel).Bounds;
+            var docAsides = new List<Tuple<Point, Point>>();
+            var docAy = docA.Y + docA.Height / 2;
+            var docAx = docA.X + docA.Width / 2;
+
+            var docB = (docs[i + 1] as DocumentViewModel).Bounds;
+            var docBsides = new List<Tuple<Point, Point>>();
+            var docBy = docB.Y + docB.Height / 2;
+            var docBx = docB.X + docB.Width / 2;
+
+            var offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
+
+            //the order goes left, top, right, bottom - in regualr UWP fashion
+            docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
+            docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top - offset)));
+            docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
+            docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom + offset)));
+
+
+            //the order goes left, top, right, bottom - in regualr UWP fashion
+            docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - offset, docBy)));
+            docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top - offset)));
+            docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + offset, docBy)));
+            docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom + offset)));
+
+            var minDist = Double.PositiveInfinity;
+            Point startPoint;
+            Point endPoint;
+            Point startControlPt;
+            Point endControlPt;
+
+            //get closest two sides between docs
+            foreach (var aside in docAsides)
+            {
+                foreach (var bside in docBsides)
+                {
+                    var dist = distSqr(aside.Item1, bside.Item1);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        startPoint = aside.Item1;
+                        startControlPt = aside.Item2;
+                        endPoint = bside.Item1;
+                        endControlPt = bside.Item2;
+                    }
+                }
+            }
+
+            //get right collection
+            Canvas docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+                .GetCanvas();
+            Canvas docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+                .GetCanvas();
+            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>()
+                .Reverse();
+            foreach (var col in allCollections)
+            {
+                foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
+                {
+                    if (Equals(docs[i] as DocumentViewModel, doc.ViewModel))
+                    {
+                        docViewA = col.GetCanvas();
+                    }
+
+                    if (Equals(docs[i + 1] as DocumentViewModel, doc.ViewModel))
+                    {
+                        docViewB = col.GetCanvas();
+                    }
+                }
+            }
+
+            //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
+            startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+            endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+            startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
+            endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+
+            return new List<Point>()
+            {
+                startPoint,
+                endPoint,
+                startControlPt,
+                endControlPt
+            };
+        }
+
+        private void UpdatePaths()
+        {
+            //if pins changed, updating won't work
+            if (_paths.Count / 2 != PinnedNodesListView.Items.Count - 1)
+            {
+                DrawLines();
+            }
+
             //draw lines between members of presentation 
-            var docs = PinnedNodesListView.Items?.ToList();
+            var docs = PinnedNodesListView.Items;
 
             for (var i = 0; i < docs?.Count - 1; i++)
             {
-                //use bounds to find closest sides on each neighboring doc
-                //get midpoitns of every side of both docs
-                var docA = (docs[i] as DocumentViewModel).Bounds;
-                var docAsides = new List<Tuple<Point, Point>>();
-                var docAy = docA.Y + docA.Height / 2;
-                var docAx = docA.X + docA.Width / 2;
+                var points = GetFourBeizerPoints(i);
+                Point startPoint = points[0];
+                Point endPoint = points[1];
+                Point startControlPt = points[2];
+                Point endControlPt = points[3];
 
-                var docB = (docs[i + 1] as DocumentViewModel).Bounds;
-                var docBsides = new List<Tuple<Point, Point>>();
-                var docBy = docB.Y + docB.Height / 2;
-                var docBx = docB.X + docB.Width / 2;
+                //create nest of elements to show segment
+                var segment =
+                    new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
 
-                var offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
-
-                //the order goes left, top, right, bottom - in regualr UWP fashion
-                docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
-                docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top - offset)));
-                docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
-                docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom + offset)));
-
-
-                //the order goes left, top, right, bottom - in regualr UWP fashion
-                docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - offset, docBy)));
-                docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top - offset)));
-                docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + offset, docBy)));
-                docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom + offset)));
-
-                var minDist = Double.PositiveInfinity;
-                Point startPoint;
-                Point endPoint;
-                Point startControlPt;
-                Point endControlPt;
-
-                //get closest two sides between docs
-                foreach (var aside in docAsides)
+                var segments = new PathSegmentCollection {segment};
+                var pathFig = new PathFigure
                 {
-                    foreach (var bside in docBsides)
-                    {
-                        var dist = distSqr(aside.Item1, bside.Item1);
-                        if (dist < minDist)
-                        {
-                            minDist = dist;
-                            startPoint = aside.Item1;
-                            startControlPt = aside.Item2;
-                            endPoint = bside.Item1;
-                            endControlPt = bside.Item2;
-                        }
-                    }
+                    StartPoint = startPoint,
+                    Segments = segments
+                };
+
+                var figures = new PathFigureCollection {pathFig};
+
+                var oldPath = ((_paths[2 * i] as Windows.UI.Xaml.Shapes.Path)?.Data as PathGeometry);
+                oldPath.Figures = figures;
+
+                //make arrow points
+                var diffX = endControlPt.X - endPoint.X;
+                var diffY = endControlPt.Y - endPoint.Y;
+                Point arrowPtA;
+                Point arrowPtB;
+                var arrowWidth = 10;
+                if (Math.Abs(diffX) > Math.Abs(diffY))
+                {
+                    var sign = diffX / Math.Abs(diffX);
+                    //arrow should come from x direction
+                    arrowPtA = new Point(endPoint.X + sign * arrowWidth, endPoint.Y + arrowWidth);
+                    arrowPtB = new Point(endPoint.X + sign * arrowWidth, endPoint.Y - arrowWidth);
+                }
+                else
+                {
+                    var sign = diffY / Math.Abs(diffY);
+                    arrowPtA = new Point(endPoint.X + arrowWidth, endPoint.Y + sign * arrowWidth);
+                    arrowPtB = new Point(endPoint.X - arrowWidth, endPoint.Y + sign * arrowWidth);
                 }
 
-                //get right collection
-                Canvas docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().GetCanvas();
-                Canvas docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>().GetCanvas();
-                var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>().Reverse();
-               foreach (var col in allCollections)
+                //make arrow
+                var arrowPoints = new PointCollection
                 {
-                    foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
-                    {
-                        if (Equals(docs[i] as DocumentViewModel, doc.ViewModel))
-                        {
-                            docViewA = col.GetCanvas();
-                        }
-                        if (Equals(docs[i + 1] as DocumentViewModel, doc.ViewModel))
-                        {
-                            docViewB = col.GetCanvas();
-                        }
-                    }
-                }
+                    endPoint,
+                    arrowPtA,
+                    arrowPtB
+                };
 
-                //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-                startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
-                endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
-                startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
-                endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+                var oldPath2 = _paths[2 * i + 1] as Polygon;
+                oldPath2.Points = arrowPoints;
+            }
+        }
+
+        private void DrawLines()
+        {
+            var canvas = MainPage.Instance.xCanvas;
+            //only recalcualte if you need to 
+
+            RemoveLines();
+            _paths = new List<UIElement>();
+
+            //draw lines between members of presentation 
+            var docs = PinnedNodesListView.Items;
+
+            for (var i = 0; i < docs?.Count - 1; i++)
+            {
+                var points = GetFourBeizerPoints(i);
+                Point startPoint = points[0];
+                Point endPoint = points[1];
+                Point startControlPt = points[2];
+                Point endControlPt = points[3];
 
                 //create nest of elements to show segment
                 var segment =
@@ -308,7 +404,7 @@ namespace Dash
             }
         }
 
-        private void removeLines()
+        private void RemoveLines()
         {
             //remove all paths
             var canvas = MainPage.Instance.xCanvas;
@@ -318,10 +414,9 @@ namespace Dash
             }
 
         }
-        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
-            removeLines();
-            drawLines();
+            UpdatePaths();
         }
 
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
@@ -334,7 +429,12 @@ namespace Dash
                 //show lines
                 ShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
 
-                drawLines();
+                DrawLines();
+
+                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
+                {
+                    viewModelPinnedNode.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                }
 
                 foreach (var coll in allCollections)
                 {
@@ -350,7 +450,12 @@ namespace Dash
                 ShowLinesButton.Background = new SolidColorBrush(Colors.White);
 
                 //remove all paths
-                removeLines();
+                RemoveLines();
+
+                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
+                {
+                    viewModelPinnedNode.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                }
 
                 foreach (var coll in allCollections)
                 {

@@ -586,7 +586,7 @@ namespace Dash
 
                 if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
-                    TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
+                    //TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
                     if (e != null)
                         e.Handled = true;
@@ -596,7 +596,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
+            //TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
