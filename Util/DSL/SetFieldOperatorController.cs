@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("setField")]
+    [OperatorType(Op.Name.set_field)]
     public class SetFieldOperatorController : OperatorController
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -25,16 +25,16 @@ namespace Dash
             throw new NotImplementedException();
         }
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3", "SetField");
+        private static readonly KeyController TypeKey = new KeyController("SetField", "8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3");
 
         //Input keys
 
-        public static readonly KeyController InputDocumentKey = new KeyController("922FA00C-C37F-4494-AB6B-AA582BB9F2E2", "InputDoc");
-        public static readonly KeyController KeyNameKey = new KeyController("FB15FB6F-F710-4A53-BACD-D17FAB4E416D", "KeyName");
-        public static readonly KeyController FieldValueKey = new KeyController("C058D184-7464-423E-B5F8-5B1F3707A4A6", "FieldValue");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
+        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
+        public static readonly KeyController FieldValueKey = new KeyController("FieldValue");
 
         //Output keys
-        public static readonly KeyController ResultDocKey = new KeyController("D7000C15-3B29-422E-8C93-A8B696C84904", "ResultDoc");
+        public static readonly KeyController ResultDocKey = new KeyController("ResultDoc");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -46,44 +46,21 @@ namespace Dash
         {
             [ResultDocKey] = TypeInfo.Document,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
-            var fieldName = inputs[KeyNameKey] as TextController;
+            var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
             var fieldValue = inputs[FieldValueKey];
-            if (inputDoc != null && fieldName != null && fieldValue != null)
-            {
-                var inps = new Dictionary<KeyController, FieldControllerBase>();
-                inps[GetFieldOperatorController.KeyNameKey] = fieldName;
-                inps[GetFieldOperatorController.InputDocumentKey] = inputDoc;
-                var outs = new Dictionary<KeyController, FieldControllerBase>();
-                var getFieldController = new GetFieldOperatorController();
-                getFieldController.Execute(inps, outs, args);
 
-                var outValue = outs[GetFieldOperatorController.ResultFieldKey];
-                var set = false;
-                if (outValue != null)
-                {
-                    foreach(var field in inputDoc.EnumFields())
-                    {
-                        if (field.Value.Equals(outValue))
-                        {
-                            inputDoc.SetField(field.Key, fieldValue, true);
-                            set = true;
-                            break;
-                        }
-                    }
-                }
+            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.GetName(), fieldValue.GetValue(null).ToString()));
 
-                if (!set)
-                {
-                    inputDoc.SetField(new KeyController(UtilShared.GenerateNewId(), fieldName.Data), fieldValue, true);
-                }
-            }
+            var success = inputDoc.SetField(new KeyController(keyName), fieldValue, true);
 
-            outputs[ResultDocKey] = inputDoc;
+            var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
+
+            outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
+
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Dash
         /// <returns></returns>
         public DocumentController ConvertToDocumentController()
         {
-            return new DocumentController(_dictionary.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(new KeyController(new KeyModel(){Name = kvp.Key}), kvp.Value)).ToDictionary(k =>k.Key, v => v.Value), DocumentType.DefaultType);
+            return new DocumentController(_dictionary.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(new KeyController(kvp.Key), kvp.Value)).ToDictionary(k =>k.Key, v => v.Value), DocumentType.DefaultType);
         }
 
         protected override State<string> CreateNew(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null, string trackingId = null)

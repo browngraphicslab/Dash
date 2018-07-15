@@ -10,19 +10,19 @@ namespace Dash
     public class ExtractSentencesOperatorController : OperatorController
     {
         // Input Keys
-        public static readonly KeyController InputCollection = new KeyController("00EABCCE-3CDC-4FD8-A419-2571EC4D0439", "Input Collection");
-        public static readonly KeyController TextField = new KeyController("87C2116A-9853-4884-BDCD-E3F5124F687E", "Text Field");
+        public static readonly KeyController InputCollection = new KeyController("Input Collection");
+        public static readonly KeyController TextField = new KeyController("Text Field");
 
         // Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("D947CBFD-5EF7-4503-A2B4-8CB42A2B2901", "Output");
+        public static readonly KeyController OutputCollection = new KeyController("Output");
 
         // helper key to store sentences in the output
-        public static readonly KeyController SentenceKey = new KeyController("528F8275-99FD-48A3-8B9D-71CEB0856078", "Sentence");
+        public static readonly KeyController SentenceKey = new KeyController("Sentence");
 
         // helper key to store sentences in the output
-        public static readonly KeyController IndexKey = new KeyController("4e852433-b6cc-43f2-a37c-636e1e61cd8b", "Index");
-        public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
-        public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
+        public static readonly KeyController IndexKey = new KeyController("Index");
+        public static readonly KeyController SentenceLengthKey = new KeyController("Sentence Length");
+        public static readonly KeyController SentenceScoreKey = new KeyController("Sentence Score");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =  rfmc => new ExtractSentencesOperatorBox(rfmc);
 
@@ -49,11 +49,11 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("D9EE3561-0A30-4DA9-B11A-859CABCF237B", "Sentence Analyzer");
+        private static readonly KeyController TypeKey = new KeyController("Sentence Analyzer", "D9EE3561-0A30-4DA9-B11A-859CABCF237B");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;
@@ -77,7 +77,7 @@ namespace Dash
                         outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
                         outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
 
-                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.Id, SentenceKey), 0, 0, 200, 200).Document;
+                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc, SentenceKey), 0, 0, 200, 200).Document;
                         docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
                         outputDocs.Add(docLayout);
 

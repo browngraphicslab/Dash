@@ -19,14 +19,14 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("518988DD-4C30-4AE6-AF7F-3532B7A71C7B", "Multiply");
+        private static readonly KeyController TypeKey = new KeyController("Multiply", "518988DD-4C30-4AE6-AF7F-3532B7A71C7B");
 
         //Input keys
-        public static readonly KeyController AKey = new KeyController("D0FF0175-F158-43CC-B2A3-CE7266BBA062", "A");
-        public static readonly KeyController BKey = new KeyController("3D1BB49B-6F11-4044-AC81-2ECA3EECEB7B", "B");
+        public static readonly KeyController AKey = new KeyController("A");
+        public static readonly KeyController BKey = new KeyController("B");
 
         //Output keys
-        public static readonly KeyController ProductKey = new KeyController("B618238C-16A0-4F6F-9DEE-C4657C087991", "Product");
+        public static readonly KeyController ProductKey = new KeyController("Product");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

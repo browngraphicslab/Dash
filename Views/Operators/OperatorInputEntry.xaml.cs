@@ -59,7 +59,7 @@ namespace Dash
                 xEllipse.Stroke = new SolidColorBrush(Colors.Red);
                 if (dragData.DraggedKey != null)
                 {
-                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc, dragData.DraggedKey), true);
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace Dash
                     if (fieldsWithCorrectType.Count == 1)
                     {
                         var refKey = fieldsWithCorrectType[0];
-                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
+                        opDoc.SetField(key, new DocumentReferenceController(_refDoc, refKey), true);
                     }
                     else // otherwise display the autosuggest box
                     {
@@ -215,7 +215,7 @@ namespace Dash
                 if (chosen.CollectionKey == null)
                 {
                     OperatorFieldReference.GetDocumentController(null).SetField(key,
-                        new DocumentReferenceController(_refDoc.Id, chosen.FieldKey), true);
+                        new DocumentReferenceController(_refDoc, chosen.FieldKey), true);
                 }
                 else
                 {

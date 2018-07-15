@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -317,6 +318,7 @@ namespace Dash
         }
         public static void    SetHidden(this DocumentController document, bool hidden)
         {
+            //TODO This should use a BoolController
             document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
         }
 
@@ -324,7 +326,7 @@ namespace Dash
         {
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
         }
-        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
             var todocs = document.GetLinks(LinkFromOrToKey);
             if (todocs == null)
@@ -334,41 +336,64 @@ namespace Dash
             else
                 todocs.AddRange(docs);
         }
+        public static ListController<DocumentController> GetRegions(this DocumentController document)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+        }
+        public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
+        {
+            var curRegions = document.GetLinks(KeyStore.RegionsKey);
+            if (curRegions == null)
+            {
+                document.SetField(KeyStore.RegionsKey, new ListController<DocumentController>(regions), true);
+            }
+            else
+                curRegions.AddRange(regions);
+        }
 
         public static DocumentController GetRegionDefinition(this DocumentController document)
         {
             return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
         }
-        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent, AnnotationManager.AnnotationType annotationType)
         {
             document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+            document.SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static bool    GetTransient(this DocumentController document)
+        public static AnnotationManager.AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationManager.AnnotationType.None
+                : Enum.Parse<AnnotationManager.AnnotationType>(t.Data);
+        }
+
+        public static bool GetTransient(this DocumentController document)
         {
             var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
             return data?.Data == "true";
         }
-        public static void    SetTransient(this DocumentController document, bool hidden)
+        public static void SetTransient(this DocumentController document, bool hidden)
         {
             document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
         }
 
-        public static int ?   GetSideCount(this DocumentController document)
+        public static int? GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void    SetSideCount(this DocumentController document, int count)
+        public static void SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
 
-        public static void    SetWidth(this DocumentController document, double width)
+        public static void SetWidth(this DocumentController document, double width)
         {
             document.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
         }
 
-        public static void    SetHeight(this DocumentController document, double height)
+        public static void SetHeight(this DocumentController document, double height)
         {
             document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
         }

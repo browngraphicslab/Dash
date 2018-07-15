@@ -7,15 +7,15 @@ namespace Dash
     /// <summary>
     /// Operator Class used to execute Dish Scripting Language (DSL) as a string and return the return value
     /// </summary>
-    [OperatorType("exec")]
+    [OperatorType(Op.Name.exec)]
     public class ExecDishOperatorController : OperatorController
     {
 
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("0F040954-2914-4794-90C4-FE442DD665B4", "Script");
+        public static readonly KeyController ScriptKey = new KeyController("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("5006A73E-2466-4301-9A95-78083000603E", "Result");
+        public static readonly KeyController ResultKey = new KeyController("Result");
 
         public ExecDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -37,11 +37,11 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0", "Exec");
+        private static readonly KeyController TypeKey = new KeyController("Exec", "F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             try
             {

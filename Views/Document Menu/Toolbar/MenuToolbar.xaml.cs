@@ -53,6 +53,20 @@ namespace Dash
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
             "CollapseColor", typeof(SolidColorBrush), typeof(MenuToolbar), new PropertyMetadata(default(SolidColorBrush)));
 
+        public void ChangeVisibility(bool isVisible)
+        {
+            //Making the command bar collapsed while it is open causes a bug with making it visible again, so we close it first
+            if (!isVisible)
+            {
+                xToolbar.IsOpen = false;
+            }
+            Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            if (isVisible)
+            {
+                xToolbar.IsOpen = true;
+            }
+        }
+
         public SolidColorBrush CollapseColor
         {
             get { return (SolidColorBrush)GetValue(CollapseColorProperty); }
@@ -310,12 +324,15 @@ namespace Dash
                     {
                         containsInternalContent = true;
                         baseLevelContentToolbar = xTextToolbar;
-                        xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-                        //give toolbar access to the most recently selected text box for editing purposes
-                        xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                        xTextToolbar.SetDocs(selection);
-                        subtoolbarElement = xTextToolbar;
-                        xGroupToolbar.TryMakeGroupEditable(false);
+                        if (FocusManager.GetFocusedElement() is RichEditBox reb)
+                        {
+                            xTextToolbar.SetMenuToolBarBinding(reb);
+                            //give toolbar access to the most recently selected text box for editing purposes
+                            xTextToolbar.SetCurrTextBox(reb);
+                            xTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xTextToolbar;
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
                     }
 
                     // Group controls  
@@ -358,7 +375,7 @@ namespace Dash
                     }
 
                     //Annnotation controls
-                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
                     if (annot != null)
                     {
                         System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
@@ -514,13 +531,12 @@ namespace Dash
                 {
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
-                    if (docController != null)
-                    {
-                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                        docController.GetPositionField().Data = where;
-                        mainPageCollectionView.ViewModel.AddDocument(docController);
-                    }
+                    if (docController == null) continue;
+
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
+                    docController.GetPositionField().Data = @where;
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
             }
             else
@@ -777,15 +793,6 @@ namespace Dash
             //toggle night mode styles
             xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
-
-            EnsureVisible();
-        }
-
-        public void EnsureVisible()
-        {
-            //ensure toolbar is visible
-            xToolbar.IsEnabled = true;
-            xToolbar.Visibility = Visibility.Visible;
         }
 
         /// <summary>

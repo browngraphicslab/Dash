@@ -69,7 +69,7 @@ namespace Dash.Models.DragModels
             // if a key is specified use a databox to show the value stored at the key
             if (DraggedKey != null)
             {
-                var dbox = new DataBox(new DocumentReferenceController(DraggedDocument.Id, DraggedKey), where.X,
+                var dbox = new DataBox(new DocumentReferenceController(DraggedDocument, DraggedKey), where.X,
                     where.Y).Document;
                 dbox.Tag = "DraggedKey doc";
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);

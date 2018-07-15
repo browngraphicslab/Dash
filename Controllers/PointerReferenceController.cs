@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Dash.Controllers
+namespace Dash
 {
     class PointerReferenceController : ReferenceController
     {
@@ -41,31 +41,21 @@ namespace Dash.Controllers
             _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
-        public override FieldControllerBase Copy()
-        {
-            return new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
-        }
+        public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
 
-        public override DocumentController GetDocumentController(Context context)
-        {
-            return DocumentReference?.DereferenceToRoot<DocumentController>(context);
-        }
+        public override DocumentController GetDocumentController(Context context) => DocumentReference?.DereferenceToRoot<DocumentController>(context);
 
-        public override FieldReference GetFieldReference()
-        {
-            return new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
-        }
+        public override FieldReference GetFieldReference() => new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
 
-        public override string GetDocumentId(Context context)
-        {
-            return GetDocumentController(context).Id;
-        }
+        public override FieldControllerBase GetDocumentReference() => DocumentReference;
+
+        public override string ToString() => $"pRef[{DocumentReference}, {FieldKey}]";
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
             if (mapping.ContainsKey(DocumentReference.GetDocumentController(null)))
             {
-                return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)].Id, DocumentReference.FieldKey), FieldKey);
+                return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)] as DocumentController, DocumentReference.FieldKey), FieldKey);
             }
             return null;
         }

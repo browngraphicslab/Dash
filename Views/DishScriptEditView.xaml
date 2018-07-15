@@ -1,0 +1,41 @@
+﻿<UserControl
+    x:Class="Dash.DishScriptEditView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Border BorderBrush="Black" BorderThickness="1">
+        <Grid VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*"  />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button x:Name="xRepl"  Click="XRepl_OnClick" Grid.Row="0" Background="{ThemeResource TreeviewBrush}" Canvas.ZIndex="1" >
+                <SymbolIcon  Symbol="Switch" Margin="22, 12, 22, 12"></SymbolIcon>
+            </Button>
+            <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
+                        Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
+                <!--<AppBarButton x:Name="xStop"  Icon="Stop"  Label="Stop" Click="XStop_OnClick" ></AppBarButton>-->
+                <AppBarButton x:Name="xRun"  Icon="Play"  Label="Run" Click="XRun_OnClick" ></AppBarButton>
+            </CommandBar>
+            <ScrollViewer Name="xScrollViewer" Grid.Row="1" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
+                          HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
+                          Margin="5" Background="White">
+                <TextBox Name="xTextBox" FontSize="15" 
+                         PlaceholderText="Type code here..." AcceptsReturn="true" IsSpellCheckEnabled="False" TextChanged="XTextBox_OnTextChanged">
+                </TextBox>
+            </ScrollViewer>
+            <Border Background="White" Grid.Row="2" >
+                <TextBlock x:Name="xResult" Margin="5">Output:</TextBlock>
+            </Border>
+            
+        </Grid>
+    </Border>
+</UserControl>

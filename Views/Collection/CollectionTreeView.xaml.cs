@@ -1,23 +1,12 @@
-﻿using Dash.Models.DragModels;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.UI;
+using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using DashShared;
-using Color = Windows.UI.Color;
-using Point = Windows.Foundation.Point;
-using Visibility = Windows.UI.Xaml.Visibility;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -29,10 +18,10 @@ namespace Dash
 
         public CollectionTreeView()
         {
-            this.InitializeComponent();
-            this.AllowDrop = true;
-            this.Drop += CollectionTreeView_Drop;
-            this.DragOver += CollectionTreeView_DragOver;
+            InitializeComponent();
+            AllowDrop = true;
+            Drop += CollectionTreeView_Drop;
+            DragOver += CollectionTreeView_DragOver;
         }
 
         private void CollectionTreeView_DragOver(object sender, DragEventArgs e)

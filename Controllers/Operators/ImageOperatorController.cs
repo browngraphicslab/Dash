@@ -17,12 +17,12 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("58032D3F-2B09-475B-8A56-F455DC809229", "Image");
+        private static readonly KeyController TypeKey = new KeyController("Image Operator", "58032D3F-2B09-475B-8A56-F455DC809229");
 
 
-        public static readonly KeyController URIKey = new KeyController("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
+        public static readonly KeyController URIKey = new KeyController("URI");
 
-        public static readonly KeyController ImageKey = new KeyController("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
+        public static readonly KeyController ImageKey = new KeyController("Image");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -33,10 +33,9 @@ namespace Dash
         {
             [ImageKey] = TypeInfo.Image
         };
-
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
 
         }

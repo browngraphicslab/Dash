@@ -25,6 +25,7 @@
 
     <Grid x:Name="xMasterStack" >
         <Grid.ColumnDefinitions>
+
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
@@ -85,12 +86,16 @@
 
                             <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
                                 <Grid>
-                                    <Image x:Name="xIconImage" Height="60" HorizontalAlignment="Center" Width="60"  Source="ms-appx:///Assets/Icons/doc-icon.png" />
-                                    <Image x:Name="xSmallIconImage" Height="20" Width="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="ms-appx:///Assets/Icons/doc-icon.png"/>
+                                    <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"  Source="ms-appx:///Assets/Icons/doc-icon.png">
+                                        <ToolTipService.ToolTip>
+                                            <Image x:Name="xToolTipPreview" Height="200" Source="ms-appx:///Assets/Icons/Unavailable.png"></Image>
+                                        </ToolTipService.ToolTip>
+                                    </Image>
+                                    <Image x:Name="xSmallIconImage" Height="35" Width="35" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="ms-appx:///Assets/Icons/doc-icon.png"/>
                                 </Grid>
                             </Border>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                                <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" HorizontalAlignment="Center" TextAlignment="Center" Background="Transparent" Text="{Binding DocumentController.Title}" BorderThickness="0"/>
+                                <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" Background="Transparent" Text="{Binding DocumentController.Title}" BorderThickness="0"/>
                             </StackPanel>
                         </Grid>
                     </Grid>

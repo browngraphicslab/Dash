@@ -75,7 +75,7 @@ namespace Dash
             {
                 UndoManager.StartBatch();
                 var field = DSL.InterpretUserInput(text,
-                    state: ScriptState.CreateStateWithThisDocument(
+                    scope: Scope.CreateStateWithThisDocument(
                         ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
@@ -184,7 +184,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
-            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document.Id, _oldBinding.Key)).Document;
+            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);
         }

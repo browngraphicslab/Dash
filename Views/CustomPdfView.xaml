@@ -1,0 +1,36 @@
+﻿<UserControl
+    x:Class="Dash.CustomPdfView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Control"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    SizeChanged="CustomPdfView_OnSizeChanged"
+    KeyDown="CustomPdfView_OnKeyDown">
+
+    <ScrollViewer x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging">
+        <Viewbox Stretch="UniformToFill">
+            <!--This Grid will have the width and height of the pdf that is being displayed-->
+            <Grid x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
+                  PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
+                  PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
+                <!-- ItemsControl that stores the page images -->
+                <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="ImageSource">
+                            <Image Source="{x:Bind}" Margin="0,0,0,10" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <!--Annotation overlay for block annotations-->
+                <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
+                <!--Canvas for doing text selection-->
+                <Canvas x:Name="TestSelectionCanvas"></Canvas>
+            </Grid>
+        </Viewbox>
+    </ScrollViewer>
+</UserControl>

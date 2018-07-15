@@ -8,14 +8,14 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("dataDoc", "dataDocument")]
+    [OperatorType(Op.Name.data_doc, Op.Name.data_document)]
     public class GetDataDocumentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputDocumentKey = new KeyController("4F92674B-AA92-491A-8E28-6BF99C1956D7", "InputDocument");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDocument");
 
         //Output keys
-        public static readonly KeyController ResultDataDocumentKey = new KeyController("9A0CFA6C-8E8C-4E94-84B5-3AA5733B362A", "ResultDataDocument");
+        public static readonly KeyController ResultDataDocumentKey = new KeyController("ResultDataDocument");
 
         public GetDataDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -44,11 +44,11 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("420D6ED9-F09E-4912-B106-576567E00C83", "Get Data Document");
+            new KeyController("Get Data Document", "420D6ED9-F09E-4912-B106-576567E00C83");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDocument = inputs[InputDocumentKey] as DocumentController;
             if (inputDocument != null)

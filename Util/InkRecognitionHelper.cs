@@ -302,9 +302,9 @@ namespace Dash
                         var field = doc.GetField(key);
                         if (field != null)
                         {
-                            list.Add(field);
+                            list.AddBase(field);
                         }
-                        var textBox = new TextingBox(new DocumentReferenceController(doc.Id, key),
+                        var textBox = new TextingBox(new DocumentReferenceController(doc, key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
                         (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
@@ -315,7 +315,7 @@ namespace Dash
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             if (list != null)
             {
-                doc.SetField(KeyStore.ParsedFieldKey, list, true);
+                doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
@@ -486,12 +486,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(Guid.NewGuid().ToString(), keystring);
+                key = new KeyController(keystring, Guid.NewGuid().ToString());
             }
             else
             {
                 value = str;
-                key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
+                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
             }
 
         }

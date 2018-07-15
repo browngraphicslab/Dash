@@ -40,9 +40,7 @@ namespace Dash
         {
             //UpdateOnServer();
 
-            FieldModelUpdated?.Invoke(this,
-                args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),
-                context);
+            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
 
             //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
@@ -84,19 +82,11 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
+        public virtual bool CheckTypeEquality(FieldControllerBase fmc) => fmc.TypeInfo == TypeInfo;
+
         public abstract FieldControllerBase Copy();
 
         public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return null; }
-
-        /// <summary>
-        /// Returns the type of this field as a string. Can override this for more complex
-        /// string displays.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetTypeAsString()
-        {
-            return TypeInfo.ToString();
-        }
 
         /// <summary>
         /// Gets the default representation of this fieldcontroller. For example with a number
@@ -120,11 +110,11 @@ namespace Dash
             return TextingBox.MakeView(tb.Document, context);
         }
 
-        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id)
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };
-            var refField = new DocumentReferenceController(id, kc);
+            var refField = new DocumentReferenceController(doc, kc);
             var dBox = this is ImageController
                 ? new ImageBox(refField).Document
                 : new TextingBox(refField).Document;

@@ -125,7 +125,7 @@ namespace Dash
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(
                             new EditableScriptViewModel(
-                                new DocumentFieldReference(activeContextDoc.Id, keyFieldPair.Key)));
+                                new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
             }
         }
 
@@ -170,7 +170,7 @@ namespace Dash
         private void AddKeyValuePair()
         {
             UndoManager.StartBatch();
-            var key = KeyController.LookupKeyByName(xNewKeyText.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyText.Text);
+            var key = new KeyController(xNewKeyText.Text);
             var stringValue = xNewValueText.Text;
 
             FieldControllerBase fmController;
@@ -178,7 +178,7 @@ namespace Dash
             try
             {
                 //fmController = DSL.InterpretUserInput(stringValue, true);
-                fmController = DSL.InterpretUserInput(stringValue, state: ScriptState.CreateStateWithThisDocument(activeContextDoc));
+                fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
             }
             catch (DSLException e)
             {

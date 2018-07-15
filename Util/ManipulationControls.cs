@@ -122,7 +122,6 @@ namespace Dash
             return lines;
         }
 
-
         //START OF NEW SNAPPING
 
         private static AlignmentLine[] GetAlignableLines(AlignmentLine line)
@@ -241,12 +240,12 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-			//Don't do any alignment if simply panning the collection
+			//Don't do any alignment if simply panning the collection or
 			var collectionFreeformView =
 				ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
-			if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+            var collectionStandaradView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionStandardView;
+            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView) || collectionStandaradView?.ViewModel.ViewLevel != CollectionViewModel.StandardViewLevel.Detail)
 				return originalTranslate;
-
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
             var parentDocumentLinesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
 
@@ -467,7 +466,7 @@ namespace Dash
         {
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
-                MainPage.Instance.UnhighlightDock();
+                MainPage.Instance.DockManager.UnhighlightDock();
                 return;
             }
 
@@ -477,63 +476,36 @@ namespace Dash
             {
                 if (preview)
                 {
-                    MainPage.Instance.HighlightDock(overlappedDirection);
+                    MainPage.Instance.DockManager.HighlightDock(overlappedDirection);
                 }
                 else
                 {
                     ParentDocument.ViewModel.XPos = ManipulationStartX;
                     ParentDocument.ViewModel.YPos = ManipulationStartY;
-                    MainPage.Instance.UnhighlightDock();
-                    MainPage.Instance.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
+                    MainPage.Instance.DockManager.UnhighlightDock();
+                    MainPage.Instance.DockManager.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
                 }
             }
             else
             {
-                MainPage.Instance.UnhighlightDock();
+                MainPage.Instance.DockManager.UnhighlightDock();
             }
         }
 
         private DockDirection GetDockIntersection()
         {
             var actualX = ParentDocument.ViewModel.ActualSize.X * ParentDocument.ViewModel.Scale.X *
-                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
+                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1);
             var actualY = ParentDocument.ViewModel.ActualSize.Y * ParentDocument.ViewModel.Scale.Y *
-                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.Y ?? 1;
+                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                               .GetField<PointController>(KeyStore.PanZoomKey)?.Data.Y ?? 1);
 
             var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(actualX, actualY));
 
-            var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Right;
-            }
+            return MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
 
-            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Left;
-            }
-
-            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Top;
-            }
-
-            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Bottom;
-            }
-
-            return DockDirection.None;
         }
 
 
@@ -545,6 +517,10 @@ namespace Dash
 
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            var viewlevel = ParentDocument.ViewModel.ViewLevel;
+            // pointer wheel changed on document when collection is in standardview falls through to the collection and zooms the collection in/out to a different standard zoom level
+            if (!viewlevel.Equals(CollectionViewModel.StandardViewLevel.None) && !viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+                return;
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
                 e.Handled = true;
@@ -569,6 +545,10 @@ namespace Dash
         // DO NOT ADD NEW CODE INTO THIS METHOD (see overloaded method with no parameters below). This one is ONLY for dealing with unique eventargs-related stuff.
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            var right = (ParentDocument.IsRightBtnPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+            var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+            ParentDocument.ManipulationMode = right && parentFreeform != null && (ParentDocument.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
                 e.Complete();

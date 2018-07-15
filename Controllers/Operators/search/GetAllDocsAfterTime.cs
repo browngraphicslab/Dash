@@ -12,14 +12,14 @@ namespace Dash
     /// <summary>
     /// operator to get all documents after a given time
     /// </summary>
-    [OperatorType("after")]
+    [OperatorType(Op.Name.after)]
     public class GetAllDocsAfterTime : OperatorController
     {
         //Input keys
-        public static readonly KeyController TimeKey = new KeyController("47684CA7-687B-489E-8DAA-82051620363C", "Time");
+        public static readonly KeyController TimeKey = new KeyController("Time");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C856C754-B60F-44AF-B262-960F03156691", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public GetAllDocsAfterTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -41,11 +41,12 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C902F10A-454E-40C0-A2C8-9B2FC9711A9B", "After");
+
+        private static readonly KeyController TypeKey = new KeyController("After", "C902F10A-454E-40C0-A2C8-9B2FC9711A9B");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
 
@@ -54,39 +55,24 @@ namespace Dash
 
             if (!DateTime.TryParse(time, out DateTime givenTime))
             {
-                Debug.WriteLine("Invalid time input");
+                return;
             }
-            else
+
+            if (!string.IsNullOrEmpty(time))
             {
-
-                if (!string.IsNullOrEmpty(time))
+                var allResults = DocumentTree.MainPageTree;
+                var data = allResults.Select(node => node.ViewDocument).ToList();
+                foreach (var t in data)
                 {
-                    var allResults =
-                        DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as
-                            ListController<DocumentController>;
+                    var docTimeS = t.GetDataDocument().GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
 
-                    Debug.Assert(allResults != null);
-
-                    var data = allResults.TypedData;
-                    for (int i = 0; i < data.Count; i++)
+                    //return all docs after givenTime
+                    if (docTimeS > givenTime)
                     {
-                        //get time paratmeter in doc and make it into DateTime
-                        var docTimeS = data[i]
-                            .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey) .Data;
-                        if(!DateTime.TryParse(docTimeS, out DateTime docTime))
-                        {
-                            continue;
-                        }
-
-                        //return all docs after givenTime
-                        if (docTime > givenTime)
-                        {
-                            toReturn.Add(data[i]);
-                        }
-
+                        toReturn.Add(t);
                     }
-
                 }
+
             }
 
             outputs[ResultsKey] = toReturn;

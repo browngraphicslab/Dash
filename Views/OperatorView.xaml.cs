@@ -104,7 +104,7 @@ namespace Dash
             {
                 return;
             }
-            preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
+            preview.Doc = (DataContext as DocumentFieldReference)?.DocumentController;
         }
 
         private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)

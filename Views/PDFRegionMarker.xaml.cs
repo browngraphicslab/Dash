@@ -17,54 +17,32 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
+    /// <summary>
+    /// This class is the little yellow indicator to the sides of PDFs that shows where annotations have been made.
+    /// </summary>
     public sealed partial class PDFRegionMarker : UserControl
     {
         public DocumentController LinkTo;
         public double Offset;
-        public Size Size;
-        public Point Position;
+        public Size   Size;
+        public Point  Position;
 
         public PDFRegionMarker()
         {
             this.InitializeComponent();
         }
 
-        // only used for regions added to the side as a sidebar marker; leave alone if this is for the actual PDF
-        public void SetPosition(double scrollTarget, double totalOffset)
+        public void SetScrollPosition(double scrollTarget, double totalOffset)
         {
             Grid.SetColumn(xRegion, 0);
             Grid.SetColumnSpan(xRegion, 3);
             var upHeight = scrollTarget - 5;
-            if (upHeight < 0) upHeight = 0;
+            if (upHeight < 0)
+                upHeight = 0;
             var downHeight = totalOffset - scrollTarget - 5;
             xUp.Height = new GridLength(upHeight / totalOffset, GridUnitType.Star);
             xDown.Height = new GridLength(downHeight / totalOffset, GridUnitType.Star);
             xRegion.Width = 15;
-        }
-
-        // only used for regions physically on the page; leave alone if you're trying to add it to the side
-        public void SetSize(Size size, Point position, Size totalSize)
-        {
-            var upRatio = position.Y / totalSize.Height;
-            var regionHeightRatio = size.Height / totalSize.Height;
-            var downRatio = 1 - upRatio - regionHeightRatio;
-            var leftRatio = position.X / totalSize.Width;
-            var regionWidthRatio = size.Width / totalSize.Width;
-            var rightRatio = 1 - leftRatio - regionWidthRatio;
-            Size = size;
-            Position = position;
-
-            xUp.Height = new GridLength(upRatio, GridUnitType.Star);
-            xRegionRow.Height = new GridLength(regionHeightRatio, GridUnitType.Star);
-            xDown.Height = new GridLength(downRatio, GridUnitType.Star);
-            xLeft.Width = new GridLength(leftRatio, GridUnitType.Star);
-            xRegionColumn.Width = new GridLength(regionWidthRatio, GridUnitType.Star);
-            xRight.Width = new GridLength(rightRatio, GridUnitType.Star);
-        }
-
-        public void SetColor(SolidColorBrush color)
-        {
-            xRegion.Fill = color;
         }
     }
 }

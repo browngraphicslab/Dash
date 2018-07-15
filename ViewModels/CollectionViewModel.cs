@@ -80,17 +80,16 @@ namespace Dash
             get => _prevScale;
             set => SetProperty(ref _prevScale, value);
         }
-
         private void UpdateViewLevel()
         {
             foreach (var dvm in DocumentViewModels)
             {
-                var name = dvm.ToString();
                 dvm.ViewLevel = ViewLevel;
+                dvm.DecorationState = false;
             }
         }
         #endregion
-
+        
         void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
@@ -215,7 +214,7 @@ namespace Dash
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
-                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
+                updateViewModels(docListFieldArgs);
             }
             else
             {
@@ -225,9 +224,9 @@ namespace Dash
                         args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
                     if (collectionFieldModelController != null)
                     {
-                        updateViewModels(
+                        updateViewModels(new ListController<DocumentController>.ListFieldUpdatedEventArgs(
                             ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,
-                            collectionFieldModelController.GetElements());
+                            collectionFieldModelController.GetElements(), new List<DocumentController>(), 0));
                     }
                 }
             }
@@ -236,13 +235,13 @@ namespace Dash
         #region DocumentModel and DocumentViewModel Data Changes
 
         public string Tag;
-        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction action, List<DocumentController> docs)
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
-            switch (action)
+            switch (args.ListAction)
             {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
                     // we only care about changes to the Hidden field of the contained documents.
-                    foreach (var d in docs)
+                    foreach (var d in args.NewItems)
                     {
                         var visible = !d.GetHidden();
                         var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
@@ -253,19 +252,17 @@ namespace Dash
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(docs);
+                    addViewModels(args.NewItems);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(docs);
+                    removeViewModels(args.OldItems);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
-                    addViewModels(docs);
-                    break;
-                default:
+                    addViewModels(args.NewItems);
                     break;
             }
         }
@@ -347,7 +344,8 @@ namespace Dash
 
                     ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                 }
-
+                if (ViewLevel.Equals(StandardViewLevel.Overview) || ViewLevel.Equals(StandardViewLevel.Region))
+                    UpdateViewLevel();
             }
         }
 
@@ -525,7 +523,7 @@ namespace Dash
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     //DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc, pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
@@ -533,7 +531,7 @@ namespace Dash
 
             if (obj != null)
             {
-                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj], pivotKey), true);
                 return dictionary[obj];
             }
             return null;
@@ -697,8 +695,8 @@ namespace Dash
 
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
-                if (senderView is CollectionFreeformView)
-                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
+                if (senderView is CollectionFreeformBase)
+                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
                         e.GetPosition(MainPage.Instance));
                 else if (DocumentViewModels.Count > 0)
                 {
@@ -869,7 +867,7 @@ namespace Dash
                     {
                         var pair = new Regex(":").Split(match.ToString());
                         t.Document.GetDataDocument()
-                            .SetField<TextController>(KeyController.LookupKeyByName(pair[0], true), pair[1].Trim('\r'),
+                            .SetField<TextController>(new KeyController(pair[0]), pair[1].Trim('\r'),
                                 true);
                     }
 
@@ -1075,10 +1073,10 @@ namespace Dash
                     var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
                     if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
                     {
-                        var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
+                        var k = new KeyController(templateFieldDataRef.Substring(1));
                         if (k != null)
                         {
-                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().Id, k), p.X, p.Y, w, h).Document);
+                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument(), k), p.X, p.Y, w, h).Document);
                         }
                     }
                     else

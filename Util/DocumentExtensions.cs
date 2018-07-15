@@ -179,7 +179,7 @@ namespace Dash
             // Note: bindings might need to be changed to create copy-on-write
             foreach (var f in origDocContext.EnumDisplayableFields())
                 if ((mapping[origDocContext] as DocumentController).GetField(f.Key, true) == null)
-                    (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext.Id, f.Key, true), true);
+                    (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext, f.Key, true), true);
 
             return newDoc;
         }
@@ -221,7 +221,7 @@ namespace Dash
             Debug.Assert(where != null);
             var previewDoc =
                 new PreviewDocument(
-                    new DocumentReferenceController(doc.Id, KeyStore.SelectedSchemaRow), where.Value);
+                    new DocumentReferenceController(doc, KeyStore.SelectedSchemaRow), where.Value);
             return new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.ActiveLayoutKey] = previewDoc.Document,
@@ -556,18 +556,15 @@ namespace Dash
                 foreach (var r in refs)
                 {
                     var referenceDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
-                    if (referenceDoc?.DocumentId == oldToNewDoc.Key.Id) // if reference pointed to a doc that got copied
-                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value.Id);  // then update the reference to point to the new doc
+                    if (referenceDoc?.DocumentController == oldToNewDoc.Key) // if reference pointed to a doc that got copied
+                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value);  // then update the reference to point to the new doc
                 }
             }
             return copy;
         }
 
 
-        public static string GetDishName<T>(this T controller) where T : OperatorController
-        {
-            return DSL.GetFuncName(controller);
-        }
+        public static Op.Name GetDishName<T>(this T controller) where T : OperatorController => DSL.GetFuncName(controller);
 
         static DocumentController makeCopy(
                 this DocumentController doc, 

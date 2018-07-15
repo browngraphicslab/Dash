@@ -35,7 +35,7 @@ using Dash.Views;
 
 namespace Dash
 {
-    public abstract class CollectionFreeformBase: UserControl, ICollectionView
+    public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Canvas _itemsPanelCanvas => GetCanvas();
@@ -56,7 +56,7 @@ namespace Dash
         //SET BACKGROUND IMAGE OPACITY
         public delegate void SetBackgroundOpacity(float opacity);
         private static event SetBackgroundOpacity setBackgroundOpacity;
-    
+
         // TODO: get canvas in derived class
         public abstract Canvas GetCanvas();
         // TODO: get itemscontrol of derived class
@@ -150,6 +150,7 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
             snap.SetFitToParent(true);
             return snap;
         }
@@ -198,16 +199,16 @@ namespace Dash
             var startY = _transformBeingAnimated.Matrix.OffsetY;
 
             // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, startY + translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
 
             var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
 
             zoomOutAnimationX.AutoReverse = true;
             zoomOutAnimationY.AutoReverse = true;
@@ -218,7 +219,7 @@ namespace Dash
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (scaleFactor < 0.8)
+            if (false && scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
             {
                 _storyboard1.Children.Add(zoomOutAnimationX);
                 _storyboard1.Children.Add(zoomOutAnimationY);
@@ -244,13 +245,13 @@ namespace Dash
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
-        DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
+        protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
 
             var toReturn = new DoubleAnimation();
             toReturn.EnableDependentAnimation = true;
             toReturn.Duration = duration;
-            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
+            Storyboard.SetTarget(toReturn, matrix);
             Storyboard.SetTargetProperty(toReturn, name);
 
             toReturn.From = from;
@@ -567,7 +568,7 @@ namespace Dash
 
                 if (key == null)
                 {
-                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                    TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
                 }
                 else
                 {
@@ -589,7 +590,7 @@ namespace Dash
         private MarqueeInfo mInfo;
         object _marqueeKeyHandler = null;
 
-        protected void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
             {
@@ -613,7 +614,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
             {
@@ -670,7 +671,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
@@ -678,7 +679,7 @@ namespace Dash
                 if (XInkCanvas.IsTopmost() &&
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
-                        // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                      // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
@@ -707,7 +708,7 @@ namespace Dash
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
-        
+
         // called by SelectionManager to reset this collection's internal selection-based logic
         public void ResetMarquee()
         {
@@ -767,36 +768,41 @@ namespace Dash
         /// <param name="fromMarquee">True if we select from the marquee, false if from currently selecte documents</param>
         public void TriggerActionFromSelection(VirtualKey modifier, bool fromMarquee)
         {
-            Point where;
-            Rectangle marquee;
-            CollectionView.CollectionViewType type = CollectionView.CollectionViewType.Freeform;
-            IEnumerable<DocumentView> viewsToSelectFrom;
-
-            if (fromMarquee)
+            void DoAction(Action<List<DocumentView>, Point, Size> action)
             {
-                where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, GetItemsControl().ItemsPanelRoot);
-                marquee = _marquee;
-                viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                OnPointerReleased(null, null);
-            }
-            else
-            {
-                var bounds = GetBoundingRectFromSelection();
+                Point where;
+                Rectangle marquee;
+                IEnumerable<DocumentView> viewsToSelectFrom;
 
-                // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
-                if (bounds == Rect.Empty) return;
-
-                where = new Point(bounds.X, bounds.Y);
-                marquee = new Rectangle
+                if (fromMarquee)
                 {
-                    Height = bounds.Height,
-                    Width = bounds.Width
-                };
-                viewsToSelectFrom = SelectionManager.SelectedDocs;
+                    where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                        SelectionCanvas, GetItemsControl().ItemsPanelRoot);
+                    marquee = _marquee;
+                    viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    OnPointerReleased(null, null);
+                }
+                else
+                {
+                    var bounds = GetBoundingRectFromSelection();
+
+                    // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
+                    if (bounds == Rect.Empty) return;
+
+                    where = new Point(bounds.X, bounds.Y);
+                    marquee = new Rectangle
+                    {
+                        Height = bounds.Height,
+                        Width = bounds.Width
+                    };
+                    viewsToSelectFrom = SelectionManager.SelectedDocs;
+                }
+
+                var toSelectFrom = viewsToSelectFrom.ToList();
+                action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
             }
 
-            var toSelectFrom = viewsToSelectFrom.ToList();
+            var type = CollectionView.CollectionViewType.Freeform;
 
             bool deselect = false;
             using (UndoManager.GetBatchHandle())
@@ -805,31 +811,50 @@ namespace Dash
                 {
                     //create a viewcopy of everything selected
                     case VirtualKey.A:
-                        var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                        ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs)
-                            .Document);
+                        DoAction((dvs, where, size) =>
+                        {
+                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy())
+                                .ToList();
+                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs)
+                                .Document);
+                        });
                         deselect = true;
                         break;
                     case VirtualKey.T:
                         type = CollectionView.CollectionViewType.Schema;
                         goto case VirtualKey.C;
                     case VirtualKey.C:
-                        var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                        ViewModel.AddDocument(
-                            new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
-                        goto case VirtualKey.Delete;
+                        DoAction((views, where, size) =>
+                        {
+                            var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                            ViewModel.AddDocument(
+                                new CollectionNote(where, type, size.Width, size.Height, docss).Document);
+
+                            foreach (var v in views)
+                            {
+                                v.DeleteDocument();
+                            }
+                        });
+                        deselect = true;
+                        break;
                     case VirtualKey.Back:
                     case VirtualKey.Delete:
-                        foreach (var v in toSelectFrom)
+                        DoAction((views, where, size) =>
                         {
-                            v.DeleteDocument();
-                        }
+                            foreach (var v in views)
+                            {
+                                v.DeleteDocument();
+                            }
+                        });
 
                         deselect = true;
                         break;
                     case VirtualKey.G:
-                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-                            where, marquee.Width, marquee.Height));
+                        DoAction((views, where, size) =>
+                        {
+                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                                where, size.Width, size.Height));
+                        });
                         deselect = true;
                         break;
                 }
@@ -849,16 +874,18 @@ namespace Dash
 
         #endregion
 
-        // TODO: likely to need to modify for standard view (should note typing be enabled in standard?)
         #region Activation
 
         protected void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (XInkCanvas.IsTopmost())
+            if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                _isMarqueeActive = false;
-                if (!this.IsShiftPressed())
-                    RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (XInkCanvas.IsTopmost())
+                {
+                    _isMarqueeActive = false;
+                    if (!this.IsShiftPressed())
+                        RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                }
             }
         }
 
@@ -973,7 +1000,8 @@ namespace Dash
             {
                 if (resetBuffer)
                     previewTextBuffer = "";
-                loadingPermanentTextbox = true;
+                loadingPermanentTextbox = true;        
+
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
                     var postitNote = new MarkdownNote(text: text).Document;
@@ -994,10 +1022,10 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = KeyController.LookupKeyByName(keyname, true);
+                var keycontroller = new KeyController(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                 dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
                 dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                 Actions.DisplayDocument(ViewModel, dbox, where);

@@ -18,8 +18,8 @@ namespace Dash
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
 
-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, RichTextDocumentOperatorController.ReadableTextKey), true);
-            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc, RichTextDocumentOperatorController.ReadableTextKey), true);
+            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
             return protoDoc;
         }
 
