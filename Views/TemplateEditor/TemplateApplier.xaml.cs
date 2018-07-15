@@ -23,7 +23,6 @@ namespace Dash
     {
         public ObservableCollection<DocumentViewModel> Templates;
         public ObservableCollection<TemplateRecord> TemplateRecords;
-	    public ObservableCollection<DocumentController> AddedTemplateControllers;
         private DocumentController _document;
 
         public TemplateApplier(DocumentController doc,
@@ -34,15 +33,13 @@ namespace Dash
             _document = doc;
             Templates = new ObservableCollection<DocumentViewModel>();
             TemplateRecords = new ObservableCollection<TemplateRecord>();
-			AddedTemplateControllers = new ObservableCollection<DocumentController>();
 
-			foreach (var dvm in documentViewModels)
+            foreach (var dvm in documentViewModels)
             {
-                if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm) && !AddedTemplateControllers.Contains(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true)))
+                if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm))
                 {
                     var tr = new TemplateRecord(dvm, this);
                     TemplateRecords.Add(tr);
-					AddedTemplateControllers.Add(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true));
                     tr.Tapped += Template_Picked;
                 }
             }
@@ -54,9 +51,10 @@ namespace Dash
             {
                 temp.hideButtons();
             }
+
             var tr = sender as TemplateRecord;
             tr.showButtons();
-           
+
         }
 
         public void Apply_Template(TemplateRecord tr)
@@ -64,8 +62,7 @@ namespace Dash
             // retrieve the layout document of the template box from the template record
             var template = tr.TemplateViewModel;
             if (template == null) return;
-			//NOTE: had to make LayoutDocument instead of LayoutDocument.DataInstance so list of templates would not have repeats
-            var newLayoutDoc = template.LayoutDocument;
+            var newLayoutDoc = template.LayoutDocument.GetDataInstance();
 
             // set the new layout document's context to the selected document's data doc
             newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
@@ -74,8 +71,10 @@ namespace Dash
                 _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
             // set the selected document's active layout to the new layout document
             _document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
-            
-            var templateList = MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+
+            var templateList =
+                MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(
+                    KeyStore.TemplateListKey);
             if (!templateList.Contains(_document))
             {
                 templateList.Add(_document);
