@@ -47,26 +47,8 @@ namespace Dash
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
 
-            //var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
-
-            //var stringScriptToExecute = $"{exec}({DSL.GetFuncName<ParseSearchStringToDishOperatorController>()}(\"{searchQuery}\"))";
-
-            //var interpreted = DSL.Interpret(stringScriptToExecute);
-
             var result = Search.Parse(searchQuery).First().ViewDocument;
             outputs[ResultsKey] = result;
-            //var resultDict = interpreted as DocumentController;
-
-            //if (resultDict != null)
-            //{
-            //    var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
-
-            //    outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).FirstOrDefault();
-            //}
-            //else
-            //{
-                //outputs[ResultsKey] = new TextController();
-            //}
         }
     }
 }

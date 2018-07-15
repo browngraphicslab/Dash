@@ -20,27 +20,18 @@ namespace Dash
     {
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
-            //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
-            private string _currentSearch = "";
-            public const string SearchCollectionDragKey = "Search Collection";
+        //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-
-            public MainSearchBox()
-            {
-                InitializeComponent();
-                xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
-            }
+        public MainSearchBox()
+        {
+            InitializeComponent();
+            xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+        }
         #endregion
 
         #region AutoSuggestBox Events
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (sender.Text.Equals("Dash.SearchResultViewModel"))
-            {
-                sender.Text = _currentSearch;
-                return;
-            }
-
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
@@ -52,8 +43,6 @@ namespace Dash
                 ExecuteDishSearch(sender);
 
             }
-
-            _currentSearch = sender.Text.ToLower();
         }
 
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -70,7 +59,6 @@ namespace Dash
         {
             if (args.ChosenSuggestion != null)
             {
-                sender.Text = _currentSearch;
                 if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
                 if (resultVm.DocumentCollection != null)
                 {
@@ -81,18 +69,17 @@ namespace Dash
                     }
                 }
 
-                MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(resultVm.ViewDocument);
+                MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true);
             }
             else
             {
-                sender.Text = _currentSearch;
                 // Use args.QueryText to determine what to do.
             }
         }
 
         private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(_currentSearch))
+            if (!string.IsNullOrEmpty(xAutoSuggestBox.Text))
             {
                 ExecuteDishSearch(sender as AutoSuggestBox);
             }
@@ -165,22 +152,22 @@ namespace Dash
             return null;
 
         }
-        
+
         /// <summary>
         /// Called when we drag the entire search collection
         /// </summary>
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //    // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            //    var docs = SearchHelper.SearchOverCollection(_currentSearch)
-            //        .Select((srvm) => srvm.ViewDocument.GetViewCopy());
+            // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+            var docs = Search.Parse(xAutoSuggestBox.Text)
+                .Select(sr => sr.ViewDocument.GetViewCopy());
 
-            //    args.Data.Properties[nameof(DragCollectionFieldModel)] =
-            //        new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
+            args.Data.Properties[nameof(DragCollectionFieldModel)] =
+                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
 
-            //    // set the allowed operations
-            //    args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            //    args.Data.RequestedOperation = DataPackageOperation.Copy;
+            // set the allowed operations
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Copy;
 
         }
 
@@ -216,7 +203,7 @@ namespace Dash
             }
         }
 
-       
+
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (xSearchCodeBox.Visibility == Visibility.Visible)
@@ -251,7 +238,7 @@ namespace Dash
             }
             var allDocs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return null;
-            return allDocs.Where(f => f != MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey));
+            return allDocs.Where(f => f != MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey));//TODO Have optional way to specify if we wan't workspace (really just search options/parameters in general)
         }
 
         private void XSearchCode_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -279,10 +266,10 @@ namespace Dash
             var text = xAutoSuggestBox.Text;
 
             //open DishScriptEditView with search text
-            var script = "var docs = search(\""+ text +"\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
-            var note = new DishScriptBox(0,0,300,400, script);
-            
+            var note = new DishScriptBox(0, 0, 300, 400, script);
+
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(note.Document, true);
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -299,7 +286,7 @@ namespace Dash
             var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
             var panPos = collection.GetField<PointController>(KeyStore.PanPositionKey).Data;
             var zoom = collection.GetField<PointController>(KeyStore.PanZoomKey).Data;
-            var note = new DishScriptBox((800- panPos.X) / zoom.X, (500 -panPos.Y) / zoom.Y, 300, 400, script);
+            var note = new DishScriptBox((800 - panPos.X) / zoom.X, (500 - panPos.Y) / zoom.Y, 300, 400, script);//TODO this position should be based on the main doc views size
 
             collection.AddToListField(KeyStore.DataKey, note.Document);
         }
@@ -309,87 +296,88 @@ namespace Dash
 
         #region Search
         private static void ExecuteDishSearch(AutoSuggestBox searchBox)
-            {
-                if (searchBox == null) return;
+        {
+            if (searchBox == null) return;
 
-                UnHighlightAllDocs();
+            UnHighlightAllDocs();
 
-                //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
-                string text = searchBox.Text; //.ToLower();
+            //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
+            string text = searchBox.Text; //.ToLower();
 
-                var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
-                itemsSource?.Clear();
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
+            itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
             try
             {
                 searchRes = Search.Parse(text).ToList();
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 searchRes = new List<SearchResult>();
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
-                if (string.IsNullOrWhiteSpace(text)) return;
-                //highlight doc results
-                HighlightSearchResults(docs);
+            if (string.IsNullOrWhiteSpace(text)) return;
+            //highlight doc results
+            HighlightSearchResults(docs);
 
-                var vms = new List<SearchResultViewModel>();
-                foreach (var res in searchRes)
-                {
-                    var newVm = DocumentSearchResultToViewModel(res);
-                    var parent = res.Node.Parent?.ViewDocument;
-                    if (parent != null) newVm.DocumentCollection = parent;
-                    vms.Add(newVm);
-                }
-
-                var first = vms
-                    .Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
-                    .Take(MaxSearchResultSize).ToArray();
-
-                foreach (var searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
-            }
-
-            public static void HighlightSearchResults(List<DocumentController> docs)
+            var vms = new List<SearchResultViewModel>();
+            foreach (var res in searchRes)
             {
-                //highlight new search results
-                foreach (var doc in docs)
-                {
-                    //var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
-                    var id = doc.Id;
-                    DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
-
-                    //make border thickness of DocHighlight for each doc 8
-                    MainPage.Instance.HighlightDoc(resultDoc, false, 1);
-                }
+                var newVm = DocumentSearchResultToViewModel(res);
+                var parent = res.Node.Parent?.ViewDocument;
+                if (parent != null) newVm.DocumentCollection = parent;
+                vms.Add(newVm);
             }
+
+            var first = vms 
+                .Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
+                .Take(MaxSearchResultSize).ToArray();
+
+            foreach (var searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
+        }
+
+        public static void HighlightSearchResults(List<DocumentController> docs)
+        {
+            //highlight new search results
+            foreach (var doc in docs)
+            {
+                //var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                var id = doc.Id;
+                DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
+
+                //make border thickness of DocHighlight for each doc 8
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+            }
+        }
 
         public static void UnHighlightAllDocs()
+        {
+
+            //TODO:call this when search is unfocused
+
+            //list of all collections
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+
+            foreach (var coll in allCollections)
             {
+                UnHighlightDocs(coll);
+            }
+        }
 
-                //TODO:call this when search is unfocused
-
-                //list of all collections
-                var allCollections =
-                    MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
-
-                foreach (var coll in allCollections)
+        public static void UnHighlightDocs(DocumentController coll)
+        {
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            //unhighlight each doc in collection
+            foreach (var doc in colDocs)
+            {
+                MainPage.Instance.HighlightDoc(doc, false, 2);
+                if (doc.DocumentType.ToString() == "Collection Box")
                 {
-                    UnHighlightDocs(coll);
+                    UnHighlightDocs(doc);
                 }
             }
-
-            public static void UnHighlightDocs(DocumentController coll)
-            {
-                var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-                //unhighlight each doc in collection
-                foreach (var doc in colDocs)
-                {
-                    MainPage.Instance.HighlightDoc(doc, false, 2);
-                    if (doc.DocumentType.ToString() == "Collection Box")
-                    {
-                        UnHighlightDocs(doc);
-                    }
-                }
         }
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)

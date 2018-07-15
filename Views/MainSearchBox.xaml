@@ -11,14 +11,15 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Border x:Name="xCollectionDragBorder"
-                Background="Transparent"
-                DragStarting="XCollDragIcon_OnDragStarting"
-                CanDrag="True">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
@@ -28,53 +29,37 @@
                        VerticalAlignment="Center"
             />
         </Border>
-        <FontIcon x:Name="xArrow" Grid.Column="1" FontFamily="Segoe MDL2 Assets" Glyph="&#xE937;"
+        <FontIcon x:Name="xArrow" FontFamily="Segoe MDL2 Assets" Glyph="&#xE937;" Grid.Column="1" Grid.Row="0"
            FontSize="12" Tapped="XArrowBlock_OnTapped" />
 
-        <Grid Column="2" Margin="0,10,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-            </Grid.RowDefinitions>
-
-            <Grid x:Name="xSearchCodeBox" Grid.Row="1"  Visibility="Collapsed" BorderThickness="1.5" BorderBrush="Gray">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="235"></ColumnDefinition>
-                    <ColumnDefinition Width="15"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <FontIcon x:Name="xDragScript" FontFamily="Segoe MDL2 Assets" Glyph="&#xE70F;" Grid.Column="1"
-                          FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
-                <TextBox x:Name="xSearchCode" PlaceholderText="Run on each doc" Grid.Column="0" Background="White" BorderThickness="0"
-                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
-            </Grid>
-
-            <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
+        <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                     TextChanged="AutoSuggestBox_TextChanged"
                     SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                     QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                    UpdateTextOnSelect="False"
                     Name="xAutoSuggestBox"
                     GotFocus="XAutoSuggestBox_OnGotFocus"
-                    Grid.Row="0"
                     TextBoxStyle="{StaticResource AutoFontSize}"
-                    Width="300"
-                    VerticalAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
                     DragEnter="XAutoSuggestBox_OnDragEnter"
                     Drop="XAutoSuggestBox_OnDrop"
-                    AllowDrop="True"
-                    >
-                <AutoSuggestBox.ItemTemplate>
+                    Grid.Column="2"
+                    Grid.Row="0"
+                    AllowDrop="True">
+            <AutoSuggestBox.ItemTemplate>
 
-                    <DataTemplate x:DataType="dash:SearchResultViewModel">
-                        <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="32"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Border
+                <DataTemplate x:DataType="dash:SearchResultViewModel">
+                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border
                         Background="Transparent"
                         DragStarting="SearchResult_OnDragStarting"
                         CanDrag="True">
-                                <TextBlock x:Name="xCollDragIcon"
+                            <TextBlock x:Name="xCollDragIcon"
                                     FontFamily="{StaticResource FontAwesome}"
                                     Foreground="{StaticResource TitleText}"
                                     FontSize="15"
@@ -83,16 +68,26 @@
                                     VerticalAlignment="Center"
                                     Height="32"
                                     Width="32" />
-                            </Border>
-                            <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
+                        </Border>
+                        <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
 
-                                <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
-                                <TextBlock Text="{Binding ContextualText}"></TextBlock>
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </AutoSuggestBox.ItemTemplate>
-            </AutoSuggestBox>
+                            <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
+                            <TextBlock Text="{Binding ContextualText}"></TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
+
+        <Grid x:Name="xSearchCodeBox" Visibility="Collapsed" BorderThickness="1.5" BorderBrush="Gray" Grid.Column="2" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="235"></ColumnDefinition>
+                <ColumnDefinition Width="15"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <FontIcon x:Name="xDragScript" FontFamily="Segoe MDL2 Assets" Glyph="&#xE70F;" Grid.Column="1"
+                          FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
+            <TextBox x:Name="xSearchCode" PlaceholderText="Run on each doc" Grid.Column="0" Background="White" BorderThickness="0"
+                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
         </Grid>
     </Grid>
 </UserControl>

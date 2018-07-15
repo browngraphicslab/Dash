@@ -23,18 +23,21 @@
         </Grid.ColumnDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        
+
         <!-- MainDocView -->
         <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <local:DockingFrame.DocumentContent>
                 <Grid>
                     <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
-                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,-10,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                             <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                         </Grid>
-                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch" Background="{ThemeResource WindowsBlue}" Margin="10">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White"/>
+                        <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+                        </Button>
+                        <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -62,12 +65,12 @@
                 <RowDefinition Height="325" />
             </Grid.RowDefinitions>
 
-          
+
 
             <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                
+
             </Grid>
-            
+
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
 
             <localMicrosoft:GridSplitter 
