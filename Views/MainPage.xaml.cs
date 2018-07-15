@@ -413,16 +413,13 @@ namespace Dash
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-                    //get center point of doc where you want to go, TransformToVisual gets a transform that can transform coords from canvas to MainDocView
-                    //so shift is doc center point in MainDocView cord system
-                    var shift = /*canvas.TransformToVisual(MainDocView).TransformPoint(*/
-                        new Point(
+                    //get center point of doc where you want to go
+                    var shift = new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
 
                     //get zoom changes
-                    var shiftZ =/* canvas.TransformToVisual(MainDocView).TransformPoint(*/
-                        new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
+                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
                     
                    //get less zoom, so x and y are zoomed by same amt
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
