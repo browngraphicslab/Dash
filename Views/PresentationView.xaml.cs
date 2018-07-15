@@ -452,11 +452,13 @@ namespace Dash
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
                     viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
                 }
 
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
                     viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
                 }
 
                 DrawLines();
@@ -478,6 +480,7 @@ namespace Dash
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
                     viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
                 }
 
                 foreach (var coll in allCollections)
@@ -499,6 +502,7 @@ namespace Dash
                 foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
                 {
                     viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
                 }
 
                 foreach (var coll in allCollections)
