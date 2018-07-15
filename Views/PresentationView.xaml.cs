@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -156,7 +157,7 @@ namespace Dash
             return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
         }
 
-        private List<Windows.UI.Xaml.Shapes.Path> _paths = new List<Windows.UI.Xaml.Shapes.Path>();
+        private List<UIElement> _paths = new List<UIElement>();
 
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -257,8 +258,43 @@ namespace Dash
                     };
 
                     _paths.Add(path);
-
                     canvas.Children.Add(path);
+
+                    //make arrow points
+                    var diffX = endControlPt.X - endPoint.X;
+                    var diffY = endControlPt.Y - endPoint.Y;
+                    Point arrowPtA;
+                    Point arrowPtB;
+                    var arrowWidth = 10;
+                    if (Math.Abs(diffX) > Math.Abs(diffY))
+                    {
+                        var sign = diffX / Math.Abs(diffX);
+                        //arrow should come from x direction
+                        arrowPtA = new Point(endPoint.X + sign * arrowWidth, endPoint.Y + arrowWidth);
+                        arrowPtB = new Point(endPoint.X + sign * arrowWidth, endPoint.Y - arrowWidth);
+                    }
+                    else
+                    {
+                        var sign = diffY / Math.Abs(diffY);
+                        arrowPtA = new Point(endPoint.X + arrowWidth, endPoint.Y + sign * arrowWidth);
+                        arrowPtB = new Point(endPoint.X - arrowWidth, endPoint.Y + sign * arrowWidth);
+                    }
+
+                    //make arrow
+                    var arrow = new Polygon
+                    {
+                        Points = new PointCollection
+                        {
+                            endPoint,
+                            arrowPtA,
+                            arrowPtB
+                        },
+                        Fill = new SolidColorBrush(Colors.Black)
+                    };
+
+                    _paths.Add(arrow);
+                    canvas.Children.Add(arrow);
+
                 }
             }
             else
@@ -266,8 +302,6 @@ namespace Dash
                 //hide lines
                 ShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 //remove all paths
-                //TODO: there may be better way - not all are removed
-
                 foreach (var path in _paths)
                 {
                     canvas.Children.Remove(path);
