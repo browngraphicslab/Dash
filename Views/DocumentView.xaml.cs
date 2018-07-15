@@ -1008,9 +1008,13 @@ namespace Dash
             if (ViewModel.DocumentController.GetActiveLayout()?.DocumentType.Equals(TemplateBox.DocumentType) ?? false)
             {
                 var templateList = MainPage.Instance.MainDocument
-                    .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey);
-                templateList?.Remove(ViewModel.DocumentController);
-                MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+                    .GetField<ListController<DocumentReferenceController>>(KeyStore.TemplateListKey);
+                var templateReference = templateList?.First(tempRef =>
+                    tempRef.DocumentController.Equals(ViewModel.DocumentController));
+                if (templateReference != null)
+                {
+                    MainPage.Instance.MainDocument.RemoveFromListField(KeyStore.TemplateListKey, templateReference);
+                }
             }
             
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
