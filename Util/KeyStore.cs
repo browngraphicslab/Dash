@@ -77,11 +77,17 @@ namespace Dash
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
 
-        public static KeyController ReplInputsKey = new KeyController("Repl Inputs", "650072AB-1821-4BC6-A7F5-096094CF6EB7");
-        public static KeyController ReplOutputsKey = new KeyController("Repl Outputs", "0676C751-B6DE-480F-A5EB-8362F6238D13");
-        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "0F9B3576-A5B1-458C-89B0-AADC7FD278BC");
+        public static KeyController ReplLineTextKey = new KeyController("Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
+        public static KeyController ReplValuesKey = new KeyController("Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
+        public static KeyController ReplCurrentIndentKey = new KeyController("Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
+        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");
 
         public static KeyController ScriptTextKey = new KeyController("Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
+
+        public static KeyController ExceptionKey = new KeyController("Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
+        public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
+        public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
+        public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
 
         public static class SearchResultDocumentOutline
         {

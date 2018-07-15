@@ -15,15 +15,8 @@ namespace Dash
     public class DSL
     {
         private readonly Scope _scope;
-        private readonly DishReplView _replView;
 
         public DSL(Scope scope = null) => _scope = new Scope(scope);
-
-        public DSL(OuterReplScope scope, DishReplView replView)
-        {
-            _scope = scope;
-            _replView = replView;
-        }
 
         public DSL(OuterReplScope scope)
         {
@@ -34,21 +27,16 @@ namespace Dash
         {
             try
             {
-                if (script.Trim().Equals("clear") || script.Trim().Equals("clear all"))
-                {
-                    _replView.Clear(script.Equals("clear all"));
-                    return new TextController();
-                }
                 var interpreted = TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
+
                 return interpreted;
             }
             catch (DSLException e)
             {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
+                if (!catchErrors) throw e;
+
+                if (e is ScriptExecutionException doc) return doc.Error.GetErrorDoc(); 
+                return new TextController(e.GetHelpfulString());
             }
         }
 

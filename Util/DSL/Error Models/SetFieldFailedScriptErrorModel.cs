@@ -13,5 +13,6 @@ namespace Dash
         }
 
         public override string GetHelpfulString() => $" Exception:\n            SetDocFieldFailed\n      Feedback:\n            {_key} field could not be set to {_value}";
+
     }
 }

@@ -84,7 +84,7 @@ namespace Dash
             }
         }
 
-        private List<BoundsExtractionStrategy.SelectableElement> _selectableElements;
+        private List<SelectableElement> _selectableElements;
 
         private VisualAnnotationManager _annotationManager;
 
@@ -135,9 +135,6 @@ namespace Dash
                     return;
                 }
             }
-            _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
-            await RenderPdf(null);
-            DocumentLoaded?.Invoke(this, new EventArgs());
 
             PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
@@ -162,6 +159,10 @@ namespace Dash
             reader.Close();
             pdfDocument.Close();
 
+            _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            await RenderPdf(null);
+            DocumentLoaded?.Invoke(this, new EventArgs());
+
             var scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
             if (scrollRatio != null)
             {
@@ -172,6 +173,7 @@ namespace Dash
 
         private async Task RenderPdf(double? targetWidth)
         {
+            //targetWidth = 1400;//This makes the PDF readable even if you shrink it down and then zoom in on it
             var options = new WPdf.PdfPageRenderOptions();
             bool add = _wPdfDocument.PageCount != Pages.Count;
             if (add)
@@ -231,10 +233,10 @@ namespace Dash
             return PageItemsControl;
         }
 
-        public DocumentController GetDocControllerFromSelectedRegion()
+        public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
         {
             var dc = new RichTextNote("PDF " + ScrollViewer.VerticalOffset).Document;
-            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.RegionBox);
+            dc.SetRegionDefinition(LayoutDocument, annotationType);
 
             return dc;
         }
@@ -256,9 +258,9 @@ namespace Dash
             return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
         }
 
-        private BoundsExtractionStrategy.SelectableElement GetClosestElementInDirection(Point p, Point dir)
+        private SelectableElement GetClosestElementInDirection(Point p, Point dir)
         {
-            BoundsExtractionStrategy.SelectableElement ele = null;
+            SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
             foreach (var selectableElement in _selectableElements)
             {
@@ -387,6 +389,7 @@ namespace Dash
         private void EndSelection()
         {
             _selectionStartPoint = null;
+            _annotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
         #endregion
@@ -477,7 +480,7 @@ namespace Dash
                     for (var i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
                     {
                         var selectableElement = _selectableElements[i];
-                        if (selectableElement.ElementType == BoundsExtractionStrategy.ElementType.Text)
+                        if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);
                         }
