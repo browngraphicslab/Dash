@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -14,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -157,95 +159,110 @@ namespace Dash
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
         {
             var canvas = MainPage.Instance.xCanvas;
-            //remove all paths
-            var paths = canvas.Children.OfType<Windows.UI.Xaml.Shapes.Path>();
-            foreach (var path in paths)
+            if ((ShowLinesButton.Background as SolidColorBrush).Color.ToString() == "#FFFFFFFF")
             {
-                canvas.Children.Remove(path);
-            }
+                //show lines
+                ShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
 
-            //draw lines between members of presentation 
-            var docs = PinnedNodesListView.Items?.ToList();
-          
-            for(var i=0; i < docs?.Count - 1; i++)
-            {
-                //use bounds to find closest sides on each neighboring doc
-                //get midpoitns of every side of both docs
-                var docA = (docs[i] as DocumentViewModel).Bounds;
-                var docAsides = new List<Tuple<Point, Point>>();
-                var docAy = docA.Y + docA.Height / 2;
-                var docAx = docA.X + docA.Width / 2;
-                //the order goes left, top, right, bottom - in regualr UWP fashion
-                docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - 35, docAy)));
-                docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top + 35)));
-                docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + 35, docAy)));
-                docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom - 35)));
+                //draw lines between members of presentation 
+                var docs = PinnedNodesListView.Items?.ToList();
 
-                var docB = (docs[i + 1] as DocumentViewModel).Bounds;
-                var docBsides = new List<Tuple<Point, Point>>();
-                var docBy = docB.Y + docB.Height / 2;
-                var docBx = docB.X + docB.Width / 2;
-                //the order goes left, top, right, bottom - in regualr UWP fashion
-                docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - 35, docBy)));
-                docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top + 35)));
-                docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + 35, docBy)));
-                docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom - 35)));
-
-                var minDist = Double.PositiveInfinity;
-                Point startPoint;
-                Point endPoint;
-                Point startControlPt;
-                Point endControlPt;
-
-                //get closest two sides between docs
-                foreach (var aside in docAsides)
+                for (var i = 0; i < docs?.Count - 1; i++)
                 {
-                    foreach (var bside in docBsides)
+                    var offset = 55;
+
+                    //use bounds to find closest sides on each neighboring doc
+                    //get midpoitns of every side of both docs
+                    var docA = (docs[i] as DocumentViewModel).Bounds;
+                    var docAsides = new List<Tuple<Point, Point>>();
+                    var docAy = docA.Y + docA.Height / 2;
+                    var docAx = docA.X + docA.Width / 2;
+                    //the order goes left, top, right, bottom - in regualr UWP fashion
+                    docAsides.Add(Tuple.Create(new Point(docA.Left, docAy), new Point(docA.Left - offset, docAy)));
+                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Top), new Point(docAx, docA.Top + offset)));
+                    docAsides.Add(Tuple.Create(new Point(docA.Right, docAy), new Point(docA.Right + offset, docAy)));
+                    docAsides.Add(Tuple.Create(new Point(docAx, docA.Bottom), new Point(docAx, docA.Bottom - offset)));
+
+                    var docB = (docs[i + 1] as DocumentViewModel).Bounds;
+                    var docBsides = new List<Tuple<Point, Point>>();
+                    var docBy = docB.Y + docB.Height / 2;
+                    var docBx = docB.X + docB.Width / 2;
+                    //the order goes left, top, right, bottom - in regualr UWP fashion
+                    docBsides.Add(Tuple.Create(new Point(docB.Left, docBy), new Point(docB.Left - offset, docBy)));
+                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Top), new Point(docBx, docB.Top + offset)));
+                    docBsides.Add(Tuple.Create(new Point(docB.Right, docBy), new Point(docB.Right + offset, docBy)));
+                    docBsides.Add(Tuple.Create(new Point(docBx, docB.Bottom), new Point(docBx, docB.Bottom - offset)));
+
+                    var minDist = Double.PositiveInfinity;
+                    Point startPoint;
+                    Point endPoint;
+                    Point startControlPt;
+                    Point endControlPt;
+
+                    //get closest two sides between docs
+                    foreach (var aside in docAsides)
                     {
-                        var dist = distSqr(aside.Item1, bside.Item1);
-                        if (dist < minDist)
+                        foreach (var bside in docBsides)
                         {
-                            minDist = dist;
-                            startPoint = aside.Item1;
-                            startControlPt = aside.Item2;
-                            endPoint = bside.Item1;
-                            endControlPt = bside.Item2;
+                            var dist = distSqr(aside.Item1, bside.Item1);
+                            if (dist < minDist)
+                            {
+                                minDist = dist;
+                                startPoint = aside.Item1;
+                                startControlPt = aside.Item2;
+                                endPoint = bside.Item1;
+                                endControlPt = bside.Item2;
+                            }
                         }
                     }
+
+
+                    var docView = MainPage.Instance.MainDocView;
+
+
+                    //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
+                    startPoint = docView.TransformToVisual(canvas).TransformPoint(startPoint);
+                    endPoint = docView.TransformToVisual(canvas).TransformPoint(endPoint);
+                    startControlPt = docView.TransformToVisual(canvas).TransformPoint(startControlPt);
+                    endControlPt = docView.TransformToVisual(canvas).TransformPoint(endControlPt);
+
+                    //create nest of elements to show segment
+                    var segment =
+                        new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
+
+                    var segments = new PathSegmentCollection {segment};
+                    var pathFig = new PathFigure
+                    {
+                        StartPoint = startPoint,
+                        Segments = segments
+                    };
+
+                    var figures = new PathFigureCollection {pathFig};
+                    var pathGeo = new PathGeometry {Figures = figures};
+
+                    var path = new Windows.UI.Xaml.Shapes.Path
+                    {
+                        Data = pathGeo,
+                        Stroke = new SolidColorBrush(Windows.UI.Colors.Black),
+                        StrokeThickness = 3
+
+                    };
+
+                    canvas.Children.Add(path);
                 }
-
-
-                var docView = MainPage.Instance.MainDocView;
-                
-
-            //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-                startPoint = docView.TransformToVisual(canvas).TransformPoint(startPoint);
-                endPoint = docView.TransformToVisual(canvas).TransformPoint(endPoint);
-                startControlPt  = docView.TransformToVisual(canvas).TransformPoint(startControlPt);
-                endControlPt = docView.TransformToVisual(canvas).TransformPoint(endControlPt);
-
-                //create nest of elements to show segment
-                var segment = new BezierSegment() { Point1 = startControlPt, Point2 = endControlPt, Point3=endPoint};
-
-                var segments = new PathSegmentCollection {segment};
-                var pathFig = new PathFigure
+            }
+            else
+            {
+                //hide lines
+                ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                //remove all paths
+                //TODO: there may be better way - not all are removed
+                var c = canvas.Children;
+                var paths = canvas.Children.OfType<Windows.UI.Xaml.Shapes.Path>();
+                foreach (var path in paths)
                 {
-                    StartPoint = startPoint,
-                    Segments = segments
-                };
-
-                var figures = new PathFigureCollection {pathFig};
-                var pathGeo = new PathGeometry {Figures = figures};
-
-                var path = new Windows.UI.Xaml.Shapes.Path
-                {
-                    Data = pathGeo,
-                    Stroke = new SolidColorBrush(Windows.UI.Colors.Black),
-                    StrokeThickness = 3
-
-                };
-
-                canvas.Children.Add(path);
+                    canvas.Children.Remove(path);
+                }
             }
         }
     }
