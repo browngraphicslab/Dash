@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -66,6 +67,12 @@ namespace Dash
             _element.NewRegionEnded += Element_OnNewRegionEnded;
             //_element.ContentLoaded += Element_OnLoaded;
             _overlay = overlay;
+            _overlay.InkUpdated += OverlayOnInkUpdated;
+            var ink = dc.GetField<InkController>(KeyStore.InkDataKey);
+            if (ink != null)
+            {
+                _overlay.InitStrokes(ink.GetStrokes().Select(s => s.Clone()));
+            }
 
             _dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
             if (_dataRegions == null) return;
@@ -106,6 +113,12 @@ namespace Dash
 
             }
         }
+
+        private void OverlayOnInkUpdated(object sender, IEnumerable<InkStroke> inkStrokes)
+        {
+            _docCtrl.SetField<InkController>(KeyStore.InkDataKey, inkStrokes, true);
+        }
+
         public double Zoom = 1;
         private void Element_OnNewRegionStarted(object sender, PointerRoutedEventArgs e)
         {

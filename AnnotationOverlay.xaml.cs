@@ -6,6 +6,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -82,7 +84,25 @@ namespace Dash
         {
             this.InitializeComponent();
             Loaded += OnLoaded;
+
+            xInkCanvas.InkPresenter.InputDeviceTypes =
+                CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            xInkCanvas.InkPresenter.StrokesCollected += (sender, args) => UpdateStrokes();
+            xInkCanvas.InkPresenter.StrokesErased += (sender, args) => UpdateStrokes();
         }
+
+        public event EventHandler<IEnumerable<InkStroke>> InkUpdated;
+
+        public void InitStrokes(IEnumerable<InkStroke> strokes)
+        {
+            xInkCanvas.InkPresenter.StrokeContainer.AddStrokes(strokes);
+        }
+
+        private void UpdateStrokes()
+        {
+            InkUpdated?.Invoke(this, xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             //UI for preview boxes
@@ -151,8 +171,7 @@ namespace Dash
             xRegionPostManipulationPreview.SetPosition(
                 new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
                 new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
-                totalSize
-            );
+                totalSize);
         }
     }
 }
