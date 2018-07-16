@@ -14,5 +14,6 @@
         <Canvas x:Name="xRegionsCanvas"/>
         <local:RegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed" />
         <Rectangle x:Name="xRegionDuringManipulationPreview" Fill="AntiqueWhite" Opacity="0.4" StrokeThickness="2" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
+        <InkCanvas x:Name="xInkCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed"></InkCanvas>
     </Grid>
 </UserControl>

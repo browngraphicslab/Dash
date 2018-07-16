@@ -14,11 +14,11 @@ using Dash.Views;
 
 namespace Dash
 {
-    public sealed partial class InkCanvasControl 
+    public sealed partial class InkCanvasControl
     {
         public InkController InkFieldModelController;
         private ManipulationControls _controls;
-        Symbol SelectIcon = (Symbol) 0xEF20;
+        Symbol SelectIcon = (Symbol)0xEF20;
 
         public Grid Grid => XGrid;
 
@@ -26,7 +26,7 @@ namespace Dash
         private Polyline lasso;
         // Stroke selection area.
         private Rect boundingRect;
-        
+
         private InkSelectionRect _rectangle;
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Dash
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             XInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
-            InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
+            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnInkUpdated;
             Loaded += OnLoaded;
             XInkCanvas.Tapped += OnTapped;
             Tapped += OnTapped;
@@ -53,26 +53,15 @@ namespace Dash
             ClearSelection();
         }
 
-        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
+        private void InkFieldModelControllerOnInkUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            if (!sender.Equals(XInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
-            {
-                UpdateStrokes();
-            }
+            UpdateStrokes();
         }
 
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-        }
-
-        private void InkFieldModelControllerOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            if ( args?.Action == DocumentController.FieldUpdatedAction.Replace)
-            {
-                UpdateStrokes();
-            }
         }
 
         private void UpdateStrokes()
@@ -124,8 +113,7 @@ namespace Dash
         private void UpdateInkFieldModelController()
         {
             if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes(),
-                    XInkCanvas);
+                InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         //protected override void OnLowestActivated(bool act)
@@ -152,7 +140,7 @@ namespace Dash
         //        if(InkToolbar.Visibility == Visibility.Visible) xCollapseSettings.Begin();
         //        ManipulationMode = ManipulationModes.All;
         //        EditButton.IsHitTestVisible = false;
-                
+
         //    }
         //}
 
@@ -193,12 +181,12 @@ namespace Dash
 
         private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            InkFieldModelController?.Redo(XInkCanvas);
+            //InkFieldModelController?.Redo(XInkCanvas);
         }
 
         private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            InkFieldModelController?.Undo(XInkCanvas);
+            //InkFieldModelController?.Undo(XInkCanvas);
         }
 
         private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -236,7 +224,7 @@ namespace Dash
             }
         }
 
-         // Handle unprocessed pointer events from modifed input.
+        // Handle unprocessed pointer events from modifed input.
         // The input is used to provide selection functionality.
         // Selection UI is drawn on a canvas under the InkCanvas.
         private void UnprocessedInput_PointerPressed(
