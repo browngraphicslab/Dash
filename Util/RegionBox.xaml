@@ -13,18 +13,18 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="Column1" x:FieldModifier="Public" Width="*"/>
-            <ColumnDefinition x:Name="Column2" x:FieldModifier="Public" Width="*"/>
-            <ColumnDefinition x:Name="Column3" x:FieldModifier="Public" Width="*"/>
+            <ColumnDefinition x:Name="Column1" Width="*"/>
+            <ColumnDefinition x:Name="Column2" Width="*"/>
+            <ColumnDefinition x:Name="Column3" Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="Row1" x:FieldModifier="Public" Height="*"/>
-            <RowDefinition x:Name="Row2" x:FieldModifier="Public" Height="*"/>
-            <RowDefinition x:Name="Row3" x:FieldModifier="Public" Height="*"/>
+            <RowDefinition x:Name="Row1" Height="*"/>
+            <RowDefinition x:Name="Row2" Height="*"/>
+            <RowDefinition x:Name="Row3" Height="*"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Stroke="SaddleBrown" StrokeDashArray="4" StrokeThickness="1" Opacity="1">
+        <Rectangle x:Name="xRegionBox" Grid.Row="1" Grid.Column="1" Stroke="SaddleBrown" StrokeDashArray="4" StrokeThickness="1" Opacity="1">
             <Rectangle.Fill>
-                <SolidColorBrush x:Name="xRegionBoxFill" x:FieldModifier="Public" Color="Gold" Opacity=".1"/>
+                <SolidColorBrush x:Name="xRegionBoxFill" Color="AntiqueWhite" Opacity=".1"/>
             </Rectangle.Fill>
         </Rectangle>
         <SymbolIcon x:Name="xCloseRegionButton" Grid.Row="1" Grid.Column="1" Symbol="Cancel" Opacity="0.7" Visibility="Collapsed" Width="20" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top" x:FieldModifier="public" PointerPressed="XCloseRegionButton_OnPointerPressed" Margin="0,6,4,0" />

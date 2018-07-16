@@ -69,7 +69,7 @@ namespace Dash
                 var topLeft = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
                 var bottomRight = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
 
-                MakeNewRegionBox(topLeft, bottomRight, region).HideOnHover();
+	            MakeNewRegionBox(topLeft, bottomRight, region).ToggleSelectionState(RegionSelectionState.None);
             }
         }
         public double Zoom = 1;
@@ -84,12 +84,13 @@ namespace Dash
 
             //reset and get rid of the region preview
             _overlay.SetDuringPreviewSize(new Size(0, 0));
+	        DeselectRegions();
 
             // what do the following two lines accomplish
             _overlay.DuringVisibility = Visibility.Collapsed;
             _overlay.DuringVisibility = Visibility.Visible;
 			
-            DeselectRegions();
+            // DeselectRegions();
             
             //delete if control is pressed
             if (MainPage.Instance.IsAltPressed())
@@ -128,17 +129,20 @@ namespace Dash
 	        if (!_isDragging) return;
             _overlay.DuringVisibility = Visibility.Collapsed;
 
-            if (MainPage.Instance.IsCtrlPressed())
-            {
-                return;
-            }
+            //if (MainPage.Instance.IsCtrlPressed())
+            //{
+            //    return;
+            //}
 
             _isDragging = false;
+
 
             // the box only sticks around if it's of a large enough size
 	        if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30)
 			{
-				_isPreviousRegionSelected = false;
+				// consider the case where the user is just clicking in place
+				if (!(_overlay.GetDuringPreviewSize().Width < 5 && _overlay.GetDuringPreviewSize().Height < 5))
+					DeselectRegions();
 				return;
 	        }
 
@@ -156,19 +160,15 @@ namespace Dash
         //shows region when user hovers over it
         private void Region_OnPointerEntered(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region && !_isDragging)
-            {
-                region.ShowOnHover();
-            }
+	        if (!(sender is RegionBox region) || _isDragging) return;
+	        if (region.SelectionState != RegionSelectionState.Select) region.ToggleSelectionState(RegionSelectionState.Hover);
         }
 
         //hides region when user's cursor leaves it if region visibility mode is hidden
         private void Region_OnPointerExited(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region && !_isDragging)
-            {
-                if (_regionState == RegionVisibilityState.Hidden) region.HideOnHover();
-            }
+	        if (!(sender is RegionBox region) || _isDragging) return;
+	        if (_regionState == RegionVisibilityState.Hidden && region.SelectionState != RegionSelectionState.Select) region.ToggleSelectionState(RegionSelectionState.None);
         }
 
         public void RegionSelected(object region, Point pos, DocumentController chosenDC = null)
@@ -248,7 +248,8 @@ namespace Dash
         private void DeselectRegions()
         {
             _isPreviousRegionSelected = false;
-            _overlay.PostVisibility = Visibility.Collapsed;
+	        _selectedRegion?.ToggleSelectionState(RegionSelectionState.None);
+	        _overlay.PostVisibility = Visibility.Collapsed;
             //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
 
             //unhighlight last selected regions' link
@@ -263,15 +264,8 @@ namespace Dash
             _selectedRegion = region;
             _isPreviousRegionSelected = true;
             //create a preview region to show that this region is selected
-            _overlay.SetDuringPreviewSize(new Size(0, 0));
-            _overlay.PostColumn1Width = region.Column1.Width;
-            _overlay.PostColumn2Width = region.Column2.Width;
-            _overlay.PostColumn3Width = region.Column3.Width;
-            _overlay.PostRow1Height = region.Row1.Height;
-            _overlay.PostRow2Height = region.Row2.Height;
-            _overlay.PostRow3Height = region.Row3.Height;
-            _overlay.PostVisibility = Visibility.Visible;
-            //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+	        region.ToggleSelectionState(RegionSelectionState.Select);
+	        //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         public void SelectRegion(DocumentController dc)
@@ -293,7 +287,7 @@ namespace Dash
             {
                 foreach (RegionBox region in _visualRegions)
                 {
-                    region.ShowOnHover();
+	                region.ToggleSelectionState(RegionSelectionState.Hover);
                 }
             }
         }
@@ -311,7 +305,7 @@ namespace Dash
                 foreach (RegionBox region in _visualRegions)
                 {
                     //region.Visibility = Visibility.Collapsed;
-                    region.HideOnHover();
+	                region.ToggleSelectionState(RegionSelectionState.None);
                 }
             }
         }

@@ -23,38 +23,6 @@ namespace Dash
     /// </summary>
     public sealed partial class AnnotationOverlay : UserControl
     {
-
-        public GridLength PostColumn1Width
-        {
-            get => xRegionPostManipulationPreview.Column1.Width;
-            set => xRegionPostManipulationPreview.Column1.Width = value;
-        }
-        public GridLength PostColumn2Width
-        {
-            get => xRegionPostManipulationPreview.Column2.Width;
-            set => xRegionPostManipulationPreview.Column2.Width = value;
-        }
-        public GridLength PostColumn3Width
-        {
-            get => xRegionPostManipulationPreview.Column3.Width;
-            set => xRegionPostManipulationPreview.Column3.Width = value;
-        }
-        public GridLength PostRow1Height
-        {
-            get => xRegionPostManipulationPreview.Row1.Height;
-            set => xRegionPostManipulationPreview.Row1.Height = value;
-        }
-        public GridLength PostRow2Height
-        {
-            get => xRegionPostManipulationPreview.Row2.Height;
-            set => xRegionPostManipulationPreview.Row2.Height = value;
-        }
-        public GridLength PostRow3Height
-        {
-            get => xRegionPostManipulationPreview.Row3.Height;
-            set => xRegionPostManipulationPreview.Row3.Height = value;
-        }
-
         public Thickness DuringMargin {
             get => xRegionDuringManipulationPreview.Margin;
             set => xRegionDuringManipulationPreview.Margin = value;
@@ -81,12 +49,7 @@ namespace Dash
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             //UI for preview boxes
-            xRegionPostManipulationPreview.xRegionBoxFill.Color = Colors.AntiqueWhite;
-            xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
-            xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 1, 0 };
-
-            xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
-            xRegionPostManipulationPreview.xRegionBoxFill.Opacity = 0.4;
+	        xRegionPostManipulationPreview.ToggleSelectionState(RegionSelectionState.Select);
         }
 
         public Point GetTopLeftPercentile()
