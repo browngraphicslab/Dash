@@ -15,6 +15,7 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Windows.UI.Xaml.Controls.Primitives;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 
@@ -43,6 +44,9 @@ namespace Dash
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
+
+        public Popup LayoutPopup => xLayoutPopup;
+
 
         public MainPage()
         {
@@ -687,5 +691,14 @@ namespace Dash
         }
 
 
+        private void Popup_OnOpened(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void Popup_OnClosed(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+        }
     }
 }

@@ -772,12 +772,12 @@ namespace Dash
 
                         DocumentController htmlNote = null;
 
-                        if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML))
+                        if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
                         {
                             htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                         }
 
-                        else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF))
+                        else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
                         {
                             var dataPackageView = Clipboard.GetContent();
                             var richtext = await dataPackageView.GetRtfAsync();
@@ -786,8 +786,11 @@ namespace Dash
 
                         else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.Default))
                         {
-                            //popup code here
-                        }
+
+                            MainPage.Instance.LayoutPopup.IsOpen = true;
+                            htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
+                        //popup code here
+                    }
 
 
 

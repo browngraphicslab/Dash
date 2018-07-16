@@ -200,6 +200,8 @@ namespace Dash
             Debug.Assert(Instance == null);
             Instance = this;
 
+            //WebpageLayout = WebpageLayoutMode.Default;
+
             _dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db";
             _pathToRestore = _dbPath + ".toRestore";
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
