@@ -120,7 +120,7 @@ namespace Dash
             {
                 // we always need to make sure that our own Height is NaN
                 // after any kind of resize happens so that we can grow as needed.
-                Height = double.NaN;
+                // Height = double.NaN;
                 // if we're inside of a RelativePanel that was resized, we need to 
                 // reset it to have NaN height so that it can grow as we type.
                 if (Parent is RelativePanel relative)

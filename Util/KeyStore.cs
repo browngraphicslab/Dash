@@ -61,6 +61,7 @@ namespace Dash
         public static KeyController SettingsNightModeKey = new KeyController("Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");
         public static KeyController SettingsMouseFuncKey = new KeyController("Settings Mouse Functionality", "867225EC-F9C7-4B14-9A5F-22B7BB71DCCB");
+        public static KeyController SettingsWebpageLayoutKey = new KeyController("Settings Webpage Layout Functionality", "7B04CE24-E876-49D7-88F9-36B25576BA07");
         public static KeyController SettingsNumBackupsKey = new KeyController("Settings Number of Backups", "25F0DB4F-D6DE-4D48-A090-77E48C1F621C");
         public static KeyController SettingsBackupIntervalKey = new KeyController("Settings Backup Interval", "8C00E2CD-6272-4E6C-ADC1-622B108A0D9F");
         public static KeyController BackgroundImageStateKey = new KeyController("State of Background Image (Radio Buttons)", "3EAE5AB5-4503-4519-9EF3-0FA5BDDE59E6");
