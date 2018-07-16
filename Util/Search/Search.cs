@@ -112,7 +112,7 @@ namespace Dash
             }
         }
 
-        public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart, bool negate = false)
+        public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart)
         {
             searchPart = searchPart ?? " ";
             //if the part is a quote, it ignores the colon
@@ -125,12 +125,12 @@ namespace Dash
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
 
 
-                return ParameterizeFunction(parts[0], parts[1], negate); ;
+                return ParameterizeFunction(parts[0], parts[1]); ;
             }
-            return SearchByQuery(searchPart, negate);
+            return SearchByQuery(searchPart);
         }
 
-        private static IEnumerable<SearchResult> ParameterizeFunction(string name, string paramName, bool negate)
+        private static IEnumerable<SearchResult> ParameterizeFunction(string name, string paramName)
         {
             if (name.Equals("in"))
             {
@@ -152,7 +152,7 @@ namespace Dash
                 //this returns a string that more closely follows function syntax
                 if (!DSL.FuncNameExists(name))
             {
-                return SearchByKeyValuePair(new KeyController(name), paramName, negate);
+                return SearchByKeyValuePair(new KeyController(name), paramName);
             }
             try
             {
@@ -293,7 +293,16 @@ namespace Dash
             }
             int dividerIndex = FindNextDivider(inputString);
             string searchTerm = inputString.Substring(0, dividerIndex);
-            bool isNegated = searchTerm.StartsWith("!");
+            int negate = 0;
+            for (int i = 0; i < searchTerm.Length; i++)
+            {
+                if (searchTerm[i] != '!')
+                {
+                    negate = i;
+                    break;
+                }
+            }
+
             string modifiedSearchTerm = searchTerm.TrimStart('!');
 
             if (modifiedSearchTerm.Length > 2 && modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
@@ -306,22 +315,26 @@ namespace Dash
             int endParenthesis = -2;
 
             // Making sure parenthesis doesn't clash with regex
-            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")) ||
-                (isNegated && modifiedSearchTerm.StartsWith("(") && modifiedSearchTerm.EndsWith(")")))
+            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")))
             {
                 endParenthesis = FindEndParenthesis(inputString);
             }
 
 
             IEnumerable<SearchResult> searchResults;
-            if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
+            if (endParenthesis > 0 || (inputString.TrimStart('!').StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
                 string newInput = modInput.Substring(1, modInput.Length - 2);
                 searchResults = Parse(newInput);
             }
             else
             {
-                searchResults = GetBasicSearchResults(modifiedSearchTerm, isNegated);
+                searchResults = GetBasicSearchResults(modifiedSearchTerm);
+            }
+
+            if (negate >= 0 && negate % 2 == 1)
+            {
+                searchResults = NegateSearch(searchResults);
             }
 
             int len = inputString.Length;
@@ -343,6 +356,17 @@ namespace Dash
                 default:
                     throw new Exception("Unknown Divider");
             }
+        }
+
+        private static IEnumerable<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
+        {
+            var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
+            var negated = new List<SearchResult>();
+            foreach (var res in results)
+            {
+                negated.Add(new SearchResult(res, "", "", 1));
+            }
+            return negated;
         }
 
         private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(

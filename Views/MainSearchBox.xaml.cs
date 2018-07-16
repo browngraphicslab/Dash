@@ -346,6 +346,13 @@ namespace Dash
                 var id = doc.Id;
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
+                if (resultDoc.EnumFields().Any(f => f.Value is RichTextController))
+                {
+                    //TODO: Highlight text value in rich text box
+                    var b = new RichTextController();
+                    
+                }
+
                 //make border thickness of DocHighlight for each doc 8
                 MainPage.Instance.HighlightDoc(resultDoc, false, 1);
             }
