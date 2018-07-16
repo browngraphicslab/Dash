@@ -42,6 +42,7 @@ namespace Dash
         bool _canDragItems = true;
         double _cellSize;
         private bool _isLoaded;
+        private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
 
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
@@ -704,6 +705,110 @@ namespace Dash
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
 
+                if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML))
+                {
+                    if (e.DataView?.Contains(StandardDataFormats.Html) == true)
+                    {
+                        var html = await e.DataView.GetHtmlFormatAsync();
+
+                        //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
+                        html = String.Concat(html,
+                            @"<style>
+                      div
+                      {
+                        color: black !important;
+                      }
+                      html * {
+                        opacity: 1.0 !important
+                      }
+                    </style>"
+                        );
+
+                        var splits = new Regex("<").Split(html);
+                        var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
+                        var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                        if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+                        {
+                            var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
+                            var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                            var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
+                            AddDocument(imgNote.Document);
+                            return;
+                        }
+                        var strings = text.Split(new char[] { '\r' });
+                        var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
+                        foreach (var str in html.Split(new char[] { '\r' }))
+                        {
+                            var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                            if (matches.Count != 0)
+                            {
+                                htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                                break;
+                            }
+                        }
+
+                        if (imgs.Count() == 0)
+                        {
+                            var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
+                            var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                            htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                            if (title == "")
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                                }
+                            else
+                                htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
+                        }
+                        else
+                        {
+                            var related = new List<DocumentController>();
+                            foreach (var img in imgs)
+                            {
+                                var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                                var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                                var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                                related.Add(i.Document);
+                            }
+                            htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
+                            //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
+                            htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                            foreach (var str in strings)
+                            {
+                                var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                                if (matches.Count != 0)
+                                {
+                                    foreach (var match in matches)
+                                    {
+                                        var pair = new Regex(":").Split(match.ToString());
+                                        htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                                    }
+                                }
+                            }
+                        }
+                        AddDocument(htmlNote);
+                    }
+                }
+
+                else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF))
+                {
+                    if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
+                    {
+                        var text = await e.DataView.GetRtfAsync();
+
+                        var t = new RichTextNote(text, where, new Size(300, double.NaN));
+                        AddDocument(t.Document);
+                    }
+                }
+
+                else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.Default))
+                {
+                    //popup code here
+                }
+
+               
+
                 // if we drag from the file system
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
@@ -718,160 +823,6 @@ namespace Dash
                     {
                         Debug.WriteLine(exception);
                     }
-                }
-
-                if (e.DataView?.Contains(StandardDataFormats.Html) == true)
-                {
-                    _pasteWhereHack = where;
-                    var html = await e.DataView.GetHtmlFormatAsync();
-
-                    //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
-                    html = String.Concat(html,
-                        @"<style>
-                      div
-                      {
-                        color: black !important;
-                      }
-
-                      html * {
-                        opacity: 1.0 !important
-                      }
-                    </style>"
-                        );
-
-                    var splits = new Regex("<").Split(html);
-                    var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-                    var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
-                    if (string.IsNullOrEmpty(text) && imgs.Count == 1)
-                    {
-                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
-                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                        var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
-                        AddDocument(imgNote.Document);
-                        return;
-                    }
-
-                    //copy html to clipboard
-                    dataPackage.RequestedOperation = DataPackageOperation.Copy;
-                    dataPackage.SetHtmlFormat(html);
-                    Clipboard.SetContent(dataPackage);
-
-                    //to import from html
-                    // create a ValueSet from the datacontext, used to create word doc to copy html to
-                    var table = new ValueSet { { "REQUEST", "HTML to RTF" } };
-
-                    await DotNetRPC.CallRPCAsync(table);
-
-                    var dataPackageView = Clipboard.GetContent();
-                    var richtext = await dataPackageView.GetRtfAsync();
-                    var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
-
-
-                    //Syncfusion version
-                    /*
-                    WordDocument d = new WordDocument();
-                    d.EnsureMinimal();
-                    d.LastParagraph.AppendHTML(html);
-                    MemoryStream mem = new MemoryStream();
-                    d.Save(mem, FormatType.Rtf);
-                    mem.Position = 0;
-                    byte[] arr = new byte[mem.Length];
-                    arr = mem.ToArray();
-                    string rtf = Encoding.Default.GetString(arr);
-                    var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
-                    //var matches = new Regex(".*:.*").Matches(rtf);
-                    //foreach (var match in matches)
-                    //{
-                    //    var pair = new Regex(":").Split(match.ToString());
-                    //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
-                    //}
-                    AddDocument(t.Document);
-                    */
-
-                    var strings = text.Split(new char[] { '\r' });
-                    foreach (var str in html.Split(new char[] { '\r' }))
-                    {
-                        var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
-                        if (matches.Count != 0)
-                        {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
-                                matches[0].Value.Replace("SourceURL:", ""), true);
-                            break;
-                        }
-                    }
-
-                    if (imgs.Count() == 0)
-                    {
-                        var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
-                        var title = (matches.Count == 1 && matches[0].Value == text)
-                            ? new Regex(":").Split(matches[0].Value)[0]
-                            : "";
-                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        if (title == "")
-                            foreach (var match in matches)
-                            {
-                                var pair = new Regex(":").Split(match.ToString());
-                                htmlNote.GetDataDocument().SetField<TextController>(new KeyController(pair[0], pair[0]),
-                                    pair[1].Trim(), true);
-                            }
-                        else
-                            htmlNote.SetTitle(title);
-                    }
-                    else
-                    {
-                        var related = new List<DocumentController>();
-                        foreach (var img in imgs)
-                        {
-                            var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                            var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                            var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                            related.Add(i.Document);
-                        }
-
-                        htmlNote.GetDataDocument()
-                            .SetField<ListController<DocumentController>>(
-                                new KeyController("Html Images", "Html Images"), related, true); //
-                        //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
-                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        foreach (var str in strings)
-                        {
-                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
-                            if (matches.Count != 0)
-                            {
-                                foreach (var match in matches)
-                                {
-                                    var pair = new Regex(":").Split(match.ToString());
-                                    htmlNote.GetDataDocument()
-                                        .SetField<TextController>(new KeyController(pair[0], pair[0]), pair[1].Trim(),
-                                            true);
-                                }
-                            }
-                        }
-                    }
-
-                    AddDocument(htmlNote);
-                }
-                else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
-                {
-                    var text = await e.DataView.GetRtfAsync();
-
-                    var t = new RichTextNote(text, where, new Size(300, double.NaN));
-                    AddDocument(t.Document);
-                }
-                else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
-                {
-                    var text = await e.DataView.GetTextAsync();
-                    var t = new RichTextNote(text, where, new Size(300, double.NaN));
-                    var matches = new Regex(".*:.*").Matches(text);
-                    foreach (var match in matches)
-                    {
-                        var pair = new Regex(":").Split(match.ToString());
-                        t.Document.GetDataDocument()
-                            .SetField<TextController>(new KeyController(pair[0]), pair[1].Trim('\r'),
-                                true);
-                    }
-
-                    AddDocument(t.Document);
                 }
                 else if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
                 {
