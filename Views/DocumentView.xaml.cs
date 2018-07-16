@@ -827,8 +827,8 @@ namespace Dash
 
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
-            //if (delta.Y != 0 || this.IsShiftPressed()  || !isTextBox)
-            ViewModel.Height = newSize.Height;
+            if (delta.Y != 0 || this.IsShiftPressed() || !isTextBox)
+                ViewModel.Height = newSize.Height;
         }
 
         // Controls functionality for the Right-click context menu
