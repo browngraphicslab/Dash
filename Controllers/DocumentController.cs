@@ -10,6 +10,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Type = Zu.TypeScript.TsTypes.Type;
 
 namespace Dash
 {
@@ -47,6 +48,7 @@ namespace Dash
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
+            TypeInfo = TypeInfo.Document;
             if (saveOnServer)
             {
                 IsOnServer(delegate (bool onServer)
@@ -874,6 +876,16 @@ namespace Dash
             {
                 UpdateOnServer(withUndo ? newEvent : null);
             }
+
+            if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
+            {
+                if (doc.DocumentType.Equals(TemplateBox.DocumentType))
+                {
+                    // TODO: ask tyler about this next line? -sy
+                    //TypeInfo = TypeInfo.Template;
+                }
+            }
+
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 

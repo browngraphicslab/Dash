@@ -50,10 +50,11 @@ namespace Dash
                 //Recursive cases
                 case DocumentController doc:
                     bool isError = doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType);
+                    bool isFieldNote = doc.DocumentType.Equals(DashConstants.TypeStore.FieldContentNote);
                     var fields = ViewModel.DisplayableOnly ? doc.EnumDisplayableFields() : doc.EnumFields(); 
                     foreach (var field in fields)
                     {
-                        if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height") || isError && field.Key.Name.ToLower().Equals("title")) continue;
+                        if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height") || (isError || isFieldNote) && field.Key.Name.ToLower().Equals("title")) continue;
                         string indentOffset = field.Value is BaseListController list && list.Count == 0 ? "   " : "";
                         xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                         {

@@ -171,6 +171,7 @@ namespace DashShared
             public static DocumentType SearchOperatorType = new DocumentType("7A83F04B-7715-40B3-A867-B29E7812B8C4", "Search Operator");
             public static DocumentType QuizletOperatorType = new DocumentType("7F97DB94-CE77-4082-8E1B-EF4518475C38", "Quizlet Operator");
             public static DocumentType ErrorType = new DocumentType("55F9E738-C215-4EA7-8878-4C561C16A5FC", "Error Message");
+            public static DocumentType FieldContentNote = new DocumentType("E9F45F55-3391-4714-8EEA-7EF5D9CF77B7", "Field Content Notification");
         }
     }
 }
