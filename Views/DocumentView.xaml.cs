@@ -90,7 +90,22 @@ namespace Dash
             }
         }
 
+        public bool ShowResize
+        {
+            get => _showResize;
+            set
+            {
+                _showResize = value;
+                if (!value)
+                {
+                    RemoveResizeHandlers();
+                }
+            }
+        }
+
         private ImageSource _docPreview = null;
+        private bool _showResize;
+
         private ImageSource DocPreview
         {
             get { return _docPreview; }
@@ -98,6 +113,7 @@ namespace Dash
             {
                 _docPreview = value;
                 xToolTipPreview.Source = value;
+                _docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
             }
         }
 
@@ -193,20 +209,20 @@ namespace Dash
                 UndoManager.EndBatch();
             }
 
-            xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
-            xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
-            xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
-            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
-            xTopResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
-            xLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
-            xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
-            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+            xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);
+            xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, true);
+            xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, true);
+            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, true);
+            xTopResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, false);
+            xLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, false);
+            xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
+            xBottomResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
 
             foreach (var handle in new Rectangle[]
             {
                 xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
                 xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
             })
             {
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
@@ -332,7 +348,29 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
-            
+
+        }
+
+        public void RemoveResizeHandlers()
+        {
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+            })
+            {
+                handle.Visibility = Visibility.Collapsed;
+            }
+
+            xLeftColumn.Width = new GridLength(0);
+            xRightColumn.Width = new GridLength(0);
+            xTopRow.Height = new GridLength(0);
+            xBottomRow.Height = new GridLength(0);
+            ViewModel.DecorationState = false;
+
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         #region StandardCollectionView
@@ -714,15 +752,22 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
 
             e.Handled = true;
+            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value + 10;
+            var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            var oldSize = new Size(ViewModel.ActualSize.X - 30, ViewModel.ActualSize.Y - 30);
+            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
+            //{
+            //    delta.X = 0.0;
+            //}
+            var oldSize = new Size(ViewModel.ActualSize.X - extraOffsetX, ViewModel.ActualSize.Y - extraOffsetY);
 
             // sets directions/weights depending on which handle was dragged as mathematical manipulations
             var cursorXDirection = shiftLeft ? -1 : 1;
@@ -732,53 +777,46 @@ namespace Dash
             
 
             // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-            var w = double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X - 30 : ViewModel.Width;
-            var h = ViewModel.Height;
+            var w = ViewModel.ActualSize.X - extraOffsetX;
+            var h = ViewModel.ActualSize.Y - extraOffsetY;
 
             // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
             // So flip the negative sign by multiplying by -1.
-            var aspect = (ViewModel.ActualSize.Y - 30) / (ViewModel.ActualSize.X - 30);
-            var diffX = cursorXDirection * delta.X;
-            var diffY = (this.IsCtrlPressed() || this.IsShiftPressed()) ? diffX : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
-            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + aspect * diffY, MinHeight));
+            double diffX;
+            double diffY;
 
-            // test for changes to height based on changes to width (eg. images to maintain aspect, text boxes that wrap
-            ViewModel.Width = newSize.Width;
-            ViewModel.Height = newSize.Height;
-            this.UpdateLayout(); // bcz: text boxes seem to need the ActualWidth/Height set to measure properly
-            this.Measure(new Size(newSize.Width, 5000));
+            var aspect = w / h;
+            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
+
+            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
+            useX |= cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0 && moveAspect <= aspect;
+            useX |= cumulativeDelta.X > 0 && cumulativeDelta.Y > 0 && moveAspect > aspect;
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = ((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio)
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            }
+            else
+            {
+                diffY = cursorYDirection * delta.Y;
+                diffX = ((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio)
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
+            }
+
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
 
             // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
             var newPos = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
-                ViewModel.YPos - moveYScale * (DesiredSize.Height - 30 - oldSize.Height) * ViewModel.Scale.Y);
+                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
 
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
             ViewModel.Height = newSize.Height;
-
-            Point Clamp(Point point, Rect rect)
-            {
-                if (point.X < rect.Left)
-                {
-                    point.X = rect.Left;
-                }
-                else if (point.X > rect.Right)
-                {
-                    point.X = rect.Right;
-                }
-
-                if (point.Y < rect.Top)
-                {
-                    point.Y = rect.Top;
-                }
-                else if (point.Y > rect.Bottom)
-                {
-                    point.Y = rect.Bottom;
-                }
-
-                return point;
-            }
         }
 
         // Controls functionality for the Right-click context menu
@@ -1263,25 +1301,11 @@ namespace Dash
         public void hideControls()
         {
             ViewModel.DecorationState = false;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopRight.Visibility = Visibility.Collapsed;
-            //xTitleIcon.Visibility = Visibility.Collapsed;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-            //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
         {
             ViewModel.DecorationState = true;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Visible;
-            //ResizeHandleBottomRight.Visibility = Visibility.Visible;
-            //ResizeHandleTopLeft.Visibility = Visibility.Visible;
-            //ResizeHandleTopRight.Visibility = Visibility.Visible;
-            //xTitleIcon.Visibility = Visibility.Visible;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Visible;
-            //xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
@@ -1306,5 +1330,30 @@ namespace Dash
 			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
 		}
+
+        private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
+        }
+
+        private void NESW_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNortheastSouthwest, 0);
+        }
+
+        private void NWSE_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthwestSoutheast, 0);
+        }
+
+        private void Y_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthSouth, 0);
+        }
+
+        private void AllResizers_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
     }
 }
