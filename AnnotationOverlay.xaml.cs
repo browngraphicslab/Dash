@@ -87,7 +87,7 @@ namespace Dash
 
 			//TODO: REMOVE MOUSE INPUT - ONLY DID THIS FOR TESTING PURPOSES
             xInkCanvas.InkPresenter.InputDeviceTypes =
-                CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch | CoreInputDeviceTypes.Mouse;
+                CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             xInkCanvas.InkPresenter.StrokesCollected += (sender, args) => UpdateStrokes();
             xInkCanvas.InkPresenter.StrokesErased += (sender, args) => UpdateStrokes();
         }
