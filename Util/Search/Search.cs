@@ -172,8 +172,6 @@ namespace Dash
                             return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
                         case "after":
                             return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
-                        default:
-                            break;
                     }
                     return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
                 }
@@ -260,29 +258,6 @@ namespace Dash
                 }
             }
             return -1;
-        }
-
-        private string SelectivelyReplace(string inputString, string toReplace, string toIgnore, string replaceWith)
-        {
-            int len = inputString.Length;
-            int rep1 = toReplace.Length;
-            int rep2 = toIgnore.Length;
-            int repW1 = replaceWith.Length;
-
-            for (var i = 0; i < len - (rep1 - 1); i++)
-            {
-                if (len - i > rep2 - 1 && inputString.Substring(i, rep2).Equals(toIgnore))
-                {
-                    i += rep2 - 1;
-                }
-                else if (inputString.Substring(i, rep1).Equals(toReplace))
-                {
-                    inputString = inputString.Remove(i, rep1).Insert(i, replaceWith);
-                    i += repW1 - 1;
-
-                }
-            }
-            return inputString;
         }
 
         public static IEnumerable<SearchResult> Parse(string inputString)
@@ -381,39 +356,6 @@ namespace Dash
             return filteredNodes.Select(node => new SearchResult(node, "", id));
         }
 
-        public static DocumentController SearchIndividualById(string id) =>
-            ContentController<FieldModel>.GetController<DocumentController>(id);
-
-        /*
-         * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
-         */
-        //private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText, bool isLikelyUsefulContextText = false)
-        //{
-        //    var vms = new List<SearchResultViewModel>();
-        //    var preTitle = "";
-
-        //    var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
-        //    foreach (var documentNode in documentNodes ?? new DocumentNode[0])
-        //    {
-        //        if (documentNode?.Parents?.FirstOrDefault() != null)
-        //        {
-        //            preTitle = " >  " +
-        //                ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
-        //                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
-        //                           ? "?"
-        //                           : documentNode.Parents.First().DataDocument
-        //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
-        //                     ;
-        //        }
-
-        //        var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
-        //            dataDocumentController.Id,
-        //            documentNode?.ViewDocument ?? dataDocumentController,
-        //            documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
-        //        vms.Add(vm);
-        //    }
-
-        //    return vms.ToArray();
-        //}
+        public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id);
     }
 }
