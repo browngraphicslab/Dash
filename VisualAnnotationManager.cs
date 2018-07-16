@@ -136,11 +136,14 @@ namespace Dash
             _isDragging = false;
 
             // the box only sticks around if it's of a large enough size
-            if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30) return;
+	        if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30)
+			{
+				_isPreviousRegionSelected = false;
+				return;
+	        }
 
             _overlay.SetRegionBoxPosition(new Size(_element.GetPositionReference().ActualWidth, _element.GetPositionReference().ActualHeight));
             _overlay.PostVisibility = Visibility.Visible;
-	        _isPreviousRegionSelected = false;
         }
 
         private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)

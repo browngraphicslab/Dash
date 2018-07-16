@@ -155,13 +155,16 @@ namespace Dash
 	        foreach (var presenter in
 		        itemsPanelRoot.Children.Select(c => c as ContentPresenter))
 	        {
-
 		        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
 		        if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
-		        var mprect = dvm.GetBoundingRect(MainPage.Instance);
-		        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-		        if (onlyOnPage && !MainPage.Instance.GetBoundingRect().Contains(center)) continue;
-		        var d = Math.Sqrt((@where.X - center.X) * (@where.X - center.X) +
+				var mprect = dvm.GetBoundingRect(MainPage.Instance);
+				var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+				if (onlyOnPage && RectHelper.Intersect(MainPage.Instance.GetBoundingRect(), mprect).IsEmpty)
+				{
+					continue;
+				}
+
+				var d = Math.Sqrt((@where.X - center.X) * (@where.X - center.X) +
 		                          (@where.Y - center.Y) * (@where.Y - center.Y));
 		        if (!(d < dist)) continue;
 		        nearest = dvm;
