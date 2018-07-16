@@ -113,7 +113,7 @@ namespace Dash
             {
                 _docPreview = value;
                 xToolTipPreview.Source = value;
-                _docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
+                //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
             }
         }
 
@@ -302,7 +302,7 @@ namespace Dash
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = this.IsShiftPressed() ? new List<DocumentView>(): SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                var adornmentGroups = this.IsShiftPressed() ? new List<DocumentView>() : SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
                 {
                     adornmentGroups.ForEach((dv) =>
@@ -333,7 +333,7 @@ namespace Dash
                     var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
                     if (ViewModel.IsAdornmentGroup && !wasSelected)
                     {
-                        if (ParentCollection.CurrentView is CollectionFreeformView)
+                        if (ParentCollection.CurrentView is CollectionFreeformView || ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
                         }
@@ -395,7 +395,7 @@ namespace Dash
         {
             RenderTargetBitmap bitmap = new RenderTargetBitmap();
             xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement,1000,1000);
+            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement, 1000, 1000);
             xContentPresenter.Visibility = Visibility.Collapsed;
             return bitmap;
         }
@@ -464,7 +464,8 @@ namespace Dash
             else if (type.Equals(DataBox.DocumentType))
             {
                 return new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
-            } else if (type.Equals(OperatorBox.DocumentType))
+            }
+            else if (type.Equals(OperatorBox.DocumentType))
             {
                 return new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
             }
@@ -743,7 +744,7 @@ namespace Dash
         #endregion
 
 
-        
+
 
 
         /// <summary>
@@ -757,12 +758,13 @@ namespace Dash
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-
+            var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
             e.Handled = true;
-            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value + 10;
+            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            
             //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
             //{
             //    delta.X = 0.0;
@@ -774,7 +776,8 @@ namespace Dash
             var cursorYDirection = shiftTop ? -1 : 1;
             var moveXScale = shiftLeft ? 1 : 0;
             var moveYScale = shiftTop ? 1 : 0;
-            
+            cumulativeDelta.X *= cursorXDirection;
+            cumulativeDelta.Y *= cursorYDirection;
 
             // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
             var w = ViewModel.ActualSize.X - extraOffsetX;
@@ -789,20 +792,28 @@ namespace Dash
             var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
 
             bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
-            useX |= cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0 && moveAspect <= aspect;
-            useX |= cumulativeDelta.X > 0 && cumulativeDelta.Y > 0 && moveAspect > aspect;
+            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
+            } else if(cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
+            }
+
+
+            var proportional = (isTextBox && maintainAspectRatio) ? this.IsShiftPressed() : (this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
             {
                 aspect = 1 / aspect;
                 diffX = cursorXDirection * delta.X;
-                diffY = ((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio)
+                diffY = proportional
                     ? aspect * diffX
                     : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
             }
             else
             {
                 diffY = cursorYDirection * delta.Y;
-                diffX = ((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio)
+                diffX = proportional
                     ? aspect * diffY
                     : cursorXDirection * delta.X;
             }
@@ -816,6 +827,7 @@ namespace Dash
 
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
+            //if (delta.Y != 0 || this.IsShiftPressed()  || !isTextBox)
             ViewModel.Height = newSize.Height;
         }
 
@@ -937,7 +949,7 @@ namespace Dash
                 ToFront();
             }
 
-   //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
+            //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
@@ -998,7 +1010,7 @@ namespace Dash
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
             {
-                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;     
+                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
                 if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) || level.Equals(CollectionViewModel.StandardViewLevel.Region))
                     Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
                 else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
@@ -1297,7 +1309,7 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
-		
+
         public void hideControls()
         {
             ViewModel.DecorationState = false;
@@ -1317,19 +1329,19 @@ namespace Dash
             }
         }
 
-	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
-	    {
+        private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+        {
 
-		    if (ViewModel.Content is IAnnotatable element)
-		    {
-		        element.RegionSelected(element, new Point(0, 0));
-			}
-		    else
-		    {
-			    var ann = new AnnotationManager(ViewModel.Content);
-			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-		    }
-		}
+            if (ViewModel.Content is IAnnotatable element)
+            {
+                element.RegionSelected(element, new Point(0, 0));
+            }
+            else
+            {
+                var ann = new AnnotationManager(ViewModel.Content);
+                ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
+            }
+        }
 
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
