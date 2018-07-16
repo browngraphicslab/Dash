@@ -774,11 +774,14 @@ namespace Dash
 
                         if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
                         {
+                            
                             htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
+                            
                         }
 
                         else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
                         {
+                            
                             var dataPackageView = Clipboard.GetContent();
                             var richtext = await dataPackageView.GetRtfAsync();
                             htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
@@ -786,11 +789,18 @@ namespace Dash
 
                         else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.Default))
                         {
-
-                            MainPage.Instance.LayoutPopup.IsOpen = true;
-                            htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-                        //popup code here
-                    }
+                            var layoutType = await MainPage.Instance.GetLayoutType();
+                            if (layoutType.Equals(SettingsView.WebpageLayoutMode.HTML))
+                            {
+                                htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
+                            } else if (layoutType.Equals(SettingsView.WebpageLayoutMode.RTF))
+                            {
+                            var dataPackageView = Clipboard.GetContent();
+                                var richtext = await dataPackageView.GetRtfAsync();
+                                htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                            }
+                           
+                        }
 
 
 
