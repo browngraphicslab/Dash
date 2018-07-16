@@ -149,7 +149,8 @@ namespace Dash
         {
             var dist = double.MaxValue;
             DocumentView nearest = null;
-            var itemsPanelRoot = ((CollectionFreeformView) _element.GetFirstAncestorOfType<CollectionView>().CurrentView).xItemsControl
+	        var collection = _element.GetFirstAncestorOfType<CollectionView>() ?? MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+	        var itemsPanelRoot = ((CollectionFreeformView) collection.CurrentView).xItemsControl
                 .ItemsPanelRoot;
 	        if (itemsPanelRoot == null) return nearest;
 	        foreach (var presenter in
