@@ -171,7 +171,6 @@ namespace Dash
             xScrollViewer.ChangeView(null, float.MaxValue, null, true);
         }
 
-
         public static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
 
         private string InsertEnter(string text, char value, bool before = false)
