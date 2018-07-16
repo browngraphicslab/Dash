@@ -90,8 +90,8 @@
             <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
             <AppBarButton x:Name="xFontColor" Label="Color">
                 <Button.Flyout>
-                    <Flyout>
-                        <local:DashColorPicker x:Name="xGroupForegroundColorPicker" PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
+                    <Flyout x:Name="xColorFlyout">
+                        <local:DashColorPicker x:Name="xGroupForegroundColorPicker" SelectedColorChanged="XGroupForegroundColorPicker_OnSelectedColorChanged"/>
                     </Flyout>
                 </Button.Flyout>
                 <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>

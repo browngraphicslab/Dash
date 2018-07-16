@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using System;
 using Windows.Networking.BackgroundTransfer;
+using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
 
@@ -58,6 +59,7 @@ namespace Dash
             };
 
             CheckForCustom();
+	        xGroupForegroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
         //SETUP AND HELPER METHODS
@@ -271,15 +273,7 @@ namespace Dash
             xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
 
-        /*
-         * Updates the value of the current color (as string) and updates color/opacity bindings
-         */
-        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            _currentColor = xGroupForegroundColorPicker.SelectedColor;
-            UpdateToolbarAccentColors();
-            UpdateColor();
-        }
+        
 
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -310,5 +304,15 @@ namespace Dash
             xSideCounter.Text = numSides.ToString();
             _currentDocController?.GetDataDocument().SetSideCount(numSides);
         }
+
+	    /*
+         * Updates the value of the current color (as string) and updates color/opacity bindings
+         */
+		private void XGroupForegroundColorPicker_OnSelectedColorChanged(object sender, Color e)
+	    {
+			_currentColor = xGroupForegroundColorPicker.SelectedColor;
+		    UpdateToolbarAccentColors();
+		    UpdateColor();
+		}
     }
 }
