@@ -861,16 +861,6 @@ namespace Dash
             if (deselect) SelectionManager.DeselectAll();
         }
 
-        private void UndoActionFromSelection(VirtualKey modifier)
-        {
-            switch (modifier)
-            {
-                case VirtualKey.C:
-
-                    break;
-            }
-        }
-
         #endregion
 
         #region DragAndDrop
