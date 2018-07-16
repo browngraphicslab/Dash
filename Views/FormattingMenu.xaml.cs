@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -58,7 +59,8 @@ namespace Dash
         private void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
         {  
             WC = new WordCount(xRichEditBox);
-
+	        xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
+	        xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
             SetUpFontFamilyComboBox();
             SetUpFontSizeComboBox();
         }
@@ -295,9 +297,9 @@ namespace Dash
 
         #endregion
 
-        private void xForegroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as SfColorPicker;
+            var colorPicker = sender as DashColorPicker;
             if(colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
@@ -305,13 +307,13 @@ namespace Dash
             }
         }
 
-        private void xBackgroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as SfColorPicker;
+            var colorPicker = sender as DashColorPicker;
             if (colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Highlight(color, true);
+				richTextView.Highlight(color, true);
             }
         }
 

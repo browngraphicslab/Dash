@@ -91,7 +91,7 @@
             <AppBarButton x:Name="xFontColor" Label="Color">
                 <Button.Flyout>
                     <Flyout>
-                        <media:SfColorPicker  x:Name="xGroupForegroundColorPicker"  PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
+                        <local:DashColorPicker x:Name="xGroupForegroundColorPicker" PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
                     </Flyout>
                 </Button.Flyout>
                 <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>

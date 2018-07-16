@@ -14,16 +14,15 @@
     xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="800">
 
   
 
-    <Grid x:Name="xStack" >
+    <Grid x:Name="xStack" Height="50">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="60"/>
         </Grid.ColumnDefinitions>
         <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
@@ -35,7 +34,7 @@
             </controls:TextToolbar.ButtonModifications>
 
         </controls:TextToolbar>
-        <Grid Grid.Column="1" 
+        <!--<Grid Grid.Column="1" 
                 Background="LightGray">
             <Slider x:Name="xOpacitySlider" Grid.Column="1"
                             Minimum="0" 
@@ -48,12 +47,13 @@
                             Margin="22, 11, 0, 0" 
                             RightTapped="XOpacitySlider_OnRightTapped"  
                             ValueChanged="XOpacitySlider_OnValueChanged"/>
-        </Grid>
-        <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
-            Background="LightGray" >
+        </Grid> -->
+        <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="2" Height="50" Width="60"
+            Background="LightGray" Click="XBackgroundColorButton_OnClick">
         <Button.Flyout>
-                <Flyout>
-                    <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
+                <Flyout x:Name="xColorPickerFlyout">
+                   <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
+                    <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"></local:DashColorPicker>
                 </Flyout>
             </Button.Flyout>
             <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>

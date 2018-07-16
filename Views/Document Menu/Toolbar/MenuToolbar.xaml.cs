@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -124,6 +125,8 @@ namespace Dash
             Unpinned
         }
 
+	   
+
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private UIElement baseLevelContentToolbar;
@@ -136,13 +139,14 @@ namespace Dash
         private BitmapImage unpinnedIcon;
         private BitmapImage pinnedIcon;
         private bool containsInternalContent;
+	    private DocumentType _selectedType = null;
 
-        // == CONSTRUCTORS ==
-        /// <summary>
-        /// Creates a new Toolbar with the given canvas as reference.
-        /// </summary>
-        /// <param name="canvas"></param>
-        public MenuToolbar()
+		// == CONSTRUCTORS ==
+		/// <summary>
+		/// Creates a new Toolbar with the given canvas as reference.
+		/// </summary>
+		/// <param name="canvas"></param>
+		public MenuToolbar()
         {
             InitializeComponent();
 
@@ -306,11 +310,12 @@ namespace Dash
                 if (docs.Count() == 1)
                 {
                     var selection = docs.First();
+	                _selectedType = selection.ViewModel.DocumentController.DocumentType;
 
-                    //Find the type of the selected node and update the subtoolbar binding appropriately.
+					//Find the type of the selected node and update the subtoolbar binding appropriately.
 
-                    // Image controls
-                    if (selection.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
+					// Image controls
+					if (selection.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
                     {
                         containsInternalContent = true;
                         baseLevelContentToolbar = xImageToolbar;
@@ -346,11 +351,12 @@ namespace Dash
                         subtoolbarElement = xGroupToolbar;
                     }
 
-                    // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
-                    // TODO Revisit this when selection is refactored
-                    // Collection controls  
-                    if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
+					// <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
+
+					// TODO Revisit this when selection is refactored
+					// Collection controls  
+					if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
                     {
                         if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
                         {
@@ -409,7 +415,7 @@ namespace Dash
                     else
                     {
                         //If nothing is selected, open/label the main menu toolbar
-                        if (state == State.Expanded) xToolbar.IsOpen = true;
+                        xToolbar.IsOpen = (state == State.Expanded && !_selectedType.Equals(PdfBox.DocumentType));
                     }
                 }
                 else if (docs.Count<DocumentView>() > 1)
@@ -421,7 +427,8 @@ namespace Dash
                     xToolbar.IsOpen = true;
                     subtoolbarElement = null;
                     xGroupToolbar.TryMakeGroupEditable(false);
-                    //xPadding.Visibility = Visibility.Collapsed;
+					_selectedType = null;
+	                //xPadding.Visibility = Visibility.Collapsed;
                 }
 
                 //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
@@ -478,7 +485,7 @@ namespace Dash
 
         private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType)) ? true : IsAtTop();
             if (checkedButton != sender as AppBarToggleButton)
             {
                 AppBarToggleButton temp = checkedButton;
@@ -492,7 +499,7 @@ namespace Dash
 
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
         {
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType)) ? true : IsAtTop();
             AppBarToggleButton toggle = sender as AppBarToggleButton;
             if (toggle == checkedButton)
             {
@@ -507,7 +514,7 @@ namespace Dash
         /// </summary>
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType)) ? true : IsAtTop();
             //opens file picker and limits search by listed image extensions
             var imagePicker = new FileOpenPicker
             {
@@ -558,7 +565,7 @@ namespace Dash
         /// </summary>
         private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType)) ? true : IsAtTop();
             //instantiates a file picker, set to open in user's video library
             var picker = new FileOpenPicker
             {
@@ -596,7 +603,7 @@ namespace Dash
         /// </summary>
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType)) ? true : IsAtTop();
 
             //instantiates a file picker, set to open in user's audio library
             var picker = new FileOpenPicker
@@ -650,6 +657,7 @@ namespace Dash
             //if toolbar is currently expanded, loop through each button to alter their visibility
             if (state == State.Expanded)
             {
+				
                 foreach (var b in allButtons)
                 {
                     if (b != xPin)
@@ -663,10 +671,11 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
+				
             }
             else
             {
-                //otherwise, it is about to expand. In this case, update visisbility of separators before buttons
+                //otherwise, it is about to expand. In this case, update visibility of separators before buttons
                 foreach (var s in allSeparators)
                 {
                     s.Visibility = status;
@@ -737,7 +746,7 @@ namespace Dash
             if (state == State.Expanded && IsAtTop())
             {
                 //main toolbar should only be open when there is no currently active subtoolbar present
-                xToolbar.IsOpen = subtoolbarElement == null;
+                xToolbar.IsOpen = (subtoolbarElement == null && _selectedType != PdfBox.DocumentType);
                 //close any command bar - based toolbar, and update margins for texttoolbar accordingly
                 if (subtoolbarElement is ICommandBarBased toClose)
                 {
@@ -779,7 +788,7 @@ namespace Dash
             //set subtoolbar element to null if collapsing toolbar
             if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
-            xToolbar.IsOpen = (state == State.Expanded);
+	        xToolbar.IsOpen = (state == State.Expanded && !_selectedType.Equals(PdfBox.DocumentType));
 
             //adjust toolbar's position to account for the change in size
             xFloating.AdjustPositionForExpansion(0, ToolbarConstants.ToolbarExpandedWidth - xToolbar.ActualWidth);

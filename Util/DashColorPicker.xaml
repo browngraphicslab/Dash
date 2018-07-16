@@ -1,0 +1,60 @@
+﻿<UserControl
+    x:Class="Dash.DashColorPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="630"
+    d:DesignWidth="350">
+
+    <Grid Background="LightGray" Width="330" Height="630">
+        <StackPanel Height="650" VerticalAlignment="Top">
+
+            <!--PAST COLORS -->
+            <StackPanel x:Name="xSavedColorsStack" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="9.5" Height="30" Visibility="Visible" Width="300" Margin="0,10,0,0">
+  
+            </StackPanel>
+
+            <ColorPicker x:Name="xColorPicker" IsAlphaEnabled="True"
+                     MinHeight="200"
+                     MinWidth="200"
+                     Height="570"
+                     Width="300"
+                     VerticalAlignment="Bottom"
+                     Margin="0,10,0,0"
+                     />
+            
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="10" Margin="200,534,0,0">
+            <Button x:Name="xSaveColorButton" Background="{StaticResource AccentGreenDarkDark}" VerticalAlignment="Bottom"  HorizontalAlignment="Left" Width="110" Height="36" Click="XSaveColorButton_OnClick">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontFamily="{StaticResource FontAwesome}" FontSize="20" Foreground="White" Text="{StaticResource SaveIcon}" />
+                    <TextBlock Foreground="White">Color</TextBlock>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="xApplyColorButton" Background="{StaticResource AccentGreen}" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="110" Height="36" Click="XApplyColorButton_OnClick">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontFamily="{StaticResource FontAwesome}"  FontSize="20" Foreground="White" Text="{StaticResource CheckIcon}" />
+                    <TextBlock Foreground="White">Close</TextBlock>
+                </StackPanel>
+
+            </Button>
+        </StackPanel>
+
+        <!--RBG buttons 
+        <StackPanel Orientation="Horizontal" Width="330" Height="50" Margin="0,428,0,0" HorizontalAlignment="Center" VerticalAlignment="Top">
+            <Grid Background="{StaticResource WindowsBlue}" Height="40" Margin="0,0,10,0">
+                <TextBlock Foreground="White" FontWeight="Bold" FontSize="16" Height="40" >RBG</TextBlock>
+            </Grid>
+            <TextBox Background="White" PlaceholderText="R" BorderBrush="DarkRed" BorderThickness="4"  Width="80" Height="40" Margin="0,0,10,0"></TextBox>
+            <TextBox Background="White" PlaceholderText="B" BorderBrush="DarkBlue" BorderThickness="4"  Width="80" Height="40" Margin="0,0,10,0"></TextBox>
+            <TextBox Background="White" PlaceholderText="G" BorderBrush="DarkGreen" BorderThickness="4"  Width="80" Height="40" ></TextBox>
+        </StackPanel>
+-->
+        
+    </Grid>
+</UserControl>
