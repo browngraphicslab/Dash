@@ -80,14 +80,22 @@ namespace Dash
         // follows the document in the workspace, and heuristically determines if it's too far away and should be docked
 	    private void FollowDocument(DocumentController target, Point pos)
 	    {
-			var nearestOnScreen = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), true);
-			var nearestOnCollection = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), false);
+		    DocumentController docToFollow = target;
+
+			// is a region
+			if (target.GetRegionDefinition() != null)
+			{
+				docToFollow = target.GetRegionDefinition();
+			}
+
+			var nearestOnScreen = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), true);
+			var nearestOnCollection = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), false);
 
 			// we only want to pan when the document isn't currently on the screen
 			if (nearestOnScreen == null)
 			{
 				// calculate distance of how off-screen it is
-				var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(target);
+				var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
 				var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
 
 				var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
@@ -141,6 +149,7 @@ namespace Dash
 	        foreach (var presenter in
 		        itemsPanelRoot.Children.Select(c => c as ContentPresenter))
 	        {
+
 		        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
 		        if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
 		        var mprect = dvm.GetBoundingRect(MainPage.Instance);
@@ -149,7 +158,6 @@ namespace Dash
 		        var d = Math.Sqrt((@where.X - center.X) * (@where.X - center.X) +
 		                          (@where.Y - center.Y) * (@where.Y - center.Y));
 		        if (!(d < dist)) continue;
-		        d = dist;
 		        nearest = dvm;
 	        }
 

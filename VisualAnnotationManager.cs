@@ -232,6 +232,7 @@ namespace Dash
                 MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
             }
 
+	        if (nearestOnCollection == null) return;
             //highlight this linked doc
             _lastNearest = nearestOnCollection;
             MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);

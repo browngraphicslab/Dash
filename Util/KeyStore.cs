@@ -75,7 +75,8 @@ namespace Dash
         public static KeyController DockedLength = new KeyController("Docked column/row length", "A31E063D-A314-4AF9-973E-595FF70A2592");
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController("Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
-        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
+        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right % of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
+	    public static KeyController RegionParentKey = new KeyController("Parent of this region", "5F1E1A92-94D7-4C17-A6F6-0D261A0B70B5");
 
         public static KeyController ReplInputsKey = new KeyController("Repl Inputs", "650072AB-1821-4BC6-A7F5-096094CF6EB7");
         public static KeyController ReplOutputsKey = new KeyController("Repl Outputs", "0676C751-B6DE-480F-A5EB-8362F6238D13");
