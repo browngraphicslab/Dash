@@ -37,14 +37,14 @@
 
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="xLeftColumn" Width="20" />
+                        <ColumnDefinition x:Name="xLeftColumn" Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition x:Name="xRightColumn" Width="20" />
+                        <ColumnDefinition x:Name="xRightColumn" Width="10" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xTopRow" Height="20" />
+                        <RowDefinition x:Name="xTopRow" Height="10" />
                         <RowDefinition Height="*" />
-                        <RowDefinition x:Name="xBottomRow" Height="20" />
+                        <RowDefinition x:Name="xBottomRow" Height="10" />
                     </Grid.RowDefinitions>
                     <!-- Main document view -->
 
