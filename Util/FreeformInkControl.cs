@@ -74,7 +74,7 @@ namespace Dash
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeContinued += StrokeInputOnStrokeContinued;
             TargetInkCanvas.RightTapped += TargetCanvasOnRightTapped;
-            InkController.InkUpdated += InkControllerOnInkUpdated;
+            InkController.FieldModelUpdated += InkControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
         }
 
@@ -160,8 +160,7 @@ namespace Dash
         /// </summary>
         public void UpdateInkController()
         {
-            InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes(),
-                TargetInkCanvas);
+            InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         /// <summary>
@@ -327,9 +326,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void InkControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
+        private void InkControllerOnInkUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            if (!sender.Equals(TargetInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
                 UpdateStrokes();
         }
 

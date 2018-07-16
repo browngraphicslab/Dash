@@ -15,6 +15,7 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Windows.UI.Input.Inking;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 
