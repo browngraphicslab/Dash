@@ -75,7 +75,9 @@ namespace Dash
         public double Zoom = 1;
         private void Element_OnNewRegionStarted(object sender, PointerRoutedEventArgs e)
         {
-            var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+	        MainPage.Instance.HighlightDoc(_docCtrl, false, 2);
+
+			var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
             var pos = new Point(rawpos.X / Zoom, rawpos.Y / Zoom);
             _anchorPoint = pos;
             _isDragging = true;
@@ -98,7 +100,7 @@ namespace Dash
             }
             //select otherwise
             //if (xLinkStack.Visibility == Visibility.Collapsed)
-            if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
+            //if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
             
         }
 
@@ -138,12 +140,13 @@ namespace Dash
 
             _overlay.SetRegionBoxPosition(new Size(_element.GetPositionReference().ActualWidth, _element.GetPositionReference().ActualHeight));
             _overlay.PostVisibility = Visibility.Visible;
+	        _isPreviousRegionSelected = false;
         }
 
         private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            this.RegionSelected((RegionBox) sender, e.GetPosition(MainPage.Instance));
+            RegionSelected((RegionBox) sender, e.GetPosition(MainPage.Instance));
             e.Handled = true;
         }
 

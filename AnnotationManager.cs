@@ -84,9 +84,7 @@ namespace Dash
 
 			// is a region
 			if (target.GetRegionDefinition() != null)
-			{
 				docToFollow = target.GetRegionDefinition();
-			}
 
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), false);
@@ -122,12 +120,20 @@ namespace Dash
 					}
 				}
 		    }
-			
-			//images have additional highlighting features that should be implemented
+
+		    var viewToFollow = nearestOnScreen ?? nearestOnCollection;
+		    var va = viewToFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
+		    va?.GetAnnotationManager().SelectRegion(target);
+		    if (va is CustomPdfView pdf)
+		    {
+				// TODO make it scroll to the region's position as well
+		    }
+
+		    //images have additional highlighting features that should be implemented
 			if (!(_element is IVisualAnnotatable)) return;
 
 			var element = (IVisualAnnotatable)_element;
-			element.GetAnnotationManager().UpdateHighlight(nearestOnScreen ?? nearestOnCollection);
+			element.GetAnnotationManager().UpdateHighlight(viewToFollow);
 		}
         
         List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)
