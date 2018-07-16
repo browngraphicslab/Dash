@@ -22,10 +22,14 @@ namespace Dash
     {
         public string Title => xTemplateTitle.Text;
 
-        public DocumentViewModel TemplateViewModel { get; private set; }
+        public DocumentController Template { get; private set; }
         private TemplateApplier _applier;
-        private DocumentViewModel _dvm;
+
+      
         private bool _favorited;
+
+        private DocumentController _template;
+
 
         /// <summary>
         ///     creates a record view of a template, useful when viewing template
@@ -36,35 +40,29 @@ namespace Dash
         /// </summary>
         /// <param name="templateViewModel"></param>
         /// <param name="applier"></param>
-        public TemplateRecord(DocumentViewModel templateViewModel, TemplateApplier applier)
+        public TemplateRecord(DocumentController template, TemplateApplier applier)
         {
             this.InitializeComponent();
 
             _applier = applier;
-            _dvm = templateViewModel;
+
             _favorited = false;
 
+            _template = template;
+
             // if null is passed into the first parameter
-            if (templateViewModel != null)
+            if (template != null)
             {
-                // creates and sets a preview for the template
-                var dataDoc = templateViewModel.DataDocument;
-                var template = templateViewModel.DocumentController.GetViewCopy();
-                dataDoc.SetField(KeyStore.DocumentContextKey, template, true);
-                template.SetField(KeyStore.ActiveLayoutKey, dataDoc, true);
-                var templateView = template.MakeViewUI(null);
-                templateView.Loaded += TemplateView_Loaded;
-                
 
                 // binds the template title to the title of the template's layout doc
                 var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = templateViewModel.LayoutDocument,
+                    Document = template,
                     Key = KeyStore.TitleKey
                 };
                 xTemplateTitle.AddFieldBinding(TextBlock.TextProperty, binding);
-                TemplateViewModel = templateViewModel;
+                Template = template;
             }
             else
             {
@@ -73,25 +71,10 @@ namespace Dash
             }
         }
 
-        private void TemplateView_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is Grid templateView)
-            {
-                // TODO: Better way of doing this? -sy
-                templateView.RenderTransform = new ScaleTransform
-                {
-                    CenterX = 0,
-                    CenterY = 0,
-                    ScaleX = 0.5,
-                    ScaleY = 0.5
-                };
-            }
-        }
-
         private void xDelete_OnClick(object sender, RoutedEventArgs e)
         {
             _applier.TemplateRecords.Remove(this);
-            _applier.Templates.Remove(_dvm);
+            _applier.Templates.Remove(_applier.Templates.First(tvm => tvm.DocumentController.Equals(Template)));
         }
 
         private void XApply_OnClick(object sender, RoutedEventArgs e)

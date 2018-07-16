@@ -118,7 +118,13 @@ namespace Dash
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
             {
-                var cfargs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                if (!(args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs cfargs))
+                {
+                    LayoutDocuments(sender, newCtxt, grid);
+                    LayoutDocuments(sender, newCtxt, stack);
+                    return;
+                }
+
                 if (cfargs.ListAction ==
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
@@ -134,10 +140,15 @@ namespace Dash
 
             }
 
+            void OnLayoutDocumentFieldUpdatedHandler(DocumentController sender,
+                DocumentController.DocumentFieldUpdatedEventArgs args, Context layoutContext)
+            {
+                LayoutDocuments(sender, new Context(docController), grid);
+            }
+
             grid.Loaded += delegate
             {
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
-
             };
 
             grid.Unloaded += delegate
@@ -180,7 +191,8 @@ namespace Dash
         private static void LayoutDocuments(DocumentController docController, Context context, Panel grid)
         {
             // get the list of layout documents and layout each one on the grid
-            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
+            var layoutDocuments =
+                docController.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
             grid.Children.Clear();
             AddDocuments(layoutDocuments, context, grid);
         }

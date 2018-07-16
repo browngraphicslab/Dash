@@ -24,12 +24,13 @@ namespace Dash
     {
         public ObservableCollection<DocumentViewModel> Templates;
         public ObservableCollection<TemplateRecord> TemplateRecords;
+
         public ObservableCollection<TemplateRecord> Favorites;
         public ObservableCollection<DocumentController> AddedTemplateControllers;
+
         private DocumentController _document;
 
-        public TemplateApplier(DocumentController doc,
-            ObservableCollection<DocumentViewModel> documentViewModels)
+        public TemplateApplier(DocumentController doc)
         {
             this.InitializeComponent();
 
@@ -37,17 +38,13 @@ namespace Dash
             _document = doc;
             Templates = new ObservableCollection<DocumentViewModel>();
             TemplateRecords = new ObservableCollection<TemplateRecord>();
-			AddedTemplateControllers = new ObservableCollection<DocumentController>();
 
-			foreach (var dvm in documentViewModels)
+            foreach (var template in MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(
+                KeyStore.TemplateListKey))
             {
-                if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm) && !AddedTemplateControllers.Contains(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true)))
-                {
-                    var tr = new TemplateRecord(dvm, this);
-                    TemplateRecords.Add(tr);
-					AddedTemplateControllers.Add(dvm.DocumentController.GetField<DocumentController>(KeyStore.ActiveLayoutKey, true));
-                    tr.Tapped += Template_Picked;
-                }
+                var tr = new TemplateRecord(template, this);
+                TemplateRecords.Add(tr);
+                tr.Tapped += Template_Picked;
             }
         }
 
@@ -57,9 +54,9 @@ namespace Dash
             {
                 temp.hideButtons();
             }
+
             var tr = sender as TemplateRecord;
             tr.showButtons();
-           
 
 
         }
@@ -67,18 +64,49 @@ namespace Dash
         public void Apply_Template(TemplateRecord tr)
         {
             // retrieve the layout document of the template box from the template record
-            var template = tr.TemplateViewModel;
+            var template = tr.Template;
             if (template == null) return;
-			//NOTE: had to make LayoutDocument instead of LayoutDocument.DataInstance so list of templates would not have repeats
-            var newLayoutDoc = template.LayoutDocument;
+            var newTemplate = MainPage.Instance.MainDocument
+                .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
+                .First(temp => temp.Equals(template));
+            SetTemplate(newTemplate.GetDataInstance());
 
+            newTemplate.FieldModelUpdated +=
+                delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+                {
+                    if (MainPage.Instance.MainDocument
+                            .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
+                            .First(temp => temp.Equals(template))
+                            .GetField<ListController<DocumentController>>(KeyStore.DataKey).Count == 0)
+                    {
+                        // TODO: figure out a way to remove active layouts -sy
+                        SetTemplate(newTemplate.GetDataInstance());
+                    }
+                    else
+                    {
+                        SetTemplate(newTemplate.GetDataInstance());
+                    }
+                };
+                //template.LayoutDocument.GetDataInstance();
+        }
+
+        private void SetTemplate(DocumentController templateToSet)
+        {
             // set the new layout document's context to the selected document's data doc
-            newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
+            templateToSet.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
+
+            //foreach (var layoutDoc in templateToSet.GetField<ListController<DocumentController>>(KeyStore.DataKey)
+            //    .TypedData)
+            //{
+            //    (layoutDoc.GetField<PointerReferenceController>(KeyStore.DataKey).DocumentReference as
+            //        DocumentReferenceController).ChangeFieldDoc(_document.GetDataDocument());
+            //}
+
             // set the position to match the old position
-            newLayoutDoc.SetField(KeyStore.PositionFieldKey,
+            templateToSet.SetField(KeyStore.PositionFieldKey,
                 _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
             // set the selected document's active layout to the new layout document
-            _document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
+            _document.SetField(KeyStore.ActiveLayoutKey, templateToSet, true);
         }
 
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)

@@ -1004,8 +1004,7 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-           
-          
+            
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
         }
 
@@ -1449,9 +1448,9 @@ namespace Dash
 
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
-            var applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
-          
-           
+
+            var applier = new TemplateApplier(ViewModel.LayoutDocument);
+            _flyout.Content = applier;
             if (_flyout.IsInVisualTree())
             {
                 _flyout.Hide();

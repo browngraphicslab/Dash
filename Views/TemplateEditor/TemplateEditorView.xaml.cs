@@ -32,6 +32,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
 using Line = Windows.UI.Xaml.Shapes.Line;
+using Path = System.IO.Path;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -239,7 +240,7 @@ namespace Dash
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
-          
+
             xFreeFormButton.IsChecked = true;
 
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
@@ -251,21 +252,6 @@ namespace Dash
                 DataDocument = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey).GetAllPrototypes()
                     .Skip(1).First();
                 DataDocument.SetField(KeyStore.DocumentContextKey, workingDoc, true);
-
-                foreach (var layoutDoc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-                    .TypedData)
-                {
-                    var matchingDoc = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-                        .TypedData
-                        .FirstOrDefault(i => i.Equals(layoutDoc));
-                    int test = 0;
-                    var binding = new FieldBinding<PointController>
-                    {
-                        Document = matchingDoc,
-                        Key = KeyStore.PositionFieldKey,
-                        Mode = BindingMode.TwoWay
-                    };
-                }
 
                 //check template style, override current template format if necessary
                 if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
@@ -329,7 +315,10 @@ namespace Dash
             // gets the view of the working document's view model
             var workingDocView = workingDocViewModel?.Content.GetFirstAncestorOfType<DocumentView>();
             // listen for when the document view starts fading out
-            workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+            if (workingDocView != null)
+            {
+                workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+            }
             //xWorkspace.Children.Add(TemplateLayout);
 
             //initialize layout documents on workspace
@@ -375,29 +364,9 @@ namespace Dash
                 // use a default title
                 var title = "MyTemplate";
 
-                // gets the parents collection's list of document view models
-                var parentViewModels = docView.ParentCollection.ViewModel.DocumentViewModels;
-                // finds all of the viewmodels that are template boxes
-                var templateViewModels = parentViewModels
-                    .Where(dvm => dvm.DocumentController.GetActiveLayout()?.DocumentType
-                                      .Equals(TemplateBox.DocumentType) ?? false).ToList();
-                // finds all of the templates whose names are default (start with MyTemplate)
-                var defaultNamedTemplateViewModels =
-                    templateViewModels.Where(tvm => tvm.DocumentController.Title.StartsWith(title));
-                // retrieves a list of the templates titles
-                var templateTitles = defaultNamedTemplateViewModels.Select(tvm => tvm.DocumentController.Title);
-                // finds all the viewmodels that are template editor boxes
-                var templateEditorViewModels =
-                    parentViewModels.Where(
-                        dvm => dvm.DocumentController.DocumentType.Equals(TemplateEditorBox.DocumentType) &&
-                               !dvm.DocumentController.Equals(LayoutDocument));
-                // finds all the template editor viewmodels that aren't represented in the list of template viewmodels
-                var missingTemplateEditorViewModels =
-                    templateEditorViewModels.Where(tevm => !templateTitles.Contains(tevm.DocumentController.Title));
-                // count both and add 1 (so we start counting at 1 and not 0)
-                var number = templateViewModels.Count(tvm => tvm.DocumentController.Title.StartsWith(title)) +
-                             missingTemplateEditorViewModels.Count(tevm => tevm.DocumentController.Title
-                                 .StartsWith(title)) + 1;
+                var number = MainPage.Instance.MainDocument
+                                 .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)?.Data.Count +
+                             1 ?? 1;
                 // append the number to the title
                 title += number.ToString();
 
@@ -425,8 +394,8 @@ namespace Dash
                     .Equals(TemplateBox.DocumentType) ?? false)
             {
                 // set the width to the working doc's width field if the width field is less than 500, otherwise 500
-                xWorkspace.Width = workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500;
-                xWorkspace.Height = workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500;
+                ResizeCanvas(new Size(workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500,
+                    workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500));
             }
             else
             {
@@ -462,8 +431,7 @@ namespace Dash
         private void FormatUploadTemplateFlyout()
         {
             xUploadTemplateFlyout.Content = new TemplateApplier(
-                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-                this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey));
         }
 
         /// <summary>
@@ -684,6 +652,214 @@ namespace Dash
             }
         }
 
+        private void AddGridData(DocumentController dataDocument)
+        {
+            if (xItemsControlGrid.Visibility == Visibility.Visible)
+            {
+                var rowInfo = new ListController<NumberController>(
+                    GridRoot.RowDefinitions.Select(i =>
+                        new NumberController(i.ActualHeight)));
+                dataDocument.SetField(KeyStore.RowInfoKey, rowInfo, true);
+                var colInfo = new ListController<NumberController>(
+                    GridRoot.ColumnDefinitions.Select(i =>
+                        new NumberController(i.ActualWidth)));
+                dataDocument.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+            }
+        }
+
+        private void ResetLayout()
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            var currLayout =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
+                        KeyStore.TemplateListKey)
+                    ?.First(temp => temp.Equals(workingDoc.GetActiveLayout()));
+            var newFields = DataDocument.EnumFields();
+            currLayout.SetFields(newFields, true);
+
+            currLayout.SetPosition(workingDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data);
+            workingDoc.SetField(KeyStore.TitleKey,
+                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                true);
+        }
+
+        private void InitializeLayout(DocumentController dataDocument)
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocument, true);
+            workingDoc.SetField(KeyStore.TitleKey,
+                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                true);
+            var mainDoc = MainPage.Instance.MainDocument;
+            if (mainDoc.GetField(KeyStore.TemplateListKey) != null)
+            {
+                mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
+            }
+            else
+            {
+                mainDoc.SetField(KeyStore.TemplateListKey,
+                    new ListController<DocumentController>(), true);
+                mainDoc.AddToListField(KeyStore.TemplateListKey, workingDoc.GetActiveLayout());
+            }
+        }
+
+		// called when apply changes button is clicked
+        private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
+        {
+            if ((bool) xActivate.IsChecked)
+            {
+                var dataDocInstance = DataDocument.GetDataInstance();
+                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+                dataDocInstance.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+                dataDocInstance.SetField(KeyStore.PositionFieldKey,
+                    workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+
+                AddGridData(dataDocInstance);
+
+                if (workingDoc.GetActiveLayout() != null)
+                {
+                    ResetLayout();
+                }
+                else
+                {
+                    InitializeLayout(dataDocInstance);
+                }
+
+                //update template style
+                if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+                    TemplateConstants.ListView)
+                {
+                    this.FormatTemplateIntoList();
+                }
+            }
+            else if ((bool) xPreview.IsChecked)
+            {
+                UnlinkEditor();
+            }
+
+            #region Old Code To Apply Templates
+
+            //if (sender != null)
+            //{
+            //    var toggle = sender as ToggleButton;
+            //}
+
+            //if ((bool) xActivate.IsChecked)
+            //{
+
+            //    //update revert checkpoint
+            //    InitialDocumentControllers = new ObservableCollection<DocumentController>();
+            //    foreach (var doc in DocumentControllers)
+            //    {
+            //        InitialDocumentControllers.Add(doc);
+            //    }
+
+            //    // make a copy of the data document
+            //    var dataDocCopy = DataDocument.GetDataInstance();
+
+            //    var templateList =
+            //        MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(
+            //            KeyStore.TemplateListKey);
+
+            //    // layout document's data key holds the document that we are currently working on
+            //    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+
+            //    // set the dataDocCopy's document context key to the working document's data document
+            //    dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+            //    // set the position of the data copy to the working document's position
+            //    dataDocCopy.SetField(KeyStore.PositionFieldKey,
+            //        workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+
+            //    if (xItemsControlGrid.Visibility == Visibility.Visible)
+            //    {
+            //        var rowInfo = new ListController<NumberController>(
+            //            GridRoot.RowDefinitions.Select(i =>
+            //                new NumberController(i.ActualHeight)));
+            //        dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
+            //        var colInfo = new ListController<NumberController>(
+            //            GridRoot.ColumnDefinitions.Select(i =>
+            //                new NumberController(i.ActualWidth)));
+            //        dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+            //    }
+
+            //    if (!templateList.Contains(workingDoc))
+            //    {
+            //        templateList.Add(workingDoc);
+            //        MainPage.Instance.MainDocument.SetField(KeyStore.TemplateListKey, templateList, true);
+            //    }
+
+            //    foreach (var template in templateList.Data.Cast<DocumentController>())
+            //    {
+            //        if (template.Equals(workingDoc) || template.GetActiveLayout().Title.Equals(DataDocument.Title))
+            //        {
+            //            // set the active layout of the working document to the dataDocCopy (which is the template)
+            //            template.SetField(KeyStore.ActiveLayoutKey, dataDocCopy,
+            //                true); // changes workingDoc to template box
+            //            template.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+            //                this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+            //            // let the working doc's title be the template's title
+            //            template.SetField(KeyStore.TitleKey,
+            //                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+            //                true);
+            //        }
+            //    }
+
+            //    //update template style
+            //    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+            //        TemplateConstants.ListView)
+            //    {
+            //        this.FormatTemplateIntoList();
+            //    }
+            //}
+            //else
+            //{
+            //    var templateList =
+            //        MainPage.Instance.MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(
+            //            KeyStore.TemplateListKey);
+
+            //    foreach (var template in templateList.Data.Cast<DocumentController>())
+            //    {
+            //        if (template.GetActiveLayout().Title.Equals(DataDocument.Title))
+            //        {
+            //            var dataDocCopy =
+            //                DataDocument.MakeCopy(null, new List<KeyController> {KeyStore.DocumentContextKey});
+            //            // set the dataDocCopy's document context key to the working document's data document
+            //            dataDocCopy.SetField(KeyStore.DocumentContextKey, template.GetDataDocument(), true);
+            //            // set the position of the data copy to the working document's position
+            //            dataDocCopy.SetField(KeyStore.PositionFieldKey,
+            //                template.GetField<PointController>(KeyStore.PositionFieldKey), true);
+
+            //            // set the active layout of the working document to the dataDocCopy (which is the template)
+            //            template.SetField(KeyStore.ActiveLayoutKey, dataDocCopy,
+            //                true); // changes workingDoc to template box
+            //            template.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+            //                this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+            //            // let the working doc's title be the template's title
+            //            template.SetField(KeyStore.TitleKey,
+            //                new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+            //                true);
+            //        }
+            //    }
+            //}
+
+            #endregion
+        }
+
+        private void UnlinkEditor()
+        {
+            DataDocument = DataDocument.MakeCopy(null, new List<KeyController> { KeyStore.DocumentContextKey });
+            Clear();
+            DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
+            foreach (var doc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey))
+            {
+                DocumentControllers.Add(doc);
+                var dvm =
+                    new DocumentViewModel(doc, new Context(doc));
+                DocumentViewModels.Add(dvm);
+            }
+            DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
+        }
+
         private void HorizontalAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
         {
             var button = sender as AppBarButton;
@@ -807,13 +983,12 @@ namespace Dash
                         new TextController(alignment.ToString()), true);
                     dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
                     break;
+
                 case HorizontalAlignment.Stretch:
-                    var width = double.NaN;
                     dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
                         new TextController(alignment.ToString()), true);
                     dvm.LayoutDocument.SetField<BoolController>(KeyStore.UseHorizontalAlignmentKey, true, true);
-                    dvm.LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
-
+                    dvm.Width = double.NaN;
                     break;
             }
 
@@ -902,88 +1077,6 @@ namespace Dash
         }
 
         #endregion
-
-
-        // called when apply changes button is clicked
-        private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
-        {
-            if (sender != null)
-            {
-                var toggle = sender as ToggleButton;
-            }
-            if ((bool) xActivate.IsChecked)
-            {
-
-                //update revert checkpoint
-                InitialDocumentControllers = new ObservableCollection<DocumentController>();
-                foreach (var doc in DocumentControllers)
-                {
-                    InitialDocumentControllers.Add(doc);
-                }
-
-                // layout document's data key holds the document that we are currently working on
-                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                // make a copy of the data document
-                var dataDocCopy = DataDocument.GetDataInstance();
-                // loop through each layout document and try to abstract it out when necessary
-
-                // set the dataDocCopy's document context key to the working document's data document
-                dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-                // set the position of the data copy to the working document's position
-                dataDocCopy.SetField(KeyStore.PositionFieldKey,
-                    workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
-
-                //dataDocCopy.SetField(KeyStore.TemplateStyleKey,
-                //    style, true);
-
-                if (xItemsControlGrid.Visibility == Visibility.Visible)
-                {
-                    var rowInfo = new ListController<NumberController>(
-                        GridRoot.RowDefinitions.Select(i =>
-                            new NumberController(i.ActualHeight)));
-                    dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
-                    var colInfo = new ListController<NumberController>(
-                        GridRoot.ColumnDefinitions.Select(i =>
-                            new NumberController(i.ActualWidth)));
-                    dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
-                }
-
-                // set the active layout of the working document to the dataDocCopy (which is the template)
-                workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-                workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-                // let the working doc's title be the template's title
-                workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-                    true);
-
-                //update template style
-                if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
-                    TemplateConstants.ListView)
-                {
-                    this.FormatTemplateIntoList();
-                }
-            }
-            else
-            {
-                // layout document's data key holds the document that we are currently working on
-                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                var dataDocCopy = DataDocument.MakeCopy(null, new List<KeyController> {KeyStore.DocumentContextKey});
-
-                // set the dataDocCopy's document context key to the working document's data document
-                dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-                // set the position of the data copy to the working document's position
-                dataDocCopy.SetField(KeyStore.PositionFieldKey,
-                    workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
-
-                // set the active layout of the working document to the dataDocCopy (which is the template)
-                workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-                workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-                // let the working doc's title be the template's title
-                workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-                    true);
-            }
-        }
 
         private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -1113,6 +1206,37 @@ namespace Dash
                         break;
                 }
             }
+
+
+            // determine if a vertical alignment key exists
+            if (sender.GetField<BoolController>(KeyStore.UseVerticalAlignmentKey)?.Data ?? false)
+            {
+                switch (sender.GetField<TextController>(KeyStore.VerticalAlignmentKey)?.Data)
+                {
+                    case nameof(VerticalAlignment.Top):
+                        // determine if the position field is appropriate for the alignment it uses
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y != 0)
+                        {
+                            // if the position is invalid, then remove the alignment
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                    case nameof(VerticalAlignment.Center):
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y !=
+                            (xWorkspace.Width - sender.GetActualSize().Value.Y) / 2)
+                        {
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                    case nameof(VerticalAlignment.Bottom):
+                        if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y !=
+                            xWorkspace.Width - sender.GetActualSize().Value.Y)
+                        {
+                            sender.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(false), true);
+                        }
+                        break;
+                }
+            }
         }
 
         private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
@@ -1135,8 +1259,10 @@ namespace Dash
             var text = "";
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             var doc = _selectedDocument.ViewModel.DocumentController;
+            var docData = doc.GetField<PointerReferenceController>(KeyStore.DataKey);
             // if the document is related to the working document
-            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            if ((docData?.GetDocumentController(null).Equals(workingDoc) ?? false) ||
+                (docData?.GetDocumentController(null).Equals(workingDoc.GetDataDocument()) ?? false))
             {
                 // display a # before displaying what key it is
                 text = "#";
@@ -1180,8 +1306,8 @@ namespace Dash
                             _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
                                 KeyStore.DataKey);
                         var selectedDoc = _selectedDocument.ViewModel.DocumentController;
-                        if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) ||
-                            selectedDoc.GetDataDocument().Equals(workingDoc))
+                        if ((selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).Equals(workingDoc.GetDataDocument()) ?? false) ||
+                            (selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).GetDataDocument().Equals(workingDoc) ?? false))
                         {
                             newRef.FieldKey = specificKey;
                         }
@@ -1200,14 +1326,28 @@ namespace Dash
                                 newRef = new PointerReferenceController(docRef, specificKey);
                             }
                         }
-
+                        
                         var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
-                        DocumentViewModels.Remove(dvm);
                         var newDoc = DocumentControllers.First(doc =>
-                            doc.Equals(_selectedDocument.ViewModel.DocumentController));
+                            doc.Equals(selectedDoc));
                         newDoc.SetField(KeyStore.DataKey, newRef, true);
-                        var newDvm = new DocumentViewModel(newDoc);
-                        DocumentViewModels.Add(newDvm);
+                        DocumentControllers.Remove(dvm.DocumentController);
+                        DocumentControllers.Add(newDoc);
+
+
+                        var templateList =
+                            MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(
+                                KeyStore.TemplateListKey) ?? new ListController<DocumentController>();
+                        foreach (var template in templateList.Data.Cast<DocumentController>())
+                        {
+                            if ((template.GetActiveLayout()?.Equals(DataDocument) ?? false) || template.Equals(workingDoc))
+                            {
+                                // set the active layout of the working document to the dataDocCopy (which is the template)
+                                template.SetField(KeyStore.ActiveLayoutKey, DataDocument.GetDataInstance(),
+                                    true); // changes workingDoc to template box
+                            }
+                        }
+
                         _selectedDocument = null;
                     }
                 }
@@ -1837,10 +1977,17 @@ namespace Dash
             // if we have an active layout
             if (workingDoc.GetField(KeyStore.ActiveLayoutKey) is DocumentController activeLayout)
             {
+                var template = MainPage.Instance.MainDocument
+                    .GetField<ListController<DocumentController>>(KeyStore.TemplateListKey)
+                    ?.First(temp => temp.Equals(activeLayout));
+                if (template != null)
+                {
+                    template.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
+                }
                 // remove it
-                workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
+                //workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
                 // remove the active layout's document context
-                activeLayout.RemoveField(KeyStore.DocumentContextKey);
+                //activeLayout.RemoveField(KeyStore.DocumentContextKey);
             }
         }
 
@@ -1858,8 +2005,7 @@ namespace Dash
         private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
         {
             xUploadTemplateFlyout.Content = new TemplateApplier(
-                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-                this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey));
             xUploadTemplateFlyout.ShowAt(xUploadTemplateButton);
         }
 
@@ -2696,35 +2842,42 @@ namespace Dash
             Debug.WriteLine("DRAG COMPLETED");
         }
 
-
-
-        private void ToggleControl_OnChecked(object sender, RoutedEventArgs e)
+        private void XActivate_Clicked(object sender, RoutedEventArgs e)
         {
-            var toggle = sender as ToggleButton;
-            switch (toggle.Name)
-            {
-                case "xActivate":
-                    if ((bool) xPreview.IsChecked)
-                    {
-                        xPreview.IsChecked = false;
-                    }
+            xActivate.IsChecked = true;
+            xPreview.IsChecked = false;
 
-                    xActivate.IsChecked = true;
-                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+            DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+            ApplyChanges_OnClicked(null, null);
+        }
 
-                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
-                    break;
-                case "xPreview":
-                    if ((bool) xActivate.IsChecked)
-                    {
-                        xActivate.IsChecked = false;
-                    }
+        private void XPreview_Clicked(object sender, RoutedEventArgs e)
+        {
+            xPreview.IsChecked = true;
+            xActivate.IsChecked = false;
 
-                    xPreview.IsChecked = true;
-                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
-                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
-                    break;
-            }
+            DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
+            ApplyChanges_OnClicked(null, null);
+        }
+
+        private void XActivate_MaintainChecked(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            xActivate.IsChecked = true;
+            xPreview.IsChecked = false;
+        }
+
+        private void XPreview_MaintainChecked(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            xPreview.IsChecked = true;
+            xActivate.IsChecked = false;
+        }
+
+        private void XApplyButton_OnClick(object sender, PointerRoutedEventArgs e)
+        {
+            xActivate.IsChecked = true;
+            ApplyChanges_OnClicked(null, null);
         }
 
         //IF WE WANT TO CLOSE THE FORMAT ITEMS DROP DOWN WHEN THE ITEM LOSES FOCUS
@@ -2779,7 +2932,7 @@ namespace Dash
         //        ResizeCanvas(size);
         //    }
         //}
-       
+
     }
 
 }

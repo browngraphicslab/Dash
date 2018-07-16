@@ -431,7 +431,7 @@
                     <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
 
                         <!--Apply button -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
+                        <Grid PointerPressed="XApplyButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
                             <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
                             <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
@@ -484,7 +484,7 @@
 
                     <StackPanel x:Name="xToggleControl" Orientation="Horizontal" Margin="5,10,0,20" HorizontalAlignment="Left" VerticalAlignment="Center">
 
-                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#416857" Checked="ToggleControl_OnChecked">
+                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#416857" Tapped="XActivate_MaintainChecked" IsDoubleTapEnabled="False" Click="XActivate_Clicked">
 
                             <StackPanel Orientation="Vertical">
                                 <TextBlock x:Name="xActivateIcon" FontSize="14" Foreground="White"
@@ -494,7 +494,7 @@
                             </StackPanel>
 
                         </ToggleButton>
-                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#416857" Checked="ToggleControl_OnChecked">
+                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#416857" Tapped="XPreview_MaintainChecked" IsDoubleTapEnabled="False" Click="XPreview_Clicked">
                             <StackPanel Orientation="Vertical">
                                 <TextBlock x:Name="xPreviewIcon" FontSize="14" Foreground="White"
                                            FontFamily="{StaticResource FontAwesome}" Text="{StaticResource PreviewIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
