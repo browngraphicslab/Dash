@@ -608,12 +608,53 @@ namespace Dash
                     xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
                 }
 
+                var color = Colors.LightCyan;
+                var start = this.xRichEditBox.Document.Selection.StartPosition;
+                var length = this.xRichEditBox.Document.Selection.EndPosition - start;
+                for (int i = 0; i <= length; i++)
+                {
+                    this.xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                    if (this.xRichEditBox.Document.Selection.Link != "")
+                    {
+                        // maybe get the current link and add the new link doc to it?
+
+                        var endpos = this.xRichEditBox.Document.Selection.EndPosition;
+                        var charsleft = length - i;
+                        this.xRichEditBox.Document.Selection.SetRange(start, start + i);
+                        if (string.IsNullOrWhiteSpace(this.xRichEditBox.Document.Selection.Text))
+                        {
+                            string target = xRichEditBox.Document.Selection.Link.Length > 1 ? xRichEditBox.Document.Selection.Link.Split('\"')[1] : null;
+                            start = this.xRichEditBox.Document.Selection.StartPosition + target.Length + "HYPERLINK".Length + 1;
+                            this.xRichEditBox.Document.Selection.SetRange(start, endpos);
+                        }
+                        else
+                        {
+                            this.xRichEditBox.Document.Selection.Link = link;
+                            this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = color = Colors.Cyan;
+                            var llength = this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                            start = this.xRichEditBox.Document.Selection.EndPosition;
+                            this.xRichEditBox.Document.Selection.SetRange(start, start + charsleft);
+                            var target = this.xRichEditBox.Document.Selection.Text.Split('\"');
+                            var skipLength = target[0].Length + target[1].Length + "HYPERLINK".Length-1;
+                            start = this.xRichEditBox.Document.Selection.StartPosition;
+                            this.xRichEditBox.Document.Selection.SetRange(start + skipLength, start + skipLength + charsleft - skipLength);
+                            start = this.xRichEditBox.Document.Selection.StartPosition;
+                            endpos = this.xRichEditBox.Document.Selection.EndPosition;
+                        }
+                        start = this.xRichEditBox.Document.Selection.StartPosition;
+                        length = this.xRichEditBox.Document.Selection.EndPosition - start;
+                        i = 0;
+                        replaced = true;
+                    }
+                }
+                this.xRichEditBox.Document.Selection.SetRange(start, start + length);
+                if (!string.IsNullOrEmpty(this.xRichEditBox.Document.Selection.Text))
+                {
+                    this.xRichEditBox.Document.Selection.SetRange(start, start + length);
                 // set the hyperlink for the matched text
-                this.xRichEditBox.Document.Selection.Link = link;
-                // advance the end selection past the RTF embedded HYPERLINK keyword
-                s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                s1 = s2;
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                    this.xRichEditBox.Document.Selection.Link = link;
+                }
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = color;
                 this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
             }
         }
