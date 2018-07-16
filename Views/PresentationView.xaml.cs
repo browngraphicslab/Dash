@@ -21,26 +21,16 @@ namespace Dash
     public sealed partial class PresentationView : UserControl
     {
         public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
+
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
         private bool _giveTextBoxFocusUponFlyoutClosing = false;
+        private bool _repeat = false;
 
         public PresentationView()
         {
             this.InitializeComponent();
             DataContext = new PresentationViewModel();
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
-
-            // only move back if there is a step to go back to
-            if (selectedIndex != 0)
-            {
-                PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex - 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
-            }
         }
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e)
@@ -61,7 +51,7 @@ namespace Dash
                     // zoom to first item in the listview
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
-                    NavigateToDocument((DocumentViewModel)PinnedNodesListView.SelectedItem);
+                    NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -73,35 +63,49 @@ namespace Dash
             ResetBackNextButtons();
         }
 
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedIndex = PinnedNodesListView.SelectedIndex;
+
+            // only move back if there is a step to go back to
+            if (selectedIndex != 0)
+                PinnedNodesListView.SelectedIndex = selectedIndex - 1;
+            else if (_repeat)
+                PinnedNodesListView.SelectedIndex = PinnedNodesListView.Items.Count - 1;
+
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+        }
+
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             int selectedIndex = PinnedNodesListView.SelectedIndex;
 
             // can only move forward if there's a node to move forward to
             if (selectedIndex != PinnedNodesListView.Items.Count - 1)
-            {
-                PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex + 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
-            }
+                PinnedNodesListView.SelectedIndex = selectedIndex + 1;
+            else if (_repeat)
+                PinnedNodesListView.SelectedIndex = 0;
+
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
 
         // remove from viewmodel
         private void DeletePin(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).Tag as DocumentViewModel);
+            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            DocumentViewModel viewModel = (DocumentViewModel) e.ClickedItem;
-            NavigateToDocument(viewModel);
+            DocumentController dc = (DocumentController) e.ClickedItem;
+            NavigateToDocument(dc);
         }
 
         // helper method for moving the mainpage screen
-        private void NavigateToDocument(DocumentViewModel viewModel)
+        private void NavigateToDocument(DocumentController dc)
         {
-            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(viewModel.DocumentController);
+            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc);
         }
 
         // these buttons are only enabled when the presentation is playing
@@ -118,7 +122,7 @@ namespace Dash
         // if user strays in middle of presentation, hitting this will bring them back to the selected node
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -146,6 +150,16 @@ namespace Dash
                 _textbox.TriggerEdit();
                 _giveTextBoxFocusUponFlyoutClosing = false;
             }
+        }
+
+        private void RepeatButton_OnChecked(object sender, RoutedEventArgs e)
+        {
+            _repeat = true;
+        }
+
+        private void RepeatButton_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            _repeat = false;
         }
     }
 }

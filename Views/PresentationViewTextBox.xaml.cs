@@ -55,24 +55,23 @@ namespace Dash
         // binding to the title of the corresponding document
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (args.NewValue is DocumentViewModel dvm)
+            if (args.NewValue is DocumentController dc)
             {
-                SetTitleBinding(dvm);
+                SetTitleBinding(dc);
             }
         }
 
         public void ResetTitle()
         {
             HasBeenCustomRenamed = false;
-            SetTitleBinding((DocumentViewModel) DataContext);
+            SetTitleBinding((DocumentController) DataContext);
         }
 
-        private void SetTitleBinding(DocumentViewModel dvm)
+        private void SetTitleBinding(DocumentController dc)
         {
-            var doc = dvm.DocumentController;
             var binding = new FieldBinding<TextController>
             {
-                Document = doc,
+                Document = dc,
                 Key = KeyStore.TitleKey,
                 Mode = BindingMode.OneWay
             };

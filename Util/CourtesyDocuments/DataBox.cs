@@ -12,9 +12,9 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("9150B3F5-5E3C-4135-83E7-83845D73BB34", "Data Box");
         public static readonly string PrototypeId = "C1C83475-ADEB-4919-9465-46189F50AD9F";
 
-        public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 200, double h = 200)
+        public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN)
         {
-            var fields = DefaultLayoutFields(new Point(x, y), new Size(double.NaN, double.NaN), refToData);
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             SetupDocument(DocumentType, PrototypeId, "Data Box Prototype Layout", fields);
         }
 

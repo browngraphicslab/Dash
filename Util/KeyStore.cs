@@ -61,6 +61,7 @@ namespace Dash
         public static KeyController SettingsNightModeKey = new KeyController("Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");
         public static KeyController SettingsMouseFuncKey = new KeyController("Settings Mouse Functionality", "867225EC-F9C7-4B14-9A5F-22B7BB71DCCB");
+        public static KeyController SettingsWebpageLayoutKey = new KeyController("Settings Webpage Layout Functionality", "7B04CE24-E876-49D7-88F9-36B25576BA07");
         public static KeyController SettingsNumBackupsKey = new KeyController("Settings Number of Backups", "25F0DB4F-D6DE-4D48-A090-77E48C1F621C");
         public static KeyController SettingsBackupIntervalKey = new KeyController("Settings Backup Interval", "8C00E2CD-6272-4E6C-ADC1-622B108A0D9F");
         public static KeyController BackgroundImageStateKey = new KeyController("State of Background Image (Radio Buttons)", "3EAE5AB5-4503-4519-9EF3-0FA5BDDE59E6");
@@ -68,6 +69,7 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController("Background Image Opacity", "0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC");
         public static KeyController SettingsUpwardPanningKey = new KeyController("Infinite Upward Panning Enabled", "3B354602-794D-4FC0-A289-1EBA7EC23FD1");
         public static KeyController SettingsMarkdownModeKey = new KeyController("Markdown vs RTF", "2575EAFA-2689-40DD-A0A8-9EE0EC0720ED");
+        public static KeyController PresentationItemsKey = new KeyController("Presentation Items", "5AB85A0A-7983-4E08-8E51-2D53BBFB30FF");
         public static KeyController DockedDocumentsLeftKey = new KeyController("Documents docked on the left", "0CCFCC20-DAF7-4329-B615-605A54A86014");
         public static KeyController DockedDocumentsTopKey = new KeyController("Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
@@ -88,13 +90,6 @@ namespace Dash
         public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
         public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
         public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
-
-        public static class SearchResultDocumentOutline
-        {
-            public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));
-            public static KeyController SearchResultIdKey = new KeyController(new KeyModel("_searchResultId", "F3740B30-C63F-4549-A814-832CC3E01558"));//TODO TFS make this a doc reference
-            public static KeyController SearchResultHelpTextKey = new KeyController(new KeyModel("_searchResultHelpText", "4712CBF3-BDD9-4A92-8AC5-043F4BA14AAB"));
-        }
 
         public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");

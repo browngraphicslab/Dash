@@ -642,6 +642,7 @@ namespace Dash
         // If you want to add code that runs after ANY document's manipulation is completed, use this method.
         public void ElementOnManipulationCompleted()
         {
+            UndoManager.StartBatch();
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             _previouslyHighlightedCollectionView?.Unhighlight();
@@ -658,10 +659,9 @@ namespace Dash
 
             OnManipulatorCompleted?.Invoke();
             Dock(false);
+            UndoManager.EndBatch();
 
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
-
-
         }
 
         private List<DocumentView> GetOverlappedViews()
