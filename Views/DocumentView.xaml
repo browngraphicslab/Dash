@@ -66,21 +66,21 @@
 
             <!-- New resize handler controls -->
             <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Fill="Blue"
-                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX, TranslateY" />
             <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Fill="Blue"
-                   Grid.Column="1" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="1" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateY" />
             <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Fill="Blue"
-                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX, TranslateY" />
             <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Fill="Blue"
-                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX" />
             <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Fill="Blue"
-                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX" />
             <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2" Fill="Blue"
-                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="0" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX, TranslateY" />
             <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2" Fill="Blue"
-                   Grid.Column="1" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="1" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateY" />
             <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2" Fill="Blue"
-                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" />
+                   Grid.Column="2" Visibility="{Binding DecorationState}" x:FieldModifier="public" ManipulationMode="TranslateX, TranslateY" />
 
             <Grid Grid.Row="1" Grid.Column="1">
                 <!--Used to render the drop shadow and provide a background to the document-->
@@ -126,6 +126,7 @@
                                     <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" Background="Transparent" Text="{Binding DocumentController.Title}" BorderThickness="0"/>
                                 </StackPanel>
                             </Grid>
+                        </Grid>
                     </Border>
                 </Border>
 

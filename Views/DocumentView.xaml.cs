@@ -197,6 +197,10 @@ namespace Dash
             xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
             xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
             xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+            xTopResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
+            xLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
+            xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
 
             foreach (var handle in new Rectangle[]
             {
@@ -205,7 +209,6 @@ namespace Dash
                 xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
             })
             {
-                handle.ManipulationMode = ManipulationModes.All;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
                 handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
                 handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
@@ -702,6 +705,7 @@ namespace Dash
         #endregion
 
 
+        
 
 
         /// <summary>
@@ -715,60 +719,66 @@ namespace Dash
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-
-            // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
-            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
-            Size newSize = new Size();
-
-            // sets directions/weights depending on which handle was dragged as mathematical manipulations
-            int cursorXDirection = shiftLeft ? -1 : 1;
-            int cursorYDirection = shiftTop ? -1 : 1;
-            int moveXScale = shiftLeft ? 1 : 0;
-            int moveYScale = shiftTop ? 1 : 0;
-
-            if (this.IsCtrlPressed() || this.IsShiftPressed())
-            {
-                // proportional resizing
-                var diffX = cursorXDirection * p.X;
-                newSize = Resize(diffX, ViewModel.ActualSize.Y / ViewModel.ActualSize.X * diffX);
-            }
-            else
-            {
-                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
-                // So flip the negative sign by multiplying by -1.
-                newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
-
-            }
-            // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
-            newSize.Height = double.IsNaN(newSize.Height)
-               ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
-               : newSize.Height;
-
-            Size Resize(double dx = 0, double dy = 0)
-            {
-                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
-                {
-                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
-                    var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
-                    ViewModel.Width = Math.Max(w + dx, MinWidth);
-                    ViewModel.Height = Math.Max(h + dy, MinHeight);
-
-                    return new Size(ViewModel.Width, ViewModel.Height);
-                }
-                return new Size();
-            }
-
-            this.Measure(new Size(newSize.Width, 5000));
-            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
-            // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
-            ViewModel.Position = new Point(
-                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
-                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
 
             e.Handled = true;
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            var oldSize = new Size(ViewModel.ActualSize.X - 30, ViewModel.ActualSize.Y - 30);
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+            
+
+            // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+            var w = double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X - 30 : ViewModel.Width;
+            var h = ViewModel.Height;
+
+            // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
+            // So flip the negative sign by multiplying by -1.
+            var aspect = (ViewModel.ActualSize.Y - 30) / (ViewModel.ActualSize.X - 30);
+            var diffX = cursorXDirection * delta.X;
+            var diffY = (this.IsCtrlPressed() || this.IsShiftPressed()) ? diffX : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + aspect * diffY, MinHeight));
+
+            // test for changes to height based on changes to width (eg. images to maintain aspect, text boxes that wrap
+            ViewModel.Width = newSize.Width;
+            ViewModel.Height = newSize.Height;
+            this.UpdateLayout(); // bcz: text boxes seem to need the ActualWidth/Height set to measure properly
+            this.Measure(new Size(newSize.Width, 5000));
+
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (DesiredSize.Height - 30 - oldSize.Height) * ViewModel.Scale.Y);
+
+            ViewModel.Position = newPos;
+            ViewModel.Width = newSize.Width;
+            ViewModel.Height = newSize.Height;
+
+            Point Clamp(Point point, Rect rect)
+            {
+                if (point.X < rect.Left)
+                {
+                    point.X = rect.Left;
+                }
+                else if (point.X > rect.Right)
+                {
+                    point.X = rect.Right;
+                }
+
+                if (point.Y < rect.Top)
+                {
+                    point.Y = rect.Top;
+                }
+                else if (point.Y > rect.Bottom)
+                {
+                    point.Y = rect.Bottom;
+                }
+
+                return point;
+            }
         }
 
         // Controls functionality for the Right-click context menu
