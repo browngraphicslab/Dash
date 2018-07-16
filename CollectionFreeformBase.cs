@@ -150,6 +150,7 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
             snap.SetFitToParent(true);
             return snap;
         }
@@ -199,7 +200,7 @@ namespace Dash
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, startY + translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
@@ -218,7 +219,7 @@ namespace Dash
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (scaleFactor < 0.8)
+            if (false && scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
             {
                 _storyboard1.Children.Add(zoomOutAnimationX);
                 _storyboard1.Children.Add(zoomOutAnimationY);

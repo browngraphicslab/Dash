@@ -11,6 +11,7 @@ namespace Dash
         public static KeyController LayoutListKey = new KeyController("_LayoutList", "6546DD08-C753-4C34-924E-3C4016C4B95B");
         public static KeyController RegionsKey = new KeyController("Regions", "1B958E26-624B-4E9A-82C9-2E18609D6A39");
         public static KeyController RegionDefinitionKey = new KeyController("Region Definition", "6EEDCB86-76F4-4937-AE0D-9C4BC6744310");
+        public static KeyController RegionTypeKey = new KeyController("Region Type", "8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC");
         public static KeyController ActiveLayoutKey = new KeyController("ActiveLayout", "BEBEC91F-F85A-4F72-A7D2-E2912571FBDA");
         public static KeyController TitleKey = new KeyController("Title", "0C074CB4-6D05-4363-A867-C0A061C1573F");
         public static KeyController CaptionKey = new KeyController("Caption", "D01D6702-A3AD-4546-9BFB-C5263F8D5599");
@@ -67,6 +68,7 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController("Background Image Opacity", "0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC");
         public static KeyController SettingsUpwardPanningKey = new KeyController("Infinite Upward Panning Enabled", "3B354602-794D-4FC0-A289-1EBA7EC23FD1");
         public static KeyController SettingsMarkdownModeKey = new KeyController("Markdown vs RTF", "2575EAFA-2689-40DD-A0A8-9EE0EC0720ED");
+        public static KeyController PresentationItemsKey = new KeyController("Presentation Items", "5AB85A0A-7983-4E08-8E51-2D53BBFB30FF");
         public static KeyController DockedDocumentsLeftKey = new KeyController("Documents docked on the left", "0CCFCC20-DAF7-4329-B615-605A54A86014");
         public static KeyController DockedDocumentsTopKey = new KeyController("Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
@@ -88,17 +90,17 @@ namespace Dash
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController("Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
-        public static KeyController ReplInputsKey = new KeyController("Repl Inputs", "650072AB-1821-4BC6-A7F5-096094CF6EB7");
-        public static KeyController ReplOutputsKey = new KeyController("Repl Outputs", "0676C751-B6DE-480F-A5EB-8362F6238D13");
-        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "0F9B3576-A5B1-458C-89B0-AADC7FD278BC");
+        public static KeyController ReplLineTextKey = new KeyController("Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
+        public static KeyController ReplValuesKey = new KeyController("Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
+        public static KeyController ReplCurrentIndentKey = new KeyController("Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
+        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");
+
         public static KeyController ScriptTextKey = new KeyController("Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
 
-        public static class SearchResultDocumentOutline
-        {
-            public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));
-            public static KeyController SearchResultIdKey = new KeyController(new KeyModel("_searchResultId", "F3740B30-C63F-4549-A814-832CC3E01558"));//TODO TFS make this a doc reference
-            public static KeyController SearchResultHelpTextKey = new KeyController(new KeyModel("_searchResultHelpText", "4712CBF3-BDD9-4A92-8AC5-043F4BA14AAB"));
-        }
+        public static KeyController ExceptionKey = new KeyController("Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
+        public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
+        public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
+        public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
 
         public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");

@@ -31,7 +31,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return Title;
+            return "@"+Title;
         }
 
         /// <summary>
@@ -72,12 +72,6 @@ namespace Dash
             SetFields(fields, true);
             DocumentType = DocumentType;
         }
-
-        /// <summary>
-        ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
-        ///     You should only set values on the controller, never directly on the model!
-        /// </summary>
-        public string LayoutName => DocumentModel.DocumentType.Type;
 
         /// <summary>
         ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes

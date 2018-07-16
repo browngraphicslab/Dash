@@ -15,6 +15,7 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Windows.UI.Input.Inking;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 
@@ -29,11 +30,11 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance { get; private set; }
-        
-        public BrowserView          WebContext => BrowserView.Current;
-        public DocumentController   MainDocument { get; private set; }
-        public DocumentView         MainDocView { get => xMainDocView; set => xMainDocView = value; }
-        public DockingFrame         DockManager => xDockFrame;
+
+        public BrowserView WebContext => BrowserView.Current;
+        public DocumentController MainDocument { get; private set; }
+        public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
+        public DockingFrame DockManager => xDockFrame;
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
@@ -57,7 +58,7 @@ namespace Dash
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
-            
+
 
             Loaded += (s, e) =>
             {
@@ -75,16 +76,15 @@ namespace Dash
             xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
-            
-			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
-		}
+            Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+
+        }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             async Task Success(IEnumerable<DocumentModel> mainPages)
             {
-                Debug.WriteLine(ContentController<FieldModel>.GetControllers<FieldControllerBase>().Count());
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
                 {
@@ -107,6 +107,13 @@ namespace Dash
                 }
                 LoadSettings();
 
+                var presentationItems =
+                    MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                if (presentationItems != null)
+                {
+                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
+                }
+
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
@@ -128,7 +135,7 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) {DisableDecorations = true};
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DisableDecorations = true };
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 treeContext.Tag = "TreeView VM";
@@ -153,18 +160,18 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
 
 
-           // string localfolder = ApplicationData.Current.LocalFolder.Path;
-           // var array = localfolder.Split('\\');
-           // var username = array[2];
-           // StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
-           // //replace byes (8).pdf with uploaded file name
-           // StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
-           // FileData fileD = FileDropHelper.GetFileData(file, null).Result;
-           // PdfToDashUtil PdftoDash = new PdfToDashUtil();
-           //DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
-           // var mainPageCollectionView =
-           //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-           // mainPageCollectionView.ViewModel.AddDocument(docC);
+            // string localfolder = ApplicationData.Current.LocalFolder.Path;
+            // var array = localfolder.Split('\\');
+            // var username = array[2];
+            // StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
+            // //replace byes (8).pdf with uploaded file name
+            // StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
+            // FileData fileD = FileDropHelper.GetFileData(file, null).Result;
+            // PdfToDashUtil PdftoDash = new PdfToDashUtil();
+            //DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
+            // var mainPageCollectionView =
+            //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+            // mainPageCollectionView.ViewModel.AddDocument(docC);
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -217,16 +224,16 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceView = workspace;
-            if (!double.IsNaN(workspaceView.GetWidthField().Data) || !double.IsNaN(workspaceView.GetHeightField().Data) ||
-                workspaceView.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true")
-            {
-                workspaceView.SetWidth(double.NaN);
-                workspaceView.SetHeight(double.NaN);
-                workspaceView.SetFitToParent(false);
-            }
+            var workspaceView = workspace.GetViewCopy();
+            workspaceView.SetWidth(double.NaN);
+            workspaceView.SetHeight(double.NaN);
             MainDocView.DataContext = new DocumentViewModel(workspaceView);
-            setupMapView(workspaceView);
+            if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
+            {
+                workspaceView.SetFitToParent(false);
+                setupMapView(workspaceView);
+            }
+
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
             return true;
@@ -328,7 +335,7 @@ namespace Dash
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments=false)
+        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments = false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
@@ -344,7 +351,7 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag, int search=0)
+        public void HighlightDoc(DocumentController document, bool? flag, int search = 0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
@@ -370,7 +377,7 @@ namespace Dash
                         else if (flag == false)
                             dm.DecorationState = false;
                     }
-                    else if(search == 1)
+                    else if (search == 1)
                     {
                         //highlight doc
                         dm.SearchHighlightState = new Thickness(8);
@@ -398,7 +405,7 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments=false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -433,11 +440,10 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
 
-            if (!(FocusManager.GetFocusedElement() is RichEditBox))
+            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox))
             {
                 var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
                 if (ctrlDown)
@@ -445,7 +451,8 @@ namespace Dash
                     if (e.VirtualKey == VirtualKey.Z)
                     {
                         UndoManager.UndoOccured();
-                    } else if (e.VirtualKey == VirtualKey.Y)
+                    }
+                    else if (e.VirtualKey == VirtualKey.Y)
                     {
                         UndoManager.RedoOccured();
                     }
@@ -457,7 +464,8 @@ namespace Dash
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
 
-            if (DocumentView.FocusedDocument != null && !e.Handled) {
+            if (DocumentView.FocusedDocument != null && !e.Handled)
+            {
                 if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
                 {
                     if (DocumentView.FocusedDocument.ViewModel != null && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
@@ -524,13 +532,13 @@ namespace Dash
 
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            
+
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            if (!coll.IsMarqueeActive&& !(FocusManager.GetFocusedElement() is TextBox))
+            if (coll != null && !coll.IsMarqueeActive&& !(FocusManager.GetFocusedElement() is TextBox))
             {
                 coll.TriggerActionFromSelection(e.VirtualKey, false);
             }
-            
+
             if (DocumentView.FocusedDocument != null)
             {
                 if (!this.IsF1Pressed())
@@ -600,8 +608,8 @@ namespace Dash
 
         public void ThemeChange(bool nightModeOn)
         {
-            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
-			Toolbar.SwitchTheme(nightModeOn);
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
+            Toolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -671,13 +679,13 @@ namespace Dash
             xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
         }
 
-        public void PinToPresentation(DocumentViewModel viewModel)
+        public void PinToPresentation(DocumentController dc)
         {
-            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
         }
 
-      
+
     }
 }

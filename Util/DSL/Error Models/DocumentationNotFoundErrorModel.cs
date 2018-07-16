@@ -9,5 +9,6 @@ namespace Dash
 
         public override string GetHelpfulString() =>
             $" Exception:\n            DocumentationNotFound\n      Feedback:\n            {_functionName}() is partially or completely missing associated documentation.\n";
+
     }
 }

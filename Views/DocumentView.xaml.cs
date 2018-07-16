@@ -204,7 +204,7 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
-                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+                bool right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
@@ -344,7 +344,7 @@ namespace Dash
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                var adornmentGroups = this.IsShiftPressed() ? new List<DocumentView>(): SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
                 {
                     adornmentGroups.ForEach((dv) =>
@@ -1030,7 +1030,8 @@ namespace Dash
                 ToFront();
             }
 
-            if ((ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
+   //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
+            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (this.IsShiftPressed())
@@ -1429,7 +1430,11 @@ namespace Dash
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.PinToPresentation(ViewModel);
+            MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+            if (ViewModel.LayoutDocument == null)
+            {
+                Debug.WriteLine("uh oh");
+            }
         }
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
