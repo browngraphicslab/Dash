@@ -23,12 +23,6 @@ namespace Dash
     /// </summary>
     public sealed partial class AnnotationOverlay : UserControl
     {
-        public double PostColumn1ActualWidth => xRegionPostManipulationPreview.Column1.ActualWidth;
-        public double PostColumn2ActualWidth => xRegionPostManipulationPreview.Column2.ActualWidth;
-        public double PostColumn3ActualWidth => xRegionPostManipulationPreview.Column3.ActualWidth;
-        public double PostRow1ActualHeight => xRegionPostManipulationPreview.Row1.ActualHeight;
-        public double PostRow2ActualHeight => xRegionPostManipulationPreview.Row2.ActualHeight;
-        public double PostRow3ActualHeight => xRegionPostManipulationPreview.Row3.ActualHeight;
 
         public GridLength PostColumn1Width
         {
@@ -94,12 +88,17 @@ namespace Dash
             xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
         }
 
-        public Point GetTopLeftPoint()
+        public Point GetTopLeftPercentile()
         {
-            return new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top);
-        }
+            return xRegionPostManipulationPreview.TopLeftPercentile;
+		}
 
-        public void AddRegion(RegionBox box)
+	    public Point GetBottomRightPercentile()
+	    {
+		    return xRegionPostManipulationPreview.BottomRightPercentile;
+	    }
+
+		public void AddRegion(RegionBox box)
         {
             xRegionsGrid.Children.Add(box);
         }

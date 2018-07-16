@@ -423,8 +423,13 @@ namespace Dash
 
 	    public DocumentController GetDocControllerFromSelectedRegion()
 	    {
+			// calculate the starting point since the overlay only gives us the percentile
+		    var topLeft = xAnnotations.GetTopLeftPercentile();
+		    var x = topLeft.X * xImage.ActualWidth;
+		    var y = topLeft.Y * xImage.ActualHeight;
+
             // the bitmap streaming to crop doesn't work yet
-	        var imNote = new ImageNote(_imgctrl.ImageSource, xAnnotations.GetTopLeftPoint(),
+	        var imNote = new ImageNote(_imgctrl.ImageSource, new Point(x, y),
 	                xAnnotations.GetDuringPreviewActualSize()).Document;
             imNote.SetRegionDefinition(_docCtrl);
 

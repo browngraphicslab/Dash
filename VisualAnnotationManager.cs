@@ -344,7 +344,7 @@ namespace Dash
                 OnNewRegionMade(note);
 
                 // use During Preview here because it's the one with actual pixel measurements
-                var box = MakeNewRegionBox(note, _overlay.GetTopLeftPoint(), _overlay.GetDuringPreviewActualSize(), _element.GetTotalDocumentSize());
+                var box = MakeNewRegionBox(note, _overlay.GetTopLeftPercentile(), _overlay.GetBottomRightPercentile());
                 note.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey,
                     box.TopLeftPercentile, true);
                 note.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey,
@@ -357,10 +357,10 @@ namespace Dash
         }
 
         // Only adds the region box, visually
-        private RegionBox MakeNewRegionBox(DocumentController region, Point pos, Size boxSize, Size totalSize)
+        private RegionBox MakeNewRegionBox(DocumentController region, Point topLeft, Point bottomRight)
         {
             var newBox = new RegionBox { LinkTo = region, Manager = this };
-            newBox.SetPosition(pos, boxSize, totalSize);
+            newBox.SetPosition(topLeft, bottomRight);
             return SetUpNewRegionBox(newBox);
         }
 

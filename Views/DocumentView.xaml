@@ -72,7 +72,7 @@
             </Border>
 
             <!-- border to highlight search results-->
-            <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="Transparent" BorderThickness="{Binding SearchHighlightState}" >
+            <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" >
                 <!-- border to allow document to be highlighted when selected-->
                 <Border Name="xTargetBorder">
                     <!-- Container for document fields view -->
