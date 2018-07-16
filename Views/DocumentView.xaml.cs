@@ -34,6 +34,8 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
+        
+
         public DocumentViewModel ViewModel
         {
             get => DataContext as DocumentViewModel;
@@ -528,6 +530,7 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
+          
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
 
@@ -536,9 +539,31 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
+
+
+            AnnotateEllipseUnhighlight.Width = 30;
+            AnnotateEllipseUnhighlight.Height = 30;
+
+            xAnnotateEllipseBorder.Width = 30;
+
+            OperatorEllipseUnhighlight.Width = 30;
+            OperatorEllipseUnhighlight.Height = 30;
+
+            xOperatorEllipseBorder.Width = 30;
+
+
+
+
+
+
+            
+
             ViewModel.InteractiveManipulationPosition = translate;
             ViewModel.InteractiveManipulationScale = scaleAmount;
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount });
+
+
+
         }
 
         public void TransformDelta(Point moveTo)
@@ -937,6 +962,18 @@ namespace Dash
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+
+            xTopLeftResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+            xTopResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+            xTopRightResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+
+            xBottomLeftResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+            xBottomResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+            xBottomRightResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+
+            xRightResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+            xLeftResizeControl.Fill = selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+
         }
 
         #endregion
@@ -1366,6 +1403,23 @@ namespace Dash
         private void AllResizers_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        public void UpdateResizers()
+        {
+            var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
+            
+
+
+            xBottomRow.Height = new GridLength(newpoint.Y * 5);
+            xTopRow.Height = new GridLength(newpoint.Y * 5);
+            xLeftColumn.Width = new GridLength(newpoint.X * 5);
+            xRightColumn.Width = new GridLength(newpoint.X * 5);
+
+           
+
+
+
         }
     }
 }
