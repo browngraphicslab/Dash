@@ -77,15 +77,16 @@ namespace Dash
             this.InitializeComponent();
             Loaded += OnLoaded;
         }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             //UI for preview boxes
-            xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
+            xRegionPostManipulationPreview.xRegionBoxFill.Color = Colors.AntiqueWhite;
             xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
-            xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 4 };
+            xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 1, 0 };
 
-            xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 1.5;
-            xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
+            xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
+            xRegionPostManipulationPreview.xRegionBoxFill.Opacity = 0.4;
         }
 
         public Point GetTopLeftPercentile()

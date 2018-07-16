@@ -87,22 +87,23 @@ namespace Dash
             Row3.Height = new GridLength(row3 * 100, GridUnitType.Star);
         }
 
-        // TODO rewrite this (would need to write DeleteRegion into VisualAnnotationManager)
+        // TODO this has tentatively been replaced by alt-click but we should bring it back in some form
         private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
 		    //AnnotationManager?.DeleteRegion(this);
 	    }
 
-	    public void Hide()
+	    public void HideOnHover()
 	    {
-		    xRegionBox.Opacity = 0;
+		    xRegionBoxFill.Opacity = 0;
 	    }
 
-	    public void Show()
+	    public void ShowOnHover()
 	    {
-		    xRegionBox.Opacity = 1;
 		    xRegionBoxFill.Opacity = 0.1;
 	    }
+
+
     }
 }

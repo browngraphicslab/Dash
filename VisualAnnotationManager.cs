@@ -69,7 +69,7 @@ namespace Dash
                 var topLeft = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
                 var bottomRight = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
 
-                MakeNewRegionBox(topLeft, bottomRight, region).Hide();
+                MakeNewRegionBox(topLeft, bottomRight, region).HideOnHover();
             }
         }
         public double Zoom = 1;
@@ -155,7 +155,7 @@ namespace Dash
         {
             if (sender is RegionBox region && !_isDragging)
             {
-                region.Show();
+                region.ShowOnHover();
             }
         }
 
@@ -164,7 +164,7 @@ namespace Dash
         {
             if (sender is RegionBox region && !_isDragging)
             {
-                if (_regionState == RegionVisibilityState.Hidden) region.Hide();
+                if (_regionState == RegionVisibilityState.Hidden) region.HideOnHover();
             }
         }
 
@@ -290,7 +290,7 @@ namespace Dash
             {
                 foreach (RegionBox region in _visualRegions)
                 {
-                    region.Show();
+                    region.ShowOnHover();
                 }
             }
         }
@@ -308,7 +308,7 @@ namespace Dash
                 foreach (RegionBox region in _visualRegions)
                 {
                     //region.Visibility = Visibility.Collapsed;
-                    region.Hide();
+                    region.HideOnHover();
                 }
             }
         }
