@@ -804,7 +804,7 @@ namespace Dash
 
             var type = CollectionView.CollectionViewType.Freeform;
 
-            bool deselect = false;
+            var deselect = false;
             using (UndoManager.GetBatchHandle())
             {
                 switch (modifier)
@@ -813,10 +813,8 @@ namespace Dash
                     case VirtualKey.A:
                         DoAction((dvs, where, size) =>
                         {
-                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy())
-                                .ToList();
-                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs)
-                                .Document);
+                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
                         });
                         deselect = true;
                         break;
@@ -825,23 +823,23 @@ namespace Dash
                         goto case VirtualKey.C;
                     case VirtualKey.C:
                         DoAction((views, where, size) =>
-                        {
-                            var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            ViewModel.AddDocument(
-                                new CollectionNote(where, type, size.Width, size.Height, docss).Document);
-
-                            foreach (var v in views)
                             {
-                                v.DeleteDocument();
-                            }
-                        });
+                                var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                                DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                                ViewModel.AddDocument(newCollection);
+
+                                foreach (DocumentView v in views)
+                                {
+                                    v.DeleteDocument();
+                                }
+                            });
                         deselect = true;
                         break;
                     case VirtualKey.Back:
                     case VirtualKey.Delete:
                         DoAction((views, where, size) =>
                         {
-                            foreach (var v in views)
+                            foreach (DocumentView v in views)
                             {
                                 v.DeleteDocument();
                             }
@@ -860,9 +858,19 @@ namespace Dash
                 }
             }
 
-            if (deselect)
-                SelectionManager.DeselectAll();
+            if (deselect) SelectionManager.DeselectAll();
         }
+
+        private void UndoActionFromSelection(VirtualKey modifier)
+        {
+            switch (modifier)
+            {
+                case VirtualKey.C:
+
+                    break;
+            }
+        }
+
         #endregion
 
         #region DragAndDrop

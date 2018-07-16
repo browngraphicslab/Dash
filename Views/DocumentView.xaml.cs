@@ -797,6 +797,7 @@ namespace Dash
         {
             if (ParentCollection != null)
             {
+                UndoManager.StartBatch();
                 FadeOut.Begin();
 
                 if (addTextBox)
@@ -854,6 +855,7 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            UndoManager.EndBatch();
         }
 
         #endregion
@@ -982,6 +984,7 @@ namespace Dash
 
             if (nestedCollection == null)
             {
+                UndoManager.EndBatch();
                 return false;
             }
 
@@ -994,6 +997,7 @@ namespace Dash
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
                 nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }
+            UndoManager.EndBatch();
             return true;
         }
 
