@@ -17,42 +17,42 @@ namespace Dash
 
         public static void TEST()
         {
-            //    TestNumber("7", 7);
-            //    TestNumber("add(3,6)", 9);
-            //    TestString($"\"hello\"","hello");
-            //    TestNumber("add(5,add(div(9,3),mult(2,6)))", 20);
+            TestNumber("7", 7);
+            TestNumber("add(3,6)", 9);
+            TestString($"\"hello\"", "hello");
+            TestNumber("add(5,add(div(9,3),mult(2,6)))", 20);
 
-            //    TestNumber("var a = 8;" +
-            //               "var b = add(a,2);" +
-            //               "add(a,b)",18);
+            TestNumber("var a = 8;" +
+                       "var b = add(a,2);" +
+                       "add(a,b)", 18);
 
-            //    TestNumber("var a = 8 + 3;", 11);
-            //    TestNumber("7 + 9 + 45 + 7", 68);
+            TestNumber("var a = 8 + 3;", 11);
+            TestNumber("7 + 9 + 45 + 7", 68);
 
 
-            //    TestNumber("var a = 8;" +
-            //               "var b = (6 + 36)/14;" +
-            //               "((a * b) + 1) * 4", 100);
+            TestNumber("var a = 8;" +
+                       "var b = (6 + 36)/14;" +
+                       "((a * b) + 1) * 4", 100);
 
-            //    TestNumber("var myVar = 6; myVar.myField = 67; 3", 3);
+            //TestNumber("var myVar = 6; myVar.myField = 67; 3", 3);
         }
 
 
-        //private static void TestNumber(string script, double correctValue)
-        //{
-        //    var number = Interpret(script);
-        //    var num = (double)number.GetValue(null);
-        //    Debug.Assert(num.Equals(correctValue));
-        //}
+        private static void TestNumber(string script, double correctValue)
+        {
+            var number = Interpret(script);
+            var num = (double)number.GetValue(null);
+            Debug.Assert(num.Equals(correctValue));
+        }
 
-        //private static void TestString(string script, string correctValue)
-        //{
-        //    var s = Interpret(script);
-        //    Debug.Assert(s.GetValue(null).Equals(correctValue));
-        //}
+        private static void TestString(string script, string correctValue)
+        {
+            var s = Interpret(script);
+            Debug.Assert(s.GetValue(null).Equals(correctValue));
+        }
 
-        ///// <summary>
-        /// Public method to call to COMPILE but not Execute a Dish script.  
+        /// <summary>
+        /// Public method to call to COMPILE but not Execute a Dish script.
         /// This will return the helpful error message of the invalid script, or NULL if the script compiled correctly.
         /// 
         /// This is slightly faster than actually executing a script so if you are repeatedly checking the validity of a Dish script without needing the return value, call this.
@@ -60,7 +60,7 @@ namespace Dash
         /// AS YOU SHOULD KNOW, JUST BECAUSE IT WILL COMPILE DOESN'T MEAN IT WILL RETURN A VALID VALUE WHEN EXECUTED.   
         /// For instance: add(5, 'hello world') will compile but obviously not return a valid value.
         /// </summary>
-        /// <param name="script"></param>
+        /// <param name = "script" ></ param >
         public static string GetScriptError(string script)
         {
             try
@@ -135,6 +135,7 @@ namespace Dash
                 try
                 {
                     var exec = se?.Execute(scope ?? new Scope());
+                    if (exec?.TypeInfo == TypeInfo.List) exec = (BaseListController) exec;
                     return exec;
                 }
                 catch (ReturnException)

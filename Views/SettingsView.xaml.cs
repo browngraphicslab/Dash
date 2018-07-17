@@ -75,6 +75,14 @@ namespace Dash
             Null,
         }
 
+        public enum WebpageLayoutMode
+        {
+           RTF,
+           HTML,
+           Default,
+           Null
+        }
+
         public enum BackgroundImageState
         {
             Grid,
@@ -116,6 +124,12 @@ namespace Dash
         {
             get => Enum.Parse<MouseFuncMode>(_settingsDoc.GetField<TextController>(KeyStore.SettingsMouseFuncKey).Data);
             set => _settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, value.ToString(), true);
+        }
+
+        public WebpageLayoutMode WebpageLayout
+        {
+            get => Enum.Parse<WebpageLayoutMode>(_settingsDoc.GetField<TextController>(KeyStore.SettingsWebpageLayoutKey).Data);
+            set => _settingsDoc.SetField<TextController>(KeyStore.SettingsWebpageLayoutKey, value.ToString(), true);
         }
 
         public BackgroundImageState ImageState
@@ -185,6 +199,8 @@ namespace Dash
 
             Debug.Assert(Instance == null);
             Instance = this;
+
+            //WebpageLayout = WebpageLayoutMode.Default;
 
             _dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db";
             _pathToRestore = _dbPath + ".toRestore";
@@ -266,6 +282,13 @@ namespace Dash
 
             AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Scroll));
             AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Zoom));
+
+
+            AddSettingsBinding<TextController>(xHTMLImport, ToggleButton.IsCheckedProperty, KeyStore.SettingsWebpageLayoutKey, new RadioEnumToBoolConverter(WebpageLayoutMode.HTML));
+            AddSettingsBinding<TextController>(xRTFImport, ToggleButton.IsCheckedProperty, KeyStore.SettingsWebpageLayoutKey, new RadioEnumToBoolConverter(WebpageLayoutMode.RTF));
+            AddSettingsBinding<TextController>(xDefaultImport, ToggleButton.IsCheckedProperty, KeyStore.SettingsWebpageLayoutKey, new RadioEnumToBoolConverter(WebpageLayoutMode.Default));
+
+
             AddSettingsBinding<BoolController>(xUpwardPanningToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsUpwardPanningKey);
             AddSettingsBinding<BoolController>(xTextModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsMarkdownModeKey);
 

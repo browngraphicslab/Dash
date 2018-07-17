@@ -13,5 +13,6 @@ namespace Dash
                 $" Exception:\n            ImageCreationFailure\n      Feedback:\n            <Unable to create an image using {_url}>." +
                 "\n            The resource might be invalid or protected. Consider making your addition with the menu toolbar.";
         }
+
     }
 }

@@ -22,8 +22,9 @@ namespace Dash
         // the UIElement to figure out where the pointer is relative to
         FrameworkElement GetPositionReference();
         // since this is different for every class, they must implement this part themselves
-        DocumentController GetDocControllerFromSelectedRegion();
+
         VisualAnnotationManager GetAnnotationManager();
+        DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType);
 
 	    event PointerEventHandler NewRegionStarted;
     }

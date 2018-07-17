@@ -12,7 +12,9 @@ using Windows.UI;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Dash;
 using Dash.Views;
+using iText.StyledXmlParser.Jsoup.Select;
 
 namespace Dash
 {
@@ -20,6 +22,13 @@ namespace Dash
 	{
 		private FrameworkElement    _element;
 		private MenuFlyout   _linkFlyout;
+		public enum AnnotationType
+		{
+			None,
+			RegionBox,
+			TextSelection,
+			Ink
+		}
 
 		public AnnotationManager(FrameworkElement uiElement)
 		{
@@ -127,7 +136,7 @@ namespace Dash
 				// should always be true
 				else if (dist <= threshold)
 				{
-					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
 				}
 		    }
 
@@ -198,11 +207,10 @@ namespace Dash
 		{
 			var dist = double.MaxValue;
 			DocumentView nearest = null;
-
+			
 			// TODO expand this to work with treeviews too...?
 			var itemsPanelRoot = (collection.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot;
 			if (itemsPanelRoot == null) return null;
-
 			foreach (var presenter in itemsPanelRoot.Children.Select(c => c as ContentPresenter))
 			{
 				var dvm = presenter.GetFirstDescendantOfType<DocumentView>();

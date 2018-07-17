@@ -1,5 +1,6 @@
 ﻿using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
 

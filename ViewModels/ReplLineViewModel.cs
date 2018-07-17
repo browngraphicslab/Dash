@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -16,25 +17,31 @@ namespace Dash
 
         //this is the stored value of every line;
 
+        public event EventHandler Updated;
+
+        public void Update()
+        {
+            Updated?.Invoke(this, EventArgs.Empty);
+        }
+
         public FieldControllerBase Value { get; set; }
+
+        private string _resultText;
+        public string ResultText
+        {
+            get => _resultText;
+            set => SetProperty(ref _resultText, value);
+        }
+        public bool DisplayableOnly { get; set; }
+        public int Indent { get; set; }
 
         private string _lineText = "";
         public string LineText
         {
             get =>  _lineText;
-            set
-            {
-                SetProperty(ref _lineText, value);
-            }
+            set => SetProperty(ref _lineText, value);
         }
         
-
-        private string _lineValueText = "";
-        public string LineValueText
-        {
-            get => "     " + _lineValueText;
-            set => SetProperty(ref _lineValueText, value);
-        }
 
 
         public string GetLineText()
@@ -65,11 +72,11 @@ namespace Dash
         {
             _outputValue = outputValue;
             LineText = lineText;
-            LineValueText = GetValueFromResult(value);
+            //LineText = GetValueFromResult(value);
             Value = value;
-
-           
         }
+
+        public ReplLineViewModel() { }
 
 
         public string GetValueFromResult(FieldControllerBase controller)
@@ -83,7 +90,8 @@ namespace Dash
                     {
                         var r = (ReferenceController)controller;
                         result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
-                    } else if (controller is FunctionOperatorController)
+                    }
+                    else if (controller is FunctionOperatorController)
                     {
                         result = (controller as FunctionOperatorController).getFunctionString();
                     }
@@ -112,6 +120,7 @@ namespace Dash
 
             return result;
         }
+
 
 
     }

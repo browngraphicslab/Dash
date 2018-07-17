@@ -31,7 +31,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return Title;
+            return "@"+Title;
         }
 
         /// <summary>
@@ -72,12 +72,6 @@ namespace Dash
             SetFields(fields, true);
             DocumentType = DocumentType;
         }
-
-        /// <summary>
-        ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
-        ///     You should only set values on the controller, never directly on the model!
-        /// </summary>
-        public string LayoutName => DocumentModel.DocumentType.Type;
 
         /// <summary>
         ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
@@ -762,6 +756,9 @@ namespace Dash
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 
+            //TODO Make this undo-able
+            value.DisposeField();
+
             return true;
         }
 
@@ -1341,7 +1338,16 @@ namespace Dash
                 }
             };
             if (newField != null && key != KeyStore.DelegatesKey /*&& key.Name != "_Cache Access Key"*/)
+            {
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+
+                void DisposedHandler(FieldControllerBase field)
+                {
+                    newField.FieldModelUpdated -= TriggerDocumentFieldUpdated;
+                    newField.Disposed -= DisposedHandler;
+                };
+                newField.Disposed += DisposedHandler;
+            }
         }
 
 

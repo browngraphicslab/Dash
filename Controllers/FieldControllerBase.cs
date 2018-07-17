@@ -174,7 +174,11 @@ namespace Dash
         public virtual void DisposeField()
         {
             //DeleteOnServer();
+            Disposed?.Invoke(this);
         }
+
+        public delegate void FieldControllerDisposedHandler(FieldControllerBase field);
+        public event FieldControllerDisposedHandler Disposed;
 
 
         #region IDisposable Support
