@@ -519,7 +519,7 @@ namespace Dash
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            if (this.IsCtrlPressed())
             {
                 if (e.Key == VirtualKey.C && _currentSelectionStart != -1)
                 {

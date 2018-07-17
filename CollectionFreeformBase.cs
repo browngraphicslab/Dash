@@ -1026,6 +1026,7 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            e.Handled = true;
             if (e.Key.Equals(VirtualKey.Escape))
             {
                 PreviewTextbox_LostFocus(null, null);
