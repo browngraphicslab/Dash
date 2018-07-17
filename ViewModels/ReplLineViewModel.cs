@@ -1,72 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml.Input;
-using Dash.Annotations;
-using Flurl.Util;
 
 namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-
-        //this is the stored value of every line;
-
-        public event EventHandler Updated;
-
-        public void Update()
-        {
-            Updated?.Invoke(this, EventArgs.Empty);
-        }
-
-        public FieldControllerBase Value { get; set; }
-
-        private string _resultText;
-        public string ResultText
-        {
-            get => _resultText;
-            set => SetProperty(ref _resultText, value);
-        }
-        public bool DisplayableOnly { get; set; }
-        public int Indent { get; set; }
-
-        private string _lineText = "";
-        public string LineText
-        {
-            get =>  _lineText;
-            set => SetProperty(ref _lineText, value);
-        }
-        
-
-
-        public string GetLineText()
-        {
-            return _lineText;
-
-        }
-
-        private FieldControllerBase _outputValue;
-
-        private bool _editTextValue = false;
-
-        public bool EditTextValue
-        {
-            get => _editTextValue;
-            set
-            {
-                _editTextValue = value;
-                OnPropertyChanged();
-                OnPropertyChanged("NotEditTextValue");
-            }
-        }
-
-        public bool NotEditTextValue => !_editTextValue;
-
+        public ReplLineViewModel() { }
 
         public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
         {
@@ -76,8 +15,47 @@ namespace Dash
             Value = value;
         }
 
-        public ReplLineViewModel() { }
+        public event EventHandler Updated;
 
+        public void Update() => Updated?.Invoke(this, EventArgs.Empty);
+
+        public FieldControllerBase Value { get; set; }
+
+        private string _lineText = "";
+        public string LineText
+        {
+            get => _lineText;
+            set => SetProperty(ref _lineText, value);
+        }
+
+        public string GetLineText() => _lineText;
+
+        private string _resultText;
+        public string ResultText
+        {
+            get => _resultText;
+            set => SetProperty(ref _resultText, value);
+        }
+
+        private bool _editTextValue = false;
+        public bool EditTextValue
+        {
+            get => _editTextValue;
+            set
+            {
+                _editTextValue = value;
+                OnPropertyChanged();
+                OnPropertyChanged($"NotEditTextValue");
+            }
+        }
+
+        public bool DisplayableOnly { get; set; }
+
+        public int Indent { get; set; }
+
+        private FieldControllerBase _outputValue;
+
+        public bool NotEditTextValue => !_editTextValue;
 
         public string GetValueFromResult(FieldControllerBase controller)
         {

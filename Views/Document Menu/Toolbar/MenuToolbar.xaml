@@ -42,6 +42,7 @@
 
                 <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy"/>
                 <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete"/>
+                <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
                 <AppBarSeparator x:Name="xSepFour"/>
 
@@ -52,11 +53,12 @@
             </ctrl:CommandBar>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
-                <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
-                <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
+                <dash:PlainTextSubtoolbar x:Name="xPlainTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
+                <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
+                <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />
-                <dash:GroupingSubtoolbar x:Name="xGroupToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:GroupingSubtoolbar x:Name="xGroupToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
             </StackPanel>
         </StackPanel>
     </dash:Floating>

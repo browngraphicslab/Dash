@@ -131,7 +131,7 @@ namespace Dash
         /// <summary>
         /// Creates an instance of a document's data and copies the documents view.
         /// </summary>
-        /// <param name="where"></param>
+        /// <param name="where"></param
         /// <returns></returns>
         public static DocumentController GetDataInstance(this DocumentController doc, Point? where = null)
         {

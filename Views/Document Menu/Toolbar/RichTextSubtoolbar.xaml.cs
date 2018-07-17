@@ -28,9 +28,9 @@ namespace Dash
     /// <summary>
     /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
     /// </summary>
-    public sealed partial class TextSubtoolbar : UserControl
+    public sealed partial class RichTextSubtoolbar : UserControl
     {
-        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(RichTextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
@@ -45,7 +45,7 @@ namespace Dash
         private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
 
-        public TextSubtoolbar()
+        public RichTextSubtoolbar()
         {
             this.InitializeComponent();
             _buttons = new Dictionary<string, Button>();
@@ -70,6 +70,8 @@ namespace Dash
                     xStack.Children.Add(_menuView);
                     //collapse other text menu
                     xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+	                xFontColor.Visibility = Visibility.Collapsed;
+	                xOpacitySlider.Visibility = Visibility.Collapsed;
                     _buttons.TryGetValue("Font", out var fontButton);
                     if (fontButton != null)
                     {
@@ -100,6 +102,8 @@ namespace Dash
         public void SetMenuToolBarBinding(RichEditBox selection)
         {
             xDashTextSubtoolbar.Editor = selection;
+            xDashTextSubtoolbar.Visibility = Visibility.Visible;
+            xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>().Orientation = Orientation;
         }
 
         /**
@@ -157,8 +161,10 @@ namespace Dash
             _menuView = null;
             //restore other menu
             xDashTextSubtoolbar.Visibility = Visibility.Visible;
+	        xFontColor.Visibility = Visibility.Visible;
+	        xOpacitySlider.Visibility = Visibility.Visible;
 
-        }
+		}
 
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution

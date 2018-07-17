@@ -194,6 +194,7 @@
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
+    <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
@@ -204,6 +205,7 @@
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\TemplateAssignmentOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
@@ -300,6 +302,8 @@
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\TemplateBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\TemplateEditorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
@@ -448,6 +452,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionGraphView.xaml.cs">
+      <DependentUpon>CollectionGraphView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\BoundsExtractionStrategy.cs" />
     <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
       <DependentUpon>CollectionStandardView.xaml</DependentUpon>
@@ -457,6 +464,22 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\GraphConnection.cs" />
+    <Compile Include="Views\Collection\HiddenNodesView.xaml.cs">
+      <DependentUpon>HiddenNodesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\NodeConnectionsView.xaml.cs">
+      <DependentUpon>NodeConnectionsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\NodeInfoView.xaml.cs">
+      <DependentUpon>NodeInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\GraphInfoView.xaml.cs">
+      <DependentUpon>GraphInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\GraphNodeView.xaml.cs">
+      <DependentUpon>GraphNodeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
@@ -509,8 +532,11 @@
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
-      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml.cs">
+      <DependentUpon>PlainTextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml.cs">
+      <DependentUpon>RichTextSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
@@ -825,6 +851,25 @@
     <Compile Include="Views\ContextPreview.xaml.cs">
       <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
+      <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\Ruler.xaml.cs">
+      <DependentUpon>Ruler.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\ResizingControls.xaml.cs">
+      <DependentUpon>ResizingControls.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateApplier.xaml.cs">
+      <DependentUpon>TemplateApplier.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateConstants.cs" />
+    <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
+      <DependentUpon>TemplateEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateRecord.xaml.cs">
+      <DependentUpon>TemplateRecord.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
     <Compile Include="VisualAnnotationManager.cs" />
@@ -935,6 +980,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Collection\CollectionGraphView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ViewModels\ReplLineNode.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -960,6 +1009,26 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\HiddenNodesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\NodeConnectionsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\NodeInfoView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\GraphInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\GraphNodeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1023,7 +1092,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
+    <Page Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1268,6 +1341,30 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ContextPreview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\Ruler.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\ResizingControls.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateApplier.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateRecord.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

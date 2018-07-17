@@ -15,8 +15,6 @@ namespace Dash
     /// </summary>
     public class TextingBox : CourtesyDocument
     {
-        public static KeyController FontWeightKey = new KeyController("FontWeight", "03FC5C4B-6A5A-40BA-A262-578159E2D5F7");
-        public static KeyController FontSizeKey = new KeyController("FontSize", "75902765-7F0E-4AA6-A98B-3C8790DBF7CE");
         public static KeyController TextAlignmentKey = new KeyController("Font Alignment", "3BD4572A-C6C9-4710-8E74-831204D2C17D");
         public static DocumentType  DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
@@ -29,8 +27,8 @@ namespace Dash
         public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 40, FontWeight weight = null, Color? backgroundColor = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
-            fields.Add(FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
-            fields.Add(FontSizeKey, new NumberController(DefaultFontSize));
+            fields.Add(KeyStore.FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
+            fields.Add(KeyStore.FontSizeKey, new NumberController(DefaultFontSize));
           //  fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
             if (backgroundColor != null)
                 fields.Add(KeyStore.BackgroundColorKey, new TextController(backgroundColor.ToString()));
@@ -151,7 +149,7 @@ namespace Dash
         {
             var fontWeightBinding = new FieldBinding<NumberController>()
             {
-                Key = FontWeightKey,
+                Key = KeyStore.FontWeightKey,
                 Document = docController,
                 Converter = new DoubleToFontWeightConverter(),
                 Mode = BindingMode.TwoWay,
@@ -164,7 +162,7 @@ namespace Dash
         {
             var fontSizeBinding = new FieldBinding<NumberController>()
             {
-                Key = FontSizeKey,
+                Key = KeyStore.FontSizeKey,
                 Document = docController,
                 Mode = BindingMode.TwoWay,
                 Context = context

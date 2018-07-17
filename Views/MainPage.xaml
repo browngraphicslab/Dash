@@ -11,6 +11,9 @@
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
+
+            
+ 
     </Page.Resources>
 
 

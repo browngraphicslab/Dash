@@ -105,6 +105,11 @@ namespace Dash
                 // lists
                 zip,
 
+                // templates
+                apply,
+                set_template,
+                templates,
+
             // COMMANDS
 
                 // search

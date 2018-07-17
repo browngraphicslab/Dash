@@ -323,6 +323,11 @@ namespace Dash
             ListModel.Data.Add(element.Id );
             return true;
         }
+        
+        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void AddRange(IEnumerable<FieldControllerBase> elements)
         {
