@@ -78,7 +78,8 @@ namespace Dash
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController("_Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("_Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("_Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
-        public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
+	    public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
+		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
         public static KeyController ReplCurrentIndentKey = new KeyController("_Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
         public static KeyController ReplScopeKey = new KeyController("_Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");

@@ -1350,7 +1350,6 @@ namespace Dash
                 ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
             }
         }
-
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);

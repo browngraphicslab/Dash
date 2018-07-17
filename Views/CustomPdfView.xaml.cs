@@ -249,10 +249,16 @@ namespace Dash
             return PageItemsControl;
         }
 
-        public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
+	    public VisualAnnotationManager GetAnnotationManager()
+	    {
+		    return AnnotationManager;
+	    }
+
+	    public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
         {
             var dc = new RichTextNote("PDF " + ScrollViewer.VerticalOffset).Document;
-            dc.SetRegionDefinition(LayoutDocument, annotationType);
+	        dc.GetDataDocument().SetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, ScrollViewer.VerticalOffset, true);
+			dc.SetRegionDefinition(LayoutDocument, annotationType);
 
             return dc;
         }
@@ -331,6 +337,7 @@ namespace Dash
             _selectedRectangles[index] = rect;
         }
 
+
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
@@ -400,11 +407,13 @@ namespace Dash
             _selectionStartPoint = null;
             _selectedRectangles.Clear();
             TestSelectionCanvas.Children.Clear();
+			AnnotationManager.SetSelectionRegion(null);
         }
 
         private void EndSelection()
-        {
-            _selectionStartPoint = null;
+		{
+			if (_currentSelectionStart == -1) return;//Not currently selecting anything
+			_selectionStartPoint = null;
             AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
@@ -416,9 +425,6 @@ namespace Dash
         {
             switch (AnnotationManager.CurrentAnnotationType)
             {
-                case Dash.AnnotationManager.AnnotationType.RegionBox:
-                    NewRegionEnded?.Invoke(sender, e);
-                    break;
                 case Dash.AnnotationManager.AnnotationType.TextSelection:
                     var currentPoint = e.GetCurrentPoint(PageItemsControl);
                     var pos = currentPoint.Position;
@@ -452,13 +458,18 @@ namespace Dash
             }
             switch (AnnotationManager.CurrentAnnotationType)
             {
-                case Dash.AnnotationManager.AnnotationType.RegionBox:
-                    NewRegionMoved?.Invoke(sender, e);
-                    break;
                 case Dash.AnnotationManager.AnnotationType.TextSelection:
                     var pos = currentPoint.Position;
                     UpdateSelection(pos);
                     break;
+	            case Dash.AnnotationManager.AnnotationType.None:
+		            break;
+	            case Dash.AnnotationManager.AnnotationType.RegionBox:
+		            break;
+	            case Dash.AnnotationManager.AnnotationType.Ink:
+		            break;
+	            default:
+		            throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -487,8 +498,6 @@ namespace Dash
         #endregion
 
         public event PointerEventHandler NewRegionStarted;
-        public event PointerEventHandler NewRegionMoved;
-        public event PointerEventHandler NewRegionEnded;
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private double _scrollRatio;
@@ -537,5 +546,13 @@ namespace Dash
                 }
             }
         }
+
+	    public void ScrollToRegion(DocumentController target)
+	    {
+		    var offset = target.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, null);
+		    if (offset == null) return;
+
+		    ScrollViewer.ChangeView(null, offset.Data, null);
+	    }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Contacts;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -459,6 +461,24 @@ namespace Dash
             }
             return false;
         }
+
+	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
+		{
+			var dvm = MainDocView.DataContext as DocumentViewModel;
+			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+
+			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+				dcPoint.X + dcSize.X / 2,
+				dcPoint.Y + dcSize.Y / 2
+		    ));
+
+			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+		    return new Point(center.X - shift.X, center.Y - shift.Y);
+	    }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {

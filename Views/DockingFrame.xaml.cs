@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -55,9 +56,32 @@ namespace Dash
                 _highlightRecs = new[] { xDockLeft, xDockRight, xDockTop, xDockBottom };
 
             };
-        }
+		}
 
-        public void Dock(DocumentController toDock, DockDirection dir)
+		/// <summary>
+		/// If the given target is already docked, return the docked view. 
+		/// </summary>
+		/// <param name="target"></param>
+		/// <param name="dir"></param>
+	    public DockedView GetDockedView(DocumentController target)
+	    {
+		    foreach (var view in _lastDockedViews)
+		    {
+			    var currentView = view;
+			    while (currentView != null)
+			    {
+					if (currentView.ContainedDocumentController.GetDataDocument().Equals(target.GetDataDocument()))
+					{
+						return currentView;
+					}
+				    currentView = currentView.PreviousView;
+			    }
+		    }
+
+		    return null;
+	    }
+
+		public DocumentView Dock(DocumentController toDock, DockDirection dir)
         {
             toDock = toDock.GetViewCopy();
             DocumentView copiedView = new DocumentView
@@ -136,6 +160,8 @@ namespace Dash
                 else
                     tail.SetNestedViewSize(toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data);
             }
+
+	        return copiedView;
         }
 
         private void OnNestedLengthChanged(object sender, GridSplitterEventArgs e)
