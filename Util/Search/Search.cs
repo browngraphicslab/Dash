@@ -152,7 +152,7 @@ namespace Dash
                 //this returns a string that more closely follows function syntax
                 if (!DSL.FuncNameExists(name))
             {
-                return SearchByKeyValuePair(new KeyController(name), paramName);
+                return SearchByKeyValuePair(new KeyController(name), paramName.Trim('"'));
             }
             try
             {
