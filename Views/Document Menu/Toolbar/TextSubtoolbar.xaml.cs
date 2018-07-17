@@ -39,7 +39,7 @@ namespace Dash
         }
 
         private RichEditBox _currBox;
-        private FormattingMenuView _menuView = null;
+        public FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
         private DocumentController _currentDocController;
@@ -79,6 +79,7 @@ namespace Dash
                         //Width meant to be 67 to match actual rendered width of main toolbar collapse button
                         fontButton.Width = 67;
                     }
+					
                 }
                 //Width meant to be 67 to match actual rendered width of main toolbar collapse button
             }, 67, 100);

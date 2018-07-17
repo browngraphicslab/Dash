@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -23,6 +24,7 @@ namespace Dash
 {
 	public sealed partial class DashColorPicker : UserControl
 	{
+		//the currently selected color of the color picker
 		public Color SelectedColor
 		{
 			get { return xColorPicker.Color;}
@@ -34,22 +36,40 @@ namespace Dash
 			}
 		}
 
+		//the flyout that contains the color picker
+		//The flyout is created outside this class, but the color picker still needs access to it in order to enable a working "close" button.
 		public Flyout ParentFlyout
 		{
 			get => _flyout;
 			set => _flyout = value;
 		}
 
-		public Flyout _flyout = null;
-		public static readonly ObservableCollection<Color> SavedColors = new ObservableCollection<Color>();
+		
+		//a list of colors that the user has saved
+		public static ObservableCollection<Color> SavedColors;
 		public event EventHandler<Color> SelectedColorChanged;
-			
+		public Flyout _flyout = null;
 
 		public DashColorPicker()
 		{
 			this.InitializeComponent();
 			SelectedColor = xColorPicker.Color;
 			xColorPicker.ColorChanged += (sender, args) => SelectedColor = xColorPicker.Color;
+			
+			//add any saved colors to the Recent Colors panel
+			if (SavedColors == null)
+			{
+				SavedColors = new ObservableCollection<Color>();
+			}
+			else
+			{
+				foreach (Color color in SavedColors)
+				{
+					this.AddPreviewColorBox(color);
+				}
+			}
+
+			SavedColors.CollectionChanged += OnSavedColorsChanged;
 		}
 
 
@@ -71,7 +91,13 @@ namespace Dash
 		public void AddSavedColor(Color color)
 		{
 			if (SavedColors.Contains(color)) return;
+			
+			//add to list of saved colors
+			SavedColors.Add(color);
+		}
 
+		public void AddPreviewColorBox(Color color)
+		{
 			Rectangle box = new Rectangle();
 			box.Width = 25;
 			box.Height = 25;
@@ -80,12 +106,20 @@ namespace Dash
 			//on click should trigger color change to that color
 			box.PointerPressed += (s, e) => xColorPicker.Color = color;
 			//TODO: add white border for hover
-			
-			//add to list of saved colors
-			SavedColors.Add(color);
-			
 		}
 
+		//updates Recent Colors panel in all instantiated Dash color pickers
+		private void OnSavedColorsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			foreach (var item in e.NewItems)
+			{
+				Color color = (Color) item;
+				if (color != null) AddPreviewColorBox(color);
+			}
+			return;
+		}
+
+		//enables other classes to set the opacity of the currently selected color
 		public void SetOpacity(byte opacity)
 		{
 			Color past = xColorPicker.Color;

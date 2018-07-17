@@ -52,7 +52,7 @@
             </ctrl:CommandBar>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:TextSubtoolbar x:Name="xTextToolbar" x:FieldModifier="public" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />

@@ -39,7 +39,9 @@ namespace Dash
             InitializeComponent();
 
             //Initial values
-            xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+           // xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+			xGroupForegroundColorPicker.SetOpacity(128);
+
             _currentColor = Windows.UI.Color.FromArgb(0x80, 0xff, 0x00, 0x00); //Red with an opacity of 0.5
 
             FormatDropdownMenu();
@@ -79,17 +81,17 @@ namespace Dash
          */
         private void UpdateColor()
         {
-            _currentColor = GetColorWithUpdatedOpacity();
+           // _currentColor = GetColorWithUpdatedOpacity();
             //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
             //...shape's background color
             _currentDocController?.GetDataDocument().SetBackgroundColor(_currentColor);
             //...indirectly, the shape's opacity
-            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
+            //_currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
         }
 
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
-         */
+         
         private Windows.UI.Color GetColorWithUpdatedOpacity()
         {
             if (_currentColor == null)
@@ -97,7 +99,7 @@ namespace Dash
             var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
             return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
         }
-
+		*/
     //ACCESSORS AND MUTATORS
 
         /*
@@ -123,14 +125,14 @@ namespace Dash
             //Updates combo box dimensions
             xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
-            var margin = xOpacitySlider.Margin;
-            margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
-            margin.Left = 22;
-            xOpacitySlider.Margin = margin;
+           // var margin = xOpacitySlider.Margin;
+           // margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
+           // margin.Left = 22;
+           // xOpacitySlider.Margin = margin;
 
-            margin = xSideCounter.Margin;
-            margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
-            xSideCounter.Margin = margin;
+         //   margin = xSideCounter.Margin;
+          //  margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
+          //  xSideCounter.Margin = margin;
         }
 
         /*
@@ -198,7 +200,7 @@ namespace Dash
          */
         private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            xOpacitySlider.Value = 128;
+           // xOpacitySlider.Value = 128;
             UpdateColor();
         }
 
@@ -259,7 +261,7 @@ namespace Dash
             UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
+           // xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
             //NUM SIDES
             xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
@@ -268,7 +270,7 @@ namespace Dash
 
         private void UpdateToolbarAccentColors()
         {
-            xOpacitySlider.Background = new SolidColorBrush(_currentColor);
+           // xOpacitySlider.Background = new SolidColorBrush(_currentColor);
             xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
             xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }

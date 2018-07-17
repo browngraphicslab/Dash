@@ -73,6 +73,7 @@
                         NeedleBrush="Red"
                         NeedleLength="77"
                         NeedleWidth="5"/>
+                    <!--
                     <Slider x:Name="xOpacitySlider" 
                         Minimum="0" 
                         Maximum="255"
@@ -85,6 +86,7 @@
                         Margin="22, 11, 0, 0" 
                         RightTapped="XOpacitySlider_OnRightTapped"  
                         ValueChanged="XOpacitySlider_OnValueChanged"/>
+                    -->
                 </Grid>
             </CommandBar.Content>
             <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
