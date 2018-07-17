@@ -254,7 +254,7 @@ namespace Dash
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
-        public void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
+        public async void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
         {
             if (region == this)
             {
@@ -266,9 +266,16 @@ namespace Dash
                 if (_target != null)
                 {
                     var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
-                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                    if (theDoc != null)
                     {
-                        _annotationManager.RegionPressed(theDoc, pointPressed);
+                        if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                        {
+                            _annotationManager.RegionPressed(theDoc, pointPressed);
+                        }
+                    }
+                    else if (_target.StartsWith("http"))
+                    {
+                        await Windows.System.Launcher.LaunchUriAsync(new Uri(_target));
                     }
                 }
             }
@@ -328,54 +335,6 @@ namespace Dash
         {
             e.Handled = false;
             this.RegionSelected(null, e.GetPosition(MainPage.Instance), null);
-
-            //        else if (target.StartsWith("http"))
-            //        {
-            //            if (MainPage.Instance.WebContext != null)
-            //                MainPage.Instance.WebContext.SetUrl(target);
-            //            else
-            //            {
-            //                nearestOnCollection = FindNearestDisplayedBrowser(pt, target);
-            //                if (nearestOnCollection != null)
-            //                {
-            //                    if (this.IsCtrlPressed())
-            //                        nearestOnCollection.DeleteDocument();
-            //                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-            //                }
-            //                else
-            //                {
-            //                    theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
-            //                    Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
-            //{
-            //    double dist = double.MaxValue;
-            //    DocumentView nearest = null;
-            //    foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            //    {
-            //        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-            //        if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
-            //        {
-            //            var mprect = dvm.GetBoundingRect(MainPage.Instance);
-            //            var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-            //            if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-            //            {
-            //                var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-            //                if (d < dist)
-            //                {
-            //                    d = dist;
-            //                    nearest = dvm;
-            //                }
-            //            }
-            //        }
-            //    }
-
-            //    return nearest;
-            //}
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -531,27 +490,27 @@ namespace Dash
                 return this.DataDocument;
 
 
-            //If link already exists, return the document controller for the existing region
-
+            // possibly reuse any existing hyperlink region
             var target = getHyperlinkTargetForSelection();
-            if (target != null)
+            var theDoc = target == null ? null : ContentController<FieldModel>.GetController<DocumentController>(target);
+            
+
+            // get the document controller for the target hyperlink (region) document
+            var dc = createRTFHyperlink();
+            if (dc == null)
             {
-                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-
-                var linkedToDocs = theDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey);
-                if (linkedToDocs != null)
+                if (target != null && theDoc == null)
                 {
-                    return theDoc;
+                    dc = new HtmlNote(target, selection.Text).Document;
+                    dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
                 }
-
+                if (dc != null)
+                {
+                    var link = "\"" + dc.Id + "\"";
+                    this.xRichEditBox.Document.Selection.Link = link;
+                } else
+                    return theDoc;
             }
-
-            //otherwise, make a new doc controller for the selection
-            var dc = new RichTextNote(selection.Text).Document;
-            dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
-            var s1 = selection.StartPosition;
-            var s2 = selection.EndPosition;
-            createRTFHyperlink(dc, ref s1, ref s2, false, false);
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
             {
@@ -559,9 +518,7 @@ namespace Dash
                 DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
             }
             else
-            {
                 regions.Add(dc);
-            }
 
             _selectionDocControllers.Add(selection, dc);
 
@@ -597,39 +554,115 @@ namespace Dash
             var region = GetRegionDocument();
             region.Link(theDoc);
 
-            //if (theDoc != null)
-            //    createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
-
             convertTextFromXamlRTF();
 
             xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
-        void createRTFHyperlink(DocumentController theDoc, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
+        DocumentController createRTFHyperlink()
         {
-            Point startPt;
-            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
-            string link = "\"" + theDoc.Id + "\"";
-            if (!forceLocal && theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+            var selectedText = this.xRichEditBox.Document.Selection.Text;
+            var start        = this.xRichEditBox.Document.Selection.StartPosition;
+            var length       = this.xRichEditBox.Document.Selection.EndPosition - start;
+            string link = null;
+            DocumentController targetRegionDocument = null;
+            
+            var origStart = start;
+
+            while (true)
+            {
+                bool replaced = false;
+                for (int i = 0; i <= length; i++)
+                {
+                    this.xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                    if (this.xRichEditBox.Document.Selection.Link != "")
+                    {
+                        if (this.xRichEditBox.Document.Selection.Link.StartsWith("\"http"))
+                        {
+                            length -= this.xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            this.xRichEditBox.Document.Selection.FormattedText.Link = "";
+                            replaced = true;
+                        } else if ( this.xRichEditBox.Document.Selection.Link.StartsWith("\"mailto"))
+                        {
+                            length -= this.xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            this.xRichEditBox.Document.Selection.FormattedText.Link = "";
+                            replaced = true;
+                        }
+                    }
+                }
+                if (!replaced)
+                    break;
+            }
+
+            for (int i = 0; i <= length; i++)
+            {
+                this.xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                if (this.xRichEditBox.Document.Selection.Link != "")
+                {
+                    this.xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                    var color = this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
+                    var nextColor = color == Colors.LightCyan ? Colors.LightBlue : color == Colors.LightBlue ? Colors.DeepSkyBlue : Colors.Cyan;
+                    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = nextColor;
+                    // maybe get the current link and add the new link doc to it?
+
+                    var newstart = this.xRichEditBox.Document.Selection.EndPosition;
+                    for (int j = 0; j < i; j++)
+                    {
+                        this.xRichEditBox.Document.Selection.SetRange(start, start + i-j);
+                        this.xRichEditBox.Document.Selection.SetRange(start, start + i-j);
+                        if (!this.xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
+                            break;
+                    }
+                    length -= (newstart - start);
+                    if (link == null)
+                    {
+                        link = getTargetLink(selectedText, out targetRegionDocument);
+                    }
+                    var cursize = this.xRichEditBox.Document.Selection.EndPosition - this.xRichEditBox.Document.Selection.StartPosition;
+                    this.xRichEditBox.Document.Selection.Link = link;
+                    var newsize = this.xRichEditBox.Document.Selection.EndPosition - this.xRichEditBox.Document.Selection.StartPosition;
+                    newstart += (newsize - cursize);
+                    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                    this.xRichEditBox.Document.Selection.SetRange(newstart, newstart + length);
+                    start = newstart;
+                    i = -1;
+                }
+            }
+            var endpos = this.xRichEditBox.Document.Selection.EndPosition-1;
+            this.xRichEditBox.Document.Selection.SetRange(start, start + length);
+            for (int j = 0; j < length; j++)
+            {
+                this.xRichEditBox.Document.Selection.SetRange(start, start + length - j);
+                this.xRichEditBox.Document.Selection.SetRange(start, start + length - j);
+                if (!this.xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
+                    break;
+            }
+            if (length > 0 && !string.IsNullOrEmpty(this.xRichEditBox.Document.Selection.Text) && !string.IsNullOrWhiteSpace(this.xRichEditBox.Document.Selection.Text) )
+            {
+                if (link == null)
+                {
+                    link = getTargetLink(selectedText, out targetRegionDocument);
+                }   
+                this.xRichEditBox.Document.Selection.SetRange(start, start + length);
+                // set the hyperlink for the matched text
+                this.xRichEditBox.Document.Selection.Link = link; 
+                endpos = this.xRichEditBox.Document.Selection.EndPosition;
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+            }
+            this.xRichEditBox.Document.Selection.SetRange(origStart, endpos);
+            return targetRegionDocument;
+        }
+
+        private string getTargetLink(string selectedText, out DocumentController theDoc)
+        {
+            theDoc = new RichTextNote(selectedText).Document;
+            theDoc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+            var link = "\"" + theDoc.Id + "\"";
+            if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
                 link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }
-
-            if (xRichEditBox.Document.Selection.Link != link)
-            {
-                if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-                {
-                    xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
-                }
-
-                // set the hyperlink for the matched text
-                this.xRichEditBox.Document.Selection.Link = link;
-                // advance the end selection past the RTF embedded HYPERLINK keyword
-                s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                s1 = s2;
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
-            }
+            return link;
         }
 
         string getHyperlinkText(int atPos, int s2)
