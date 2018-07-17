@@ -90,6 +90,8 @@ document.addEventListener('DOMContentLoaded',
                                                 }
                                                 chrome.runtime.sendMessage({ type: "sendRequest", data: request });
 
+                                            } else {
+
                                             }
 
                                             loadToPercentage = 100;
