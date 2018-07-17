@@ -84,7 +84,6 @@ namespace Dash
 
             //reset and get rid of the region preview
             _overlay.SetDuringPreviewSize(new Size(0, 0));
-	        DeselectRegions();
 
             // what do the following two lines accomplish
             _overlay.DuringVisibility = Visibility.Collapsed;
@@ -124,27 +123,21 @@ namespace Dash
             }
         }
 
-        private void Element_OnNewRegionEnded(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
+        private void Element_OnNewRegionEnded(object sender, PointerRoutedEventArgs e)
         {
 	        if (!_isDragging) return;
             _overlay.DuringVisibility = Visibility.Collapsed;
-
-            //if (MainPage.Instance.IsCtrlPressed())
-            //{
-            //    return;
-            //}
-
             _isDragging = false;
 
-
-            // the box only sticks around if it's of a large enough size
-	        if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30)
+			// the box only sticks around if it's of a large enough size
+			if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30)
 			{
-				// consider the case where the user is just clicking in place
-				if (!(_overlay.GetDuringPreviewSize().Width < 5 && _overlay.GetDuringPreviewSize().Height < 5))
+				if (_selectedRegion == null || !_selectedRegion.IsPointerOver)
 					DeselectRegions();
 				return;
 	        }
+
+	        DeselectRegions();
 
 			// HEY TODO FOR TOMORROW!
 			// make the annotations flyout thing appear at the mouse
@@ -156,7 +149,8 @@ namespace Dash
         private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            RegionSelected((RegionBox) sender, e.GetPosition(MainPage.Instance));
+	        DeselectRegions();
+			RegionSelected((RegionBox)sender, e.GetPosition(MainPage.Instance));
             e.Handled = true;
         }
 
@@ -315,7 +309,7 @@ namespace Dash
 
         public bool IsSomethingSelected()
         {
-            return _overlay.PostVisibility == Visibility.Visible;
+            return _overlay.PostVisibility == Visibility.Visible || _isPreviousRegionSelected;
         }
 
         public DocumentController GetRegionDocument()
