@@ -50,8 +50,7 @@ namespace Dash
             //Potential bug fix: if visibility of command bar is collapsed, will never load and will fail to add event handler
             xGroupCommandbar.Loaded += delegate
             {
-                var sp = xGroupCommandbar.GetFirstDescendantOfType<StackPanel>();
-                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                xGroupCommandbar.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
                     Path = new PropertyPath(nameof(Orientation)),
@@ -117,22 +116,11 @@ namespace Dash
          */
         public void CommandBarOpen(bool status)
         {
-            xGroupCommandbar.IsOpen = status;
-
             //Whether or not open or closed, should always be visible if some content is selected
-            xGroupCommandbar.IsEnabled = true;
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
             xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
-           // var margin = xOpacitySlider.Margin;
-           // margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
-           // margin.Left = 22;
-           // xOpacitySlider.Margin = margin;
-
-         //   margin = xSideCounter.Margin;
-          //  margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
-          //  xSideCounter.Margin = margin;
         }
 
         /*
@@ -215,9 +203,7 @@ namespace Dash
         private void XGroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: when multiselect is eventually implemented, group all selected elements with as small a group as possible
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*
@@ -226,9 +212,7 @@ namespace Dash
         private void XUngroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: Delete groups on tapped
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*

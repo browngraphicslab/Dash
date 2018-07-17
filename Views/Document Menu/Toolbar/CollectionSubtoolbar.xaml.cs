@@ -49,7 +49,7 @@ namespace Dash
 
             xCollectionCommandbar.Loaded += delegate
             {
-                var sp = xCollectionCommandbar.GetFirstDescendantOfType<StackPanel>();
+                var sp = xCollectionCommandbar;
                 sp?.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
@@ -77,8 +77,6 @@ namespace Dash
         /// </summary>
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
         {
-            xCollectionCommandbar.IsOpen = true;
-            xCollectionCommandbar.IsEnabled = true;
             using (UndoManager.GetBatchHandle())
             {
                 //get list of doc views in the collection
@@ -118,8 +116,6 @@ namespace Dash
         /// </summary>
         public void CommandBarOpen(bool status)
         {
-            xCollectionCommandbar.IsOpen = status;
-            xCollectionCommandbar.IsEnabled = true;
             xCollectionCommandbar.Visibility = Visibility.Visible;
             xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }

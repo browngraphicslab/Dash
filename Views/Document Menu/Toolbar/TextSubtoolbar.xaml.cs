@@ -54,11 +54,12 @@ namespace Dash
 	        xBackgroundColorPicker.ParentFlyout = xColorPickerFlyout;
 
             //add an additional sub-toolbar for further operations
-            this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
+			/*
+            var addButton = this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
             {
                 /**
                  * When the Font Button is clicked, the font menu visibility is toggled, giving user access to additional editing operations like font style, etc.
-                 */
+                 
                 if (_currBox != null && _menuView == null)
                 {
                     //create a formatting menu and bind it to the currently selected richEditBox's view
@@ -83,7 +84,7 @@ namespace Dash
                 }
                 //Width meant to be 67 to match actual rendered width of main toolbar collapse button
             }, 67, 100);
-
+		*/
             //binds orientation of toolbar to the orientation of the main toolbar
             xDashTextSubtoolbar.Loaded += delegate
             {
@@ -121,6 +122,7 @@ namespace Dash
                 Width = width,
                 Height = height,
             }; //add to toolbar
+	        button.Height = height;
             xDashTextSubtoolbar.CustomButtons.Add(button);
             //assign event handler to button on tapped
             button.Tapped += onTapped;
@@ -164,8 +166,9 @@ namespace Dash
             xStack.Children.Remove(_menuView);
             _menuView = null;
             //restore other menu
-            xDashTextSubtoolbar.Visibility = Visibility.Visible;
-	        xBackgroundColorButton.Visibility = Visibility.Visible;
+            //xDashTextSubtoolbar.Visibility = Visibility.Visible;
+	        //xBackgroundColorButton.Visibility = Visibility.Visible;
+	        xInitialGrid.Visibility = Visibility.Visible;
 
         }
 
@@ -220,5 +223,32 @@ namespace Dash
 	    {
 		    if (xBackgroundColorPicker.SelectedColor.A.Equals(0)) xBackgroundColorPicker.SetOpacity(150);
 	    }
+
+	    private void XMoreButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+			if (_currBox != null && _menuView == null)
+			{
+				//create a formatting menu and bind it to the currently selected richEditBox's view
+				_menuView = new FormattingMenuView(this)
+				{
+					richTextView = _docs.GetFirstDescendantOfType<RichTextView>(),
+					xRichEditBox = _currBox
+				};
+				//add the menu to the stack panel
+				xStack.Children.Insert(0,_menuView);
+				//collapse other text menu
+				//xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+				//xBackgroundColorButton.Visibility = Visibility.Collapsed;
+				xInitialGrid.Visibility = Visibility.Collapsed;
+
+				_buttons.TryGetValue("Font", out var fontButton);
+				if (fontButton != null)
+				{
+					//Width meant to be 67 to match actual rendered width of main toolbar collapse button
+					fontButton.Width = 67;
+				}
+
+			}
+		}
     }
 }

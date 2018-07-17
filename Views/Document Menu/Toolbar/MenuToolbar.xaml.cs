@@ -401,33 +401,13 @@ namespace Dash
                     if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
-                       // xToolbar.IsOpen = false;
-                        //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
-                        if (subtoolbarElement is ICommandBarBased toOpen)
-                        {
-                            toOpen.CommandBarOpen(true);
-                            //Displays padding in stack panel only if the menu isn't collapsed
-                            //if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
-                            var margin = xSubtoolbarStackPanel.Margin;
-                            margin.Top = 20;
-                            xSubtoolbarStackPanel.Margin = margin;
-                        }
-                        else
-                        {
-                            //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
-                            var margin = xSubtoolbarStackPanel.Margin;
-                            margin.Top = 7;
-                            xSubtoolbarStackPanel.Margin = margin;
-                            //xPadding.Visibility = Visibility.Collapsed;
-                        }
+						// xToolbar.IsOpen = false;
+						//update margin
+						var margin = xSubtoolbarStackPanel.Margin;
+	                    margin.Top = 7;
+	                    xSubtoolbarStackPanel.Margin = margin;
                     }
-                    else
-                    {
-                        //If nothing is selected, open/label the main menu toolbar
-	                    //bool isReadyForOpen = (state == State.Expanded && !_selectedType.Equals(PdfBox.DocumentType) &&
-	                    //                       !_selectedType.Equals(WebBox.DocumentType));
-						//xToolbar.IsOpen = isReadyForOpen;
-                    }
+
                 }
                 else if (docs.Count<DocumentView>() > 1)
                 {
@@ -435,11 +415,8 @@ namespace Dash
                 }
                 else
                 {
-                   // xToolbar.IsOpen = true;
                     subtoolbarElement = null;
                     xGroupToolbar.TryMakeGroupEditable(false);
-					//_selectedType = null;
-	                //xPadding.Visibility = Visibility.Collapsed;
                 }
 
                 //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
@@ -508,6 +485,8 @@ namespace Dash
                 else if (checkedButton == xInk) mode = MouseMode.Ink;
                 else if (checkedButton == xGroup) mode = MouseMode.PanFast;
             }
+
+	        xToolbar.IsOpen = true;
         }
 
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
@@ -515,6 +494,7 @@ namespace Dash
 			//bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
 			//                       !_selectedType.Equals(WebBox.DocumentType));
 	       // xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
+		
 			AppBarToggleButton toggle = sender as AppBarToggleButton;
             if (toggle == checkedButton)
             {
@@ -522,16 +502,15 @@ namespace Dash
                 checkedButton.IsChecked = true;
                 mode = MouseMode.TakeNote;
             }
-        }
+
+	        xToolbar.IsOpen = true;
+		}
 
         /// <summary>
         /// When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
         /// </summary>
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-			//bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
-			//                       !_selectedType.Equals(WebBox.DocumentType));
-	      //  xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
 			//opens file picker and limits search by listed image extensions
 			var imagePicker = new FileOpenPicker
             {
@@ -567,7 +546,9 @@ namespace Dash
             {
                 //Flash an 'X' over the image selection button
             }
-        }
+
+	        xToolbar.IsOpen = true;
+		}
 
         /// <summary>
         /// Used to check if the toolbar is currently located at the top of screen, for UI purposes.
@@ -582,9 +563,6 @@ namespace Dash
         /// </summary>
         private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {
-			//bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
-			//                       !_selectedType.Equals(WebBox.DocumentType));
-	       // xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
 			//instantiates a file picker, set to open in user's video library
 			var picker = new FileOpenPicker
             {
@@ -615,17 +593,14 @@ namespace Dash
 
                 //add error message for null file?
             }
-        }
+	        xToolbar.IsOpen = true;
+		}
 
         /// <summary>
         /// When the "Add Audio" btn is clicked, this launches a file picker & adds selected audio files to the workspace
         /// </summary>
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
-			//bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
-			//                       !_selectedType.Equals(WebBox.DocumentType));
-	       // xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
-
 			//instantiates a file picker, set to open in user's audio library
 			var picker = new FileOpenPicker
             {
@@ -654,7 +629,9 @@ namespace Dash
                 }
                 //add error message for null file?
             }
-        }
+
+	        xToolbar.IsOpen = true;
+		}
 
         /// <summary>
         /// Rotates the internal stack panel of the command bar. Currently inactive.
@@ -710,7 +687,8 @@ namespace Dash
                     }
                 }
             }
-        }
+	      
+		}
 
         /// <summary>
         /// Inverts toolbar orientation, currently inactive.
@@ -736,61 +714,20 @@ namespace Dash
             if (subtoolbarElement is ICommandBarBased cmd) cmd.SetComboBoxVisibility(Orientation == Orientation.Horizontal ? Visibility.Visible : Visibility.Collapsed);
         }
 
-		//TODO:LAURA - TOOLBAR SHOULD OPEN ON HOVER, ALWAYS BE CLOSED OTHERWISE
         /// <summary>
-        /// If toolbar is expanded & at top of screen, it will open when user's pointer hovers over it.
+        /// Opens toolbar when user's pointer hovers over it.
         /// </summary>
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-	        //xFloating.AdjustPositionForExpansion(20, 0);
 			xToolbar.IsOpen = true;
-			
-			/*
-            if (state == State.Expanded && IsAtTop())
-            {
-                xToolbar.IsOpen = true;
-                //if subtoolbar is a command bar, open it normally
-                if (subtoolbarElement is ICommandBarBased toClose)
-                {
-                    toClose.CommandBarOpen(false);
-                }
-                //else, if it is a text toolbar (which doesn't expand), update margins accordingly
-                else if (subtoolbarElement is TextSubtoolbar txt)
-                {
-                    var margin = txt.Margin;
-                    margin.Top = 13;
-                    txt.Margin = margin;
-                } 
-            }
-			*/
         }
 
         /// <summary>
-        /// If toolbar is expanded & at top of screen, it will close when user's pointer leaves its area.
+        /// Closes toolbar when user's pointer leaves its area.
         /// </summary>
         private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
 	        xToolbar.IsOpen = false;
-			/*
-            if (state == State.Expanded && IsAtTop())
-            {
-				//main toolbar should only be open when there is no currently active subtoolbar present
-				bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
-				                       !_selectedType.Equals(WebBox.DocumentType));
-				xToolbar.IsOpen = isReadyForOpen;
-                //close any command bar - based toolbar, and update margins for texttoolbar accordingly
-                if (subtoolbarElement is ICommandBarBased toClose)
-                {
-                    toClose.CommandBarOpen(true);
-                }
-                else if (subtoolbarElement is TextSubtoolbar txt)
-                {
-                    var margin = txt.Margin;
-                    margin.Top = 0;
-                    txt.Margin = margin;
-                }
-            }
-			*/
         }
 
         /// <summary>
@@ -820,13 +757,11 @@ namespace Dash
             //set subtoolbar element to null if collapsing toolbar
             if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
-	        //bool isReadyForOpen = (state == State.Expanded && !_selectedType.Equals(PdfBox.DocumentType) &&
-	        //                       !_selectedType.Equals(WebBox.DocumentType));
-	        //xToolbar.IsOpen = isReadyForOpen;
-
             //adjust toolbar's position to account for the change in size
             xFloating.AdjustPositionForExpansion(0, ToolbarConstants.ToolbarExpandedWidth - xToolbar.ActualWidth);
-        }
+
+	        xToolbar.IsOpen = true;
+		}
 
         /// <summary>
         /// Updates UI of toolbar when Night Mode is active in order to remain readable.

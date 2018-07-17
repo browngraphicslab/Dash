@@ -17,24 +17,26 @@
     d:DesignWidth="800">
 
   
+<StackPanel x:Name="xStack" Orientation="Vertical">
+        <Grid x:Name="xInitialGrid" Height="60" Background="LightGray">
 
-    <Grid x:Name="xStack" Height="50">
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="60"/>
-        </Grid.ColumnDefinitions>
-        <controls:TextToolbar 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+            <AppBarButton x:Name="xMoreButton" Icon="Add" Width ="67" Label="More" Background="{StaticResource AccentGreenLight}" Click="XMoreButton_OnClick" ></AppBarButton>
+            <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
             Visibility="Visible"
-            Background="LightGray">
-            <!--remove Link button from default text toolbar-->
-            <controls:TextToolbar.ButtonModifications >
-                <buttons:DefaultButton Type="Link" IsVisible="False" />
-            </controls:TextToolbar.ButtonModifications>
+            Background="LightGray" Height="50" Grid.Column="1">
+                <!--remove Link button from default text toolbar-->
+                <controls:TextToolbar.ButtonModifications >
+                    <buttons:DefaultButton Type="Link" IsVisible="False" />
+                </controls:TextToolbar.ButtonModifications>
 
-        </controls:TextToolbar>
-        <!--<Grid Grid.Column="1" 
+            </controls:TextToolbar>
+            <!--<Grid Grid.Column="1" 
                 Background="LightGray">
             <Slider x:Name="xOpacitySlider" Grid.Column="1"
                             Minimum="0" 
@@ -48,17 +50,19 @@
                             RightTapped="XOpacitySlider_OnRightTapped"  
                             ValueChanged="XOpacitySlider_OnValueChanged"/>
         </Grid> -->
-        <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="2" Height="50" Width="60"
-            Background="LightGray" Click="XBackgroundColorButton_OnClick">
-        <Button.Flyout>
-                <Flyout x:Name="xColorPickerFlyout">
-                   <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
-                    <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"></local:DashColorPicker>
-                </Flyout>
-            </Button.Flyout>
-            <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+            <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="60"
+            Background="LightGray" Label="Color" Click="XBackgroundColorButton_OnClick">
+                <Button.Flyout>
+                    <Flyout x:Name="xColorPickerFlyout">
+                        <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
+                        <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"></local:DashColorPicker>
+                    </Flyout>
+                </Button.Flyout>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
 
-        </AppBarButton>
+            </AppBarButton>
 
-    </Grid>
+        </Grid>
+    </StackPanel>
+    
 </UserControl>
