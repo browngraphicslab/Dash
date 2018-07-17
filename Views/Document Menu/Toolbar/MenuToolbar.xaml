@@ -57,6 +57,7 @@
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />
                 <dash:GroupingSubtoolbar x:Name="xGroupToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:PdfSubToolbar x:Name="xPdfToolbar"/>
             </StackPanel>
         </StackPanel>
     </dash:Floating>

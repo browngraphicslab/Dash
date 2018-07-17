@@ -22,9 +22,13 @@ namespace Dash
 {
     public sealed partial class WebBoxView : UserControl
     {
+        private WebView xWebView;
         public WebBoxView()
         {
             this.InitializeComponent();
+            //TODO Try out SeparateThread and SeparateProcess
+            xWebView = new WebView(WebViewExecutionMode.SameThread);
+            xGrid.Children.Add(xWebView);
         }
 
         public WebView GetView()
