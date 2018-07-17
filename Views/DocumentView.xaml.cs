@@ -755,11 +755,12 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+            e.Handled = true;
+
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-            e.Handled = true;
             var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);

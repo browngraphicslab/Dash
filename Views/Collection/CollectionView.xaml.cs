@@ -52,7 +52,7 @@ namespace Dash
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
-            PointerPressed += OnPointerPressed;
+            DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
         }
 
         /// <summary>
@@ -211,11 +211,11 @@ namespace Dash
             contextMenu.Items.Add(fitToParent);
             elementsToBeRemoved.Add(fitToParent);
 
-            ParentDocument.Unloaded += delegate
-            {
-                viewCollectionPreview.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
-                fitToParent.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
-            };
+            //ParentDocument.Unloaded += delegate
+            //{
+            //    viewCollectionPreview.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
+            //    fitToParent.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
+            //};
 
             Unloaded += (sender, e) =>
             {
