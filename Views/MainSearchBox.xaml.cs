@@ -302,7 +302,7 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
-
+            
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
 
@@ -326,6 +326,10 @@ namespace Dash
             var vmGroups = new List<SearchResultViewModel>();
             foreach (SearchResult res in searchRes)
             {
+                if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
+                {
+                    res.DataDocument.SetField<TextController>(CollectionDBView.SelectedKey, text, true);
+                }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;
                 if (parent != null) newVm.DocumentCollection = parent;
@@ -348,13 +352,6 @@ namespace Dash
                 var id = doc.Id;
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
-                if (resultDoc.EnumFields().Any(f => f.Value is RichTextController))
-                {
-                    //TODO: Highlight text value in rich text box
-                    var b = new RichTextController();
-                    
-                }
-
                 //make border thickness of DocHighlight for each doc 8
                 MainPage.Instance.HighlightDoc(resultDoc, false, 1);
             }
@@ -372,6 +369,17 @@ namespace Dash
             foreach (var coll in allCollections)
             {
                 UnHighlightDocs(coll);
+            }
+
+            //DocumentTree.MainPageTree.Select(node => node.DataDocument.SetField<TextController>(CollectionDBView.SelectedKey, "", true));
+            foreach (var node in DocumentTree.MainPageTree)
+            {
+                var a = node.DataDocument;
+                if (a.GetField(CollectionDBView.SelectedKey) != null)
+                {
+                    a.RemoveField(CollectionDBView.SelectedKey);
+                }
+
             }
         }
 

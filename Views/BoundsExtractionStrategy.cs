@@ -10,35 +10,13 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 
 namespace Dash
 {
-    public class BoundsExtractionStrategy : LocationTextExtractionStrategy
+    public partial class BoundsExtractionStrategy : LocationTextExtractionStrategy
     {
         private Rectangle _pageSize;
         private double _pageOffset;
         private int _pageNumber;
 
         private List<SelectableElement> _elements = new List<SelectableElement>();
-
-        public enum ElementType
-        {
-            Text,
-            Image
-        }
-
-        public class SelectableElement
-        {
-            public SelectableElement(int index, string text, Rect bounds)
-            {
-                Index = index;
-                Contents = text;
-                ElementType = ElementType.Text;
-                Bounds = bounds;
-            }
-
-            public Rect Bounds { get; }
-            public int Index { get; set; }
-            public object Contents { get; }
-            public ElementType ElementType { get; }
-        }
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {

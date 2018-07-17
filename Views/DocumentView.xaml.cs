@@ -90,7 +90,22 @@ namespace Dash
             }
         }
 
+        public bool ShowResize
+        {
+            get => _showResize;
+            set
+            {
+                _showResize = value;
+                if (!value)
+                {
+                    RemoveResizeHandlers();
+                }
+            }
+        }
+
         private ImageSource _docPreview = null;
+        private bool _showResize;
+
         private ImageSource DocPreview
         {
             get { return _docPreview; }
@@ -98,6 +113,7 @@ namespace Dash
             {
                 _docPreview = value;
                 xToolTipPreview.Source = value;
+                //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
             }
         }
 
@@ -179,7 +195,7 @@ namespace Dash
             void ResizeHandles_restorePointerTracking()
             {
                 if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                    ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
+                    ViewModel.DecorationState = xBottomRightResizeControl.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
 
@@ -192,22 +208,32 @@ namespace Dash
 
                 UndoManager.EndBatch();
             }
-            ResizeHandleTopLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
-            ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
-            ResizeHandleBottomLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true);
-            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
 
-            foreach (var handle in new Ellipse[] { ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft, ResizeHandleTopRight })
+            xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);
+            xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, true);
+            xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, true);
+            xBottomRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, true);
+            xTopResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, false);
+            xLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, false);
+            xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
+            xBottomResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
+
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+            })
             {
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
                 handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
                 handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
                 handle.PointerPressed += (s, e) =>
-         {
-             CapturePointer(e.Pointer);
-             ManipulationMode = ManipulationModes.None;
-             e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-         };
+                {
+                    CapturePointer(e.Pointer);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                };
             }
 
             // setup OperatorEllipse 
@@ -276,7 +302,7 @@ namespace Dash
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = this.IsShiftPressed() ? new List<DocumentView>(): SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                var adornmentGroups = this.IsShiftPressed() ? new List<DocumentView>() : SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
                 {
                     adornmentGroups.ForEach((dv) =>
@@ -307,7 +333,7 @@ namespace Dash
                     var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
                     if (ViewModel.IsAdornmentGroup && !wasSelected)
                     {
-                        if (ParentCollection.CurrentView is CollectionFreeformView)
+                        if (ParentCollection.CurrentView is CollectionFreeformView || ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
                         }
@@ -322,7 +348,29 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
-            
+
+        }
+
+        public void RemoveResizeHandlers()
+        {
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+            })
+            {
+                handle.Visibility = Visibility.Collapsed;
+            }
+
+            xLeftColumn.Width = new GridLength(0);
+            xRightColumn.Width = new GridLength(0);
+            xTopRow.Height = new GridLength(0);
+            xBottomRow.Height = new GridLength(0);
+            ViewModel.DecorationState = false;
+
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         #region StandardCollectionView
@@ -347,7 +395,7 @@ namespace Dash
         {
             RenderTargetBitmap bitmap = new RenderTargetBitmap();
             xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement,1000,1000);
+            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement, 1000, 1000);
             xContentPresenter.Visibility = Visibility.Collapsed;
             return bitmap;
         }
@@ -416,7 +464,8 @@ namespace Dash
             else if (type.Equals(DataBox.DocumentType))
             {
                 return new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
-            } else if (type.Equals(OperatorBox.DocumentType))
+            }
+            else if (type.Equals(OperatorBox.DocumentType))
             {
                 return new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
             }
@@ -675,10 +724,15 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             if (this != MainPage.Instance.MainDocView) return;
             view.xOuterGrid.BorderThickness = new Thickness(0);
-            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+            })
+            {
+                handle.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -692,71 +746,89 @@ namespace Dash
 
 
 
+
         /// <summary>
         /// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-
-            // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
-            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
-            Size newSize = new Size();
+            var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+            e.Handled = true;
+            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
+            var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            
+            //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
+            //{
+            //    delta.X = 0.0;
+            //}
+            var oldSize = new Size(ViewModel.ActualSize.X - extraOffsetX, ViewModel.ActualSize.Y - extraOffsetY);
 
             // sets directions/weights depending on which handle was dragged as mathematical manipulations
-            int cursorXDirection = shiftLeft ? -1 : 1;
-            int cursorYDirection = shiftTop ? -1 : 1;
-            int moveXScale = shiftLeft ? 1 : 0;
-            int moveYScale = shiftTop ? 1 : 0;
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+            cumulativeDelta.X *= cursorXDirection;
+            cumulativeDelta.Y *= cursorYDirection;
 
-            if (this.IsCtrlPressed() || this.IsShiftPressed())
+            // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+            var w = ViewModel.ActualSize.X - extraOffsetX;
+            var h = ViewModel.ActualSize.Y - extraOffsetY;
+
+            // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
+            // So flip the negative sign by multiplying by -1.
+            double diffX;
+            double diffY;
+
+            var aspect = w / h;
+            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
+
+            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
+            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
             {
-                // proportional resizing
-                var diffX = cursorXDirection * p.X;
-                newSize = Resize(diffX, ViewModel.ActualSize.Y / ViewModel.ActualSize.X * diffX);
+                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
+            } else if(cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
+            }
+
+
+            var proportional = (isTextBox && maintainAspectRatio) ? this.IsShiftPressed() : (this.IsShiftPressed() ^ maintainAspectRatio);
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = proportional
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
             }
             else
             {
-                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
-                // So flip the negative sign by multiplying by -1.
-                newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
-
-            }
-            // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
-            newSize.Height = double.IsNaN(newSize.Height)
-               ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
-               : newSize.Height;
-
-            Size Resize(double dx = 0, double dy = 0)
-            {
-                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
-                {
-                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
-                    var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
-                    ViewModel.Width = Math.Max(w + dx, MinWidth);
-                    ViewModel.Height = Math.Max(h + dy, MinHeight);
-
-                    return new Size(ViewModel.Width, ViewModel.Height);
-                }
-                return new Size();
+                diffY = cursorYDirection * delta.Y;
+                diffX = proportional
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
             }
 
-            this.Measure(new Size(newSize.Width, 5000));
-            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
-            // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
-            ViewModel.Position = new Point(
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
+
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
 
-            e.Handled = true;
+            ViewModel.Position = newPos;
+            ViewModel.Width = newSize.Width;
+            if (delta.Y != 0 || this.IsShiftPressed() || !isTextBox)
+                ViewModel.Height = newSize.Height;
         }
 
         // Controls functionality for the Right-click context menu
@@ -797,6 +869,7 @@ namespace Dash
         {
             if (ParentCollection != null)
             {
+                UndoManager.StartBatch();
                 FadeOut.Begin();
 
                 if (addTextBox)
@@ -854,6 +927,7 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            UndoManager.EndBatch();
         }
 
         #endregion
@@ -877,7 +951,7 @@ namespace Dash
                 ToFront();
             }
 
-   //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
+            //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
@@ -938,7 +1012,7 @@ namespace Dash
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
             {
-                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;     
+                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
                 if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) || level.Equals(CollectionViewModel.StandardViewLevel.Region))
                     Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
                 else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
@@ -975,6 +1049,7 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
+            UndoManager.StartBatch();
             var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
@@ -982,6 +1057,7 @@ namespace Dash
 
             if (nestedCollection == null)
             {
+                UndoManager.EndBatch();
                 return false;
             }
 
@@ -994,6 +1070,7 @@ namespace Dash
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
                 nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }
+            UndoManager.EndBatch();
             return true;
         }
 
@@ -1237,48 +1314,63 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
-		
+
         public void hideControls()
         {
             ViewModel.DecorationState = false;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopRight.Visibility = Visibility.Collapsed;
-            //xTitleIcon.Visibility = Visibility.Collapsed;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-            //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
         {
             ViewModel.DecorationState = true;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Visible;
-            //ResizeHandleBottomRight.Visibility = Visibility.Visible;
-            //ResizeHandleTopLeft.Visibility = Visibility.Visible;
-            //ResizeHandleTopRight.Visibility = Visibility.Visible;
-            //xTitleIcon.Visibility = Visibility.Visible;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Visible;
-            //xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.PinToPresentation(ViewModel);
+            MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+            if (ViewModel.LayoutDocument == null)
+            {
+                Debug.WriteLine("uh oh");
+            }
         }
 
-	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
-	    {
+        private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+        {
 
-		    if (ViewModel.Content is IAnnotatable element)
-		    {
-		        element.RegionSelected(element, new Point(0, 0));
-			}
-		    else
-		    {
-			    var ann = new AnnotationManager(ViewModel.Content);
-			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-		    }
-		}
+            if (ViewModel.Content is IAnnotatable element)
+            {
+                element.RegionSelected(element, new Point(0, 0));
+            }
+            else
+            {
+                var ann = new AnnotationManager(ViewModel.Content);
+                ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
+            }
+        }
+
+        private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
+        }
+
+        private void NESW_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNortheastSouthwest, 0);
+        }
+
+        private void NWSE_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthwestSoutheast, 0);
+        }
+
+        private void Y_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthSouth, 0);
+        }
+
+        private void AllResizers_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
     }
 }

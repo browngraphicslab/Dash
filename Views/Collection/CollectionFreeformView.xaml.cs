@@ -73,13 +73,9 @@ namespace Dash
         public override ViewManipulationControls ViewManipulationControls { get; set; }
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-        public override CollectionView.CollectionViewType Type
-        {
-            get
-            {
-                return CollectionView.CollectionViewType.Freeform;
-            }
-        }
+
+        public override CollectionView.CollectionViewType Type => CollectionView.CollectionViewType.Freeform;
+
         public override ItemsControl GetItemsControl()
         {
             return xItemsControl;

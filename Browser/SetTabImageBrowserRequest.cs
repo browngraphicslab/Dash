@@ -9,7 +9,7 @@ namespace Dash
 
         public override Task Handle(BrowserView browser)
         {
-            browser.FireImageUpdated(data);
+            //browser.FireImageUpdated(data);
             return base.Handle(browser);
         }
     }

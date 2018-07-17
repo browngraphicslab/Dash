@@ -33,8 +33,5 @@ namespace Dash
         {
             // TODO why is the dispose not implemented for most field model controllers!
         }
-
-
-        public event InkController.InkUpdatedHandler InkUpdated;
     }
 }

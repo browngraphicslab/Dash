@@ -276,10 +276,10 @@ namespace Dash
 
         private static int CheckedIndex(int raw, ICollection target)
         {
-            var len = target.Count;
+            int len = target.Count;
             if (raw > len) throw new ArgumentOutOfRangeException();
 
-            var safe = raw;
+            int safe = raw;
             if (raw < 0) safe = len + (raw % len);
             return safe;
         }
