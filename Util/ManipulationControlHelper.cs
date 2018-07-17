@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -23,9 +24,11 @@ namespace Dash
         PointerEventHandler release_hdlr;
         Point _rightDragLastPosition, _rightDragStartPosition;
         int _numMovements;
+        private bool _useCache;
 
-        public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown)
+        public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown, bool useCache = false)
         {
+            _useCache = useCache;
             move_hdlr = new PointerEventHandler((sender, e) => PointerMoved(sender, e));
             release_hdlr = new PointerEventHandler(PointerReleased);
             _eventElement = eventElement;
@@ -59,7 +62,8 @@ namespace Dash
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
-            _manipulationDocumentTarget.DocumentView_PointerEntered(); 
+            _manipulationDocumentTarget.DocumentView_PointerEntered();
+            if (_useCache) _eventElement.CacheMode = null;
             //MainPage.Instance.Focus(FocusState.Programmatic);
         }
 
@@ -115,6 +119,8 @@ namespace Dash
             }
             else
                 _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();
+
+            if (_useCache) _eventElement.CacheMode = new BitmapCache();
             if (e != null)
                 e.Handled = true;
         }

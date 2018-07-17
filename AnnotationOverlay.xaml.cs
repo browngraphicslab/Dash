@@ -25,44 +25,6 @@ namespace Dash
     /// </summary>
     public sealed partial class AnnotationOverlay : UserControl
     {
-        public double PostColumn1ActualWidth => xRegionPostManipulationPreview.Column1.ActualWidth;
-        public double PostColumn2ActualWidth => xRegionPostManipulationPreview.Column2.ActualWidth;
-        public double PostColumn3ActualWidth => xRegionPostManipulationPreview.Column3.ActualWidth;
-        public double PostRow1ActualHeight => xRegionPostManipulationPreview.Row1.ActualHeight;
-        public double PostRow2ActualHeight => xRegionPostManipulationPreview.Row2.ActualHeight;
-        public double PostRow3ActualHeight => xRegionPostManipulationPreview.Row3.ActualHeight;
-
-        public GridLength PostColumn1Width
-        {
-            get => xRegionPostManipulationPreview.Column1.Width;
-            set => xRegionPostManipulationPreview.Column1.Width = value;
-        }
-        public GridLength PostColumn2Width
-        {
-            get => xRegionPostManipulationPreview.Column2.Width;
-            set => xRegionPostManipulationPreview.Column2.Width = value;
-        }
-        public GridLength PostColumn3Width
-        {
-            get => xRegionPostManipulationPreview.Column3.Width;
-            set => xRegionPostManipulationPreview.Column3.Width = value;
-        }
-        public GridLength PostRow1Height
-        {
-            get => xRegionPostManipulationPreview.Row1.Height;
-            set => xRegionPostManipulationPreview.Row1.Height = value;
-        }
-        public GridLength PostRow2Height
-        {
-            get => xRegionPostManipulationPreview.Row2.Height;
-            set => xRegionPostManipulationPreview.Row2.Height = value;
-        }
-        public GridLength PostRow3Height
-        {
-            get => xRegionPostManipulationPreview.Row3.Height;
-            set => xRegionPostManipulationPreview.Row3.Height = value;
-        }
-
         public Thickness DuringMargin {
             get => xRegionDuringManipulationPreview.Margin;
             set => xRegionDuringManipulationPreview.Margin = value;
@@ -85,6 +47,7 @@ namespace Dash
             this.InitializeComponent();
             Loaded += OnLoaded;
 
+			//TODO: REMOVE MOUSE INPUT - ONLY DID THIS FOR TESTING PURPOSES
             xInkCanvas.InkPresenter.InputDeviceTypes =
                 CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             xInkCanvas.InkPresenter.StrokesCollected += (sender, args) => UpdateStrokes();
@@ -107,20 +70,20 @@ namespace Dash
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             //UI for preview boxes
-            xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
-            xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
-            xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 4 };
-
-            xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 1.5;
-            xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
+	        xRegionPostManipulationPreview.ToggleSelectionState(RegionSelectionState.Select);
         }
 
-        public Point GetTopLeftPoint()
+        public Point GetTopLeftPercentile()
         {
-            return new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top);
-        }
+            return xRegionPostManipulationPreview.TopLeftPercentile;
+		}
 
-        public void AddRegion(RegionBox box)
+	    public Point GetBottomRightPercentile()
+	    {
+		    return xRegionPostManipulationPreview.BottomRightPercentile;
+	    }
+
+		public void AddRegion(RegionBox box)
         {
             xRegionsGrid.Children.Add(box);
         }

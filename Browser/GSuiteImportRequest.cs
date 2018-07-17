@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -27,8 +28,16 @@ namespace Dash
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>
                 {
+                    var doc = new PdfToDashUtil().GetPDFDoc(file);
+                    if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase cfb)
+                    {
+                        var point = Util.GetCollectionFreeFormPoint(cfb, new Point(
+                            (MainPage.Instance.MainDocView.ActualWidth - MainPage.Instance.xMainTreeView.ActualWidth) / 2,
+                            MainPage.Instance.MainDocView.ActualHeight / 2));
+                        doc.SetField(KeyStore.PositionFieldKey, new PointController(point), true);
+                    }
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()?.ViewModel
-                        .AddDocument(new PdfToDashUtil().GetPDFDoc(file));
+                        .AddDocument(doc);
                 });
         }
 

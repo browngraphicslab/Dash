@@ -51,7 +51,6 @@
                 Foreground="{x:Bind Foreground, Mode=OneWay}" 
                 Text="{x:Bind ViewModel.ResultText, Mode=OneWay}"/>
         </Grid>
-        <StackPanel x:Name="xChildren" Margin="30, 0, 0, 0" Visibility ="Collapsed"
-                    />
+        <StackPanel x:Name="xChildren" Margin="30, 0, 0, 0" Visibility ="Collapsed"/>
     </StackPanel>
 </UserControl>

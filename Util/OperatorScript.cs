@@ -75,21 +75,20 @@ namespace Dash
 
         public static IEnumerable<OperatorControllerOverload> GetOverloadsFor(Op.Name funcName) => _functionMap[funcName];
 
-        public static TextController GetFunctionList()
+        public static ListController<TextController> GetFunctionList()
         {
-            var functionNames = _functionMap.Select(k => "            " + k.Key.ToString()).ToList();
-            functionNames.Sort();
+            var functionNames = new ListController<TextController>(_functionMap.Select(k => new TextController("     " + k.Key.ToString())).ToList().OrderBy(t => t.Data));
             const string alphString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            var alphabet = alphString.GetEnumerator();
+            CharEnumerator alphabet = alphString.GetEnumerator();
             alphabet.MoveNext();
-            functionNames.Insert(0, "      " + alphabet.Current);
+            functionNames.Insert(0, new TextController(alphabet.Current.ToString()));
             for (var index = 1; index < functionNames.Count; index++)
             {
-                var name = functionNames[index];
-                var alphaCurr = alphabet.Current.ToString();
-                var alphaCurrLow = alphaCurr.ToLower();
-                var startInd = 12;
-                var firstLet = name[startInd].ToString();
+                string name = functionNames[index].Data;
+                string alphaCurr = alphabet.Current.ToString();
+                string alphaCurrLow = alphaCurr.ToLower();
+                var startInd = 5;
+                string firstLet = name[startInd].ToString();
                 while (!alphString.ToLower().Contains(firstLet))
                 {
                     startInd++;
@@ -102,12 +101,12 @@ namespace Dash
                     alphaCurr = alphabet.Current.ToString();
                     alphaCurrLow = alphaCurr.ToLower();
                 }
-                functionNames.Insert(index, "      " + alphabet.Current);
+                functionNames.Insert(index, new TextController(alphabet.Current.ToString()));
                 index++;
             }
             alphabet.Dispose();
-            var output = functionNames.Aggregate("", (current, functionName) => current + $"\n {functionName}");
-            return new TextController(output + "\n");
+            functionNames.Indexed = false;
+            return functionNames;
         }
 
         public static string GetStringFormattedTypeListsFor(Op.Name functionName)
