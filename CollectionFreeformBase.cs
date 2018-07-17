@@ -32,6 +32,7 @@ using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
 using Dash.Views;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 {
@@ -155,6 +156,7 @@ namespace Dash
             return snap;
         }
 
+        
         #region Manipulation
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
@@ -183,7 +185,6 @@ namespace Dash
             Debug.Assert(_transformBeingAnimated != null);
             var milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
-            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds / 2.0));
 
             //Clear storyboard
             _storyboard1?.Stop();
@@ -204,26 +205,76 @@ namespace Dash
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
-
-            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
-            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
-
-            zoomOutAnimationX.AutoReverse = true;
-            zoomOutAnimationY.AutoReverse = true;
-
-            zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
-            zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
-
-
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (false && scaleFactor < 0.8)  // bcz: this zoom out animation doesn't work properly..  try making two linked documents that are horizontally separated by a wide distance.  the zoom is very funky
+
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
+
+            // Begin the animation.
+            _storyboard1.Begin();
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+            _storyboard1.Completed += Storyboard1OnCompleted;
+        }
+
+        public void SetTransform(TranslateTransform translate, ScaleTransform scale)
+        {
+            var composite = new TransformGroup();
+            //composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
+            if (scale != null)
             {
-                _storyboard1.Children.Add(zoomOutAnimationX);
-                _storyboard1.Children.Add(zoomOutAnimationY);
+                composite.Children.Add(scale);
             }
+            composite.Children.Add(translate);
+
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = matrix.M11;
+        }
+
+        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale)
+        {
+            //get rendering postion of _itemsPanelCanvas, 2x3 matrix
+            var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+            if (old == null)
+            {
+                return;
+            }
+            //set transformBeingAnimated to matrix of old
+            _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
+
+            Debug.Assert(_transformBeingAnimated != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+
+            //Clear storyboard
+            _storyboard1?.Stop();
+            _storyboard1?.Children.Clear();
+            _storyboard1 = new Storyboard { Duration = duration };
+
+            _storyboard2?.Stop();
+            _storyboard2?.Children.Clear();
+            _storyboard2 = new Storyboard { Duration = duration };
+
+            var startMatrix = _transformBeingAnimated.Matrix;
+            var scaleMatrix = scale.GetMatrix();
+
+            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+            //the higher number, the more it xooms, but doesn't actually change final view 
+            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
+
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
+
+            if (scale != null)
+            {
+                _storyboard1.Children.Add(zoomAnimationX);
+                _storyboard1.Children.Add(zoomAnimationY);
+            }
+            _storyboard1.Children.Add(translateAnimationX);
+            _storyboard1.Children.Add(translateAnimationY);
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
@@ -244,16 +295,20 @@ namespace Dash
         {
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = matrix.M11;
         }
+
         protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
 
             var toReturn = new DoubleAnimation();
             toReturn.EnableDependentAnimation = true;
             toReturn.Duration = duration;
+            //Storyboard.TargetProperty targets a particular property of the element as named by Storyboard.TargetName
             Storyboard.SetTarget(toReturn, matrix);
             Storyboard.SetTargetProperty(toReturn, name);
 
+            //The animation progresses from the value specified by the From property to the value specified by the To property
             toReturn.From = from;
             toReturn.To = to;
 
@@ -286,9 +341,9 @@ namespace Dash
             //Create initial composite transform
             var composite = new TransformGroup();
             if (!abs)
-                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
-            composite.Children.Add(scaleDelta); // add the new scaling
+                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform            
             composite.Children.Add(translateDelta); // add the new translate
+            composite.Children.Add(scaleDelta); // add the new scaling
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }

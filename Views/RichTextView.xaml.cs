@@ -62,6 +62,8 @@ namespace Dash
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+
+                e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
