@@ -402,30 +402,30 @@ namespace Dash
             //var currentPoint = e.GetCurrentPoint(PageItemsControl);
             //var pos = currentPoint.Position;
             //UpdateSelection(pos);
-            EndSelection();
+            //EndSelection();
         }
 
         private void XPdfGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
-            EndSelection();
+            //EndSelection();
         }
 
         private void XPdfGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            EndSelection();
+            //EndSelection();
         }
 
         private void XPdfGrid_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            EndSelection();
+            //EndSelection();
         }
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             NewRegionMoved?.Invoke(sender, e);
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            var pos = currentPoint.Position;
-            UpdateSelection(pos);
+            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            //var pos = currentPoint.Position;
+            //UpdateSelection(pos);
         }
 
         private Point? _selectionStartPoint;
@@ -433,15 +433,15 @@ namespace Dash
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             NewRegionStarted?.Invoke(sender, e);
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (!currentPoint.Properties.IsLeftButtonPressed)
-            {
-                return;
-            }
-            ClearSelection();
+            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            //if (!currentPoint.Properties.IsLeftButtonPressed)
+            //{
+            //    return;
+            //}
+            //ClearSelection();
 
-            var pos = currentPoint.Position;
-            _selectionStartPoint = pos;
+            //var pos = currentPoint.Position;
+            //_selectionStartPoint = pos;
         }
 
         #endregion

@@ -15,6 +15,7 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Windows.UI.Xaml.Controls.Primitives;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 
@@ -43,6 +44,11 @@ namespace Dash
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
+
+        public Popup LayoutPopup => xLayoutPopup;
+
+       
+
 
         public MainPage()
         {
@@ -196,6 +202,7 @@ namespace Dash
             settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
             settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Zoom.ToString(), true);
+            settingsDoc.SetField<TextController>(KeyStore.SettingsWebpageLayoutKey, SettingsView.WebpageLayoutMode.Default.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
             settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
@@ -534,7 +541,7 @@ namespace Dash
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            if (coll != null && !coll.IsMarqueeActive&& !(FocusManager.GetFocusedElement() is TextBox))
+            if (coll != null && !coll.IsMarqueeActive && !(FocusManager.GetFocusedElement() is TextBox))
             {
                 coll.TriggerActionFromSelection(e.VirtualKey, false);
             }
@@ -688,5 +695,55 @@ namespace Dash
         }
 
 
+        private void Popup_OnOpened(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Visible;
+            xComboBox.SelectedItem = null;
+            
+        }
+
+        private void Popup_OnClosed(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+        }
+
+
+
+        public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
+        {
+            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
+            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
+            {
+                xOverlay.Visibility = Visibility.Collapsed;
+                xLayoutPopup.IsOpen = false;
+                xErrorMessageIcon.Visibility = Visibility.Collapsed;
+                xErrorMessageText.Visibility = Visibility.Collapsed;
+
+                if (xComboBox.SelectedIndex == 0)
+                {
+                    tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
+                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
+                }
+                else if (xComboBox.SelectedIndex == 1)
+                {
+                    tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
+                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
+                }
+                else
+                {
+                    xOverlay.Visibility = Visibility.Visible;
+                    xLayoutPopup.IsOpen = true;
+                    xErrorMessageIcon.Visibility = Visibility.Visible;
+                    xErrorMessageText.Visibility = Visibility.Visible;
+                }
+            }
+            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - xBorder.ActualWidth / 2;
+            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - xBorder.ActualHeight / 2 - 160;
+
+            LayoutPopup.IsOpen = true;
+            xConfirmButton.Tapped += XConfirmButton_OnClick;
+
+            return tcs.Task;
+        }
     }
 }

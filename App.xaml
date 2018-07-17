@@ -115,6 +115,7 @@
             <x:String x:Key="FavoriteIcon">&#xf006;</x:String>
             <x:String x:Key="RightCaretIcon">&#xf0da;</x:String>
             <x:String x:Key="LeftCaretIcon">&#xf0d9;</x:String>
+            <x:String x:Key="ErrorIcon">&#xf071;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
