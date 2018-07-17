@@ -47,6 +47,8 @@ namespace Dash
             set => DataContext = value;
         }
 
+        private Point _newpoint;
+
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -146,6 +148,8 @@ namespace Dash
             // set bounds
             MinWidth = 35;
             MinHeight = 35;
+            _newpoint = new Point(0, 0);
+            
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
@@ -218,6 +222,20 @@ namespace Dash
                 {
                     xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                 }
+
+                if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0))
+                {
+                    xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
+                    xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
+                    xTemplateEditorEllipseBorder.Margin =
+                        new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
+                }
+                else
+                {
+                    UpdateEllipses(_newpoint);
+                }
+
+
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
@@ -295,8 +313,8 @@ namespace Dash
             }
 
             // setup OperatorEllipse 
-            OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
-            OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
+            //OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
+            //OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
             xOperatorEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
@@ -319,8 +337,8 @@ namespace Dash
             };
 
             // setup LinkEllipse
-            AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
-            AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
+            //AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
+            //AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
             xAnnotateEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
@@ -336,8 +354,8 @@ namespace Dash
             };
 
             // setup EditorEllipse
-            TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
-            TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Visible;
+            //TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
+            //TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Visible;
             xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
@@ -1024,6 +1042,8 @@ namespace Dash
 
                 return point;
             }
+
+           
         }
 
         // Controls functionality for the Right-click context menu
@@ -1622,6 +1642,7 @@ namespace Dash
         public void UpdateResizers()
         {
             var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
+            _newpoint = newpoint;
             
 
 
@@ -1630,12 +1651,78 @@ namespace Dash
             xLeftColumn.Width = new GridLength(newpoint.X * 5);
             xRightColumn.Width = new GridLength(newpoint.X * 5);
 
-           
-
-
+            UpdateEllipses(newpoint);
+            
 
         }
+
+        private void UpdateEllipses(Point newpoint)
+        {
+            AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25 * (newpoint.Y));
+            AdjustEllipseSize(AnnotateEllipseUnhighlight, 25 * (newpoint.Y));
+            AdjustEllipseSize(OperatorEllipseUnhighlight, 25 * (newpoint.Y));
+
+            AdjustEllipseFontSize(12 * newpoint.Y);
+
+
+            xTitleIcon.FontSize = 16 * (newpoint.Y);
+
+            if (TemplateEditorEllipseBorderUnhighlight.Width < 25)
+            {
+                AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25);
+                AdjustEllipseSize(AnnotateEllipseUnhighlight, 25);
+                AdjustEllipseSize(OperatorEllipseUnhighlight, 25);
+            }
+
+            if (TemplateEditorEllipseBorderUnhighlight.Width > 150)
+            {
+                AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 150);
+                AdjustEllipseSize(AnnotateEllipseUnhighlight, 150);
+                AdjustEllipseSize(OperatorEllipseUnhighlight, 150);
+            }
+
+            if (xTitleIcon.FontSize < 16)
+            {
+                xTitleIcon.FontSize = 16;
+            }
+
+            if (xTitleIcon.FontSize > 100)
+            {
+                xTitleIcon.FontSize = 100;
+            }
+
+            if (xTemplateEllipseText.FontSize < 12)
+            {
+                AdjustEllipseFontSize(12);
+            }
+
+            if (xTemplateEllipseText.FontSize > 60)
+            {
+                AdjustEllipseFontSize(60);
+            }
+
+            xTitleBorder.Margin = new Thickness(-1.2 * xTitleIcon.FontSize - 10, 0, 0, 0);
+            xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
+            xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y), 0, 0);
+            xTemplateEditorEllipseBorder.Margin = new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y)), 0, 0);
+
+        }
+
+        private void AdjustEllipseSize(Ellipse ellipse, double length)
+        {
+            ellipse.Width = length;
+            ellipse.Height = length;
+        }
+
+        private void AdjustEllipseFontSize(double size)
+        {
+            xTemplateEllipseText.FontSize = size;
+            xAnnotateEllipseText.FontSize = size;
+            xOperatorEllipseText.FontSize = size;
+        }
 		  
+
+        
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
 
