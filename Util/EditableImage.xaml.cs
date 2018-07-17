@@ -16,6 +16,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Input;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -44,10 +45,8 @@ namespace Dash
 		private DocumentView _docview;
 	    public VisualAnnotationManager AnnotationManager;
         
-        // interface-required events to communicate with the AnnotationManager
-        public event PointerEventHandler NewRegionStarted;
-	    public event PointerEventHandler NewRegionMoved;
-	    public event PointerEventHandler NewRegionEnded;
+        // interface-required event to communicate with the AnnotationManager about when it's okay to start annotating
+	    public event PointerEventHandler NewRegionStarted;
 
         public Image Image => xImage;
 
@@ -118,7 +117,13 @@ namespace Dash
 			}
 
 			return file;
-		}
+	    }
+
+	    public VisualAnnotationManager GetAnnotationManager()
+	    {
+	        return AnnotationManager;
+	    }
+
 
         public async void Revert()
         {
@@ -393,13 +398,11 @@ namespace Dash
 		private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
 		{
 			if (IsCropping) e.Handled = true;
-            NewRegionMoved?.Invoke(this, e);
 		}
 
 		private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			if (IsCropping) e.Handled = true;
-			NewRegionEnded?.Invoke(this, e);
 		}
 
 		private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -420,8 +423,13 @@ namespace Dash
 
 	    public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
 	    {
+			// calculate the starting point since the overlay only gives us the percentile
+		    var topLeft = xAnnotations.GetTopLeftPercentile();
+		    var x = topLeft.X * xImage.ActualWidth;
+		    var y = topLeft.Y * xImage.ActualHeight;
+
             // the bitmap streaming to crop doesn't work yet
-	        var imNote = new ImageNote(_imgctrl.ImageSource, xAnnotations.GetTopLeftPoint(),
+	        var imNote = new ImageNote(_imgctrl.ImageSource, new Point(x, y),
 	                xAnnotations.GetDuringPreviewActualSize()).Document;
 	        imNote.SetRegionDefinition(_docCtrl, annotationType);
 

@@ -17,50 +17,37 @@
     d:DesignWidth="960">
 
   
-
-    <Grid x:Name="xStack" Height="50" Background="LightGray">
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="8*"/>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <controls:TextToolbar 
+<StackPanel x:Name="xStack" Orientation="Vertical">
+        <Grid x:Name="xInitialGrid" Height="60" Background="LightGray">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+            <AppBarButton x:Name="xMoreButton" Icon="Add" Width ="67" Label="More" Background="{StaticResource AccentGreenLight}" Click="XMoreButton_OnClick" ></AppBarButton>
+                    <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
-            Visibility="Visible" 
-            Background="LightGray"
-            Grid.Column="0">
-            <!--remove Link button from default text toolbar-->
-            <controls:TextToolbar.ButtonModifications >
-                <buttons:DefaultButton Type="Link" IsVisible="False" />
-            </controls:TextToolbar.ButtonModifications>
+            Visibility="Visible"
+            Background="LightGray" Height="50" Grid.Column="1">
+                        <!--remove Link button from default text toolbar-->
+                        <controls:TextToolbar.ButtonModifications >
+                            <buttons:DefaultButton Type="Link" IsVisible="False" />
+                        </controls:TextToolbar.ButtonModifications>
 
-        </controls:TextToolbar>
-        <Grid Grid.Column="1" HorizontalAlignment="Right" Width="200"
-                Background="LightGray">
-            <Slider x:Name="xOpacitySlider" 
-                            Minimum="0" 
-                            Maximum="255"
-                            TickFrequency="1" 
-                            StepFrequency="1" 
-                            SnapsTo="StepValues" 
-                            TickPlacement="None"  
-                            IntermediateValue="128" 
-                            Margin="22, 11, 0, 0" 
-                    
-                            RightTapped="XOpacitySlider_OnRightTapped"  
-                            ValueChanged="XOpacitySlider_OnValueChanged"/>
+                    </controls:TextToolbar>
+                    <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="60"
+            Background="LightGray" Label="Color" Click="XBackgroundColorButton_OnClick">
+                <Button.Flyout>
+                    <Flyout x:Name="xColorPickerFlyout">
+                        <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
+                        <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"></local:DashColorPicker>
+                    </Flyout>
+                </Button.Flyout>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+
+            </AppBarButton>
+
         </Grid>
-        <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
-            Height="60" Margin="0, -5, 0, 0" HorizontalAlignment="Right">
-            <Button.Flyout>
-                <Flyout>
-                    <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
-                </Flyout>
-            </Button.Flyout>
-            <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
-
-        </AppBarButton>
-
-    </Grid>
+    </StackPanel>
+    
 </UserControl>

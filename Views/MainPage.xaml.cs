@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Contacts;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -58,11 +60,11 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
 
-            InitializeComponent();
-
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
+
+            InitializeComponent();
 
 
             Loaded += (s, e) =>
@@ -287,7 +289,7 @@ namespace Dash
                                 finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
-                                    NavigateToDocumentInWorkspace(document, false);
+                                    NavigateToDocumentInWorkspace(document, false, false);
                                     vm.Content.Loaded -= finalHandler;
                                 };
 
@@ -306,7 +308,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false))
+                                    if (!NavigateToDocumentInWorkspace(document, false, false))
                                     {
                                         handler(null, null);
                                     }
@@ -319,7 +321,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     coll.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false))
+                                    if (!NavigateToDocumentInWorkspace(document, false, false))
                                     {
                                         handler(null, null);
                                     }
@@ -342,13 +344,13 @@ namespace Dash
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments = false)
+        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
-                return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
+                return NavigateToDocument(coll, null, coll, document, animated, zoom, compareDataDocuments);
             }
             return false;
         }
@@ -401,42 +403,57 @@ namespace Dash
                 }
         }
 
-        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
+        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null && document != null)
             {
-                return NavigateToDocument(coll, null, coll, document, true, true);
+                return NavigateToDocument(coll, null, coll, document, true, zoom, true);
             }
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments = false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }
+            //loop through each doc in collection
             foreach (var dm in collection.ViewModel.DocumentViewModels)
             {
                 var dmd = dm.DocumentController.GetDataDocument();
                 var dd = document.GetDataDocument();
+                //if this doc is given document
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
-                        new Point(
+                    var center = new Point(MainDocView.ActualWidth / 2, MainDocView.ActualHeight / 2);
+                    //get center point of doc where you want to go
+                    var shift = new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
-                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
+
+                    //get zoom changes
+                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
+                    
+                   //get less zoom, so x and y are zoomed by same amt
+                    var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
+
                     if (animated)
-                        root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    {
+                        //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
+                        root.SetTransformAnimated(
+                            new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
+                            zoom ? new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } : new ScaleTransform { CenterX = shift.X, CenterY = shift.Y },
+                            zoom
+                        );
+                    }
+                    else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
                     return true;
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
+                else if ((dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
                 {
                     if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformBase, document, animated, compareDataDocuments))
                         return true;
@@ -444,6 +461,24 @@ namespace Dash
             }
             return false;
         }
+
+	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
+		{
+			var dvm = MainDocView.DataContext as DocumentViewModel;
+			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+
+			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+				dcPoint.X + dcSize.X / 2,
+				dcPoint.Y + dcSize.Y / 2
+		    ));
+
+			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+		    return new Point(center.X - shift.X, center.Y - shift.Y);
+	    }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
@@ -589,7 +624,7 @@ namespace Dash
 
                 if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
-                    TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
+                    //TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
                     if (e != null)
                         e.Handled = true;
@@ -599,7 +634,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
+            //TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -692,6 +727,8 @@ namespace Dash
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
+
+            xPresentationView.DrawLinesWithNewDocs();
         }
 
 

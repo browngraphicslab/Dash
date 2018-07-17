@@ -24,7 +24,9 @@ namespace Dash
         public abstract FieldControllerBase GetValue(int index);
 
         public int Count => Data.Count;
-        
+
+        public bool Indexed { get; set; }
+
         public override bool CheckType(FieldControllerBase fmc)
         {
             bool isList = base.CheckType(fmc);

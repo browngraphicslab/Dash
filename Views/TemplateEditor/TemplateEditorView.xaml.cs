@@ -284,12 +284,13 @@ namespace Dash
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.ViewModel.DisableDecorations = true;
             docView.hideControls();
+            docView.RemoveResizeHandlers();
 
             // determine if the active layout exists and has information about rows and columns
             var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
             if (activeLayout?.GetField(KeyStore.RowInfoKey) != null ||
                 activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
-            {
+            { 
                 // change the template editor into a grid view
                 xItemsControlList.Visibility = Visibility.Collapsed;
                 xItemsControlCanvas.Visibility = Visibility.Collapsed;

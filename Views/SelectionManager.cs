@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Media.Casting;
 
 namespace Dash
 {
@@ -27,20 +29,22 @@ namespace Dash
     {
         public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
         private static List<DocumentView> _selectedDocs = new List<DocumentView>();
+        private static DocumentController _currentlySelectedRegion;
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
 
+        static SelectionManager()
+        {
+            //SelectionChanged += e => DeselectRegion();
+        }
+
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
-            {
                 Deselect(doc);
-            }
             else
-            {
                 Select(doc);
-            }
         }
 
         public static void Select(DocumentView doc)
@@ -66,13 +70,13 @@ namespace Dash
         }
 
         private static void SelectHelper(DocumentView doc)
-        {
-            _selectedDocs.Add(doc);
+		{
+			_selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
         public static void RefreshSelected(IEnumerable<DocumentView> viewModels)
         {
-            var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel?.DocumentController).ToList();
             DeselectAll();
             foreach (var v in viewModels)
                 if (oldSelected.Contains(v.ViewModel.DocumentController))
@@ -88,7 +92,7 @@ namespace Dash
         }
 
         /*
-         * This method deselects everything that's currently selected, but needs to take in a CollectionFreeformBase (wherever it's being called from) in order to reset its marquees and so on.
+         * This method deselects everything that's currently selected.
          */
         public static void DeselectAll()
         {

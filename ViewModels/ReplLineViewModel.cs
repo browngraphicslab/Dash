@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
@@ -29,7 +30,7 @@ namespace Dash
         }
 
         public string GetLineText() => _lineText;
-
+        
         private string _resultText;
         public string ResultText
         {

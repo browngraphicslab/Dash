@@ -53,7 +53,7 @@ namespace Dash
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
-            PointerPressed += OnPointerPressed;
+            DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
         }
 
         /// <summary>
@@ -82,8 +82,6 @@ namespace Dash
             }
         }
 
-        #region Load And Unload Initialization and Cleanup
-
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
             _lastViewModel?.Loaded(false);
@@ -103,58 +101,56 @@ namespace Dash
             }
 
             ParentDocument.StyleCollection(this);
-            
+
             #region CollectionView context menu 
 
             /// <summary>
-            /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
+            /// Update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
             /// view the collection as different formats).
             /// </summary>
-            void UpdateContextMenu()
+            var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
+
+            // add a horizontal separator in context menu
+            var contextMenu = ParentDocument.MenuFlyout;
+            var separatorOne = new MenuFlyoutSeparator();
+            contextMenu.Items.Add(separatorOne);
+            elementsToBeRemoved.Add(separatorOne);
+
+            // add the item to create a new collection
+            var newCollection = new MenuFlyoutItem()
             {
-                var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
+                Text = "Add new collection",
+                Icon = new FontIcon() {Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets")}
+            };
+            newCollection.Click += NewCollectionFlyout_OnClick;
+            contextMenu.Items.Add(newCollection);
+            elementsToBeRemoved.Add(newCollection);
 
-                // add a horizontal separator in context menu
-                var contextMenu = ParentDocument.MenuFlyout;
-                var separatorOne = new MenuFlyoutSeparator();
-                contextMenu.Items.Add(separatorOne);
-                elementsToBeRemoved.Add(separatorOne);
+            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
 
-                // add the item to create a new collection
-                var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
-                newCollection.Click += (sender, e) =>
+            void EnterTagMode(object sender, RoutedEventArgs e)
+            {
+                tagMode.Click -= EnterTagMode;
+                tagMode.Click += ExitTagMode;
+
+                tagMode.Text = "Exit Tag Mode";
+
+                (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
+            }
+
+            void ExitTagMode(object sender, RoutedEventArgs e)
+            {
+                tagMode.Click -= ExitTagMode;
+                tagMode.Click += EnterTagMode;
+
+                tagMode.Text = "Tag Notes";
+                var view = CurrentView as CollectionFreeformBase;
+                if (view != null)
                 {
-                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
-                };
-                contextMenu.Items.Add(newCollection);
-                elementsToBeRemoved.Add(newCollection);
-
-                var tagMode = new MenuFlyoutItem() { Text = "Tag Notes" };
-
-                void EnterTagMode(object sender, RoutedEventArgs e)
-                {
-                    tagMode.Click -= EnterTagMode;
-                    tagMode.Click += ExitTagMode;
-
-                    tagMode.Text = "Exit Tag Mode";
-                    
-                    (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
+                    view.HideTagKeyBox();
+                    view.TagMode = false;
                 }
-
-                void ExitTagMode(object sender, RoutedEventArgs e)
-                {
-                    tagMode.Click -= ExitTagMode;
-                    tagMode.Click += EnterTagMode;
-
-                    tagMode.Text = "Tag Notes";
-                    var view = CurrentView as CollectionFreeformBase;
-                    if (view != null)
-                    {
-                        view.HideTagKeyBox();
-                        view.TagMode = false;
-                    }
-                }
+            }
 
                 var icon1 = new FontAwesome
                 {
@@ -166,98 +162,107 @@ namespace Dash
                 contextMenu.Items.Add(tagMode);
                 elementsToBeRemoved.Add(tagMode);
 
-                // add another horizontal separator
-                var separatorTwo = new MenuFlyoutSeparator();
-                contextMenu.Items.Add(separatorTwo);
-                elementsToBeRemoved.Add(separatorTwo);
+            // add another horizontal separator
+            var separatorTwo = new MenuFlyoutSeparator();
 
-                // add the item to create a repl
-                var newRepl = new MenuFlyoutItem() { Text = "Create Scripting REPL" };
-                newRepl.Click += (sender, e) =>
+            contextMenu.Items.Add(separatorTwo);
+            elementsToBeRemoved.Add(separatorTwo);
+
+            // add the item to create a repl
+            var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
+
+            var icon5 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Code
+            };
+            newRepl.Icon = icon5;
+            newRepl.Click += ReplFlyout_OnClick;
+            contextMenu.Items.Add(newRepl);
+            elementsToBeRemoved.Add(newRepl);
+            
+            // add the item to create a scripting view
+            var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
+            var icon6 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            newScriptEdit.Icon = icon6;
+            newScriptEdit.Click += ScriptEdit_OnClick;
+            contextMenu.Items.Add(newScriptEdit);
+            elementsToBeRemoved.Add(newScriptEdit);
+
+            // add another horizontal separator
+            var separatorThree = new MenuFlyoutSeparator();
+            contextMenu.Items.Add(separatorThree);
+            elementsToBeRemoved.Add(separatorThree);
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
+            var icon2 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Eye
+            };
+            viewCollectionAs.Icon = icon2;
+            contextMenu.Items.Add(viewCollectionAs);
+            elementsToBeRemoved.Add(viewCollectionAs);
+
+            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            {
+                var vtype = new MenuFlyoutItem() {Text = n.ToString()};
+
+                void VType_OnClick(object sender, RoutedEventArgs e)
                 {
-                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishReplBox(where.X, where.Y, 300, 400).Document;
-                    Actions.DisplayDocument(ViewModel, note, where);
-                };
-                contextMenu.Items.Add(newRepl);
-                elementsToBeRemoved.Add(newRepl);
-
-
-                // add the item to create a scripting view
-                var newScriptEdit = new MenuFlyoutItem() { Text = "Create Script Editor" };
-                newScriptEdit.Click += (sender, e) =>
-                {
-                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishScriptBox(where.X, where.Y, 300, 400).Document;
-                    Actions.DisplayDocument(ViewModel, note, where);
-                };
-                contextMenu.Items.Add(newScriptEdit);
-                elementsToBeRemoved.Add(newScriptEdit);
-
-                // add another horizontal separator
-                var separatorThree = new MenuFlyoutSeparator();
-                contextMenu.Items.Add(separatorThree);
-                elementsToBeRemoved.Add(separatorThree);
-
-                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
-                var icon2 = new FontAwesome
-                {
-                    Icon = FontAwesomeIcon.Eye
-                };
-                viewCollectionAs.Icon = icon2;
-                
-                contextMenu.Items.Add(viewCollectionAs);
-                elementsToBeRemoved.Add(viewCollectionAs);
-
-                foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
-                {
-                    var vtype = new MenuFlyoutItem() { Text = n.ToString() };
-                    vtype.Click += (sender, e) =>
-                    {
-                        UndoManager.StartBatch();
-                        SetView(n);
-                        UndoManager.EndBatch();
-                    };
-                    viewCollectionAs.Items.Add(vtype);
+                    UndoManager.StartBatch();
+                    SetView(n);
+                    UndoManager.EndBatch();
                 }
 
-                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
-                viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-
-                var icon3 = new FontAwesome
-                {
-                    Icon = FontAwesomeIcon.Search
-                };
-                viewCollectionPreview.Icon = icon3;
-
-                contextMenu.Items.Add(viewCollectionPreview);
-                elementsToBeRemoved.Add(viewCollectionPreview);
-
-                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                var fitToParent = new MenuFlyoutItem() { Text = "Toggle Fit To Parent" };
-                fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
-
-                var icon4 = new FontAwesome
-                {
-                    Icon = FontAwesomeIcon.WindowMaximize
-                };
-                fitToParent.Icon = icon4;
-                contextMenu.Items.Add(fitToParent);
-                elementsToBeRemoved.Add(fitToParent);
-
-                Unloaded += (sender, e) =>
-                {
-                    foreach (var flyoutItem in elementsToBeRemoved)
-                    {
-                        contextMenu.Items.Remove(flyoutItem);
-                    }
-                };
-
+                vtype.Click += VType_OnClick;
+                vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
+                viewCollectionAs.Items.Add(vtype);
             }
-            #endregion
-            UpdateContextMenu();
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
+            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+            var icon3 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Search
+            };
+            viewCollectionPreview.Icon = icon3;
+            contextMenu.Items.Add(viewCollectionPreview);
+            elementsToBeRemoved.Add(viewCollectionPreview);
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
+            fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+            var icon4 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            fitToParent.Icon = icon4;
+            contextMenu.Items.Add(fitToParent);
+            elementsToBeRemoved.Add(fitToParent);
+
+            //ParentDocument.Unloaded += delegate
+            //{
+            //    viewCollectionPreview.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
+            //    fitToParent.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
+            //};
+
+            Unloaded += (sender, e) =>
+            {
+                foreach (var flyoutItem in elementsToBeRemoved)
+                {
+                    contextMenu.Items.Remove(flyoutItem);
+                }
+
+                tagMode.Click -= ExitTagMode;
+                tagMode.Click -= EnterTagMode;
+                newCollection.Click -= NewCollectionFlyout_OnClick;
+                newRepl.Click -= ReplFlyout_OnClick;
+                newScriptEdit.Click -= ScriptEdit_OnClick;
+            };
 
             // set the top-level viewtype to be freeform by default
             if (ParentDocument != MainPage.Instance.MainDocView || _viewType == CollectionViewType.Freeform ||
@@ -266,12 +271,32 @@ namespace Dash
                 SetView(_viewType);
             }
             else //If we are trying to view the main collection not in a freeform-ish view, force a freeform view
-            //TODO This might not be what we want
+                //TODO This might not be what we want
             {
                 SetView(CollectionViewType.Freeform);
             }
         }
-        
+
+        private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            var note = new DishScriptBox(@where.X, @where.Y, 300, 400).Document;
+            Actions.DisplayDocument(ViewModel, note, @where);
+        }
+
+        private void ReplFlyout_OnClick(object sender, RoutedEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            var note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
+            Actions.DisplayDocument(ViewModel, note, @where);
+        }
+
+        private void NewCollectionFlyout_OnClick(object sender, RoutedEventArgs e)
+        {
+            var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
+        }
+
         #endregion
         
         #region ClickHandlers for collection context menu items

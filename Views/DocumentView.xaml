@@ -17,13 +17,12 @@
     Drop="This_Drop"
     UseLayoutRounding="False">
     <UserControl.Resources>
-        <Storyboard x:Name="FadeOut" x:FieldModifier="public" Completed="FadeOut_Completed" SpeedRatio="0.7">
+        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
         </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-
 
     <Grid x:Name="xMasterStack" >
         <Grid.ColumnDefinitions>
@@ -65,11 +64,15 @@
                             <MenuFlyoutItem Text="Fields" Icon="ShowResults"  Click="MenuFlyoutItemFields_Click"/>
                             <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click"/>
                             <MenuFlyoutSeparator/>
+
                             <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin"  Click="MenuFlyoutItemPin_Click"/>
+                            <MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click"/>
                             <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click"/>
                             <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click"/>
                             <MenuFlyoutItem Text="Launch App" Icon="Go"  Click="MenuFlyoutLaunch_Click"/>
                             <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click"/>
+
+                  
                         </MenuFlyout>
                     </Grid.ContextFlyout>
 
@@ -145,6 +148,7 @@
                                 Visibility="Collapsed"/>
                         </Canvas>
                     </Grid>
+
                     </Grid>
             </Border>
         </Border>
@@ -153,10 +157,8 @@
 
 
 
-        <!--<Button x:Name="xFooter" Foreground="Black" 
-    AllowDrop="True" Background="White" Opacity="0.75" Content="- footer -"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Visibility="Collapsed" Drop="FooterDrop"/>
-            <Button x:Name="xHeader" Foreground="Black"
-    AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>-->
+ 
+
 
 
 
@@ -217,5 +219,6 @@
 
                 </Grid>
           
+
 
 </UserControl>
