@@ -67,11 +67,13 @@ namespace Dash
                     break;
                 case BaseListController list:
                     var i = 0;
-                    foreach (var element in list.Data)
+                    bool indexed = list.Indexed;
+                    foreach (FieldControllerBase element in list.Data)
                     {
+                        string index = indexed ? $"[{i}] : " : "";
                         xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                         {
-                            ResultText = $"{IndentOffset(element)}[{i}] : " + element,
+                            ResultText = $"{IndentOffset(element)}{index}" + element,
                             Value = element,
                             DisplayableOnly = ViewModel.DisplayableOnly,
                             Indent = ViewModel.Indent
@@ -139,7 +141,7 @@ namespace Dash
             xChildren.Visibility = _arrowState == ArrowState.Open ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController) && !(value is ReferenceController);
+        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController) && !(value is ReferenceController);
 
         private void XSnapshotArrowBlock_OnRightTapped(object sender, RightTappedRoutedEventArgs e) => CollapseAllChildren();
 
@@ -164,24 +166,21 @@ namespace Dash
 
             _oldViewModel = ViewModel;
 
-            if (ViewModel == null)
-            {
-                return;
-            }
+            if (ViewModel == null) return;
 
             ViewModel.Updated += ViewModelOnUpdated;
-
             Update();
         }
 
         private void Update()
         {
-            var vm = ViewModel;
-            xArrowBlock.Visibility = IsBaseCase(vm.Value) ? Visibility.Collapsed : Visibility.Visible;
+            ReplLineViewModel vm = ViewModel;
+            bool baseCase = IsBaseCase(vm.Value);
+            xArrowBlock.Visibility = baseCase ? Visibility.Collapsed : Visibility.Visible;
             if (vm.Value is BaseListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed;
             xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
 
-            var m = xChildren.Margin;
+            Thickness m = xChildren.Margin;
             m.Left = vm.Indent * 10;
             xChildren.Margin = m;
 
@@ -189,10 +188,7 @@ namespace Dash
             ChildrenPopulated = false;
         }
 
-        private void ViewModelOnUpdated(object sender, EventArgs eventArgs)
-        {
-            Update();
-        }
+        private void ViewModelOnUpdated(object sender, EventArgs eventArgs) => Update();
 
         // If we want to add editing capabilities, implement here. Currently, triggered by right clicking on all nodes
         private void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e) => throw new NotImplementedException();

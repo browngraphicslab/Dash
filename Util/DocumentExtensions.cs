@@ -342,29 +342,29 @@ namespace Dash
                 return;
             }
 
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
+            //var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 
-            if (neighboring == null)
-            {
-                neighboring = new ListController<TextController>();
-                dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
-            }
+            //if (neighboring == null)
+            //{
+            //    neighboring = new ListController<TextController>();
+            //    dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
+            //}
 
-            var context = MainPage.Instance.WebContext.GetAsContext();
+            //var context = MainPage.Instance.WebContext.GetAsContext();
 
-            if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
-            {
-                var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
-                if (context.Equals(last))
-                {
-                    neighboring.Remove(neighboring.TypedData.Last());
-                }
-                neighboring.Add(new TextController(context.Serialize()));
-            }
-            else
-            {
-                neighboring.Add(new TextController(context.Serialize()));
-            }
+            //if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
+            //{
+            //    var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+            //    if (context.Equals(last))
+            //    {
+            //        neighboring.Remove(neighboring.TypedData.Last());
+            //    }
+            //    neighboring.Add(new TextController(context.Serialize()));
+            //}
+            //else
+            //{
+            //    neighboring.Add(new TextController(context.Serialize()));
+            //}
         }
 
 

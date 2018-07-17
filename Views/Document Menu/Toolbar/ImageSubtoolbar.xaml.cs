@@ -39,9 +39,10 @@ namespace Dash
 	        xToggleAnnotations.IsChecked = false;
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
+			
             xImageCommandbar.Loaded += delegate
             {
-                var sp = xImageCommandbar.GetFirstDescendantOfType<StackPanel>();
+                var sp = xImageCommandbar;
                 sp.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
@@ -50,6 +51,7 @@ namespace Dash
                 });
                 Visibility = Visibility.Collapsed;
             };
+			
         }
 
         /// <summary>
@@ -62,17 +64,8 @@ namespace Dash
             xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
-        /// <summary>
-        /// Prevents command bar from hiding labels on click by setting isOpen to true every time it begins to close.
-        /// </summary>
-        private void CommandBar_Closing(object sender, object e)
-        {
-            xImageCommandbar.IsOpen = true;
-        }
-
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             _currentImage.StartCrop();
         }
@@ -82,7 +75,6 @@ namespace Dash
         /// </summary>
         private async void Replace_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await ReplaceImage();
         }
@@ -92,8 +84,6 @@ namespace Dash
         /// </summary>
         public void CommandBarOpen(bool status)
         {
-            xImageCommandbar.IsOpen = status;
-            xImageCommandbar.IsEnabled = true;
             xImageCommandbar.Visibility = Visibility.Visible;
             //updates margin to visually account for the change in size
             xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
@@ -101,7 +91,6 @@ namespace Dash
 
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             _currentImage.Revert();
         }
 
@@ -145,36 +134,30 @@ namespace Dash
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.Rotate();
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorVertical();
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
         }
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-		    xImageCommandbar.IsOpen = true;
 			_currentImage?.AnnotationManager.ShowRegions();
 		    xToggleAnnotations.Label = "Hide";
-	
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-		    xImageCommandbar.IsOpen = true;
 			_currentImage?.AnnotationManager.HideRegions();
 		    xToggleAnnotations.Label = "Show";
 	    }

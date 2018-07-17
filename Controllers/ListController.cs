@@ -116,6 +116,7 @@ namespace Dash
         private void ConstructorHelper(bool readOnly)
         {
             IsReadOnly = readOnly;
+            Indexed = true;
             SaveOnServer();
             Init();
         }
@@ -235,14 +236,12 @@ namespace Dash
         public override string ToString()
         {
             const int cutoff = 5;
-            if (Count == 0)
-            {
-                return "[<empty>]";
-            }
+            if (Count == 0) return "[<empty>]";
 
-            var suffix = Count > cutoff ? $", ... +{Count - cutoff}" : "";
+            string suffix = Count > cutoff ? $", ... +{Count - cutoff}" : "";
 
-            return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
+            const string unindexed = "All available function calls...";
+            return Indexed ? $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]" : $"[{unindexed}]";
         }
 
         public override object GetValue(Context context) => TypedData.ToList();
@@ -277,10 +276,10 @@ namespace Dash
 
         private static int CheckedIndex(int raw, ICollection target)
         {
-            var len = target.Count;
-            if (raw >= len) throw new ArgumentOutOfRangeException();
+            int len = target.Count;
+            if (raw > len) throw new ArgumentOutOfRangeException();
 
-            var safe = raw;
+            int safe = raw;
             if (raw < 0) safe = len + (raw % len);
             return safe;
         }

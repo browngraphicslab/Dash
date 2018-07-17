@@ -10,6 +10,24 @@
     d:DesignWidth="800">
 
     <Grid>
+        <StackPanel Orientation="Horizontal" Background="LightGray" x:Name="xImageCommandbar" Height="60" Spacing="10" Padding="10,0,10,0">
+            <ComboBox x:Name="xScaleOptionsDropdown" SelectedIndex="0" VerticalAlignment="Center" >
+                <ComboBoxItem Content="Scale to Size"/>
+                <ComboBoxItem Content="Stretch"/>
+                <ComboBoxItem Content="Clipped"/>
+                <ComboBoxItem Content="SmartFit"/>
+            </ComboBox>
+
+            <AppBarToggleButton x:Name="xToggleAnnotations" Icon="ClearSelection" Label="Show" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked"/>
+            <AppBarButton x:Name="xCrop" Icon="Crop" Label="Crop" Click="Crop_Click"/>
+            <AppBarButton x:Name="xReplace" Icon="Upload" Label="Replace" Click="Replace_Click"/>
+            <AppBarButton x:Name="xRotate" Icon="Sync" Label="Rotate" Click="Rotate_Click"/>
+            <AppBarButton x:Name="xHorizontalMirror" Icon="Switch"  Label="Horizontal" Click="HorizontalMirror_Click"/>
+            <AppBarButton x:Name="xVerticalMirror" Icon="Sort" Label="Vertical" Click="VerticalMirror_Click"/>
+            <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
+        </StackPanel>
+        
+<!--
         <CommandBar Background="LightGray" x:Name="xImageCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
                 <ComboBox x:Name="xScaleOptionsDropdown" SelectedIndex="0">
@@ -27,5 +45,6 @@
             <AppBarButton x:Name="xVerticalMirror" Icon="Sort" Label="Vertical" Click="VerticalMirror_Click"/>
             <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
         </CommandBar>
+        -->
     </Grid>
 </UserControl>

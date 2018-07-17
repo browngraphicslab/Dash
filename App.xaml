@@ -137,8 +137,7 @@
             <x:String x:Key="GridIcon">&#xf00a;</x:String>
             <x:String x:Key="GridOverlayIcon">&#xf009;</x:String>
             <x:String x:Key="ArrowIcon">&#xf107;</x:String>
-
-
+            <x:String x:Key="ErrorIcon">&#xf071;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">

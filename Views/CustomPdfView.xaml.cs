@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -86,7 +87,7 @@ namespace Dash
 
         private List<SelectableElement> _selectableElements;
 
-        private VisualAnnotationManager _annotationManager;
+        public VisualAnnotationManager AnnotationManager { get; }
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -103,12 +104,12 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _annotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
+            AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
         }
 
         public DocumentController GetRegionDocument()
         {
-            return _annotationManager?.GetRegionDocument();
+            return AnnotationManager?.GetRegionDocument();
         }
 
         private async Task OnPdfUriChanged()
@@ -171,17 +172,27 @@ namespace Dash
             }
         }
 
+        private CancellationTokenSource _renderToken;
+        private int _currentPageCount = -1;
         private async Task RenderPdf(double? targetWidth)
         {
+            _renderToken?.Cancel();
+            _renderToken = new CancellationTokenSource();
+            CancellationToken token = _renderToken.Token;
             //targetWidth = 1400;//This makes the PDF readable even if you shrink it down and then zoom in on it
             var options = new WPdf.PdfPageRenderOptions();
-            bool add = _wPdfDocument.PageCount != Pages.Count;
+            bool add = _wPdfDocument.PageCount != _currentPageCount;
             if (add)
             {
+                _currentPageCount = (int)_wPdfDocument.PageCount;
                 Pages.Clear();
             }
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
                 var stream = new InMemoryRandomAccessStream();
                 var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
                 options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
@@ -189,13 +200,18 @@ namespace Dash
                 await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
                 var source = new BitmapImage();
                 await source.SetSourceAsync(stream);
-                if (add)
+                if (token.IsCancellationRequested)
                 {
-                    Pages.Add(source);
+                    return;
+                }
+
+                if ((int)i < Pages.Count)
+                {
+                    Pages[(int)i] = source;
                 }
                 else
                 {
-                    Pages[(int)i] = source;
+                    Pages.Add(source);
                 }
             }
         }
@@ -215,7 +231,7 @@ namespace Dash
 
         public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
         {
-            _annotationManager?.RegionSelected(region, pt, chosenDoc);
+            AnnotationManager?.RegionSelected(region, pt, chosenDoc);
         }
 
         public FrameworkElement Self()
@@ -233,10 +249,16 @@ namespace Dash
             return PageItemsControl;
         }
 
-        public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
+	    public VisualAnnotationManager GetAnnotationManager()
+	    {
+		    return AnnotationManager;
+	    }
+
+	    public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
         {
             var dc = new RichTextNote("PDF " + ScrollViewer.VerticalOffset).Document;
-            dc.SetRegionDefinition(LayoutDocument, annotationType);
+	        dc.GetDataDocument().SetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, ScrollViewer.VerticalOffset, true);
+			dc.SetRegionDefinition(LayoutDocument, annotationType);
 
             return dc;
         }
@@ -315,6 +337,7 @@ namespace Dash
             _selectedRectangles[index] = rect;
         }
 
+
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
@@ -384,12 +407,14 @@ namespace Dash
             _selectionStartPoint = null;
             _selectedRectangles.Clear();
             TestSelectionCanvas.Children.Clear();
+			AnnotationManager.SetSelectionRegion(null);
         }
 
         private void EndSelection()
-        {
-            _selectionStartPoint = null;
-            _annotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
+		{
+			if (_currentSelectionStart == -1) return;//Not currently selecting anything
+			_selectionStartPoint = null;
+            AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
         #endregion
@@ -398,57 +423,81 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionEnded?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //var pos = currentPoint.Position;
-            //UpdateSelection(pos);
-            //EndSelection();
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var currentPoint = e.GetCurrentPoint(PageItemsControl);
+                    var pos = currentPoint.Position;
+                    UpdateSelection(pos);
+                    EndSelection();
+                    break;
+            }
         }
 
         private void XPdfGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionMoved?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //var pos = currentPoint.Position;
-            //UpdateSelection(pos);
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var pos = currentPoint.Position;
+                    UpdateSelection(pos);
+                    break;
+	            case Dash.AnnotationManager.AnnotationType.None:
+		            break;
+	            case Dash.AnnotationManager.AnnotationType.RegionBox:
+		            break;
+	            case Dash.AnnotationManager.AnnotationType.Ink:
+		            break;
+	            default:
+		            throw new ArgumentOutOfRangeException();
+            }
         }
 
         private Point? _selectionStartPoint;
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionStarted?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //if (!currentPoint.Properties.IsLeftButtonPressed)
-            //{
-            //    return;
-            //}
-            //ClearSelection();
-
-            //var pos = currentPoint.Position;
-            //_selectionStartPoint = pos;
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+            ClearSelection();
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.RegionBox:
+                    NewRegionStarted?.Invoke(sender, e);
+                    break;
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var pos = currentPoint.Position;
+                    _selectionStartPoint = pos;
+                    break;
+            }
         }
 
         #endregion
 
         public event PointerEventHandler NewRegionStarted;
-        public event PointerEventHandler NewRegionMoved;
-        public event PointerEventHandler NewRegionEnded;
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private double _scrollRatio;
@@ -490,12 +539,20 @@ namespace Dash
                     Clipboard.SetContent(dataPackage);
                     e.Handled = true;
                 }
-                else if(e.Key == VirtualKey.A)
+                else if (e.Key == VirtualKey.A)
                 {
                     SelectElements(0, _selectableElements.Count - 1);
                     e.Handled = true;
                 }
             }
         }
+
+	    public void ScrollToRegion(DocumentController target)
+	    {
+		    var offset = target.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, null);
+		    if (offset == null) return;
+
+		    ScrollViewer.ChangeView(null, offset.Data, null);
+	    }
     }
 }

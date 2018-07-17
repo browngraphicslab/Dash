@@ -77,11 +77,13 @@ namespace Dash
             var replItems = new ObservableCollection<ReplLineViewModel>();
             for (var i = 0; i < _lineTextList.Count; i++)
             {
+                FieldControllerBase result = _valueList[i];
+                string indentOffset = ReplLineNode.IsBaseCase(result) ? "   " : "";
                 var newReplLine = new ReplLineViewModel
                 {
                     LineText = _lineTextList[i].Data,
-                    ResultText = " " + _valueList[i],
-                    Value = _valueList[i],
+                    ResultText = indentOffset + result,
+                    Value = result,
                     DisplayableOnly = true,
                     Indent = (int)_indents[i].Data
                 };
@@ -426,13 +428,10 @@ namespace Dash
                     result = new TextController("There was an error: " + ex.StackTrace);
                 }
 
-                if (result == null)
-                    result =
-                        new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+                if (result == null) result = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
-
-                data.Indent = _currentTab;
-                data.ResultText = data.GetValueFromResult(result);
+                string indentOffset = ReplLineNode.IsBaseCase(result) ? "   " : "";
+                data.ResultText = indentOffset + result;
                 data.Value = result;
                 data.DisplayableOnly = true;
                 data.Update();
@@ -510,8 +509,9 @@ namespace Dash
                 result =
                     new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
+            string indentOffset = ReplLineNode.IsBaseCase(result) ? "   " : "";
+            data.ResultText = indentOffset + result;
             data.Indent = _currentTab;
-            data.ResultText = data.GetValueFromResult(result);
             data.Value = result;
             data.DisplayableOnly = true;
             data.Update();
@@ -578,23 +578,26 @@ namespace Dash
                     retVal = new TextController("There was an error: " + ex.Message);
                 }
                 if (retVal == null) retVal = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
+
+                string indentOffset = ReplLineNode.IsBaseCase(retVal) ? "   " : "";
                 var head = new ReplLineViewModel
                 {
                     LineText = command,
+                    ResultText = indentOffset + retVal,
                     Value = retVal,
                     DisplayableOnly = true,
                     Indent = _currentTab
                 };
-                head.ResultText = head.GetValueFromResult(retVal);
+                //head.ResultText = head.GetValueFromResult(retVal);
                 ViewModel.Items.Add(head);
+
                 _currentHistoryIndex = ViewModel.Items.Count;
                 _lineTextList.Add(new TextController(command));
                 _valueList.Add(retVal);
                 _indents.Add(new NumberController(_currentTab));
+
                 ScrollToBottom();
-
                 e.Handled = true;
-
             }
 
             string storedCommand = "";

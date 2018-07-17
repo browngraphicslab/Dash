@@ -49,7 +49,7 @@ namespace Dash
 
             xCollectionCommandbar.Loaded += delegate
             {
-                var sp = xCollectionCommandbar.GetFirstDescendantOfType<StackPanel>();
+                var sp = xCollectionCommandbar;
                 sp?.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
@@ -77,31 +77,28 @@ namespace Dash
         /// </summary>
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
         {
-            //TODO: Dismantle current selection (which must be a collection if the collection bar is showing)
-            Debug.WriteLine("COLLECTION DISMANTLED/BROKEN!");
-            xCollectionCommandbar.IsOpen = true;
-            xCollectionCommandbar.IsEnabled = true;
-
-            //get list of doc views in the collection
-            var mainPageCollectionView =
-                           MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-            ObservableCollection<DocumentViewModel> vms = _collection.ViewModel.DocumentViewModels;
-
-            //add them each to the main canvas
-            foreach (DocumentViewModel vm in vms)
+            using (UndoManager.GetBatchHandle())
             {
-                mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
-            }
+                //get list of doc views in the collection
+                var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                var vms = _collection.ViewModel.DocumentViewModels.ToList();
 
-            //delete the sellected collection
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
-            {
-                d.DeleteDocument();
+                //add them each to the main canvas
+                foreach (DocumentViewModel vm in vms)
+                {
+                    mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
+                }
+
+                //delete the sellected collection
+                foreach (DocumentView d in SelectionManager.SelectedDocs)
+                {
+                    d.DeleteDocument();
+                }
             }
         }
 
         /// <summary>
-        /// Binds the drop down selection of view otions with the view of the collection.
+        /// Binds the drop down selection of view options with the view of the collection.
         /// </summary>
         private void ViewModesDropdown_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -119,8 +116,6 @@ namespace Dash
         /// </summary>
         public void CommandBarOpen(bool status)
         {
-            xCollectionCommandbar.IsOpen = status;
-            xCollectionCommandbar.IsEnabled = true;
             xCollectionCommandbar.Visibility = Visibility.Visible;
             xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }

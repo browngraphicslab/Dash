@@ -43,7 +43,7 @@ namespace Dash
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
 
         private Dictionary<ITextSelection, DocumentController> _selectionDocControllers = new Dictionary<ITextSelection, DocumentController>();
-        private bool _isLinkMenuOpen = false;
+        private bool _everFocused = false;
         private AnnotationManager _annotationManager;
         private string _target;
 
@@ -59,9 +59,11 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) =>
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
-                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+
+                e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
@@ -87,7 +89,14 @@ namespace Dash
             };
 
             //PointerWheelChanged += (s, e) => e.Handled = true;
-            xRichEditBox.GotFocus += (s, e) => FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+            xRichEditBox.GotFocus += (s, e) =>
+            {
+                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+                _everFocused = true;
+                getDocView().CacheMode = null;
+            };
+
+            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -120,7 +129,7 @@ namespace Dash
             {
                 // we always need to make sure that our own Height is NaN
                 // after any kind of resize happens so that we can grow as needed.
-                Height = double.NaN;
+                // Height = double.NaN;
                 // if we're inside of a RelativePanel that was resized, we need to 
                 // reset it to have NaN height so that it can grow as we type.
                 if (Parent is RelativePanel relative)
@@ -204,7 +213,7 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText))  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
         }
@@ -236,7 +245,8 @@ namespace Dash
                     if (!_originalCharFormat.ContainsKey(s))
                         _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-                    this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                    // Not really sure what this is supposed to be for, but I'll comment it out for now
+                    //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
                 //this.xRichEditBox.Document.Selection.StartPosition = s1;
                 //this.xRichEditBox.Document.Selection.EndPosition = s2;
@@ -277,7 +287,7 @@ namespace Dash
                     {
                         if (this.IsCtrlPressed())
                             nearestOnCollection.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
                     }
                     else
                     {
@@ -503,6 +513,10 @@ namespace Dash
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+
+            var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
+            documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
         }
 
         #endregion
@@ -666,7 +680,7 @@ namespace Dash
                 i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                 var s = xRichEditBox.Document.Selection.StartPosition;
                 var selectedText = xRichEditBox.Document.Selection;
-                if (i > 0)
+                if (i > 0 && !_originalCharFormat.ContainsKey(s))
                 {
                     _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
                 }
@@ -674,6 +688,7 @@ namespace Dash
                 {
                     selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
                 }
+                xRichEditBox.Document.Selection.Collapse(false);
             }
             xRichEditBox.Document.Selection.StartPosition = 0;
             xRichEditBox.Document.Selection.EndPosition = 0;
