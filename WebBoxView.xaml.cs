@@ -27,8 +27,10 @@ namespace Dash
         {
             this.InitializeComponent();
             //TODO Try out SeparateThread and SeparateProcess
-            xWebView = new WebView(WebViewExecutionMode.SameThread);
+            xWebView = new WebView(WebViewExecutionMode.SeparateThread);
             xGrid.Children.Add(xWebView);
+            xWebView.Visibility = Visibility.Collapsed;
+            xWebView.LoadCompleted += delegate { xWebView.Visibility = Visibility.Visible; };
         }
 
         public WebView GetView()

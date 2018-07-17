@@ -105,6 +105,8 @@ namespace Dash
 
         private ImageSource _docPreview = null;
         private bool _showResize;
+        public event EventHandler ResizeManipulationStarted;
+        public event EventHandler ResizeManipulationCompleted;
 
         private ImageSource DocPreview
         {
@@ -162,7 +164,7 @@ namespace Dash
                 Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
-            Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
+            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
             PointerPressed += (sender, e) =>
             {
@@ -182,6 +184,7 @@ namespace Dash
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                ResizeManipulationStarted?.Invoke(sender, null);
                 UndoManager.StartBatch();
 
                 MainPage.Instance.Focus(FocusState.Programmatic);
@@ -207,6 +210,8 @@ namespace Dash
                 e.Handled = true;
 
                 UndoManager.EndBatch();
+
+                ResizeManipulationCompleted?.Invoke(sender, null);
             }
 
             xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);
@@ -755,11 +760,12 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+            e.Handled = true;
+
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-            e.Handled = true;
             var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);

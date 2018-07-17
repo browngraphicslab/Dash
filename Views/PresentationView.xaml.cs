@@ -120,7 +120,7 @@ namespace Dash
         // helper method for moving the mainpage screen
         private void NavigateToDocument(DocumentController dc)
         {
-            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc);
+            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true);
         }
 
         // these buttons are only enabled when the presentation is playing
