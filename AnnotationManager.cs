@@ -139,22 +139,19 @@ namespace Dash
 					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
 				}
 		    }
-
-		    // we only want to pan when the document isn't currently on the screen
-
-		    var viewToFollow = nearestOnScreen ?? nearestOnCollection;
-		    var va = viewToFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
+			
+		    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
 		    va?.GetAnnotationManager().SelectRegion(target);
 		    if (va is CustomPdfView pdf)
 		    {
-				// TODO make it scroll to the region's position as well
+			    pdf.ScrollToRegion(target);
 		    }
 
 		    //images have additional highlighting features that should be implemented
 			if (!(_element is IVisualAnnotatable)) return;
 
 			var element = (IVisualAnnotatable)_element;
-			element.GetAnnotationManager().UpdateHighlight(viewToFollow);
+			element.GetAnnotationManager().UpdateHighlight(toFollow);
 		}
         
         List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)

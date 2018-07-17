@@ -74,7 +74,7 @@ namespace Dash
             _docCtrl = dc;
             _element = element;
 	        var fe = element as FrameworkElement;
-	        fe.PointerPressed += Element_OnNewRegionStarted;
+	        element.NewRegionStarted += Element_OnNewRegionStarted;
 	        fe.PointerMoved += Element_OnNewRegionMoved;
 	        fe.PointerReleased += Element_OnNewRegionEnded;
 	        fe.PointerExited += Element_OnNewRegionEnded;
@@ -180,6 +180,10 @@ namespace Dash
                 _overlay.DuringMargin = new Thickness(x, y, 0, 0);
 
                 _overlay.SetDuringPreviewSize(new Size(Math.Abs(pos.X - _anchorPoint.X), Math.Abs(pos.Y - _anchorPoint.Y)));
+            }
+            else if (!properties.IsLeftButtonPressed)
+            {
+				Element_OnNewRegionEnded(sender, e);
             }
         }
 
@@ -323,6 +327,7 @@ namespace Dash
 
         private void SelectRegion(RegionBox region)
         {
+	        DeselectRegions();
             _selectedRegion = region;
             _isPreviousRegionSelected = true;
             //create a preview region to show that this region is selected
