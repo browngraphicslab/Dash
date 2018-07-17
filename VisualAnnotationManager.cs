@@ -146,6 +146,9 @@ namespace Dash
 				return;
 	        }
 
+			// HEY TODO FOR TOMORROW!
+			// make the annotations flyout thing appear at the mouse
+
             _overlay.SetRegionBoxPosition(new Size(_element.GetPositionReference().ActualWidth, _element.GetPositionReference().ActualHeight));
             _overlay.PostVisibility = Visibility.Visible;
         }

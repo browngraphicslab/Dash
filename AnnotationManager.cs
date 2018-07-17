@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -88,38 +89,40 @@ namespace Dash
 
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), false);
+			
+		    if (nearestOnScreen == null)
+		    {
+			    if (nearestOnCollection == null) return;
+			    // calculate distance of how off-screen it is
+			    var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
+			    var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
 
-			// we only want to pan when the document isn't currently on the screen
-			if (nearestOnScreen == null)
-			{
-				// calculate distance of how off-screen it is
-				var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
-				var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
+			    var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
 
-				var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
-
-				if (dist < threshold)
+			    if (dist < threshold)
 			    {
 				    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-				}
-				else
-				{
-					// see if it's already docked
-					var dv = MainPage.Instance.DockManager.GetDockedView(target);
+			    }
+			    else
+			    {
+				    // see if it's already docked
+				    var dv = MainPage.Instance.DockManager.GetDockedView(target);
 
-					// if not docked
-					if (dv == null)
-					{
-						var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
-						MainPage.Instance.DockManager.Dock(target, dir);
-					}
-					// if it's already docked, then highlight it instead of docking it again
-					else
-					{
-						dv.FlashSelection();
-					}
-				}
+				    // if not docked
+				    if (dv == null)
+				    {
+					    var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
+					    MainPage.Instance.DockManager.Dock(target, dir);
+				    }
+				    // if it's already docked, then highlight it instead of docking it again
+				    else
+				    {
+					    dv.FlashSelection();
+				    }
+			    }
 		    }
+
+		    // we only want to pan when the document isn't currently on the screen
 
 		    var viewToFollow = nearestOnScreen ?? nearestOnCollection;
 		    var va = viewToFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
@@ -147,31 +150,73 @@ namespace Dash
         //finds the nearest document view of the desired document controller that is displayed on the canvas
         DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
         {
-            var dist = double.MaxValue;
-            DocumentView nearest = null;
-	        var collection = _element.GetFirstAncestorOfType<CollectionView>() ?? MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-	        var itemsPanelRoot = ((CollectionFreeformView) collection.CurrentView).xItemsControl
-                .ItemsPanelRoot;
-	        if (itemsPanelRoot == null) return nearest;
-	        foreach (var presenter in
-		        itemsPanelRoot.Children.Select(c => c as ContentPresenter))
-	        {
-		        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-		        if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
-				var mprect = dvm.GetBoundingRect(MainPage.Instance);
-				var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-				if (onlyOnPage && RectHelper.Intersect(MainPage.Instance.GetBoundingRect(), mprect).IsEmpty)
-				{
-					continue;
-				}
+	        var collection = _element.GetFirstAncestorOfType<CollectionView>();
+	        DocumentView nearest = null;
 
-				var d = Math.Sqrt((@where.X - center.X) * (@where.X - center.X) +
-		                          (@where.Y - center.Y) * (@where.Y - center.Y));
-		        if (!(d < dist)) continue;
-		        nearest = dvm;
+	        if (collection != null) nearest = NearestOnCollection(where, targetData, collection, onlyOnPage);
+
+			// means something was found
+	        if (nearest != null) return nearest;
+
+	        // haven't found a doc of the matching criteria on this current collection, so queue up all the collections and start searching
+			var q = new Queue<CollectionView>();
+	        var mainCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			q.Enqueue(mainCollection);
+	        foreach (var nestedCollection in mainCollection.GetDescendantsOfType<CollectionView>())
+	        {
+		        q.Enqueue(nestedCollection);
+	        }
+
+			// iterate through every document looking for it
+	        var dist = double.MaxValue;
+			while (q.Count != 0)
+	        {
+		        var curr = q.Dequeue();
+		        var nearestOnThisCollection = NearestOnCollection(where, targetData, curr, onlyOnPage);
+		        if (nearestOnThisCollection == null) continue;
+		        var d = GetDistanceFromDocument(where, nearestOnThisCollection);
+		        if (d < dist)
+		        {
+			        dist = d;
+			        nearest = nearestOnThisCollection;
+		        }
 	        }
 
 	        return nearest;
+        }
+
+		private DocumentView NearestOnCollection(Point where, DocumentController targetData, CollectionView collection, bool onlyOnPage = true)
+		{
+			var dist = double.MaxValue;
+			DocumentView nearest = null;
+
+			// TODO expand this to work with treeviews too...?
+			var itemsPanelRoot = (collection.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot;
+			if (itemsPanelRoot == null) return null;
+
+			foreach (var presenter in itemsPanelRoot.Children.Select(c => c as ContentPresenter))
+			{
+				var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+				if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
+				var mprect = dvm.GetBoundingRect(MainPage.Instance);
+				if (onlyOnPage && RectHelper.Intersect(MainPage.Instance.GetBoundingRect(), mprect).IsEmpty) continue;
+
+				var d = GetDistanceFromDocument(where, dvm);
+
+				if (d < dist)
+				{
+					dist = d;
+					nearest = dvm;
+				}
+			}
+			return nearest;
+		}
+
+		private double GetDistanceFromDocument(Point where, DocumentView view)
+		{
+			var mprect = view.GetBoundingRect(MainPage.Instance);
+			var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+			return Math.Sqrt((@where.X - center.X) * (@where.X - center.X) + (@where.Y - center.Y) * (@where.Y - center.Y));
 		}
 
 		// TODO: figure out this interaction once region selection is working
