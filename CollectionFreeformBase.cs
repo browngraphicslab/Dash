@@ -163,6 +163,60 @@ namespace Dash
         /// </summary>
         Storyboard _storyboard1, _storyboard2;
 
+        public void Move(TranslateTransform translate)
+        {
+            var composite = new TransformGroup();
+            composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
+            composite.Children.Add(translate);
+
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+        }
+
+        public void MoveAnimated(TranslateTransform translate)
+        {
+            var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+            if (old == null)
+            {
+                return;
+            }
+            _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
+
+            Debug.Assert(_transformBeingAnimated != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+
+            //Clear storyboard
+            _storyboard1?.Stop();
+            _storyboard1?.Children.Clear();
+            _storyboard1 = new Storyboard { Duration = duration };
+
+            _storyboard2?.Stop();
+            _storyboard2?.Children.Clear();
+            _storyboard2 = new Storyboard { Duration = duration };
+
+
+            var startX = _transformBeingAnimated.Matrix.OffsetX;
+            var startY = _transformBeingAnimated.Matrix.OffsetY;
+
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, startY + translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
+            translateAnimationX.AutoReverse = false;
+            translateAnimationY.AutoReverse = false;
+
+            _storyboard1.Children.Add(translateAnimationX);
+            _storyboard1.Children.Add(translateAnimationY);
+
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
+
+            // Begin the animation.
+            _storyboard1.Begin();
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+            _storyboard1.Completed += Storyboard1OnCompleted;
+        }
+
         public void SetTransform(TranslateTransform translate, ScaleTransform scale)
         {
             var composite = new TransformGroup();
@@ -243,6 +297,7 @@ namespace Dash
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
             ViewManipulationControls.ElementScale = matrix.M11;
         }
+
         protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
 
