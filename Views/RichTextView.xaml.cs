@@ -96,7 +96,7 @@ namespace Dash
                 getDocView().CacheMode = null;
             };
 
-            xRichEditBox.LostFocus += delegate { getDocView().CacheMode = new BitmapCache(); };
+            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
