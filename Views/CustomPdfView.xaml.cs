@@ -43,7 +43,9 @@ namespace Dash
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(CustomPdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
 
-        public Uri PdfUri
+	    private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
+
+		public Uri PdfUri
         {
             get { return (Uri)GetValue(PdfUriProperty); }
             set { SetValue(PdfUriProperty, value); }
@@ -103,10 +105,66 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
-        }
+			DocumentLoaded += (sender, e) =>
+			{
+				AnnotationManager.NewRegionMade += OnNewRegionMade;
+				AnnotationManager.RegionRemoved += OnRegionRemoved;
 
-        public DocumentController GetRegionDocument()
+				var dataRegions = DataDocument.GetDataDocument()
+					.GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+				if (dataRegions != null)
+				{
+					// the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
+					xAnnotations.Height = ScrollViewer.ExtentHeight;
+					foreach (var region in dataRegions.TypedData)
+					{
+						var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey).Data;
+						MakeRegionMarker(offset, region);
+					}
+				}
+
+			};
+            AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
+		}
+		private void OnNewRegionMade(object sender, RegionEventArgs e)
+	    {
+		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
+		}
+	    
+	    // adds to the side of the PDFView
+	    private void MakeRegionMarker(double offset, DocumentController dc)
+	    {
+		    var newMarker = new PDFRegionMarker();
+		    newMarker.SetScrollPosition(offset, ScrollViewer.ExtentHeight);
+		    newMarker.LinkTo = dc;
+		    newMarker.Offset = offset;
+		    newMarker.PointerPressed += xMarker_OnPointerPressed;
+		    xAnnotationMarkers.Children.Add(newMarker);
+		    _markers.Add(newMarker);
+		    xAnnotationMarkers.Visibility = Visibility.Visible;
+	    }
+
+		private void OnRegionRemoved(object sender, RegionEventArgs e)
+	    {
+		    foreach (var child in xAnnotationMarkers.Children.ToList())
+		    {
+			    if (child is PDFRegionMarker box)
+			    {
+				    if (box.LinkTo.Equals(e.Link))
+				    {
+					    xAnnotationMarkers.Children.Remove(child);
+					    _markers.Remove(box);
+
+					    if (_markers.Count == 0)
+					    {
+						    xAnnotationMarkers.Visibility = Visibility.Collapsed;
+					    }
+				    }
+			    }
+		    }
+	    }
+
+		public DocumentController GetRegionDocument()
         {
             return AnnotationManager?.GetRegionDocument();
         }
@@ -161,15 +219,15 @@ namespace Dash
 
             _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
             await RenderPdf(null);
-            DocumentLoaded?.Invoke(this, new EventArgs());
 
             var scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
             if (scrollRatio != null)
             {
                 ScrollViewer.UpdateLayout();
                 ScrollViewer.ChangeView(null, scrollRatio.Data * ScrollViewer.ExtentHeight, null, true);
-            }
-        }
+			}
+			DocumentLoaded?.Invoke(this, new EventArgs());
+		}
 
         private async Task RenderPdf(double? targetWidth)
         {
@@ -538,5 +596,69 @@ namespace Dash
 
 		    ScrollViewer.ChangeView(null, offset.Data, null);
 	    }
-    }
+
+		// when the sidebar marker gets pressed
+		private void xMarker_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			MarkerSelected((PDFRegionMarker)sender);
+			AnnotationManager.SelectRegion(((PDFRegionMarker)sender).LinkTo);
+			e.Handled = true;
+		}
+
+		// moves to the region's offset
+		private void MarkerSelected(PDFRegionMarker region)
+		{
+			if (region != null)
+			{
+				// todo: do we need the zoom factor multiplied by offset here?
+				ScrollViewer.ChangeView(null, region.Offset, null);
+			}
+		}
+		private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			var currOffset = ScrollViewer.VerticalOffset;
+			PDFRegionMarker nextOffset = null;
+
+			foreach (var region in _markers)
+			{
+				if (region.Offset > currOffset && Math.Abs(region.Offset - currOffset) > 1 && (nextOffset == null || region.Offset < nextOffset.Offset))
+				{
+					nextOffset = region;
+				}
+			}
+			MarkerSelected(nextOffset);
+		}
+
+		private void xPrevAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			var currOffset = ScrollViewer.VerticalOffset;
+			PDFRegionMarker prevOffset = null;
+
+			foreach (var region in _markers)
+			{
+				if (region.Offset < currOffset && Math.Abs(region.Offset - currOffset) > 1 && (prevOffset == null || region.Offset > prevOffset.Offset))
+				{
+					prevOffset = region;
+				}
+			}
+			MarkerSelected(prevOffset);
+		}
+
+		private void xRegionsScrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+		{
+			if (_markers.Count > 0) xAnnotationNavigation.Opacity = 0.8;
+		}
+
+		private void xRegionsScrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
+		{
+			xAnnotationNavigation.Opacity = 0;
+		}
+
+		public void DisplayFlyout(MenuFlyout linkFlyout)
+		{
+			linkFlyout.ShowAt(this);
+		}
+		
+	}
 }
+

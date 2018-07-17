@@ -214,7 +214,7 @@ namespace Dash
         {
             e.Handled = false;
 	        DeselectRegions();
-			RegionSelected((RegionBox)sender, e.GetPosition(MainPage.Instance));
+			RegionSelected(sender, e.GetPosition(MainPage.Instance));
             e.Handled = true;
         }
 
