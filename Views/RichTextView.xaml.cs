@@ -43,7 +43,7 @@ namespace Dash
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
 
         private Dictionary<ITextSelection, DocumentController> _selectionDocControllers = new Dictionary<ITextSelection, DocumentController>();
-        private bool _isLinkMenuOpen = false;
+        private bool _everFocused = false;
         private AnnotationManager _annotationManager;
         private string _target;
 
@@ -62,6 +62,8 @@ namespace Dash
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+
+                e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
@@ -87,7 +89,11 @@ namespace Dash
             };
 
             //PointerWheelChanged += (s, e) => e.Handled = true;
-            xRichEditBox.GotFocus += (s, e) => FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+            xRichEditBox.GotFocus += (s, e) =>
+            {
+                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+                _everFocused = true;
+            };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -204,7 +210,7 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText))  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
         }

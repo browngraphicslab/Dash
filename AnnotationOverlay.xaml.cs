@@ -89,6 +89,7 @@ namespace Dash
                 CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             xInkCanvas.InkPresenter.StrokesCollected += (sender, args) => UpdateStrokes();
             xInkCanvas.InkPresenter.StrokesErased += (sender, args) => UpdateStrokes();
+            SetInkEnabled(false);
         }
 
         public event EventHandler<IEnumerable<InkStroke>> InkUpdated;
@@ -172,6 +173,12 @@ namespace Dash
                 new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
                 new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
                 totalSize);
+        }
+
+        public void SetInkEnabled(bool value)
+        {
+            xInkCanvas.IsHitTestVisible = value;
+            xInkCanvas.InkPresenter.IsInputEnabled = value;
         }
     }
 }

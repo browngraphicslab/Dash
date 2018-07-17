@@ -10,6 +10,5 @@
     d:DesignWidth="400">
 
     <Grid x:Name="xGrid">
-                <WebView x:Name="xWebView" />
     </Grid>
 </UserControl>
