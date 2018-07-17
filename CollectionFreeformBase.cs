@@ -942,6 +942,8 @@ namespace Dash
                         RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
                 }
             }
+            foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
+                rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
         }
 
         public void RenderPreviewTextbox(Point where)

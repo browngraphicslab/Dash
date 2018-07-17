@@ -86,7 +86,7 @@ namespace Dash
 
         private List<SelectableElement> _selectableElements;
 
-        private VisualAnnotationManager _annotationManager;
+        public VisualAnnotationManager AnnotationManager { get; }
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -103,12 +103,12 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _annotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
+            AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
         }
 
         public DocumentController GetRegionDocument()
         {
-            return _annotationManager?.GetRegionDocument();
+            return AnnotationManager?.GetRegionDocument();
         }
 
         private async Task OnPdfUriChanged()
@@ -215,7 +215,7 @@ namespace Dash
 
         public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
         {
-            _annotationManager?.RegionSelected(region, pt, chosenDoc);
+            AnnotationManager?.RegionSelected(region, pt, chosenDoc);
         }
 
         public FrameworkElement Self()
@@ -389,7 +389,7 @@ namespace Dash
         private void EndSelection()
         {
             _selectionStartPoint = null;
-            _annotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
+            AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
         #endregion
@@ -398,50 +398,74 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionEnded?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //var pos = currentPoint.Position;
-            //UpdateSelection(pos);
-            //EndSelection();
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.RegionBox:
+                    NewRegionEnded?.Invoke(sender, e);
+                    break;
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var currentPoint = e.GetCurrentPoint(PageItemsControl);
+                    var pos = currentPoint.Position;
+                    UpdateSelection(pos);
+                    EndSelection();
+                    break;
+            }
         }
 
         private void XPdfGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            //EndSelection();
+            EndSelection();
         }
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionMoved?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //var pos = currentPoint.Position;
-            //UpdateSelection(pos);
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.RegionBox:
+                    NewRegionMoved?.Invoke(sender, e);
+                    break;
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var pos = currentPoint.Position;
+                    UpdateSelection(pos);
+                    break;
+            }
         }
 
         private Point? _selectionStartPoint;
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            NewRegionStarted?.Invoke(sender, e);
-            //var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            //if (!currentPoint.Properties.IsLeftButtonPressed)
-            //{
-            //    return;
-            //}
-            //ClearSelection();
-
-            //var pos = currentPoint.Position;
-            //_selectionStartPoint = pos;
+            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+            ClearSelection();
+            switch (AnnotationManager.CurrentAnnotationType)
+            {
+                case Dash.AnnotationManager.AnnotationType.RegionBox:
+                    NewRegionStarted?.Invoke(sender, e);
+                    break;
+                case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    var pos = currentPoint.Position;
+                    _selectionStartPoint = pos;
+                    break;
+            }
         }
 
         #endregion
@@ -490,7 +514,7 @@ namespace Dash
                     Clipboard.SetContent(dataPackage);
                     e.Handled = true;
                 }
-                else if(e.Key == VirtualKey.A)
+                else if (e.Key == VirtualKey.A)
                 {
                     SelectElements(0, _selectableElements.Count - 1);
                     e.Handled = true;

@@ -21,7 +21,8 @@ namespace Dash
 	    {
             None,
             RegionBox,
-            TextSelection
+            TextSelection,
+            Ink
 	    }
 
 		public AnnotationManager(UIElement uiElement)

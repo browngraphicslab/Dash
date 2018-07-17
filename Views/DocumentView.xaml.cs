@@ -298,7 +298,7 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
-
+                ToFront();
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
@@ -1053,7 +1053,7 @@ namespace Dash
             var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            var nestedCollection = GetCollectionToMoveTo(overlappedViews);
+            CollectionView nestedCollection = GetCollectionToMoveTo(overlappedViews);
 
             if (nestedCollection == null)
             {
@@ -1061,12 +1061,10 @@ namespace Dash
                 return false;
             }
 
-            foreach (var selDoc in selectedDocs)
+            foreach (DocumentView selDoc in selectedDocs)
             {
-                var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                var where = nestedCollection.CurrentView is CollectionFreeformBase ?
-                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformBase), pos) :
-                    new Point();
+                Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
+                Point where = nestedCollection.CurrentView is CollectionFreeformBase @base ? Util.GetCollectionFreeFormPoint(@base, pos) : new Point();
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
                 nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }

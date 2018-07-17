@@ -14,6 +14,7 @@ using Dash;
 using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
+using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 
 namespace Dash
 {
@@ -569,7 +570,6 @@ namespace Dash
             UndoManager.StartBatch();
             ManipulationStartX = ParentDocument.ViewModel.XPos;
             ManipulationStartY = ParentDocument.ViewModel.YPos;
-
             OnManipulatorStarted?.Invoke();
         }
 
