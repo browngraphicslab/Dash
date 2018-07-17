@@ -248,7 +248,6 @@ namespace Dash
             switch (listType)
             {
                 case TypeInfo.None:
-                    Debug.Fail("this shouldnt happen????");
                     break;
                 case TypeInfo.Number:
                     controller = new ListController<NumberController>();

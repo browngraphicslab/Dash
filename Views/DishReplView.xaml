@@ -39,7 +39,7 @@
                                             <ColumnDefinition Width="30"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock x:Name="xInputArrow" Text=">>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
+                                        <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
                                                    DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped" />
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
@@ -47,11 +47,10 @@
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="19"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text=" " Grid.Column="0" />
-                                        <local:ReplLineNode Grid.Column="1" ></local:ReplLineNode>
+                                        <local:ReplLineNode Grid.Column="1"></local:ReplLineNode>
                                     </Grid>
                                 </Grid>
                             </DataTemplate>

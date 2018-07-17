@@ -1,30 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml.Input;
-using Dash.Annotations;
-using Flurl.Util;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-
-        //this is the stored value of every line;
+        public ReplLineViewModel() { }
 
         public event EventHandler Updated;
 
-        public void Update()
-        {
-            Updated?.Invoke(this, EventArgs.Empty);
-        }
+        public void Update() => Updated?.Invoke(this, EventArgs.Empty);
 
         public FieldControllerBase Value { get; set; }
+
+        private string _lineText = "";
+        public string LineText
+        {
+            get => _lineText;
+            set => SetProperty(ref _lineText, value);
+        }
 
         private string _resultText;
         public string ResultText
@@ -32,28 +27,8 @@ namespace Dash
             get => _resultText;
             set => SetProperty(ref _resultText, value);
         }
-        public bool DisplayableOnly { get; set; }
-        public int Indent { get; set; }
 
-        private string _lineText = "";
-        public string LineText
-        {
-            get =>  _lineText;
-            set => SetProperty(ref _lineText, value);
-        }
-        
-
-
-        public string GetLineText()
-        {
-            return _lineText;
-
-        }
-
-        private FieldControllerBase _outputValue;
-
-        private bool _editTextValue = false;
-
+        private bool _editTextValue;
         public bool EditTextValue
         {
             get => _editTextValue;
@@ -61,23 +36,15 @@ namespace Dash
             {
                 _editTextValue = value;
                 OnPropertyChanged();
-                OnPropertyChanged("NotEditTextValue");
+                OnPropertyChanged($"NotEditTextValue");
             }
         }
 
+        public bool DisplayableOnly { get; set; }
+
+        public int Indent { get; set; }
+
         public bool NotEditTextValue => !_editTextValue;
-
-
-        public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
-        {
-            _outputValue = outputValue;
-            LineText = lineText;
-            //LineText = GetValueFromResult(value);
-            Value = value;
-        }
-
-        public ReplLineViewModel() { }
-
 
         public string GetValueFromResult(FieldControllerBase controller)
         {
