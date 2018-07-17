@@ -888,7 +888,7 @@ namespace Dash
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
             e.Handled = true;
-            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
+            var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value + 5;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
