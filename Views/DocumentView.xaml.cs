@@ -105,6 +105,8 @@ namespace Dash
 
         private ImageSource _docPreview = null;
         private bool _showResize;
+        public event EventHandler ResizeManipulationStarted;
+        public event EventHandler ResizeManipulationCompleted;
 
         private ImageSource DocPreview
         {
@@ -182,6 +184,7 @@ namespace Dash
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                ResizeManipulationStarted?.Invoke(sender, null);
                 UndoManager.StartBatch();
 
                 MainPage.Instance.Focus(FocusState.Programmatic);
@@ -207,6 +210,8 @@ namespace Dash
                 e.Handled = true;
 
                 UndoManager.EndBatch();
+
+                ResizeManipulationCompleted?.Invoke(sender, null);
             }
 
             xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);

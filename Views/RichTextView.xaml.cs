@@ -59,7 +59,7 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) =>
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
-                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
 
@@ -93,7 +93,10 @@ namespace Dash
             {
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
+                getDocView().CacheMode = null;
             };
+
+            xRichEditBox.LostFocus += delegate { getDocView().CacheMode = new BitmapCache(); };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -509,6 +512,10 @@ namespace Dash
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+
+            var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
+            documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
         }
 
         #endregion
