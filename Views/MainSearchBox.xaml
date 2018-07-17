@@ -50,29 +50,50 @@
             <AutoSuggestBox.ItemTemplate>
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
+                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" 
+                          CanDrag="True" DragStarting="SearchResult_OnDragStarting">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Border
-                        Background="Transparent"
-                        DragStarting="SearchResult_OnDragStarting"
-                        CanDrag="True">
-                            <TextBlock x:Name="xCollDragIcon"
-                                    FontFamily="{StaticResource FontAwesome}"
-                                    Foreground="{StaticResource TitleText}"
-                                    FontSize="15"
-                                    Text="{StaticResource DocumentIcon}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center"
-                                    Height="32"
-                                    Width="32" />
-                        </Border>
-                        <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
-
-                            <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
-                            <TextBlock Text="{Binding ContextualText}"></TextBlock>
+                        <TextBlock 
+                            x:Name="xCollDragIcon"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="15"
+                            Text="{StaticResource DocumentIcon}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="32"
+                            Margin="3, 15, 0, 0"
+                            PointerWheelChanged="DocIcon_OnPointerWheelChanged"/>
+                        <TextBlock x:Name="xNumFields"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="10"
+                            Text="{Binding FieldCount}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="35"
+                            Margin="20, 32, 0, 0"/>
+                        <TextBlock x:Name="xFieldNum"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="10"
+                            Text="{Binding CurrentIndex}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="35"
+                            Margin="20, 11, 0, 0"/>
+                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="1">
+                            <TextBlock Text="{Binding CurrentTitle}" FontWeight="Medium"></TextBlock>
+                            <TextBlock Text="{Binding CurrentContext}"></TextBlock>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

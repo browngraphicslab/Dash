@@ -10,6 +10,7 @@ using Dash.Models.DragModels;
 using System.Diagnostics;
 using System;
 using Windows.System;
+using Windows.UI.Input;
 using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -125,19 +126,20 @@ namespace Dash
 
         private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
+            DocumentController docTapped = viewModel?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, true);
         }
 
         private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            var docTapped = ((sender as Grid)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
+            DocumentController docTapped = viewModel?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
 
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
-            var maxSearchResultSize = 75;
             //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
 
             //var first = vms
@@ -260,7 +262,6 @@ namespace Dash
             }
         }
 
-
         private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var text = xAutoSuggestBox.Text;
@@ -275,6 +276,7 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
+
         private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var text = xAutoSuggestBox.Text;
@@ -304,7 +306,7 @@ namespace Dash
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
 
-            var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
+            var itemsSource = (ObservableCollection<SearchResultViewModel>) searchBox.ItemsSource;
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
@@ -312,7 +314,7 @@ namespace Dash
             {
                 searchRes = Search.Parse(text).ToList();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 searchRes = new List<SearchResult>();
             }
@@ -321,20 +323,20 @@ namespace Dash
             //highlight doc results
             HighlightSearchResults(docs);
 
-            var vms = new List<SearchResultViewModel>();
-            foreach (var res in searchRes)
+            var vmGroups = new List<SearchResultViewModel>();
+            foreach (SearchResult res in searchRes)
             {
-                var newVm = DocumentSearchResultToViewModel(res);
-                var parent = res.Node.Parent?.ViewDocument;
+                SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
+                DocumentController parent = res.Node.Parent?.ViewDocument;
                 if (parent != null) newVm.DocumentCollection = parent;
-                vms.Add(newVm);
+                vmGroups.Add(newVm);
             }
 
-            var first = vms 
+            var first = vmGroups 
                 .Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
                 .Take(MaxSearchResultSize).ToArray();
 
-            foreach (var searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
+            foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs)
@@ -377,7 +379,7 @@ namespace Dash
         {
             var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
             //unhighlight each doc in collection
-            foreach (var doc in colDocs)
+            foreach (DocumentController doc in colDocs)
             {
                 MainPage.Instance.HighlightDoc(doc, false, 2);
                 if (doc.DocumentType.ToString() == "Collection Box")
@@ -387,15 +389,25 @@ namespace Dash
             }
         }
 
-        private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)
+        private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
         {
-            string title = res.ViewDocument.ToString().Substring(1) + res.TitleAppendix; // .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey)?.Data;
-            string helpText = res.RelevantText;
-
-            return new SearchResultViewModel(title, helpText, res.ViewDocument, null, true);
+            string docTitle = result.ViewDocument.ToString().Substring(1);
+            var titles = result.FormattedKeyRef.Select(key => docTitle + key).ToList();
+            return new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
         }
 
         #endregion
+
+        private void DocIcon_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
+            bool forward = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0;
+
+            if (forward) viewModel?.NextField();
+            else viewModel?.PreviousField();
+
+            e.Handled = true;
+        }
     }
 }
 

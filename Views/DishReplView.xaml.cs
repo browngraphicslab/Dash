@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Dash.Annotations;
-using Dash.Models.DragModels;
 using DashShared;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -37,8 +28,6 @@ namespace Dash
         //TODO Make this be a list of some class that knows if its a function, name, etc so that SelectPopup can be much simpler
         //TODO This also shouldn't be static
         private static List<string> _dataset;
-
-        private const int StratOffset = 32;
 
         private int _currentTab = 3;
 
