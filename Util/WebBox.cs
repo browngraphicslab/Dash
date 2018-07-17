@@ -193,8 +193,11 @@ namespace Dash
                                    parent.DocumentView_PointerExited(null, null);
                               break;
                 case "up":    parent.ToFront();
-                              if (DocumentView.FocusedDocument != parent)
-                                  parent.ForceLeftTapped();
+                                if (DocumentView.FocusedDocument != parent)
+                                {
+                                    DocumentView.FocusedDocument = parent;
+                                    parent.ForceLeftTapped();
+                                }
                               (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
                               web.Tag = null; break;
             }

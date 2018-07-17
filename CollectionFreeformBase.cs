@@ -297,7 +297,7 @@ namespace Dash
         {
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-            ViewManipulationControls.ElementScale = matrix.M11;
+            ViewManipulationControls.ElementScale = matrix.M11; // bcz: don't update elementscale to have no zoom bounds on jumping between things (not scroll zooming)
         }
 
         protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
@@ -862,60 +862,62 @@ namespace Dash
             var type = CollectionView.CollectionViewType.Freeform;
 
             var deselect = false;
-            using (UndoManager.GetBatchHandle())
-            {
-                switch (modifier)
+            if (!(this.IsCtrlPressed() || this.IsShiftPressed() || this.IsAltPressed()))
+                using (UndoManager.GetBatchHandle())
                 {
-                    //create a viewcopy of everything selected
-                    case VirtualKey.A:
-                        DoAction((dvs, where, size) =>
-                        {
-                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
-                        });
-                        deselect = true;
-                        break;
-                    case VirtualKey.T:
-                        type = CollectionView.CollectionViewType.Schema;
-                        goto case VirtualKey.C;
-                    case VirtualKey.C:
-                        DoAction((views, where, size) =>
+                    switch (modifier)
+                    {
+                        //create a viewcopy of everything selected
+                        case VirtualKey.A:
+                            DoAction((dvs, where, size) =>
                             {
-                                var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                                DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
-                                ViewModel.AddDocument(newCollection);
+                                var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                                ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
+                            });
+                            deselect = true;
+                            break;
+                        case VirtualKey.T:
+                            type = CollectionView.CollectionViewType.Schema;
+                            goto case VirtualKey.C;
+                        case VirtualKey.C:
+                            DoAction((views, where, size) =>
+                                {
+                                    var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                                    DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                                    ViewModel.AddDocument(newCollection);
 
+                                    foreach (DocumentView v in views)
+                                    {
+                                        v.DeleteDocument();
+                                    }
+                                });
+                            deselect = true;
+                            break;
+                        case VirtualKey.Back:
+                        case VirtualKey.Delete:
+                            DoAction((views, where, size) =>
+                            {
                                 foreach (DocumentView v in views)
                                 {
                                     v.DeleteDocument();
                                 }
                             });
-                        deselect = true;
-                        break;
-                    case VirtualKey.Back:
-                    case VirtualKey.Delete:
-                        DoAction((views, where, size) =>
-                        {
-                            foreach (DocumentView v in views)
+
+                            deselect = true;
+                            break;
+                        case VirtualKey.G:
+                            DoAction((views, where, size) =>
                             {
-                                v.DeleteDocument();
-                            }
-                        });
-
-                        deselect = true;
-                        break;
-                    case VirtualKey.G:
-                        DoAction((views, where, size) =>
-                        {
-                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-                                where, size.Width, size.Height));
-                        });
-                        deselect = true;
-                        break;
+                                ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                                    where, size.Width, size.Height));
+                            });
+                            deselect = true;
+                            break;
+                    }
                 }
-            }
 
-            if (deselect) SelectionManager.DeselectAll();
+            if (deselect)
+                SelectionManager.DeselectAll();
         }
 
         #endregion
