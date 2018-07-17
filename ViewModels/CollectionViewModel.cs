@@ -698,7 +698,7 @@ namespace Dash
                 var where = new Point();
                 if (senderView is CollectionFreeformBase)
                     where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
-                        e.GetPosition(MainPage.Instance));
+                        e.GetPosition(MainPage.Instance.MainDocView));
                 else if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
