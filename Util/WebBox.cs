@@ -64,37 +64,24 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            // the document field model controller provides us with the DATA
-            // the Document on this courtesty document provides us with the parameters to display the DATA.
-            // X, Y, Width, and Height etc....
-
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
-                new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
-
-            var textfieldModelController = fieldModelController as TextController;
-            Debug.Assert(textfieldModelController != null);
-
             var webView = new WebBoxView();
             var web = webView.GetView();
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
-            if (html != null)
-                if (html.StartsWith("http"))
-                {
-                    // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
-                    web.Navigate(new Uri(html));
-                }
-                else
-                {
-                    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-                    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
-                    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
-                }
-            else web.Source = new Uri(textfieldModelController.Data);
+
+            if (html.StartsWith("http"))
+            {
+                // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
+                web.Navigate(new Uri(html));
+            }
+            else
+            {
+                var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+                var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
+            };
             web.LoadCompleted += Web_LoadCompleted;
 
             SetupBindings(web, docController, context);
-            if (html == null)
-                SetupTextBinding(web, docController, context);
             
             return webView;
         }
