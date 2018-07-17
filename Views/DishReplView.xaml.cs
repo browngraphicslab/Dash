@@ -171,6 +171,7 @@ namespace Dash
             xScrollViewer.ChangeView(null, float.MaxValue, null, true);
         }
 
+
         public static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
 
         private string InsertEnter(string text, char value, bool before = false)
@@ -462,7 +463,6 @@ namespace Dash
             }
 
             FinishFunctionCall(text, sender as TextBox);
-
         }
 
         private void DisableAllTextBoxes()
@@ -477,7 +477,7 @@ namespace Dash
             }
         }
 
-        private void reRunLine(ReplLineViewModel data, string text)
+        private void ReRunLine(ReplLineViewModel data, string text)
         {
             DisableAllTextBoxes();
 
@@ -529,7 +529,7 @@ namespace Dash
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            reRunLine(data, text);
+            ReRunLine(data, text);
         }
 
         private void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -537,7 +537,7 @@ namespace Dash
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            reRunLine(data, text);
+            ReRunLine(data, text);
         }
 
         #endregion
@@ -560,6 +560,7 @@ namespace Dash
 
                 string command = xTextBox.Text;
                 xTextBox.Text = "";
+
                 if (string.IsNullOrEmpty(command)) return;
                 if (CheckSpecialCommands(command))
                 {
@@ -586,14 +587,14 @@ namespace Dash
                 };
                 head.ResultText = head.GetValueFromResult(retVal);
                 ViewModel.Items.Add(head);
+
                 _currentHistoryIndex = ViewModel.Items.Count;
                 _lineTextList.Add(new TextController(command));
                 _valueList.Add(retVal);
                 _indents.Add(new NumberController(_currentTab));
+
                 ScrollToBottom();
-
                 e.Handled = true;
-
             }
 
             string storedCommand = "";
@@ -774,7 +775,6 @@ namespace Dash
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             _currentHistoryIndex = ViewModel.Items.Count;
-
 
             if (xTextBox.Text.Equals(""))
             {
