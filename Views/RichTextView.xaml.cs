@@ -236,7 +236,8 @@ namespace Dash
                     if (!_originalCharFormat.ContainsKey(s))
                         _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-                    this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                    // Not really sure what this is supposed to be for, but I'll comment it out for now
+                    //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
                 //this.xRichEditBox.Document.Selection.StartPosition = s1;
                 //this.xRichEditBox.Document.Selection.EndPosition = s2;
