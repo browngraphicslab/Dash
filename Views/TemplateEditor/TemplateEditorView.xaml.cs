@@ -290,7 +290,7 @@ namespace Dash
             var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
             if (activeLayout?.GetField(KeyStore.RowInfoKey) != null ||
                 activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
-            {
+            { 
                 // change the template editor into a grid view
                 xItemsControlList.Visibility = Visibility.Collapsed;
                 xItemsControlCanvas.Visibility = Visibility.Collapsed;

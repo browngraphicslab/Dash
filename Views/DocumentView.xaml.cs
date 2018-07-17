@@ -99,21 +99,7 @@ namespace Dash
             }
         }
 
-        public bool ShowResize
-        {
-            get => _showResize;
-            set
-            {
-                _showResize = value;
-                if (!value)
-                {
-                    RemoveResizeHandlers();
-                }
-            }
-        }
-
         private ImageSource _docPreview = null;
-        private bool _showResize;
         public event EventHandler ResizeManipulationStarted;
         public event EventHandler ResizeManipulationCompleted;
 
@@ -124,6 +110,7 @@ namespace Dash
             {
                 _docPreview = value;
                 xToolTipPreview.Source = value;
+                // To document previews from being resized
                 //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
             }
         }
@@ -219,7 +206,9 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
-                bool right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
+                bool right =
+                    (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
+                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
@@ -859,6 +848,8 @@ namespace Dash
         /// <summary>
         /// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
+        /// Pass true into maintainAspectRatio to preserve the aspect ratio of documents when resizing. Automatically set to true
+        /// if the sender is a corner resizer.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -870,7 +861,8 @@ namespace Dash
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+            var docType = ViewModel.DocumentController.DocumentType;
+            var isProportionalType = docType.Equals(ImageBox.DocumentType) || docType.Equals(VideoBox.DocumentType);
             var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
@@ -890,8 +882,7 @@ namespace Dash
             var moveYScale = shiftTop ? 1 : 0;
             cumulativeDelta.X *= cursorXDirection;
             cumulativeDelta.Y *= cursorYDirection;
-
-            // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+            
             var w = ViewModel.ActualSize.X - extraOffsetX;
             var h = ViewModel.ActualSize.Y - extraOffsetY;
 
@@ -925,30 +916,7 @@ namespace Dash
                 useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
             }
 
-            Point Clamp(Point point, Rect rect)
-            {
-                if (point.X < rect.Left)
-                {
-                    point.X = rect.Left;
-                }
-                else if (point.X > rect.Right)
-                {
-                    point.X = rect.Right;
-                }
-
-                if (point.Y < rect.Top)
-                {
-                    point.Y = rect.Top;
-                }
-                else if (point.Y > rect.Bottom)
-                {
-                    point.Y = rect.Bottom;
-                }
-
-                return point;
-            }
-
-            var proportional = (isTextBox && maintainAspectRatio)
+            var proportional = (!isProportionalType && maintainAspectRatio)
                 ? this.IsShiftPressed()
                 : (this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
@@ -995,8 +963,31 @@ namespace Dash
 
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
-            if (delta.Y != 0 || this.IsShiftPressed() || !isTextBox)
+            if (delta.Y != 0 || this.IsShiftPressed() || isProportionalType)
                 ViewModel.Height = newSize.Height;
+        }
+
+        private Point Clamp(Point point, Rect rect)
+        {
+            if (point.X < rect.Left)
+            {
+                point.X = rect.Left;
+            }
+            else if (point.X > rect.Right)
+            {
+                point.X = rect.Right;
+            }
+
+            if (point.Y < rect.Top)
+            {
+                point.Y = rect.Top;
+            }
+            else if (point.Y > rect.Bottom)
+            {
+                point.Y = rect.Bottom;
+            }
+
+            return point;
         }
 
         // Controls functionality for the Right-click context menu
@@ -1029,7 +1020,7 @@ namespace Dash
             this.DocumentView_OnTapped(null, null);
         }
 
-        // used to remove template editor in sync with document
+        // this action is used to remove template editor in sync with document
         public Action FadeOutBegin;
         private Flyout _flyout;
 
