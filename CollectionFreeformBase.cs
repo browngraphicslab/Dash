@@ -933,7 +933,7 @@ namespace Dash
         {
             if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                if (XInkCanvas.IsTopmost())
+                //if (XInkCanvas.IsTopmost())
                 {
                     _isMarqueeActive = false;
                     if (!this.IsShiftPressed())
