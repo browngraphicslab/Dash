@@ -155,7 +155,7 @@ namespace Dash
 
             PdfMaxWidth = maxWidth;
             PdfTotalHeight = offset - 10;
-
+            
             _selectableElements = strategy.GetSelectableElements();
             reader.Close();
             pdfDocument.Close();
