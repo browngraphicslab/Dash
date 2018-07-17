@@ -59,7 +59,7 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) =>
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
-                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
 
@@ -93,7 +93,10 @@ namespace Dash
             {
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
+                getDocView().CacheMode = null;
             };
+
+            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -283,7 +286,7 @@ namespace Dash
                     {
                         if (this.IsCtrlPressed())
                             nearestOnCollection.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
                     }
                     else
                     {
@@ -509,6 +512,10 @@ namespace Dash
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+
+            var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
+            documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
         }
 
         #endregion
@@ -672,7 +679,7 @@ namespace Dash
                 i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                 var s = xRichEditBox.Document.Selection.StartPosition;
                 var selectedText = xRichEditBox.Document.Selection;
-                if (i > 0)
+                if (i > 0 && !_originalCharFormat.ContainsKey(s))
                 {
                     _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
                 }
@@ -680,6 +687,7 @@ namespace Dash
                 {
                     selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
                 }
+                xRichEditBox.Document.Selection.Collapse(false);
             }
             xRichEditBox.Document.Selection.StartPosition = 0;
             xRichEditBox.Document.Selection.EndPosition = 0;

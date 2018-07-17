@@ -235,7 +235,7 @@ namespace Dash
             MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
-            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
+            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
 

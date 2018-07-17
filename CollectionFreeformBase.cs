@@ -232,7 +232,7 @@ namespace Dash
             ViewManipulationControls.ElementScale = matrix.M11;
         }
 
-        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale)
+        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale, bool zoom)
         {
             //get rendering postion of _itemsPanelCanvas, 2x3 matrix
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
@@ -257,22 +257,24 @@ namespace Dash
             _storyboard2 = new Storyboard { Duration = duration };
 
             var startMatrix = _transformBeingAnimated.Matrix;
+
             var scaleMatrix = scale.GetMatrix();
-
-            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            //the higher number, the more it xooms, but doesn't actually change final view 
-            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
-            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
-
-            // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
-
-            if (scale != null)
+            if (zoom)
             {
+
+                //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+                //the higher number, the more it xooms, but doesn't actually change final view 
+                var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+                var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
+
                 _storyboard1.Children.Add(zoomAnimationX);
                 _storyboard1.Children.Add(zoomAnimationY);
             }
+            
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
+            
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
 
@@ -933,7 +935,7 @@ namespace Dash
         {
             if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                if (XInkCanvas.IsTopmost())
+                //if (XInkCanvas.IsTopmost())
                 {
                     _isMarqueeActive = false;
                     if (!this.IsShiftPressed())
