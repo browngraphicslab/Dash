@@ -47,11 +47,10 @@
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="19"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text=" " Grid.Column="0" />
-                                        <local:ReplLineNode Grid.Column="1" ></local:ReplLineNode>
+                                        <local:ReplLineNode Grid.Column="1"></local:ReplLineNode>
                                     </Grid>
                                 </Grid>
                             </DataTemplate>
