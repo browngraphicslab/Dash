@@ -8,7 +8,7 @@
     xmlns:ctrl="using:Windows.UI.Xaml.Controls"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
-    d:DesignHeight="100"
+    d:DesignHeight="150"
     d:DesignWidth="800">
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
@@ -17,7 +17,7 @@
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
-            <ctrl:CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
+            <ctrl:CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
 
                 <AppBarButton x:Name="xCollapse" Background="{x:Bind ExpandColor, Mode=OneWay}"  Icon="BackToWindow"  Label="Collapse" Tapped="XCollapse_OnTapped"/>
                 <AppBarButton x:Name="xPin" IsEnabled ="True" Label="Floating" Click="XPin_OnClick">
@@ -52,7 +52,7 @@
             </ctrl:CommandBar>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:TextSubtoolbar x:Name="xTextToolbar" x:FieldModifier="public" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -58,11 +59,14 @@ namespace Dash
         private void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
         {  
             WC = new WordCount(xRichEditBox);
-
+	        xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
+	        xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
             SetUpFontFamilyComboBox();
             SetUpFontSizeComboBox();
         }
 
+	    private List<double> _sizes;
+	    private List<string> _fontNames;
 
         #region set up ComboBoxes
 
@@ -71,7 +75,7 @@ namespace Dash
         /// </summary>
         private void SetUpFontFamilyComboBox()
         {
-            var FontNames = new List<string>()
+            _fontNames = new List<string>()
             {
                 "Arial",
                 "Calibri",
@@ -115,14 +119,14 @@ namespace Dash
                 "Yu Gothic UI"
             };
 
-            foreach (var font in FontNames)
+            foreach (var font in _fontNames)
             {
                 FontFamilyNames.Add(new FontFamily(font));
 
             }
 
             var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
-            xFontFamilyComboBox.SelectedIndex = FontNames.IndexOf(currentFontStyle);
+            xFontFamilyComboBox.SelectedIndex = _fontNames.IndexOf(currentFontStyle);
         }
 
 
@@ -133,7 +137,7 @@ namespace Dash
         /// </summary>
         private void SetUpFontSizeComboBox()
         {
-            var sizes = new List<double>()
+            _sizes = new List<double>()
             {
                 8,
                 9,
@@ -159,13 +163,13 @@ namespace Dash
                 150
             };
 
-            foreach (var num in sizes)
+            foreach (var num in _sizes)
             {
                 xFontSizeComboBox.Items.Add(num);
             }
 
             var currentFontSize = xRichEditBox.Document.Selection.CharacterFormat.Size;
-            xFontSizeComboBox.SelectedIndex = sizes.IndexOf(currentFontSize);
+            xFontSizeComboBox.SelectedIndex = _sizes.IndexOf(currentFontSize);
         }
 
         #endregion
@@ -295,9 +299,9 @@ namespace Dash
 
         #endregion
 
-        private void xForegroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as SfColorPicker;
+            var colorPicker = sender as DashColorPicker;
             if(colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
@@ -305,13 +309,13 @@ namespace Dash
             }
         }
 
-        private void xBackgroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as SfColorPicker;
+            var colorPicker = sender as DashColorPicker;
             if (colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Highlight(color, true);
+				richTextView.Highlight(color, true);
             }
         }
 
@@ -325,6 +329,20 @@ namespace Dash
 		    _textToolbar.CloseSubMenu();
 	    }
 
+		/*
+	    public void UpdateDropDowns()
+	    {
+			//set font size and font combo boxes
+		    double size = xRichEditBox.Document.Selection.CharacterFormat.Size;
+		    string font = xRichEditBox.Document.Selection.CharacterFormat.Name;
+
+		    if (_sizes != null && _sizes.Contains(size)) xFontSizeComboBox.SelectedIndex = _sizes.IndexOf(size);
+		    if (_fontNames != null && _fontNames.Contains(font)) xFontFamilyComboBox.SelectedIndex = _fontNames.IndexOf(font);
+			//xFontSizeComboBox.SelectedValue = xRichEditBox.Document.Selection.CharacterFormat.Size;
+		   // xFontFamilyComboBox.SelectedValue = xRichEditBox.Document.Selection.CharacterFormat.Name;
+
+	    }
+		*/
 	}
 
 
