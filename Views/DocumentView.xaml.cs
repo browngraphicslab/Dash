@@ -462,6 +462,7 @@ namespace Dash
 
             xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
             xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void ToggleTemplateEditor()
