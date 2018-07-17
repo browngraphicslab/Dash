@@ -12,6 +12,7 @@ namespace Dash
         //TODO: Search in collections - check out "collected docs note in viewdocument.getdatadocument.documenttype.type
         //TODO: ModifiedTime not existing until document is modified
 
+        // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
@@ -25,6 +26,7 @@ namespace Dash
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
+        // Searches the ViewDocument and DataDocuments of all DocumentControllers in the Dash View for a given query string
         public static IEnumerable<SearchResult> SearchByQuery(string query, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
@@ -58,6 +60,9 @@ namespace Dash
                     numMatchedFields++;
                 }
 
+                // Shortens the helpful text so that the user is given a meaningful helptext string that can help
+                // identify where the match was found, while not being too long such that the Data string isn't
+                // just vomited onto the search result dropdown
                 var s = "";
                 var e = "";
                 if (!string.IsNullOrEmpty(relatedString))
@@ -112,6 +117,8 @@ namespace Dash
             }
         }
 
+        // Handles instances where the user inserted a colon, and determines whether or not the user meant to
+        // search the colon as part of a string, or perform a parameterized search
         public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart)
         {
             searchPart = searchPart ?? " ";
@@ -130,14 +137,18 @@ namespace Dash
             return SearchByQuery(searchPart);
         }
 
+        // Determines what kind of parameterized search the user intended
         private static IEnumerable<SearchResult> ParameterizeFunction(string name, string paramName)
         {
+            // Workaround for calling search in collection, since the "in" keyword has system significance and
+            // can't be used as an enum
             if (name.Equals("in"))
             {
                 name = "inside";
             }
 
             // Not really sure what the point of it is, but it was in MainSearchBox, so I adapted it to the new search
+            // All it does it do a search only taking into account rich text boxes
             if (name == "rtf" ||
                 name == "rt" ||
                 name == "richtext" ||
@@ -149,11 +160,14 @@ namespace Dash
                 return res.Select(node => new SearchResult(node, $" >> { name }", "\"" + paramName + "\"", 1));
             }
 
+                //If the user didn't input a DSL recognized function, then they probably intended to search for a
+                // Key-value pair.
                 //this returns a string that more closely follows function syntax
                 if (!DSL.FuncNameExists(name))
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName.Trim('"'));
             }
+            
             try
             {
                 paramName = paramName.Trim('"');
@@ -183,6 +197,7 @@ namespace Dash
             return new List<SearchResult>();
         }
 
+        // Finds the index of the next logical operator
         private static int FindNextDivider(string inputString)
         {
             var inParen = false;
@@ -260,6 +275,8 @@ namespace Dash
             return -1;
         }
 
+        // Breaks down the user string while searching based on the desired logical operators and placement
+        // of quotes/parenthesis
         public static IEnumerable<SearchResult> Parse(string inputString)
         {
             if (string.IsNullOrEmpty(inputString))
