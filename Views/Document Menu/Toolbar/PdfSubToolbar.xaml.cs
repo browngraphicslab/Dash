@@ -67,7 +67,7 @@ namespace Dash
         private void XTextToggle_OnChecked(object sender, RoutedEventArgs e)
         {
             xRegionToggle.IsChecked = false;
-            xTextToggle.IsChecked = false;
+            xInkToggle.IsChecked = false;
 
             xPdfCommandbar.IsOpen = true;
             xPdfCommandbar.IsEnabled = true;
@@ -76,7 +76,7 @@ namespace Dash
 
         private void XRegionToggle_OnChecked(object sender, RoutedEventArgs e)
         {
-            xRegionToggle.IsChecked = false;
+            xInkToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
 
             xPdfCommandbar.IsOpen = true;
