@@ -14,6 +14,7 @@ using Dash;
 using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
+using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 
 namespace Dash
 {
@@ -566,9 +567,9 @@ namespace Dash
         // If you want to add new code into the ElementOnManipulationStarted handler, use this one. It will always be called.
         public void ElementOnManipulationStarted()
         {
+            UndoManager.StartBatch();
             ManipulationStartX = ParentDocument.ViewModel.XPos;
             ManipulationStartY = ParentDocument.ViewModel.YPos;
-
             OnManipulatorStarted?.Invoke();
         }
 
@@ -660,8 +661,6 @@ namespace Dash
             Dock(false);
 
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
-
-
         }
 
         private List<DocumentView> GetOverlappedViews()

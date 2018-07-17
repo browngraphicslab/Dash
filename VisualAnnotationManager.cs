@@ -44,6 +44,17 @@ namespace Dash
         private IEnumerable<SelectableElement> _selectableElements;
         private SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(80, 0xCC, 0xFF, 0x00));
 
+        private AnnotationType _currentAnnotationType = AnnotationType.None;
+        public AnnotationType CurrentAnnotationType
+        {
+            get => _currentAnnotationType;
+            set
+            {
+                _currentAnnotationType = value;
+                _overlay.SetInkEnabled(value == AnnotationType.Ink);
+            }
+        }
+
         private enum RegionVisibilityState
         {
             Visible,
@@ -120,6 +131,7 @@ namespace Dash
         }
 
         public double Zoom = 1;
+
         private void Element_OnNewRegionStarted(object sender, PointerRoutedEventArgs e)
         {
             var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
@@ -389,6 +401,7 @@ namespace Dash
             else
             {
                 AnnotationType annotationType;
+                //TODO Use CurrentAnnotationType here
                 if (_selectableElements != null)
                 {
                     annotationType = AnnotationType.TextSelection;

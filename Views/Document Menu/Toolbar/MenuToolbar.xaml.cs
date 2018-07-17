@@ -351,6 +351,15 @@ namespace Dash
                         subtoolbarElement = xGroupToolbar;
                     }
 
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
+                    {
+                        containsInternalContent = true;
+                        baseLevelContentToolbar = xPdfToolbar;
+                        xPdfToolbar.SetPdfBinding(selection);
+                        subtoolbarElement = xPdfToolbar;
+                        xGroupToolbar.TryMakeGroupEditable(true);
+                    }
+
 
 					// <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 

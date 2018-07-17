@@ -117,6 +117,7 @@
             <x:String x:Key="LeftCaretIcon">&#xf0d9;</x:String>
             <x:String x:Key="CheckIcon">&#xf00c;</x:String>
             <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
+            <x:String x:Key="ErrorIcon">&#xf071;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
