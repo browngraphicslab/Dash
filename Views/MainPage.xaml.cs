@@ -287,7 +287,7 @@ namespace Dash
                                 finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
-                                    NavigateToDocumentInWorkspace(document, false);
+                                    NavigateToDocumentInWorkspace(document, false, false);
                                     vm.Content.Loaded -= finalHandler;
                                 };
 
@@ -306,7 +306,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false))
+                                    if (!NavigateToDocumentInWorkspace(document, false, false))
                                     {
                                         handler(null, null);
                                     }
@@ -319,7 +319,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     coll.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false))
+                                    if (!NavigateToDocumentInWorkspace(document, false, false))
                                     {
                                         handler(null, null);
                                     }
@@ -342,13 +342,13 @@ namespace Dash
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments = false)
+        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
-                return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
+                return NavigateToDocument(coll, null, coll, document, animated, zoom, compareDataDocuments);
             }
             return false;
         }
@@ -401,18 +401,18 @@ namespace Dash
                 }
         }
 
-        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
+        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null && document != null)
             {
-                return NavigateToDocument(coll, null, coll, document, true, true);
+                return NavigateToDocument(coll, null, coll, document, true, zoom, true);
             }
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments = false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -440,11 +440,14 @@ namespace Dash
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
 
                     if (animated)
+                    {
                         //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.SetTransformAnimated(
-                            new TranslateTransform() { X = center.X-shift.X, Y = center.Y-shift.Y },
-                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom }
-                          );
+                            new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
+                            zoom ? new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } : new ScaleTransform { CenterX = shift.X, CenterY = shift.Y },
+                            zoom
+                        );
+                    }
                     else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
                     return true;
                 }
