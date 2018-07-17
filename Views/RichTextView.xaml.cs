@@ -668,7 +668,7 @@ namespace Dash
                 i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                 var s = xRichEditBox.Document.Selection.StartPosition;
                 var selectedText = xRichEditBox.Document.Selection;
-                if (i > 0)
+                if (i > 0 && !_originalCharFormat.ContainsKey(s))
                 {
                     _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
                 }
@@ -676,6 +676,7 @@ namespace Dash
                 {
                     selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
                 }
+                xRichEditBox.Document.Selection.Collapse(false);
             }
             xRichEditBox.Document.Selection.StartPosition = 0;
             xRichEditBox.Document.Selection.EndPosition = 0;

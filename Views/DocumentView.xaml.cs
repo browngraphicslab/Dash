@@ -162,7 +162,7 @@ namespace Dash
                 Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
-            Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
+            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
             PointerPressed += (sender, e) =>
             {
