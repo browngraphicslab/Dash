@@ -164,7 +164,7 @@ namespace Dash
                 else
                 {
                     //navigate to the linked doc
-                    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+                    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, true);
 
                     //images have additional highlighting features that should be implemented
                     if (_element is EditableImage)

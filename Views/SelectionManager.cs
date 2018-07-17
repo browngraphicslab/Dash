@@ -72,7 +72,7 @@ namespace Dash
         }
         public static void RefreshSelected(IEnumerable<DocumentView> viewModels)
         {
-            var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel?.DocumentController).ToList();
             DeselectAll();
             foreach (var v in viewModels)
                 if (oldSelected.Contains(v.ViewModel.DocumentController))

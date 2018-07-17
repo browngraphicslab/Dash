@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded',
                                         if (tab.url.includes("docs.google.com")) {
                                             let urlSections = tab.url.split("/");
                                             let fileId = urlSections[urlSections.length - 2];
+                                            console.log(fileId);
                                             path = "https://www.googleapis.com/drive/v3/files/" +
                                                 fileId +
                                                 "/export?mimeType=application%2Fpdf";
