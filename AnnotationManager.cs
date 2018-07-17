@@ -89,37 +89,46 @@ namespace Dash
 
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), false);
-			
-		    if (nearestOnScreen == null)
-		    {
-			    if (nearestOnCollection == null) return;
-			    // calculate distance of how off-screen it is
-			    var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
-			    var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
 
+		    var toFollow = nearestOnScreen ?? nearestOnCollection;
+		    if (toFollow == null) return;
+			// true if it's in sight, false if hidden
+		    var intersectWithParentCollection = RectHelper.Intersect(toFollow.GetBoundingRect(MainPage.Instance),
+			                                        toFollow.GetFirstAncestorOfType<CollectionFreeformView>()
+				                                        .GetBoundingRect(MainPage.Instance)) !=
+		                                        Rect.Empty || toFollow.GetFirstAncestorOfType<CollectionFreeformView>().Equals(MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>());
+
+			if (nearestOnScreen == null || !intersectWithParentCollection)
+			{
+				// calculate distance of how off-screen it is
+				var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
+				var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
 			    var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
 
-			    if (dist < threshold)
-			    {
-				    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-			    }
-			    else
-			    {
-				    // see if it's already docked
-				    var dv = MainPage.Instance.DockManager.GetDockedView(target);
+				// not visible in its current collectionview, or too far away: dock it
+				if (dist > threshold || !intersectWithParentCollection)
+				{
+					// see if it's already docked
+					var dv = MainPage.Instance.DockManager.GetDockedView(target);
 
-				    // if not docked
-				    if (dv == null)
-				    {
-					    var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
-					    MainPage.Instance.DockManager.Dock(target, dir);
-				    }
-				    // if it's already docked, then highlight it instead of docking it again
-				    else
-				    {
-					    dv.FlashSelection();
-				    }
-			    }
+					// if not docked
+					if (dv == null)
+					{
+						var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
+						MainPage.Instance.DockManager.Dock(target, dir);
+					}
+
+					// if it's already docked, then highlight it instead of docking it again
+					else
+					{
+						dv.FlashSelection();
+					}
+				}
+				// should always be true
+				else if (dist <= threshold)
+				{
+					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+				}
 		    }
 
 		    // we only want to pan when the document isn't currently on the screen
@@ -182,7 +191,7 @@ namespace Dash
 		        }
 	        }
 
-	        return nearest;
+		    return nearest;
         }
 
 		private DocumentView NearestOnCollection(Point where, DocumentController targetData, CollectionView collection, bool onlyOnPage = true)
