@@ -107,11 +107,12 @@ namespace Dash
 
         private static void SelectHelper(DocumentView doc)
 		{
-			if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()))
+			if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
 				SelectRegion(null);
 			_selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
+
         public static void RefreshSelected(IEnumerable<DocumentView> viewModels)
         {
             var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel?.DocumentController).ToList();
