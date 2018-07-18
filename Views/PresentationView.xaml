@@ -13,10 +13,12 @@
 
     <Grid Padding="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height ="15"/>
             <RowDefinition Height ="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel>
+        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" Margin="200,0,0,0"/>
+        <StackPanel Grid.Row="1">
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
             <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
 
@@ -70,7 +72,7 @@
                 </ListView>
             </Grid>
         </StackPanel>
-        <StackPanel HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="1">
+        <StackPanel HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="2">
             <AppBarButton x:Name="ResetButton" Icon="Zoom" Label="Re-Focus" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3" IsCompact="False" Margin="10"/>
             <AppBarButton x:Name="ShowLinesButton" Icon="Go" Label="Show Lines" IsEnabled="True" IsCompact="False" Margin="10" Click="ShowLinesButton_OnClick" Background="White" Foreground="Black" x:FieldModifier="public"/>
         </StackPanel>
