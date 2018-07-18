@@ -79,10 +79,14 @@
                                 <ComboBoxItem>HTML</ComboBoxItem>
                                 <ComboBoxItem>RTF</ComboBoxItem>
                             </ComboBox>
+                            <CheckBox x:Name="xSaveHtmlType" Margin="0,30,0,0" IsChecked="False"
+                                      Content="Remember my choice." FontSize="18" RenderTransformOrigin="0.5,0.5" >
+                                <CheckBox.RenderTransform>
+                                    <CompositeTransform ScaleX="0.7" ScaleY="0.7"/>
+                                </CheckBox.RenderTransform>
+                              </CheckBox>
                         </StackPanel>
 
-                        <CheckBox x:Name="xSaveHtmlType" 
-                                  Content="Remember my choice."/>
 
                         <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
                             <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
