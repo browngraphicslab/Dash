@@ -65,11 +65,11 @@ namespace Dash
                 if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
                     textData.GetSingleSpaceWidth())
                 {
+                    var width = start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                            _pageSize.GetHeight() -
-                            (start.Get(1) +
-                             _pageOffset), textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                            _pageSize.GetHeight() - (start.Get(1) + _pageOffset),
+                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
                 }
 
                 //if (_elements.Any() && Math.Abs(_elements.Last().Bounds.Y - textData.GetDescentLine().GetBoundingRectangle().GetY()) >
