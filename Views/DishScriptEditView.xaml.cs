@@ -69,7 +69,10 @@ namespace Dash
                 if (i == letters.Length - 1 && letter != '\r')
                 {
                     //last char
-                    output.Add(new TextController(newText));
+                    if (newText != " ")
+                    {
+                        output.Add(new TextController(newText));
+                    }
                 } else if (letter == '"' || letter == '\'')
                 {
                     inQuotes = !inQuotes;
@@ -78,16 +81,16 @@ namespace Dash
                 else if ((letter == ';' || letter == '\r') && inBrackets == 0 && !inQuotes)
                 {
                     //end of command
-                    if (newText.Trim('\r') != "")
+                    if (newText.Trim('\r') != "" && newText.Trim('\r') != " ")
                     {
-                        output.Add(new TextController(newText));
-                        growing = "";
+                            output.Add(new TextController(newText));
+                            growing = "";
                     }
                 } else if (letter == '}' && !inQuotes)
                 {
                     //end of loop
                     inBrackets--;
-                    if (inBrackets == 0)
+                    if (inBrackets == 0 && newText != " ")
                     {
                         output.Add(new TextController(newText));
                         growing = "";
