@@ -338,11 +338,10 @@ namespace Dash
                 {
 	                region.ToggleSelectionState(RegionSelectionState.Hover);
 	               // region.LinkTo?.SetHidden(false);
-				}
-
-	            _overlay.ShowAnnotations(true);
+				} 
 			}
-        }
+	        _overlay.ShowAnnotations(true);
+		}
 
         //hides all visible regions 
         public void HideRegions()
@@ -358,9 +357,9 @@ namespace Dash
                 {
 	                region.ToggleSelectionState(RegionSelectionState.None);
                 }
-				_overlay.ShowAnnotations(false);
 			}
-        }
+	        _overlay.ShowAnnotations(false);
+		}
 		
 
         public void SetSelectionRegion(IEnumerable<SelectableElement> elements)

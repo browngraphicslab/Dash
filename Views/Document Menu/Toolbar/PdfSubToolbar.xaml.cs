@@ -53,6 +53,20 @@ namespace Dash
             _currentPdfView = _currentDocView.GetFirstDescendantOfType<CustomPdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 	        xToggleAnnotations.IsChecked = _currentPdfView.AnnotationManager.AreAnnotationsVisible();
+
+			//update selected annotation type according to this newly selected PDF
+	        switch (_currentPdfView.AnnotationManager.CurrentAnnotationType)
+	        {
+				case AnnotationManager.AnnotationType.Ink:
+					xInkToggle.IsChecked = true;
+					break;
+				case AnnotationManager.AnnotationType.TextSelection:
+					xTextToggle.IsChecked = true;
+					break;
+				case AnnotationManager.AnnotationType.RegionBox:
+					xRegionToggle.IsChecked = true;
+					break;
+	        }
         }
 
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)

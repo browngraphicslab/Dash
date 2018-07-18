@@ -158,8 +158,7 @@ namespace Dash
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
-	    {
-			_currentImage?.AnnotationManager.HideRegions();
+	    {			_currentImage?.AnnotationManager.HideRegions();
 		    xToggleAnnotations.Label = "Hidden";
 	    }
 
