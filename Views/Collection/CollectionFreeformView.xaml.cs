@@ -64,9 +64,9 @@ namespace Dash
             SelectionManager.RefreshSelected(this.GetDescendantsOfType<DocumentView>());
         }
 
-        public override Canvas GetCanvas()
+        public override Panel GetCanvas()
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
