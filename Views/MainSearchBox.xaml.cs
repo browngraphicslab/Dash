@@ -263,7 +263,7 @@ namespace Dash
 
         private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var text = xAutoSuggestBox.Text;
+            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
             var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
@@ -277,7 +277,7 @@ namespace Dash
         }
         private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var text = xAutoSuggestBox.Text;
+            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
             var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
