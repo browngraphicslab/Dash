@@ -27,9 +27,10 @@ document.addEventListener('DOMContentLoaded',
             function (tab) {
                 //tab.url can now be used to get url
                 let url = tab.url;
-                if (url.includes("docs.google.com") || url.includes(".pdf") || url.includes(".PDF")) {
+                //TODO: if local files are fixed, removed the check for not file in url
+                if (url.includes("docs.google.com") || (url.includes(".pdf") || url.includes(".PDF") && !url.includes("file"))) {
                     //google doc is open
-                    document.getElementById("addDoc").style.visibility = "visible";
+                    document.getElementById("addDocButton").style.visibility = "visible";
                 } 
             });
 
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded',
                                         xhr.onload = function() {
                                             //only continue if successful
                                             console.log(xhr.status);
+                                            console.log(xhr);
                                             if (xhr.status === 200) {
                                                 var res = xhr.response;
 
@@ -88,11 +90,10 @@ document.addEventListener('DOMContentLoaded',
                                                     "$type": "Dash.GSuiteImportRequest, Dash",
                                                     "data": data
                                                 }
+                                                console.log(request);
                                                 chrome.runtime.sendMessage({ type: "sendRequest", data: request });
 
-                                            } else {
-
-                                            }
+                                            } 
 
                                             loadToPercentage = 100;
                                             loadBarTo();
