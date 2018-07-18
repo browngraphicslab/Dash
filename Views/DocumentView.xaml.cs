@@ -179,7 +179,8 @@ namespace Dash
             PointerEntered += DocumentView_PointerEntered;
             PointerExited += DocumentView_PointerExited;
             RightTapped += (s, e) => DocumentView_OnTapped(null, null);
-            AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
+            Tapped += DocumentView_OnTapped;
+            // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
 
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -950,7 +951,10 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            FocusedDocument = this;
+            if (e != null && !e.Handled)
+            {
+                FocusedDocument = this;
+            }
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1350,7 +1354,6 @@ namespace Dash
                 ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
             }
         }
-
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);

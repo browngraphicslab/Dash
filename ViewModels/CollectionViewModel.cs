@@ -698,7 +698,7 @@ namespace Dash
                 var where = new Point();
                 if (senderView is CollectionFreeformBase)
                     where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
-                        e.GetPosition(MainPage.Instance));
+                        e.GetPosition(MainPage.Instance.MainDocView));
                 else if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
@@ -807,8 +807,13 @@ namespace Dash
 
                             await DotNetRPC.CallRPCAsync(table);
                             var dataPackageView = Clipboard.GetContent();
-                            var richtext = await dataPackageView.GetRtfAsync();
-                            htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                            if (dataPackageView.Contains(StandardDataFormats.Rtf))
+                            {
+                                var richtext = await dataPackageView.GetRtfAsync();
+                                htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                            }
+                            else
+                                htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                         }
 
                     }
@@ -1065,10 +1070,16 @@ namespace Dash
                         else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
                         {
                             var dragDoc = dragModel.DraggedDocument;
-                            if (dragModel.LinkSourceView != null &&
-                                KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                                dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
-                            var note = new RichTextNote("<annotation>", where).Document;
+	                        if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+	                        {
+		                        // if RegionCreator exists, then dragDoc becomes the region document
+								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+	                        }
+							// note is the new annotation textbox that is created
+							var note = new RichTextNote("<annotation>", where).Document;
+	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+							
+
                             dragDoc.Link(note);
                             AddDocument(note);
                         }

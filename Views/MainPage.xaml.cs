@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Contacts;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -460,6 +462,24 @@ namespace Dash
             return false;
         }
 
+	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
+		{
+			var dvm = MainDocView.DataContext as DocumentViewModel;
+			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+
+			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+				dcPoint.X + dcSize.X / 2,
+				dcPoint.Y + dcSize.Y / 2
+		    ));
+
+			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+		    return new Point(center.X - shift.X, center.Y - shift.Y);
+	    }
+
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
@@ -508,30 +528,6 @@ namespace Dash
                 }
             }
 
-            e.Handled = true;
-        }
-
-        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
-        {
-            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
-                return;
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
-            {
-                MainDocView_OnDoubleTapped(null, null);
-            }
-
-            // TODO propagate the event to the tab menu
-            if (xCanvas.Children.Contains(TabMenu.Instance))
-            {
-                TabMenu.Instance.HandleKeyUp(sender, e);
-            }
-
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
-                e.Handled = true;
-            }
-
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox))
@@ -556,9 +552,37 @@ namespace Dash
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            if (coll != null && !coll.IsMarqueeActive && !(FocusManager.GetFocusedElement() is TextBox))
+            // bcz: needs to be in keyUp because when typing in a new textBox inside a nested collection, no one catches the KeyDown event and putting this in KeyDown
+            //       would cause a collection to be created when typing a 'c'
+            // bcz: needs to be in keyDown because of potential conflicts when releasing the ctrl key before the 'c' key which causes this to 
+            //       create a collection around a PDF when you're just copying text
+            if (!(FocusManager.GetFocusedElement() is RichEditBox) && coll != null && !coll.IsMarqueeActive && !(FocusManager.GetFocusedElement() is TextBox))
             {
                 coll.TriggerActionFromSelection(e.VirtualKey, false);
+            }
+
+            e.Handled = true;
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
+        {
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
+                return;
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
+            {
+                MainDocView_OnDoubleTapped(null, null);
+            }
+
+            // TODO propagate the event to the tab menu
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                TabMenu.Instance.HandleKeyUp(sender, e);
+            }
+
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                e.Handled = true;
             }
 
             if (DocumentView.FocusedDocument != null)

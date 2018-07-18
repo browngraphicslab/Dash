@@ -13,7 +13,6 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </Page.Resources>
 
-
     <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
