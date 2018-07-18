@@ -239,11 +239,11 @@ namespace Dash
                     var y = pt1.Data.Y;
 
                     var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
-                    var width = 0;/*
+                    double width = 0;
                     if (rawWidth != "NaN")
                     {
-                        width = Int32.Parse(rawWidth);
-                    }*/
+                        width = Convert.ToDouble(rawWidth);
+                    }
 
                     if (x < minX)
                     {
@@ -270,14 +270,14 @@ namespace Dash
             minMax.Add(minX - (minX * .1));
             minMax.Add(maxX);
             minMax.Add(minY - (minY * .1));
-            minMax.Add(maxY + (maxY * .2));
+            minMax.Add(maxY + (maxY * .1));
             return minMax;
         }
 
         private List<double> getMargin(DocumentController doc, List<double> minMax)
         {
             var marginLeft = 0.0;
-            var marginRight = 0.0;
+            var marginTop = 0.0;
             var pt1 = doc.GetPosition();
             if (pt1 != null)
             {
@@ -295,12 +295,12 @@ namespace Dash
                 var y = pt1.Value.Y - minY;
 
                 var DASHHEIGHT = Math.Abs(maxY - minY);
-                marginRight = (y * PAGEHEIGHT) / (DASHHEIGHT);
+                marginTop = (y * PAGEHEIGHT) / (DASHHEIGHT);
             }
 
             var margins = new List<double>();
             margins.Add(marginLeft);
-            margins.Add(marginRight);
+            margins.Add(marginTop);
             return margins;
         }
 
