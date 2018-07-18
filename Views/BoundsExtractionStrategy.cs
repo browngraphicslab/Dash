@@ -19,6 +19,7 @@ namespace Dash
         private double _largestSpaceWidth;
         private List<SelectableElement> _elements = new List<SelectableElement>();
         private List<Rectangle> _pages = new List<Rectangle>();
+        private double _smallestSpaceWidth;
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {
@@ -54,17 +55,45 @@ namespace Dash
                 //            Math.Abs(end.Get(1) - start.Get(1)))));
                 //}
 
-                if (!_elements.Any() || ((!_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
-                                          !_elements.Last().Bounds.Contains(new Point(
-                                              textData.GetAscentLine().GetEndPoint().Get(0),
-                                              textData.GetAscentLine().GetEndPoint().Get(1)))) &&
-                                         !(_elements.Last().Contents as string).Equals(textData.GetText())))
+                //if (!_elements.Any() || 
+                //    ((!_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
+                //                          !_elements.Last().Bounds.Contains(new Point(
+                //                              textData.GetAscentLine().GetEndPoint().Get(0),
+                //                              textData.GetAscentLine().GetEndPoint().Get(1)))) &&
+                //                         !(_elements.Last().Contents as string).Equals(textData.GetText())))
+
+                if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
+                    textData.GetSingleSpaceWidth())
                 {
-                    _elements.Add(new SelectableElement(-1, textData.GetText(),
-                        new Rect(start.Get(0),
-                            _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                            Math.Abs(end.Get(0) - start.Get(0)),
-                            Math.Abs(end.Get(1) - start.Get(1)))));
+                    _elements.Add(new SelectableElement(-1, " ",
+                        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
+                            _pageSize.GetHeight() -
+                            (start.Get(1) +
+                             _pageOffset), textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                }
+
+                //if (_elements.Any() && Math.Abs(_elements.Last().Bounds.Y - textData.GetDescentLine().GetBoundingRectangle().GetY()) >
+                //    _elements.Last().Bounds.Height)
+                //{
+                //    _elements.Add(new SelectableElement(-1, "\r\n",
+                //        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
+                //            _pageSize.GetHeight() -
+                //            (start.Get(1) +
+                //             _pageOffset), textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                //}
+
+                var newBounds = new Rect(start.Get(0),
+                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
+                    Math.Abs(end.Get(0) - start.Get(0)),
+                    Math.Abs(end.Get(1) - start.Get(1)));
+                if (!_elements.Any() || _elements.Last().Bounds != newBounds)
+                {
+                    _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
+                }
+
+                if (textData.GetSingleSpaceWidth() < _smallestSpaceWidth)
+                {
+                    _smallestSpaceWidth = textData.GetSingleSpaceWidth();
                 }
             }
         }
@@ -199,6 +228,13 @@ namespace Dash
                             columns.Add(new List<SelectableElement> {selectableElement});
                         }
                     }
+                    //else if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > _smallestSpaceWidth)
+                    //{
+                    //    columns[col].Add(new SelectableElement(-1, " ",
+                    //        new Rect(element.Bounds.X + element.Bounds.Width, element.Bounds.Y, _smallestSpaceWidth,
+                    //            element.Bounds.Height)));
+                    //    columns[col].Add(selectableElement);
+                    //}
                     else
                     {
                         columns[col].Add(selectableElement);
