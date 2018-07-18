@@ -43,7 +43,8 @@ namespace Dash
                 var start = textData.GetAscentLine().GetStartPoint();
                 var end = textData.GetDescentLine().GetEndPoint();
                 if (_elements.Any() &&
-                    Math.Abs(Math.Abs(start.Get(0) - _elements.Last().Bounds.X) - textData.GetSingleSpaceWidth()) <=
+                    Math.Abs(Math.Abs(start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width) -
+                             textData.GetSingleSpaceWidth()) <=
                     0.1)
                 {
                     _elements.Add(new SelectableElement(-1, " ",
@@ -53,11 +54,15 @@ namespace Dash
                             Math.Abs(end.Get(1) - start.Get(1)))));
                 }
 
-                _elements.Add(new SelectableElement(-1, textData.GetText(),
-                    new Rect(start.Get(0),
-                        _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                        Math.Abs(end.Get(0) - start.Get(0)),
-                        Math.Abs(end.Get(1) - start.Get(1)))));
+                if (!_elements.Any() || !_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
+                    _elements.Last().Bounds.Contains(new Point(textData.GetAscentLine().GetEndPoint().Get(0), textData.GetAscentLine().GetEndPoint().Get(1))))
+                {
+                    _elements.Add(new SelectableElement(-1, textData.GetText(),
+                        new Rect(start.Get(0),
+                            _pageSize.GetHeight() - start.Get(1) + _pageOffset,
+                            Math.Abs(end.Get(0) - start.Get(0)),
+                            Math.Abs(end.Get(1) - start.Get(1)))));
+                }
             }
         }
 
@@ -127,8 +132,8 @@ namespace Dash
                 var col = 0;
                 foreach (var selectableElement in line)
                 {
-                    var currFontWidth = selectableElement.Bounds.Width;
-                    if (selectableElement.Bounds.X - element.Bounds.X > 4 * currFontWidth)
+                    var currFontWidth = (selectableElement.Bounds.Width + element.Bounds.Width) / 2;
+                    if (selectableElement.Bounds.X - element.Bounds.X + element.Bounds.Width > 3.5 * currFontWidth)
                     {
                         col++;
                         if (columns.Count > col)
@@ -137,7 +142,7 @@ namespace Dash
                         }
                         else
                         {
-                            columns.Add(new List<SelectableElement> { selectableElement });
+                            columns.Add(new List<SelectableElement> {selectableElement});
                         }
                     }
                     else
@@ -147,6 +152,11 @@ namespace Dash
 
                     element = selectableElement;
                 }
+            }
+
+            foreach (var column in columns)
+            {
+
             }
 
             List<SelectableElement> elements = new List<SelectableElement>();
