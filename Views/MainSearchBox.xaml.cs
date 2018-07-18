@@ -399,7 +399,10 @@ namespace Dash
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
         {
-            string docTitle = result.ViewDocument.ToString().Substring(1);
+            string docTitle = result.ViewDocument.ToString();
+            int len = docTitle.Length > 10 ? 10 : docTitle.Length - 1;
+            string suffix = len < docTitle.Length - 1 ? "..." : "";
+            docTitle = docTitle.Substring(1, len) + suffix;
             var titles = result.FormattedKeyRef.Select(key => docTitle + key).ToList();
             return new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
         }
