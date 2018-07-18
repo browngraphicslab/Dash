@@ -1,0 +1,47 @@
+﻿<UserControl
+    x:Class="Dash.TemplateRecord"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="230">
+    
+    <StackPanel Orientation="Horizontal" x:Name="xPanel" Width="250" Height="40" Background="Transparent">
+        <TextBlock x:Name="xTemplateTitle" Width="140"></TextBlock>
+
+      
+        
+        <StackPanel x:Name="xApply" Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" >
+
+            <Button Height="20" Width="30" Background="{StaticResource AccentGreenLight}" Margin="-26 0 6 0"  Click="XApply_OnClick">
+                <StackPanel Orientation="Horizontal">
+                    <!--<TextBlock  FontSize="10" Foreground="White" Text="Apply"></TextBlock>-->
+                    <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="White" VerticalAlignment="Center"
+                               FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+
+
+        <StackPanel x:Name="xDelete" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+
+            <Button Height="20" Width="30" Background="#D64141"  Click="xDelete_OnClick">
+              
+                <StackPanel Orientation="Horizontal">
+                    <!--<TextBlock  FontSize="10" Foreground="White" Text="Delete"></TextBlock>-->
+                    <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="White" VerticalAlignment="Center"
+                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Button x:Name="xStarButton" Height="20" Width="20"  Margin="40 0 0 0" Click="XFavorite_OnClick" Background="Transparent" HorizontalAlignment="Right">
+            <TextBlock x:Name="xStar" HorizontalAlignment="Center" FontSize="18" Foreground="Gray" Opacity="0.5" VerticalAlignment="Center"
+                       FontFamily="{StaticResource FontAwesome}" Text="&#xf005;"/>
+        </Button>
+    </StackPanel>
+</UserControl>

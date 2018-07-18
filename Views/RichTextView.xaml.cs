@@ -144,7 +144,7 @@ namespace Dash
             
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
-            if (DataContext != null && Text != null)
+            if (DataContext != null)
             {
                 convertTextFromXamlRTF();
 
@@ -548,7 +548,7 @@ namespace Dash
 
             if (string.IsNullOrEmpty(this.getSelected()?.First()?.Data))
             {
-                this.xRichEditBox.Document.Selection.Text = theDoc.Title;
+                if (theDoc != null) this.xRichEditBox.Document.Selection.Text = theDoc.Title;
             }
 
             var region = GetRegionDocument();
@@ -698,9 +698,9 @@ namespace Dash
         {
             if (getDocView() == null)
                 return;
-            this.ClearSearchHighlights();
+            ClearSearchHighlights();
             _nextMatch = 0;
-            _prevQueryLength = queries?.First() == null ? 0 : queries.First().Data.Length;
+            _prevQueryLength = queries?.FirstOrDefault() == null ? 0 : queries.First().Data.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;

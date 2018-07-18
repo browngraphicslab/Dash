@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -75,8 +78,9 @@ namespace Dash
         {
 
             var grid = new Grid();
+	        grid.Background = new SolidColorBrush(Colors.Blue);
 
-            //SetupBindings(grid, docController, context);
+            SetupBindings(grid, docController, context);
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -86,12 +90,19 @@ namespace Dash
             {
                 Util.FixListViewBaseManipulationDeltaPropagation(listView);
             };
+			
+			listView.Background = new SolidColorBrush(Colors.Red);
             listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
 
             listView.HorizontalContentAlignment = HorizontalAlignment.Center; 
             SetupBindings(listView, docController, context); 
 
-            LayoutDocuments(docController, context, listView);
+            var itemsSource = LayoutDocuments(docController, context, listView);
+	        grid.Drop += (s, e) =>
+	        {
+		        Debug.WriteLine("SOMETHING WAS DROPPED ON LIST VIEW: " + s + e);
+	        };
+
 
             var c = new Context(context);
             docController.FieldModelUpdated += delegate (FieldControllerBase sender,
@@ -122,7 +133,7 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, ListView list)
+        private static ObservableCollection<FrameworkElement> LayoutDocuments(DocumentController docController, Context context, ListView list)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
@@ -141,8 +152,27 @@ namespace Dash
                 var elem = (item as UIElement);
                 if (elem != null) elem.IsHitTestVisible = true;
             }
-            
+
+	        return itemsSource;
         }
+
+	    private static void AddDocument(DocumentController doc, ListView list)
+	    {
+		   /* var layoutView = doc.MakeViewUI(new Context());
+			//// layoutView.HorizontalAlignment = HorizontalAlignment.Left;
+			// layoutView.VerticalAlignment = VerticalAlignment.Top;
+			// list.ItemsSource = 
+
+		    
+		    list.ItemsSource = itemsSource;
+		    list.SelectionMode = ListViewSelectionMode.None;
+		    foreach (var item in list.Items)
+		    {
+			    var elem = (item as UIElement);
+			    if (elem != null) elem.IsHitTestVisible = true;
+		    }
+			*/
+		}
 
         private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {

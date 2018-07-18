@@ -1,0 +1,74 @@
+﻿<UserControl
+    x:Class="Dash.TemplateApplier"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="280">
+
+    <Grid Width="250" Height="300" Background="{StaticResource AccentGreenLight}" Margin="0 10 0 0">
+        <StackPanel Width= "250" Height="300" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center">
+            
+            <TextBox x:Name="xSearchBox" PlaceholderText="Search"
+                            Margin="0 20 0 0"
+                            TextChanged="Search_Entered"
+                            Style="{StaticResource AutoFontSize}"
+                            Width="230" RelativePanel.AlignTopWithPanel="True"
+                            VerticalAlignment="Top"
+                            AllowDrop="True"/>
+            <ListView x:Name="xListView" Width="230" RelativePanel.Below="xSearchBox" Margin="0 10 0 0"  ItemsSource="{x:Bind TemplateRecords}">
+            </ListView>
+
+                <!--TextChanged="AutoSuggestBox_TextChanged"
+                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                GotFocus="XAutoSuggestBox_OnGotFocus"
+                DragEnter="XAutoSuggestBox_OnDragEnter"
+                Drop="XAutoSuggestBox_OnDrop"-->
+                <!--<AutoSuggestBox.ItemTemplate>
+
+                    <DataTemplate x:DataType="local:SearchResultViewModel">
+                        <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border
+                            Background="Transparent"
+                            DragStarting="SearchResult_OnDragStarting"
+                            CanDrag="True">
+                                <TextBlock x:Name="xCollDragIcon"
+                                       FontFamily="{StaticResource FontAwesome}"
+                                       Foreground="{StaticResource TitleText}"
+                                       FontSize="15"
+                                       Text="{StaticResource DocumentIcon}"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Center"
+                                       Height="32"
+                                       Width="32" />
+                            </Border>
+                            <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
+
+                                <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
+                                <TextBlock Text="{Binding ContextualText}"></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </AutoSuggestBox.ItemTemplate>-->
+
+            
+            <!--THESE ARE THE BUTTONS THAT CORRESPOND TO THE SELECTED DOCUMENT-->
+            <!--<StackPanel x:Name="xButtons" Orientation="Horizontal" Width="170"
+                        Margin="0 10 0 0" VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                        RelativePanel.AlignBottomWithPanel="True">
+
+
+                
+            </StackPanel>-->
+
+        </StackPanel>
+    </Grid>
+</UserControl>

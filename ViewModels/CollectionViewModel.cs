@@ -51,7 +51,6 @@ namespace Dash
         //this table saves requests to appData for htmlImport
         private static ValueSet table = null;
         //this is for copy and paste
-        DataPackage dataPackage = new DataPackage();
 
         #region StandardView
         public enum StandardViewLevel
@@ -66,6 +65,7 @@ namespace Dash
 
         private double _prevScale = 1;
 
+        DataPackage dataPackage = new DataPackage();
         public StandardViewLevel ViewLevel
         {
             get => _viewLevel;
@@ -114,6 +114,13 @@ namespace Dash
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
                 ActualSizeFieldChanged(null, null, null);
+                //Stuff may have changed in the collection while we weren't listening, so remake the list
+                if (CollectionController != null)
+                {
+                    DocumentViewModels.Clear();
+                    addViewModels(CollectionController.TypedData);
+                }
+
                 _lastDoc = ContainerDocument;
             }
             else
@@ -171,11 +178,9 @@ namespace Dash
         {
             var wasLoaded = _isLoaded;
             Loaded(false);
-            DocumentViewModels.Clear();
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            addViewModels(CollectionController?.TypedData);
             if (_isLoaded && wasLoaded)
             {
                 Loaded(true);
@@ -270,7 +275,6 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents)
         {
-            if (documents != null)
                 using (BindableDocumentViewModels.DeferRefresh())
                 {
                     foreach (var documentController in documents)
@@ -762,14 +766,16 @@ namespace Dash
 
                     DocumentController htmlNote = null;
 
-                    if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
+                    if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && !MainPage.Instance.IsCtrlPressed()) || 
+                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
                     {
 
                         htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
 
                     }
 
-                    else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
+                    else if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && !MainPage.Instance.IsCtrlPressed()) || 
+                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
                     {
 
                         //copy html to clipboard
@@ -1078,7 +1084,6 @@ namespace Dash
 							// note is the new annotation textbox that is created
 							var note = new RichTextNote("<annotation>", where).Document;
 	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-							
 
                             dragDoc.Link(note);
                             AddDocument(note);

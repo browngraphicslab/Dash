@@ -44,7 +44,7 @@
             <Color x:Key="DocumentHighlightBackgroundColor">#FFCCCCCC</Color>
             <Color x:Key="MainTextColor">#FF333333</Color>
             <Color x:Key="TitleTextColor">#FF454545</Color>
-            <Color x:Key="ActivationColor">#f4aa42</Color>
+            <Color x:Key="ActivationColor">#91baaa</Color>
             <Color x:Key="LinkActivationColor">#6a9383</Color>
             <Color x:Key="InverseColor">#ededed</Color>
 
@@ -115,9 +115,30 @@
             <x:String x:Key="FavoriteIcon">&#xf006;</x:String>
             <x:String x:Key="RightCaretIcon">&#xf0da;</x:String>
             <x:String x:Key="LeftCaretIcon">&#xf0d9;</x:String>
-            <x:String x:Key="CheckIcon">&#xf00c;</x:String>
-            <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
             <x:String x:Key="ErrorIcon">&#xf071;</x:String>
+            <x:String x:Key="ImageDocumentIcon">&#xf1c5;</x:String>
+            <x:String x:Key="VideoDocumentIcon">&#xf1c8;</x:String>
+            <x:String x:Key="AudioDocumentIcon">&#xf1c7;</x:String>
+            <x:String x:Key="PdfDocumentIcon">&#xf1c1;</x:String> 
+            <x:String x:Key="TextIcon">&#xf15c;</x:String>
+            <x:String x:Key="DefaultIcon">&#xf1c3;</x:String>
+            <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
+            <x:String x:Key="ClearIcon">&#xf00d;</x:String>
+            <x:String x:Key="MinusIcon">&#xf068;</x:String>
+            <x:String x:Key="UploadIcon">&#xf093;</x:String>
+            <x:String x:Key="CheckIcon">&#xf00c;</x:String>
+            <x:String x:Key="FontIcon">&#xf031;</x:String>
+            <x:String x:Key="ImageIcon">&#xf03e;</x:String>
+            <x:String x:Key="VideoIcon">&#xf03d;</x:String>
+            <x:String x:Key="AudioIcon">&#xf025;</x:String>
+            <x:String x:Key="ActivateIcon">&#xf0e7;</x:String>
+            <x:String x:Key="PreviewIcon">&#xf06e;</x:String>
+            <x:String x:Key="ListIcon">&#xf03a;</x:String>
+            <x:String x:Key="FreeFormIcon">&#xf247;</x:String>
+            <x:String x:Key="GridIcon">&#xf00a;</x:String>
+            <x:String x:Key="GridOverlayIcon">&#xf009;</x:String>
+            <x:String x:Key="ArrowIcon">&#xf107;</x:String>
+
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
@@ -136,8 +157,59 @@
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             </Style>
             <Style TargetType="AutoSuggestBox">
-                <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxTextBoxStyle}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="AutoSuggestBox">
+                            <Grid>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="Orientation">
+                                        <VisualState x:Name="Landscape"/>
+                                        <VisualState x:Name="Portrait"/>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <TextBox x:Name="TextBox"
+                    Style="{TemplateBinding TextBoxStyle}"
+                    PlaceholderText="{TemplateBinding PlaceholderText}"
+                    Header="{TemplateBinding Header}"
+                    Width="{TemplateBinding Width}"
+                    IsSpellCheckEnabled="False"
+                    ScrollViewer.BringIntoViewOnFocusChange="False"
+                    Canvas.ZIndex="0"
+                    Margin="0"
+                    DesiredCandidateWindowAlignment="BottomEdge"/>
+                                <Popup x:Name="SuggestionsPopup">
+                                    <Border x:Name="SuggestionsContainer">
+                                        <Border.RenderTransform>
+                                            <TranslateTransform x:Name="UpwardTransform"/>
+                                        </Border.RenderTransform>
+                                        <ListView
+                x:Name="SuggestionsList"
+                Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderThickness="{ThemeResource AutoSuggestListBorderThemeThickness}"
+                BorderBrush="{ThemeResource SystemControlForegroundChromeHighBrush}"
+                DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
+                IsItemClickEnabled="True"
+                ItemTemplate="{TemplateBinding ItemTemplate}"
+                ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
+                MaxHeight="{ThemeResource AutoSuggestListMaxHeight}"
+                Margin="{ThemeResource AutoSuggestListMargin}"
+                Padding="{ThemeResource AutoSuggestListPadding}">
+                                            <ListView.ItemContainerTransitions>
+                                                <TransitionCollection />
+                                            </ListView.ItemContainerTransitions>
+                                        </ListView>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
+
             <Style x:Name="AutoFontSize" TargetType="TextBox">
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             </Style>
@@ -1448,7 +1520,7 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
             <Style TargetType="Ellipse" x:Key="xFieldHandleHighlighted">
-                <Setter Property="Fill" Value="Gold" />
+                <Setter Property="Fill" Value="#91baaa" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>
@@ -1468,6 +1540,23 @@
             </Style>
             <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
                 <Setter Property="Fill" Value="LightGreen" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+
+            <Style TargetType="Ellipse" x:Key="xFieldTemplateHandle">
+                <Setter Property="Fill" Value="#4b7061" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+            <Style TargetType="Ellipse" x:Key="xFieldTemplateHandleHighlighted">
+                <Setter Property="Fill" Value="#4b7061" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>

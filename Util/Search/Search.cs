@@ -60,14 +60,14 @@ namespace Dash
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
+        // Shortens the helpful text so that the user is given a meaningful helptext string that can help
+        // identify where the match was found, while not being too long such that the Data string isn't
+        // just vomited onto the search result dropdown
         private static List<string> Process(IEnumerable<string> relatedStrings, string query)
         {
             var outList = new List<string>();
             foreach (string relatedString in relatedStrings)
             {
-                // Shortens the helpful text so that the user is given a meaningful helptext string that can help
-                // identify where the match was found, while not being too long such that the Data string isn't
-                // just vomited onto the search result dropdown
                 var s = "";
                 var e = "";
                 int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);

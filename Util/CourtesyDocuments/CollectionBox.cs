@@ -4,6 +4,8 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 using System;
+using Windows.UI.Xaml.Data;
+using Dash.Converters;
 using static Dash.DocumentController;
 
 namespace Dash
@@ -38,8 +40,8 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             if (data != null)
             {
-                var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
-                Debug.Assert(collectionController != null);
+                //var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
+                //Debug.Assert(collectionController != null);
                 var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
                 {
                     InkController = docController.GetField(KeyStore.InkDataKey) as InkController
@@ -68,6 +70,76 @@ namespace Dash
             }
 
             return null;
+        }
+
+        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.WidthFieldKey,
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
+        }
+
+        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.HeightFieldKey,
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
+        }
+
+        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
+        {
+            FieldBinding<PointController> binding = new FieldBinding<PointController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new PointToTranslateTransformConverter()
+            };
+
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
+        }
+
+        protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var binding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.HorizontalAlignmentKey,
+                Converter = new StringToEnumConverter<HorizontalAlignment>(),
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
+        }
+
+        protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var binding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.VerticalAlignmentKey,
+                Converter = new StringToEnumConverter<VerticalAlignment>(),
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
     }
 }

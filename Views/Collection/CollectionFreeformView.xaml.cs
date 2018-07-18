@@ -60,13 +60,16 @@ namespace Dash
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            if (this.GetFirstAncestorOfType<DocumentView>() != null)
+            {
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            }
             SelectionManager.RefreshSelected(this.GetDescendantsOfType<DocumentView>());
         }
 
-        public override Canvas GetCanvas()
+        public override Panel GetCanvas()
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();

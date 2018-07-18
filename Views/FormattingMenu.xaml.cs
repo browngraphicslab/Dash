@@ -43,15 +43,15 @@ namespace Dash
 
         #endregion
 
-	    private TextSubtoolbar _textToolbar;
+	    private RichTextSubtoolbar _richTextToolbar;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public FormattingMenuView(TextSubtoolbar textToolbar)
+        public FormattingMenuView(RichTextSubtoolbar richTextToolbar)
         {
             this.InitializeComponent();
-	        _textToolbar = textToolbar;
+	        _richTextToolbar = richTextToolbar;
             Loaded += FormattingMenuView_Loaded;
         }
 
@@ -275,11 +275,12 @@ namespace Dash
 	        {
 		        xRichEditBox.Focus(FocusState.Pointer);
 				xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
-			}
+	        }
 
 	        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-			
-        }
+	        richTextView.UpdateDocumentFromXaml();
+
+		}
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -293,6 +294,7 @@ namespace Dash
 					xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
 		        }
 		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
+		        richTextView.UpdateDocumentFromXaml();
 			}
                
         }
@@ -326,7 +328,7 @@ namespace Dash
 		 */
 	    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)
 	    {
-		    _textToolbar.CloseSubMenu();
+		    _richTextToolbar.CloseSubMenu();
 	    }
 
 		/*

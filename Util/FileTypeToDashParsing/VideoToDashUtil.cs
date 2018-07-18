@@ -20,7 +20,7 @@ namespace Dash
 
 			var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
-			return await CreateVideoBoxFromLocalFile(localFile, title);
+			return CreateVideoBoxFromLocalFile(localFile, title);
 		}
 
 		/// <summary>
@@ -32,7 +32,7 @@ namespace Dash
 
 			var title = file.DisplayName;
 
-			return await CreateVideoBoxFromLocalFile(localFile, title);
+			return CreateVideoBoxFromLocalFile(localFile, title);
 		}
 
 
@@ -102,26 +102,12 @@ namespace Dash
 		/// <summary>
 		/// Convert a local file which stores a video into an VideoBox. If the title is null the VideoBox doesn't have a Title
 		/// </summary>
-		private static async Task<DocumentController> CreateVideoBoxFromLocalFile(IStorageFile localFile, string title)
+		private static DocumentController CreateVideoBoxFromLocalFile(IStorageFile localFile, string title)
 		{
 			Debug.WriteLine("LOCAL FILE: " + localFile);
 
-			// create a backing document for the video
-			var fields = new Dictionary<KeyController, FieldControllerBase>
-			{
-				//set data key to video controller with Uri of the file
-				[KeyStore.DataKey] = new VideoController(new Uri(localFile.Path)),
-				//set width and height --> should change to accomodate for different video ratios
-				[KeyStore.WidthFieldKey] = new NumberController(350),
-				[KeyStore.HeightFieldKey] = new NumberController(200),
-			};
-			//set title and data document to doc controller
-			if (title != null) fields[KeyStore.TitleKey] = new TextController(title);
-			var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-			// return a video box, by setting the height to NaN the video height automatically sizes
-			// based on the width according to the aspect ratio
-			return new VideoBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey), h: double.NaN).Document;
+			// return a video note
+			return new VideoNote(new Uri(localFile.Path)).Document;
 		}
 
 	}

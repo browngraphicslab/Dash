@@ -60,7 +60,8 @@ namespace Dash
             IsLikelyUsefulContextText = isLikelyUsefulContextText;
 
             CurrentIndex = 0;
-            UpdateText();
+
+            if (Titles.Any()) UpdateText();
         }
 
         private void UpdateText()

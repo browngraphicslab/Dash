@@ -31,7 +31,7 @@ namespace Dash
         public VideoNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new ImageController(location));
+            var dataDocument = makeDataDelegate(new VideoController(location));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             Document.Tag = "Video Note Layout " + vcount;
             dataDocument.Tag = "Video Note Data" + vcount++;

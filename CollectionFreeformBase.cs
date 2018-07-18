@@ -39,7 +39,7 @@ namespace Dash
     public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
-        Canvas _itemsPanelCanvas => GetCanvas();
+        Panel _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
@@ -59,7 +59,7 @@ namespace Dash
         private static event SetBackgroundOpacity setBackgroundOpacity;
 
         // TODO: get canvas in derived class
-        public abstract Canvas GetCanvas();
+        public abstract Panel GetCanvas();
         // TODO: get itemscontrol of derived class
         public abstract ItemsControl GetItemsControl();
         // TODO: get win2d canvascontrol of derived class

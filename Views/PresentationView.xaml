@@ -72,7 +72,7 @@
         </StackPanel>
         <StackPanel HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="1">
             <AppBarButton x:Name="ResetButton" Icon="Zoom" Label="Re-Focus" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3" IsCompact="False" Margin="10"/>
-            <AppBarButton x:Name="ShowLinesButton" Icon="Go" Label="Show Lines" IsEnabled="True" IsCompact="False" Margin="10" Click="ShowLinesButton_OnClick" Background="White" Foreground="Black"/>
+            <AppBarButton x:Name="ShowLinesButton" Icon="Go" Label="Show Lines" IsEnabled="True" IsCompact="False" Margin="10" Click="ShowLinesButton_OnClick" Background="White" Foreground="Black" x:FieldModifier="public"/>
         </StackPanel>
     </Grid>
 </UserControl>
