@@ -35,12 +35,16 @@
                       ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Grid x:Name="xCollectionCanvas"
+                    <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Width="0"
+                           Height="0"
                             RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                             >
-                    </Grid>
+                    </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
