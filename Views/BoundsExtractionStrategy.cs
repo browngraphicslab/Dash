@@ -124,23 +124,32 @@ namespace Dash
 
             List<List<SelectableElement>> columns = new List<List<SelectableElement>>();
             columns.Add(new List<SelectableElement>());
+            var prevLine = new List<SelectableElement>();
             foreach (var line in lines)
             {
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
                 element = line.First();
                 var col = 0;
+                List<SelectableElement> newColumn = null;
                 foreach (var column in columns)
                 {
                     if (column.Any())
                     {
-                        if (column.First().Bounds.X < element.Bounds.X &&
-                            column.Last().Bounds.X + column.Last().Bounds.Width > element.Bounds.X)
+                        var colWidth = Math.Abs(column.First().Bounds.X - column.Last().Bounds.X);
+                        var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
+                        if (colWidth / lineWidth > 1.2 && Math.Abs(column.First().Bounds.X - line.First().Bounds.X) > lineWidth / 2)
                         {
-                            col = columns.IndexOf(column);
+                            // TODO: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                            //col = (int) Math.Floor(Math.Abs(colWidth - lineWidth) / line.First().Bounds.X);
+                            
+                            //if (columns.Count - 1 < col)
+                            //{
+                            //    newColumn = new List<SelectableElement>();
+                            //}
                         }
                     }
                 }
-
+                
                 columns[col].Add(element);
                 var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line)
@@ -164,6 +173,8 @@ namespace Dash
 
                     element = selectableElement;
                 }
+
+                prevLine = line;
             }
 
             List<SelectableElement> elements = new List<SelectableElement>();
