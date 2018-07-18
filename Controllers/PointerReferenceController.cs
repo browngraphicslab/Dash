@@ -29,7 +29,6 @@ namespace Dash
             DocumentReference =
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
-            DocumentReference?.Init();
             base.Init();
             _lastDoc = DocumentReference?.GetDocumentController(null);
            _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);

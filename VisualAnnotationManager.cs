@@ -44,6 +44,17 @@ namespace Dash
         private IEnumerable<SelectableElement> _selectableElements;
         private SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(80, 0xCC, 0xFF, 0x00));
 
+        private AnnotationType _currentAnnotationType = AnnotationType.None;
+        public AnnotationType CurrentAnnotationType
+        {
+            get => _currentAnnotationType;
+            set
+            {
+                _currentAnnotationType = value;
+                _overlay.SetInkEnabled(value == AnnotationType.Ink);
+            }
+        }
+
         private enum RegionVisibilityState
         {
             Visible,
@@ -62,11 +73,13 @@ namespace Dash
             _regionState = RegionVisibilityState.Hidden;
             _docCtrl = dc;
             _element = element;
-            _element.NewRegionStarted += Element_OnNewRegionStarted;
-            _element.NewRegionMoved += Element_OnNewRegionMoved;
-            _element.NewRegionEnded += Element_OnNewRegionEnded;
-            //_element.ContentLoaded += Element_OnLoaded;
-            _overlay = overlay;
+	        var fe = element as FrameworkElement;
+	        element.NewRegionStarted += Element_OnNewRegionStarted;
+	        fe.PointerMoved += Element_OnNewRegionMoved;
+	        fe.PointerReleased += Element_OnNewRegionEnded;
+	        fe.PointerExited += Element_OnNewRegionEnded;
+			//_element.ContentLoaded += Element_OnLoaded;
+			_overlay = overlay;
             _overlay.InkUpdated += OverlayOnInkUpdated;
             var ink = dc.GetField<InkController>(KeyStore.InkDataKey);
             if (ink != null)
@@ -84,7 +97,7 @@ namespace Dash
                 {
                     var topLeft = data.GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
                     var bottomRight = data.GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
-                    MakeNewRegionBox(region, topLeft, bottomRight).Hide();
+                    MakeNewRegionBox(region, topLeft, bottomRight).ToggleSelectionState(RegionSelectionState.None);
                 }
                 else if (type == AnnotationType.TextSelection)
                 {
@@ -105,12 +118,11 @@ namespace Dash
                         Canvas.SetTop(rect, pos.Y);
                         rect.Fill = _selectionBrush;
                         rect.DataContext = region;//TODO This is temporary, this should probably be some text selection class that stores the document
-                        rect.PointerPressed += xRegion_OnPointerPressed;
+                        rect.Tapped += xRegion_OnTapped;
                         _overlay.AddCanvasRegion(rect);
                     }
 
                 }
-
             }
         }
 
@@ -120,37 +132,36 @@ namespace Dash
         }
 
         public double Zoom = 1;
+
         private void Element_OnNewRegionStarted(object sender, PointerRoutedEventArgs e)
         {
-            var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+	        MainPage.Instance.HighlightDoc(_docCtrl, false, 2);
+
+			var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
             var pos = new Point(rawpos.X / Zoom, rawpos.Y / Zoom);
             _anchorPoint = pos;
             _isDragging = true;
 
             //reset and get rid of the region preview
             _overlay.SetDuringPreviewSize(new Size(0, 0));
+
             // what do the following two lines accomplish
             _overlay.DuringVisibility = Visibility.Collapsed;
             _overlay.DuringVisibility = Visibility.Visible;
-
-            //if not selecting an already selected region, collapse preview boxes
-            if (!(_overlay.PostColumn1ActualWidth < pos.X) || !(pos.X < _overlay.PostColumn1ActualWidth + _overlay.PostColumn2ActualWidth) || !(_overlay.PostRow1ActualHeight < pos.Y) || !(pos.Y < _overlay.PostRow1ActualHeight + _overlay.PostRow2ActualHeight))
+			
+            // DeselectRegions();
+            
+            //delete if control is pressed
+            if (MainPage.Instance.IsAltPressed())
             {
-                DeselectRegions();
+                DeleteRegion(_selectedRegion);
+                _isPreviousRegionSelected = false;
+                return;
             }
-            else
-            {
-                //delete if control is pressed
-                if (MainPage.Instance.IsAltPressed())
-                {
-                    DeleteRegion(_selectedRegion);
-                    _isPreviousRegionSelected = false;
-                    return;
-                }
-                //select otherwise
-                //if (xLinkStack.Visibility == Visibility.Collapsed)
-                if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
-            }
+            //select otherwise
+            //if (xLinkStack.Visibility == Visibility.Collapsed)
+            //if (!_isLinkMenuOpen) RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
+            
         }
 
         private void Element_OnNewRegionMoved(object sender, PointerRoutedEventArgs e)
@@ -170,49 +181,55 @@ namespace Dash
 
                 _overlay.SetDuringPreviewSize(new Size(Math.Abs(pos.X - _anchorPoint.X), Math.Abs(pos.Y - _anchorPoint.Y)));
             }
+            else if (!properties.IsLeftButtonPressed)
+            {
+				Element_OnNewRegionEnded(sender, e);
+            }
         }
 
         private void Element_OnNewRegionEnded(object sender, PointerRoutedEventArgs e)
         {
+	        if (!_isDragging) return;
             _overlay.DuringVisibility = Visibility.Collapsed;
-
-            if (MainPage.Instance.IsCtrlPressed())
-            {
-                return;
-            }
-
             _isDragging = false;
 
-            // the box only sticks around if it's of a large enough size
-            if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30) return;
+			// the box only sticks around if it's of a large enough size
+			if (_overlay.GetDuringPreviewSize().Width < 30 && _overlay.GetDuringPreviewSize().Height < 30)
+			{
+				if (_selectedRegion == null || !_selectedRegion.IsPointerOver)
+					DeselectRegions();
+				return;
+	        }
+
+	        DeselectRegions();
+
+			// HEY TODO FOR TOMORROW!
+			// make the annotations flyout thing appear at the mouse
 
             _overlay.SetRegionBoxPosition(new Size(_element.GetPositionReference().ActualWidth, _element.GetPositionReference().ActualHeight));
             _overlay.PostVisibility = Visibility.Visible;
         }
 
-        private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            this.RegionSelected(sender, e.GetCurrentPoint(MainPage.Instance).Position);
+	        DeselectRegions();
+			RegionSelected((RegionBox)sender, e.GetPosition(MainPage.Instance));
             e.Handled = true;
         }
 
         //shows region when user hovers over it
         private void Region_OnPointerEntered(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region)
-            {
-                region.Show();
-            }
+	        if (!(sender is RegionBox region) || _isDragging) return;
+	        if (region.SelectionState != RegionSelectionState.Select) region.ToggleSelectionState(RegionSelectionState.Hover);
         }
 
         //hides region when user's cursor leaves it if region visibility mode is hidden
         private void Region_OnPointerExited(object sender, RoutedEventArgs e)
         {
-            if (sender is RegionBox region)
-            {
-                if (_regionState == RegionVisibilityState.Hidden) region.Hide();
-            }
+	        if (!(sender is RegionBox region) || _isDragging) return;
+	        if (_regionState == RegionVisibilityState.Hidden && region.SelectionState != RegionSelectionState.Select) region.ToggleSelectionState(RegionSelectionState.None);
         }
 
         public void RegionSelected(object region, Point pos, DocumentController chosenDC = null)
@@ -287,6 +304,7 @@ namespace Dash
                 MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
             }
 
+	        if (nearestOnCollection == null) return;
             //highlight this linked doc
             _lastNearest = nearestOnCollection;
             MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
@@ -296,7 +314,8 @@ namespace Dash
         private void DeselectRegions()
         {
             _isPreviousRegionSelected = false;
-            _overlay.PostVisibility = Visibility.Collapsed;
+	        _selectedRegion?.ToggleSelectionState(RegionSelectionState.None);
+	        _overlay.PostVisibility = Visibility.Collapsed;
             //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
 
             //unhighlight last selected regions' link
@@ -308,18 +327,12 @@ namespace Dash
 
         private void SelectRegion(RegionBox region)
         {
+	        DeselectRegions();
             _selectedRegion = region;
             _isPreviousRegionSelected = true;
             //create a preview region to show that this region is selected
-            _overlay.SetDuringPreviewSize(new Size(0, 0));
-            _overlay.PostColumn1Width = region.Column1.Width;
-            _overlay.PostColumn2Width = region.Column2.Width;
-            _overlay.PostColumn3Width = region.Column3.Width;
-            _overlay.PostRow1Height = region.Row1.Height;
-            _overlay.PostRow2Height = region.Row2.Height;
-            _overlay.PostRow3Height = region.Row3.Height;
-            _overlay.PostVisibility = Visibility.Visible;
-            //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+	        region.ToggleSelectionState(RegionSelectionState.Select);
+	        //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         public void SelectRegion(DocumentController dc)
@@ -341,7 +354,7 @@ namespace Dash
             {
                 foreach (RegionBox region in _visualRegions)
                 {
-                    region.Show();
+	                region.ToggleSelectionState(RegionSelectionState.Hover);
                 }
             }
         }
@@ -359,7 +372,7 @@ namespace Dash
                 foreach (RegionBox region in _visualRegions)
                 {
                     //region.Visibility = Visibility.Collapsed;
-                    region.Hide();
+	                region.ToggleSelectionState(RegionSelectionState.None);
                 }
             }
         }
@@ -371,7 +384,7 @@ namespace Dash
 
         public bool IsSomethingSelected()
         {
-            return _overlay.PostVisibility == Visibility.Visible || _selectableElements != null && _selectableElements.Any();
+            return _overlay.PostVisibility == Visibility.Visible || _isPreviousRegionSelected || _selectableElements != null && _selectableElements.Any();
         }
 
         public DocumentController GetRegionDocument()
@@ -389,6 +402,7 @@ namespace Dash
             else
             {
                 AnnotationType annotationType;
+                //TODO Use CurrentAnnotationType here
                 if (_selectableElements != null)
                 {
                     annotationType = AnnotationType.TextSelection;
@@ -426,9 +440,9 @@ namespace Dash
             if (type == AnnotationType.RegionBox)
             {
                 // use During Preview here because it's the one with actual pixel measurements
-                var box = MakeNewRegionBox(region, _overlay.GetTopLeftPoint(), _overlay.GetDuringPreviewActualSize(), _element.GetTotalDocumentSize());
+                var box = MakeNewRegionBox(region, _overlay.GetTopLeftPercentile(), _overlay.GetBottomRightPercentile());
                 region.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey,
-                    box.TopLeftPercentile, true);
+					box.TopLeftPercentile, true);
                 region.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey,
                     box.BottomRightPercentile, true);
 
@@ -453,7 +467,7 @@ namespace Dash
                     Canvas.SetTop(rect, bounds.Top);
                     rect.Fill = _selectionBrush;
                     rect.DataContext = region;//TODO This is temporary, this should probably be some text selection class that stores the document
-                    rect.PointerPressed += xRegion_OnPointerPressed;
+                    rect.Tapped += xRegion_OnTapped;
                     rects.Add(rect);
                     _overlay.AddCanvasRegion(rect);
                     topLefts.Add(new PointController(bounds.X, bounds.Y));
@@ -463,13 +477,6 @@ namespace Dash
         }
 
         // Only adds the region box, visually
-        private RegionBox MakeNewRegionBox(DocumentController region, Point pos, Size boxSize, Size totalSize)
-        {
-            var newBox = new RegionBox { LinkTo = region, Manager = this };
-            newBox.SetPosition(pos, boxSize, totalSize);
-            return SetUpNewRegionBox(newBox);
-        }
-
         private RegionBox MakeNewRegionBox(DocumentController region, Point topLeft, Point bottomRight)
         {
             var newBox = new RegionBox { LinkTo = region, Manager = this };
@@ -480,7 +487,7 @@ namespace Dash
         private RegionBox SetUpNewRegionBox(RegionBox newBox)
         {
             _overlay.AddRegion(newBox);
-            newBox.PointerPressed += xRegion_OnPointerPressed;
+            newBox.Tapped += xRegion_OnTapped;
             newBox.PointerEntered += Region_OnPointerEntered;
             newBox.PointerExited += Region_OnPointerExited;
             _visualRegions.Add(newBox);

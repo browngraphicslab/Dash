@@ -208,6 +208,9 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
+    <Compile Include="Util\DashColorPicker.xaml.cs">
+      <DependentUpon>DashColorPicker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\DSL\DuplicateVariableDeclarationErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\DocumentationNotFoundErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
@@ -310,6 +313,7 @@
     <Compile Include="Util\DSL\Error Models\TextErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionSuggestion.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
     <Compile Include="Util\DSL\OuterReplScope.cs" />
     <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
@@ -322,6 +326,7 @@
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
+    <Compile Include="Util\DSL\ReplPopupSuggestion.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\ReturnScope.cs" />
@@ -329,6 +334,7 @@
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableSuggestion.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
@@ -508,6 +514,9 @@
     <Compile Include="Views\Document Menu\Toolbar\ICommandBarBased.cs" />
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml.cs">
+      <DependentUpon>PdfSubToolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
       <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
@@ -935,6 +944,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Util\DashColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ViewModels\ReplLineNode.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1020,6 +1033,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

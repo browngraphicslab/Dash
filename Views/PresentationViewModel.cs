@@ -52,6 +52,8 @@ namespace Dash
             PinnedNodes.Add(dc);
             PinNumbers.Add(PinnedNodes.Count);
             _listController.Add(dc);
+
+
         }
 
         public void RemovePinFromPinnedNodesCollection(DocumentController dc)

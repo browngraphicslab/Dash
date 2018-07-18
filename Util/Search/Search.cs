@@ -18,9 +18,9 @@ namespace Dash
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
             {
                 var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
-                int matchLength = stringSearchModel == null ? 0 :
-                    (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
-                return new SearchResult(node, $" >> {key}", $"\" {stringSearchModel?.RelatedString} \"", matchLength);
+                int matchLength = stringSearchModel == null ? 0 : (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
+
+                return new SearchResult(node, new List<string> { $" >> {key}" }, new List<string> { $"\" {stringSearchModel?.RelatedString} \"" }, matchLength);
             }).OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
@@ -31,63 +31,67 @@ namespace Dash
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
             {
-                var relatedString = "";
-                KeyController relatedField = null;
-
+                var relatedFields = new List<string>();
+                var relatedStrings = new List<string>();
+                
                 var numMatchedFields = 0;
                 foreach (var field in node.ViewDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
+                    StringSearchModel ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
                     if (ssm == StringSearchModel.False) continue;
 
-                    if (string.IsNullOrEmpty(relatedString))
-                    {
-                        relatedString = ssm.RelatedString;
-                        relatedField = field.Key;
-                    }
+                    relatedStrings.Add(ssm.RelatedString);
+                    relatedFields.Add($" >> v.{field.Key}");
                     numMatchedFields++;
                 }
                 foreach (var field in node.DataDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
+                    StringSearchModel ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
                     if (ssm == StringSearchModel.False) continue;
 
-                    if (string.IsNullOrEmpty(relatedString))
-                    {
-                        relatedString = ssm.RelatedString;
-                        relatedField = field.Key;
-                    }
+                    relatedStrings.Add(ssm.RelatedString);
+                    relatedFields.Add($" >> d.{field.Key}");
                     numMatchedFields++;
                 }
+                return new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields);
+            })
+                .OrderByDescending(res => res.Rank);
 
+            return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+        }
+
+        private static List<string> Process(IEnumerable<string> relatedStrings, string query)
+        {
+            var outList = new List<string>();
+            foreach (string relatedString in relatedStrings)
+            {
                 // Shortens the helpful text so that the user is given a meaningful helptext string that can help
                 // identify where the match was found, while not being too long such that the Data string isn't
                 // just vomited onto the search result dropdown
                 var s = "";
                 var e = "";
-                if (!string.IsNullOrEmpty(relatedString))
+                int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
+
+                if (ind < 0)
                 {
-                    int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
-                    //TODO: ugly code in the following 2 lines, fix later
-                    if (ind < 0)
-                        return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
-                    var pre = 0;
-                    while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
-
-                    var post = 0;
-                    while (ind + post + query.Length < relatedString.Length && post < 5/* && !$"{relatedString[ind + post]}".Equals("\r")*/) { post++; }
-
-                    if (ind - pre != 0) s = "...";
-                    if (post == 5) e = "...";
-
-                    relatedString = relatedString.Substring(ind - pre, pre + query.Length + post);
+                    outList.Add("IndexOf call = -1");
+                    continue;
                 }
 
-                    return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
-            })
-                .OrderByDescending(res => res.Rank);
+                var pre = 0;
+                while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
 
-            return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+                var post = 0;
+                while (ind + post + query.Length < relatedString.Length && post < 5/* && !$"{relatedString[ind + post]}".Equals("\r")*/) { post++; }
+
+                if (ind - pre != 0) s = "...";
+                if (post == 5) e = "...";
+
+                string processed = $"\" {s}{relatedString.Substring(ind - pre, pre + query.Length + post)}{e} \"";
+                outList.Add(processed);
+            }
+
+            return outList;
         }
 
         public static void UnHighlightAllDocs()
@@ -154,10 +158,9 @@ namespace Dash
                 name == "richtext" ||
                 name == "richtextformat")
             {
-                var res = DocumentTree.MainPageTree.Where(node =>
-                node.DataDocument.EnumFields().Any(f => f.Value is RichTextController &&
+                var res = DocumentTree.MainPageTree.Where(node => node.DataDocument.EnumFields().Any(f => f.Value is RichTextController &&
                 ((RichTextController)f.Value).SearchForStringInRichText(paramName).StringFound));
-                return res.Select(node => new SearchResult(node, $" >> { name }", "\"" + paramName + "\"", 1));
+                return res.Select(node => new SearchResult(node, new List<string> { $" >> { name }" }, new List<string> { "\"" + paramName + "\"" }));
             }
 
                 //If the user didn't input a DSL recognized function, then they probably intended to search for a
@@ -180,14 +183,15 @@ namespace Dash
 
                     //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching
                     string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
+                    var relatedFields = new List<string> { $" >> Operator: { name }" };
                     switch (name)
                     {
                         case "before":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data }));
                         case "after":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data }));
                     }
-                    return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
+                    return res.Select(node => new SearchResult(node, new List<string> { $" >> Operator: { name }" }, new List<string> { trimParam }));
                 }
             }
             catch (Exception e)
@@ -465,12 +469,7 @@ namespace Dash
         private static IEnumerable<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
         {
             var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
-            var negated = new List<SearchResult>();
-            foreach (var res in results)
-            {
-                negated.Add(new SearchResult(res, "", "", 1));
-            }
-            return negated;
+            return results.Select(res => new SearchResult(res, new List<string>(), new List<string>())).ToList();
         }
 
         private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
@@ -506,7 +505,7 @@ namespace Dash
             var dataDoc = doc.GetDataDocument();
             var filteredNodes = DocumentTree.MainPageTree.Where(node => node.DataDocument.Equals(dataDoc));
             if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
-            return filteredNodes.Select(node => new SearchResult(node, "", id));
+            return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
         }
 
         public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id);

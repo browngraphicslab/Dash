@@ -19,7 +19,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-             var typeInfo = TypeInfo.None;
+             var typeInfo = TypeInfo.Any;
             //  execute each element in list if it isn't null
             var outputList = new List<FieldControllerBase>();
             foreach (var elem in list)

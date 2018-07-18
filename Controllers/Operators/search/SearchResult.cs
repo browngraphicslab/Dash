@@ -1,4 +1,6 @@
-﻿// ReSharper disable once CheckNamespace
+﻿using System.Collections.Generic;
+
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class SearchResult
@@ -7,10 +9,10 @@ namespace Dash
         public DocumentController ViewDocument;
         public DocumentController DataDocument;
         public int Rank;
-        public string RelevantText;
-        public string TitleAppendix;
+        public List<string> RelevantText;
+        public List<string> FormattedKeyRef;
 
-        public SearchResult() : this(null, "", "", 0) { }
+        public SearchResult() : this(null, new List<string>(), new List<string>(), 0) { }
 
         //public SearchResult(FieldControllerBase doc)
         //{
@@ -21,10 +23,10 @@ namespace Dash
         //    Rank = 1;
         //}
 
-        public SearchResult(DocumentNode node, string titleAppendix, string relevantText, int rank = 1)
+        public SearchResult(DocumentNode node, List<string> formattedKeyRef, List<string> relevantText, int rank = 1)
         {
             Node = node;
-            TitleAppendix = titleAppendix;
+            FormattedKeyRef = formattedKeyRef;
             RelevantText = relevantText;
             Rank = rank;
 

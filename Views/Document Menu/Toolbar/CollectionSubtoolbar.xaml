@@ -11,7 +11,16 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar Background="LightGray" x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
+
+        <StackPanel Orientation="Horizontal" Background="LightGray" x:Name="xCollectionCommandbar" Height="60" Spacing="10" Padding="10,0,10,0">
+            <ComboBox x:Name="xViewModesDropdown" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
+                <ComboBoxItem Content="Freeform"/>
+            </ComboBox>
+            <AppBarSeparator></AppBarSeparator>
+            <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
+        </StackPanel>
+<!--
+            <CommandBar Background="LightGray" x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
                 <ComboBox x:Name="xViewModesDropdown" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
                     <ComboBoxItem Content="Freeform"/>
@@ -19,5 +28,6 @@
             </CommandBar.Content>
             <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
         </CommandBar>
+        -->
     </Grid>
 </UserControl>

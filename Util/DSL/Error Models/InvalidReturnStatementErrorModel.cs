@@ -1,14 +1,28 @@
 ﻿// ReSharper disable once CheckNamespace
+
+using DashShared;
+
 namespace Dash
 {
     public class InvalidReturnStatementErrorModel : ScriptExecutionErrorModel
     {
-        public InvalidReturnStatementErrorModel()
+        private DocumentController _errorDoc;
+
+        public override string GetHelpfulString() => "InvalidReturnException";
+
+        public override DocumentController BuildErrorDoc()
         {
+            _errorDoc = new DocumentController();
+
+            const string title = "InvalidReturnException";
+
+            _errorDoc.DocumentType = DashConstants.TypeStore.ErrorType;
+            _errorDoc.SetField<TextController>(KeyStore.TitleKey, title, true);
+            _errorDoc.SetField<TextController>(KeyStore.ExceptionKey, Exception(), true);
+
+            return _errorDoc;
         }
 
-        public override string GetHelpfulString() =>
-            $" Exception:\n            InvalidReturnStatement\n      Feedback:\n            Unable to process the body of the return statement. Ensure proper syntax.\n";
-
+        private static string Exception() => "For a general, unknown reason, unable to process the body of the return statement. Double check proper spelling, input types and function calls.";
     }
 }

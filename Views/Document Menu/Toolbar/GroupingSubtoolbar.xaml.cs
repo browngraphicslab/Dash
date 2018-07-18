@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using System;
 using Windows.Networking.BackgroundTransfer;
+using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
 
@@ -38,7 +39,9 @@ namespace Dash
             InitializeComponent();
 
             //Initial values
-            xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+           // xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+			xGroupForegroundColorPicker.SetOpacity(128);
+
             _currentColor = Windows.UI.Color.FromArgb(0x80, 0xff, 0x00, 0x00); //Red with an opacity of 0.5
 
             FormatDropdownMenu();
@@ -47,8 +50,7 @@ namespace Dash
             //Potential bug fix: if visibility of command bar is collapsed, will never load and will fail to add event handler
             xGroupCommandbar.Loaded += delegate
             {
-                var sp = xGroupCommandbar.GetFirstDescendantOfType<StackPanel>();
-                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                xGroupCommandbar.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
                     Path = new PropertyPath(nameof(Orientation)),
@@ -58,6 +60,7 @@ namespace Dash
             };
 
             CheckForCustom();
+	        xGroupForegroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
         //SETUP AND HELPER METHODS
@@ -77,17 +80,17 @@ namespace Dash
          */
         private void UpdateColor()
         {
-            _currentColor = GetColorWithUpdatedOpacity();
+           // _currentColor = GetColorWithUpdatedOpacity();
             //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
             //...shape's background color
             _currentDocController?.GetDataDocument().SetBackgroundColor(_currentColor);
             //...indirectly, the shape's opacity
-            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
+            //_currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
         }
 
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
-         */
+         
         private Windows.UI.Color GetColorWithUpdatedOpacity()
         {
             if (_currentColor == null)
@@ -95,7 +98,7 @@ namespace Dash
             var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
             return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
         }
-
+		*/
     //ACCESSORS AND MUTATORS
 
         /*
@@ -113,22 +116,11 @@ namespace Dash
          */
         public void CommandBarOpen(bool status)
         {
-            xGroupCommandbar.IsOpen = status;
-
             //Whether or not open or closed, should always be visible if some content is selected
-            xGroupCommandbar.IsEnabled = true;
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
             xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
-            var margin = xOpacitySlider.Margin;
-            margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
-            margin.Left = 22;
-            xOpacitySlider.Margin = margin;
-
-            margin = xSideCounter.Margin;
-            margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
-            xSideCounter.Margin = margin;
         }
 
         /*
@@ -196,7 +188,7 @@ namespace Dash
          */
         private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            xOpacitySlider.Value = 128;
+           // xOpacitySlider.Value = 128;
             UpdateColor();
         }
 
@@ -211,9 +203,7 @@ namespace Dash
         private void XGroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: when multiselect is eventually implemented, group all selected elements with as small a group as possible
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*
@@ -222,9 +212,7 @@ namespace Dash
         private void XUngroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: Delete groups on tapped
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*
@@ -257,7 +245,7 @@ namespace Dash
             UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
+           // xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
             //NUM SIDES
             xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
@@ -266,20 +254,12 @@ namespace Dash
 
         private void UpdateToolbarAccentColors()
         {
-            xOpacitySlider.Background = new SolidColorBrush(_currentColor);
+           // xOpacitySlider.Background = new SolidColorBrush(_currentColor);
             xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
             xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
 
-        /*
-         * Updates the value of the current color (as string) and updates color/opacity bindings
-         */
-        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            _currentColor = xGroupForegroundColorPicker.SelectedColor;
-            UpdateToolbarAccentColors();
-            UpdateColor();
-        }
+        
 
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -310,5 +290,15 @@ namespace Dash
             xSideCounter.Text = numSides.ToString();
             _currentDocController?.GetDataDocument().SetSideCount(numSides);
         }
+
+	    /*
+         * Updates the value of the current color (as string) and updates color/opacity bindings
+         */
+		private void XGroupForegroundColorPicker_OnSelectedColorChanged(object sender, Color e)
+	    {
+			_currentColor = xGroupForegroundColorPicker.SelectedColor;
+		    UpdateToolbarAccentColors();
+		    UpdateColor();
+		}
     }
 }

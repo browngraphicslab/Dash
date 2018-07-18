@@ -756,6 +756,9 @@ namespace Dash
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 
+            //TODO Make this undo-able
+            value.DisposeField();
+
             return true;
         }
 
@@ -1247,16 +1250,16 @@ namespace Dash
             return this;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new DocumentController();
-        }
+        public override FieldControllerBase GetDefaultController() => new DocumentController();
 
         public override StringSearchModel SearchForString(string searchString)
         {
+            //var positiveKeys = EnumDisplayableFields().Where(field => field.Key.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //var positiveVals = EnumDisplayableFields().Where(field => field.Value.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //if (positiveVals.Any()) return new StringSearchModel(positiveVals[0].Value.ToString()); 
             return StringSearchModel.False;
-            //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
+
         #endregion
 
         // == OVERRIDEN FROM OBJECT ==
@@ -1335,7 +1338,16 @@ namespace Dash
                 }
             };
             if (newField != null && key != KeyStore.DelegatesKey /*&& key.Name != "_Cache Access Key"*/)
+            {
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+
+                void DisposedHandler(FieldControllerBase field)
+                {
+                    newField.FieldModelUpdated -= TriggerDocumentFieldUpdated;
+                    newField.Disposed -= DisposedHandler;
+                };
+                newField.Disposed += DisposedHandler;
+            }
         }
 
 
@@ -1419,6 +1431,28 @@ namespace Dash
 
 
         #endregion
+
+		/// <summary>
+		/// Decides whether or not this pin should now be hidden or stay shown, and then reverses the setting
+		/// </summary>
+		/// <returns></returns>
+	    public void TogglePinUnpin()
+	    {
+		    var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
+
+		    // reverse the setting
+		    SetField(KeyStore.AnnotationVisibilityKey, new BoolController(!isCurrentlyPinned), true);
+		    this.SetHidden(!isCurrentlyPinned);
+	    }
+
+		/// <summary>
+		/// Sets the visibility based on pinned or unpinned.
+		/// </summary>
+	    public void ResetPinVisibility()
+		{
+			var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
+			this.SetHidden(!isCurrentlyPinned);
+		}
 
 		
     }

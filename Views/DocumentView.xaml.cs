@@ -105,6 +105,8 @@ namespace Dash
 
         private ImageSource _docPreview = null;
         private bool _showResize;
+        public event EventHandler ResizeManipulationStarted;
+        public event EventHandler ResizeManipulationCompleted;
 
         private ImageSource DocPreview
         {
@@ -162,7 +164,7 @@ namespace Dash
                 Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
-            Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
+            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
             PointerPressed += (sender, e) =>
             {
@@ -177,11 +179,13 @@ namespace Dash
             PointerEntered += DocumentView_PointerEntered;
             PointerExited += DocumentView_PointerExited;
             RightTapped += (s, e) => DocumentView_OnTapped(null, null);
-            AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
+            Tapped += DocumentView_OnTapped;
+            // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
 
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                ResizeManipulationStarted?.Invoke(sender, null);
                 UndoManager.StartBatch();
 
                 MainPage.Instance.Focus(FocusState.Programmatic);
@@ -207,6 +211,8 @@ namespace Dash
                 e.Handled = true;
 
                 UndoManager.EndBatch();
+
+                ResizeManipulationCompleted?.Invoke(sender, null);
             }
 
             xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);
@@ -298,7 +304,7 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
-
+                ToFront();
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
@@ -755,11 +761,12 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+            e.Handled = true;
+
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-            e.Handled = true;
             var extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
             var extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
@@ -944,7 +951,10 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            FocusedDocument = this;
+            if (e != null && !e.Handled)
+            {
+                FocusedDocument = this;
+            }
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1049,11 +1059,10 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            UndoManager.StartBatch();
             var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            var nestedCollection = GetCollectionToMoveTo(overlappedViews);
+            CollectionView nestedCollection = GetCollectionToMoveTo(overlappedViews);
 
             if (nestedCollection == null)
             {
@@ -1061,12 +1070,10 @@ namespace Dash
                 return false;
             }
 
-            foreach (var selDoc in selectedDocs)
+            foreach (DocumentView selDoc in selectedDocs)
             {
-                var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                var where = nestedCollection.CurrentView is CollectionFreeformBase ?
-                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformBase), pos) :
-                    new Point();
+                Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
+                Point where = nestedCollection.CurrentView is CollectionFreeformBase @base ? Util.GetCollectionFreeFormPoint(@base, pos) : new Point();
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
                 nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }
@@ -1347,7 +1354,6 @@ namespace Dash
                 ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
             }
         }
-
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);

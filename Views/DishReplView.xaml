@@ -67,11 +67,11 @@
                         <Border x:Name="xSuggestionsContainer" Background="LightGray">
                             <ListView x:Name="xSuggestions" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
                                 <ListView.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="local:ReplPopupSuggestion">
                                         <Grid>
                                             <Border Height="40">
-                                                <TextBlock Text="{Binding}" 
-                                           FontSize="15" Foreground="Black"/>
+                                                <TextBlock Text="{x:Bind Name}" 
+                                                FontSize="15" Foreground="Black"/>
                                             </Border>
                                         </Grid>
                                     </DataTemplate>

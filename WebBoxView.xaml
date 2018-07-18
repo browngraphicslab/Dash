@@ -10,6 +10,6 @@
     d:DesignWidth="400">
 
     <Grid x:Name="xGrid">
-                <WebView x:Name="xWebView" />
+        <StackPanel x:Name="xPanel"/>
     </Grid>
 </UserControl>
