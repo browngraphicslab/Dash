@@ -67,6 +67,9 @@ namespace Dash
 				    {
 					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
 					    if (docCtrl == null) return;
+					    var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
+					    if (isVisible != null)
+							docCtrl.ToggleAnnotationPin(isVisible.Data, false);
 						MainPage.Instance.HighlightDoc(docCtrl, false, 2);
 				    }
 				}
@@ -82,7 +85,7 @@ namespace Dash
 				{
 					var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
 					if (docCtrl == null) return;
-					dc.ToggleAnnotationPin(true, false);
+					docCtrl.ToggleAnnotationPin(true, true);
 				    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
 			    }
 			}
@@ -104,7 +107,8 @@ namespace Dash
 
         private static void SelectHelper(DocumentView doc)
 		{
-			SelectRegion(null);
+			if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()))
+				SelectRegion(null);
 			_selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
