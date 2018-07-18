@@ -69,6 +69,19 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController("_Background Image Opacity", "0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC");
         public static KeyController SettingsUpwardPanningKey = new KeyController("_Infinite Upward Panning Enabled", "3B354602-794D-4FC0-A289-1EBA7EC23FD1");
         public static KeyController SettingsMarkdownModeKey = new KeyController("Markdown vs RTF", "2575EAFA-2689-40DD-A0A8-9EE0EC0720ED");
+        public static KeyController TemplateEditorKey = new KeyController("_Template Document", "35624019-4C59-45AD-B44D-77830FD41EA3");
+        public static KeyController ActivationKey = new KeyController("Document Template activation phase", "9BA4DB7E-304A-4F0F-8704-C4E4B970C7B9");
+        public static KeyController UseVerticalAlignmentKey = new KeyController("Use Vertical Alignment for TemplateBox View", "3F94F0DD-9412-4571-A89B-4694F83AF534");
+        public static KeyController UseHorizontalAlignmentKey = new KeyController("Use Horizontal Alignment for TemplateBox View", "D58E7E8E-D1C1-476F-ADC3-DF61B1F62239");
+        public static KeyController TemplateStyleKey = new KeyController("Style of Template View", "54FFT93A-D1C1-476F-ADC3-DF61B1F62239");
+        public static KeyController TemplateKey = new KeyController("Template For Document", "84FFT93C-D1C8-476F-ADC3-DF68B1F62239");
+        public static KeyController TemplateListKey = new KeyController("List of templates for the Mainpage", "8AC168A0-F540-455F-8DB7-553B58E8E11E");
+        public static KeyController RowInfoKey = new KeyController("List of grid row sizes", "70F35A73-89D3-40D0-941D-D964F6CB5A8D");
+        public static KeyController ColumnInfoKey = new KeyController("List of grid column sizes", "CC243D8B-8150-4C48-8DE7-F1E5EB59E3DC");
+        public static KeyController RowKey = new KeyController("Grid row number", "213520CB-3EE9-4948-A063-61E3B9D76953");
+        public static KeyController ColumnKey = new KeyController("Grid column number", "37889D8E-86EB-4DCC-A30C-B3306E423AF2");
+        public static KeyController FontWeightKey = new KeyController("Font weight", "02095FC5-6F49-46C1-A2DB-06FF894A5235");
+        public static KeyController FontSizeKey = new KeyController("Font size", "75902765-7F0E-4AA6-A98B-3C8790DBF7CE");
         public static KeyController PresentationItemsKey = new KeyController("_Presentation Items", "5AB85A0A-7983-4E08-8E51-2D53BBFB30FF");
         public static KeyController DockedDocumentsLeftKey = new KeyController("_Documents docked on the left", "0CCFCC20-DAF7-4329-B615-605A54A86014");
         public static KeyController DockedDocumentsTopKey = new KeyController("_Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
@@ -106,6 +119,5 @@ namespace Dash
         public delegate DocumentController MakeRegionFunc(DocumentView view);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
-
     }
 }

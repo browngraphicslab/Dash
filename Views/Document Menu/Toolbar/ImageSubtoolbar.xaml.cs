@@ -130,6 +130,7 @@ namespace Dash
             _currentDocView = selection;
             _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
+	        xToggleAnnotations.IsChecked = _currentImage.AnnotationManager.AreAnnotationsVisible();
         }
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
@@ -153,13 +154,12 @@ namespace Dash
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
 			_currentImage?.AnnotationManager.ShowRegions();
-		    xToggleAnnotations.Label = "Hide";
+		    xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
-	    {
-			_currentImage?.AnnotationManager.HideRegions();
-		    xToggleAnnotations.Label = "Show";
+	    {			_currentImage?.AnnotationManager.HideRegions();
+		    xToggleAnnotations.Label = "Hidden";
 	    }
 
 	}

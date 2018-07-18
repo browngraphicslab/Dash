@@ -150,7 +150,7 @@ namespace Dash
             foreach (var doc in _documentContextList)
             {
                 // set the flag if we find a delegate or the document with the passed in id
-                if (doc == referenceDoc || doc.IsDelegateOf(referenceDoc))
+                if (doc.Equals(referenceDoc) || doc.IsDelegateOf(referenceDoc))
                 {
                     found = true;
                     referenceDoc = doc;

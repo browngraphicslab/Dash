@@ -35,8 +35,8 @@ namespace Dash
                 var numMatchedFields = 0;
                 foreach (var field in node.ViewDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
-                    if (ssm == StringSearchModel.False) continue;
+                    var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+                    if (ssm == null || ssm == StringSearchModel.False) continue;
 
                     if (string.IsNullOrEmpty(relatedString))
                     {
@@ -47,8 +47,8 @@ namespace Dash
                 }
                 foreach (var field in node.DataDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
-                    if (ssm == StringSearchModel.False) continue;
+                    var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+                    if (ssm == null || ssm == StringSearchModel.False) continue;
 
                     if (string.IsNullOrEmpty(relatedString))
                     {

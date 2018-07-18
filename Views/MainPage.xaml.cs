@@ -84,6 +84,14 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
+            Window.Current.CoreWindow.SizeChanged += (s, e) =>
+            {
+                double newHeight = e.Size.Height;
+                double newWidth = e.Size.Width;
+                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
+                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+            };
+
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
         }
@@ -723,7 +731,17 @@ namespace Dash
         {
             IsPresentationModeToggled = !IsPresentationModeToggled;
             xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
+            if (IsPresentationModeToggled)
+            {
+                xUtilTabColumn.Width = new GridLength(330);
+            }
+            else
+            {
+                //close presentation
+                xUtilTabColumn.Width = new GridLength(0);
+
+            }
+             
         }
 
         public void PinToPresentation(DocumentController dc)
@@ -778,8 +796,8 @@ namespace Dash
                     xErrorMessageText.Visibility = Visibility.Visible;
                 }
             }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - xBorder.ActualWidth / 2;
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - xBorder.ActualHeight / 2 - 160;
+            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
 
             LayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;

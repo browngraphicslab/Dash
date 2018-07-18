@@ -167,7 +167,7 @@ namespace Dash
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Link;
 
         }
 
@@ -263,7 +263,7 @@ namespace Dash
 
         private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var text = xAutoSuggestBox.Text;
+            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
             var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
@@ -277,16 +277,25 @@ namespace Dash
         }
         private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var text = xAutoSuggestBox.Text;
+            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
             var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
 
             var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            var panPos = collection.GetField<PointController>(KeyStore.PanPositionKey).Data;
-            var zoom = collection.GetField<PointController>(KeyStore.PanZoomKey).Data;
-            var note = new DishScriptBox((800 - panPos.X) / zoom.X, (500 - panPos.Y) / zoom.Y, 300, 400, script);//TODO this position should be based on the main doc views size
+            DishScriptBox note;
+            if (collection.GetField<PointController>(KeyStore.PanPositionKey) == null)
+            {
+                note = new DishScriptBox(0, 0, 300, 4000, script);
+            }
+            else
+            {
+                var panPos = collection.GetField<PointController>(KeyStore.PanPositionKey).Data;
+                var zoom = collection.GetField<PointController>(KeyStore.PanZoomKey).Data;
+                note = new DishScriptBox((800 - panPos.X) / zoom.X, (500 - panPos.Y) / zoom.Y, 300, 400, script);//TODO this position should be based on the main doc views size
+
+            }
 
             collection.AddToListField(KeyStore.DataKey, note.Document);
         }

@@ -29,7 +29,7 @@ namespace Dash
     {
         public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
         private static List<DocumentView> _selectedDocs = new List<DocumentView>();
-        private static DocumentController _currentlySelectedRegion;
+        public static DocumentController SelectedRegion;
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
@@ -55,9 +55,45 @@ namespace Dash
             SelectionChanged?.Invoke(args);
         }
 
+	    public static void SelectRegion(DocumentController region)
+	    {
+			// todo: this is a hack, should refactor elsewhere later
+		    if (SelectedRegion != null)
+		    {
+			    var toLinks = SelectedRegion.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+			    if (toLinks != null)
+			    {
+				    foreach (var dc in toLinks)
+				    {
+					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+					    if (docCtrl == null) return;
+					    var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
+					    if (isVisible != null)
+							docCtrl.ToggleAnnotationPin(isVisible.Data, false);
+						MainPage.Instance.HighlightDoc(docCtrl, false, 2);
+				    }
+				}
+			}
+
+		    SelectedRegion = region;
+
+		    if (region != null)
+			{
+				var newToLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				if (newToLinks == null) return;
+				foreach (var dc in newToLinks)
+				{
+					var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+					if (docCtrl == null) return;
+					docCtrl.ToggleAnnotationPin(true, true);
+				    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
+			    }
+			}
+	    }
+
         public static void SelectDocuments(List<DocumentView> docs)
-        {
-            var args = new DocumentSelectionChangedEventArgs();
+		{
+			var args = new DocumentSelectionChangedEventArgs();
             foreach (var doc in docs)
             {
                 if (!_selectedDocs.Contains(doc))
@@ -71,9 +107,12 @@ namespace Dash
 
         private static void SelectHelper(DocumentView doc)
 		{
+			if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
+				SelectRegion(null);
 			_selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
+
         public static void RefreshSelected(IEnumerable<DocumentView> viewModels)
         {
             var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel?.DocumentController).ToList();

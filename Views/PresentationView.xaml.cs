@@ -348,7 +348,7 @@ namespace Dash
             }
         }
 
-        private void DrawLines()
+        public void DrawLines()
         {
             var canvas = MainPage.Instance.xCanvas;
             //only recalcualte if you need to 
@@ -429,7 +429,7 @@ namespace Dash
             }
         }
 
-        private void RemoveLines()
+        public void RemoveLines()
         {
             //remove all paths
             var canvas = MainPage.Instance.xCanvas;

@@ -13,9 +13,9 @@
         <StackPanel Orientation="Horizontal" Background="LightGray" x:Name="xPdfCommandbar" Height="60" Spacing="10" Padding="10,0,10,0">
             <AppBarToggleButton x:Name="xToggleAnnotations" Icon="ClearSelection" Label="Show" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked"/>
             <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>
-            <AppBarToggleButton x:Name="xInkToggle" Label="Ink" Icon="Edit" Checked="XInkToggle_OnChecked" Unchecked="XInkToggle_OnUnchecked"></AppBarToggleButton>
-            <AppBarToggleButton x:Name="xTextToggle" Label="Selection" Icon="Font"  Checked="XTextToggle_OnChecked" Unchecked="XTextToggle_OnUnchecked"></AppBarToggleButton>
-            <AppBarToggleButton x:Name="xRegionToggle" Label="Region" Icon="SelectAll" Checked="XRegionToggle_OnChecked" Unchecked="XRegionToggle_OnUnchecked"></AppBarToggleButton>
+            <AppBarToggleButton x:Name="xInkToggle" Label="Ink" Icon="Edit" Checked="XInkToggle_OnChecked" ></AppBarToggleButton>
+            <AppBarToggleButton x:Name="xTextToggle" Label="Selection" Icon="Font"  Checked="XTextToggle_OnChecked" ></AppBarToggleButton>
+            <AppBarToggleButton x:Name="xRegionToggle" Label="Region" Icon="SelectAll" Checked="XRegionToggle_OnChecked" ></AppBarToggleButton>
         </StackPanel>
 <!--
         <CommandBar Background="LightGray" x:Name="xPdfCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed" PointerPressed="XPdfCommandbar_OnPointerPressed">
