@@ -417,6 +417,47 @@ namespace Dash
             AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
+        private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var mouse = new Point(e.GetPosition(xPdfGrid).X, e.GetPosition(xPdfGrid).Y);
+            var closest = GetClosestElementInDirection(mouse, mouse);
+
+            //space, tab, enter
+
+            if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && (Math.Abs(closest.Bounds.Y - mouse.Y) < 10))
+            {
+                SelectIndex(closest.Index);
+            }
+
+
+
+            for (var i = closest.Index; i >= 0; --i)
+            {
+                var selectableElement = _selectableElements[i];
+                if (!selectableElement.Contents.ToString().Equals(" "))
+                {
+                    SelectIndex(selectableElement.Index);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            for (var i = closest.Index; i >= 0; ++i)
+            {
+                var selectableElement = _selectableElements[i];
+                if (!selectableElement.Contents.ToString().Equals(" "))
+                {
+                    SelectIndex(selectableElement.Index);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
         #endregion
 
         #region Region/Selection Events
@@ -554,5 +595,8 @@ namespace Dash
 
 		    ScrollViewer.ChangeView(null, offset.Data, null);
 	    }
+
+
+      
     }
 }
