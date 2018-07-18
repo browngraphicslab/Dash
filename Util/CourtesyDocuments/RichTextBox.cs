@@ -95,9 +95,6 @@ namespace Dash
             RichTextView rtv = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
-            var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as RichTextController;
-            if (fieldModelController != null)
-            {
                 rtv = new RichTextView()
                 {
                     LayoutDocument = docController.GetActiveLayout() ?? docController,
@@ -113,7 +110,6 @@ namespace Dash
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
                 BindBackgroundColor(rtv, docController, context);
-            }
 
             return rtv;
         }

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -73,6 +74,9 @@ namespace Dash
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
             MainPage.Instance.TogglePresentationMode();
+            var presView = MainPage.Instance.xPresentationView;
+            presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+            presView.RemoveLines();
         }
 
         public void TogglePresentationMode(bool on)

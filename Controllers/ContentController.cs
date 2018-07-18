@@ -100,7 +100,15 @@ namespace Dash
         {
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
+	        Debug.WriteLine("CONTROLLER IDS: " + controllerIds);
 
+			/*
+			foreach (var controller in _controllers)
+	        {
+				Debug.WriteLine("CONTROLLERS: " + _controllers);
+		        Debug.WriteLine(controller);
+			}
+			*/
             Debug.Assert(controllerIds.All(_controllers.ContainsKey));
 
             // get any controllers which exist and are of type TControllerType

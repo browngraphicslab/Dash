@@ -71,6 +71,8 @@ namespace Dash
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            e.Handled = true;
+
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
@@ -93,9 +95,14 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
+
+                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
+                {
+                    view.UpdateResizers();
+                }
             }
-            e.Handled = true;
         }
+
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
@@ -111,6 +118,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+           
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

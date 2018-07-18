@@ -38,10 +38,10 @@
                     <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
-                            Width="0"
-                            Height="0"
-                            VerticalAlignment="Top"
-                            HorizontalAlignment="Left"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Width="0"
+                           Height="0"
                             RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                             >
                     </Canvas>
@@ -57,7 +57,9 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen" QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"></AutoSuggestBox>
+        <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top"
+                        TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen"
+                        QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"></AutoSuggestBox>
 
     </Grid>
 </local:CollectionFreeformBase>
