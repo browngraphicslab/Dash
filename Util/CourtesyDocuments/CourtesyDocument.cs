@@ -99,6 +99,17 @@ namespace Dash
             };
         }
 
+        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        {
+            //Set width and height
+            BindWidth(element, docController, context);
+            BindHeight(element, docController, context);
+
+            //Set alignments
+            BindHorizontalAlignment(element, docController, context);
+            BindVerticalAlignment(element, docController, context);
+        }
+
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
@@ -123,20 +134,6 @@ namespace Dash
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
-        }
-
-        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<PointController> binding = new FieldBinding<PointController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.PositionFieldKey,
-                Context = context,
-                Converter = new PointToTranslateTransformConverter()
-            };
-
-            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
@@ -169,15 +166,18 @@ namespace Dash
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
-        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            FieldBinding<PointController> binding = new FieldBinding<PointController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new PointToTranslateTransformConverter()
+            };
 
-            //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         /// <summary>

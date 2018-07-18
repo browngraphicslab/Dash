@@ -584,7 +584,7 @@ namespace Dash
                 e.Complete();
                 return;
             }
-            if (ParentDocument.IsRightBtnPressed() || ParentDocument.IsLeftBtnPressed())
+            if (ParentDocument.IsRightBtnPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -674,7 +674,7 @@ namespace Dash
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;
             ParentDocument.PointerWheelChanged -= ElementOnPointerWheelChanged;
         }
-        private bool ClampScale(double scaleFactor)
+        public bool ClampScale(double scaleFactor)
         {
             if (ElementScale > MaxScale)
             {

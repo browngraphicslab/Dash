@@ -43,15 +43,15 @@ namespace Dash
 
         #endregion
 
-	    private TextSubtoolbar _textToolbar;
+	    private RichTextSubtoolbar _richTextToolbar;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public FormattingMenuView(TextSubtoolbar textToolbar)
+        public FormattingMenuView(RichTextSubtoolbar richTextToolbar)
         {
             this.InitializeComponent();
-	        _textToolbar = textToolbar;
+	        _richTextToolbar = richTextToolbar;
             Loaded += FormattingMenuView_Loaded;
         }
 
@@ -326,7 +326,7 @@ namespace Dash
 		 */
 	    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)
 	    {
-		    _textToolbar.CloseSubMenu();
+		    _richTextToolbar.CloseSubMenu();
 	    }
 
 		/*

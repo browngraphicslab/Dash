@@ -31,7 +31,7 @@
     </UserControl.Resources>
 
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
-          BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch">
+          BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch" x:FieldModifier="public" >
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <!--empty header space-->
@@ -47,7 +47,7 @@
 
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       Fill="{ThemeResource TranslucentWindowsBlue}" />
+                       Fill="{StaticResource AccentGreenLight}" />
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
@@ -58,13 +58,13 @@
                 <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
                 <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Padding="0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
-                <AppBarButton Width="40"  Foreground="White" Background="Transparent" Label="Data"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
+                <AppBarButton Width="40"  Foreground="White" Background="Transparent" Label="Data" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
                     <AppBarButton.Icon>
                         <SymbolIcon Symbol="Switch"  FocusVisualPrimaryBrush="White" HorizontalAlignment="Right"></SymbolIcon>
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <!--close button-->
-                <AppBarButton Width="40" Foreground="White" Background="Transparent" Tapped="CloseButton_Tapped"   Grid.Column="3">
+                <AppBarButton Width="40" Foreground="White" Background="Transparent" x:Name="xCloseButton" Tapped="CloseButton_Tapped"   Grid.Column="3">
                     <AppBarButton.Icon>
                         <SymbolIcon Symbol="Cancel" Foreground="White" HorizontalAlignment="Right"></SymbolIcon>
                     </AppBarButton.Icon>
@@ -75,9 +75,9 @@
         <!--scrolling fields-->
         <ScrollViewer Name="xFieldsScroller" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <!--key value lists-->
-            <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:FieldModifier="public">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"></ColumnDefinition>
+                    <ColumnDefinition Width="3*" ></ColumnDefinition>
                     <ColumnDefinition Width="5*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <!--key listview-->

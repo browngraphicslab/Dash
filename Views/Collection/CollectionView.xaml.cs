@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 using Windows.System;
 using Dash.Views.Collection;
 using Windows.UI;
+using Dash.FontIcons;
 using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -18,7 +19,7 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Standard
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard
         }
 
         CollectionViewType _viewType;
@@ -151,24 +152,41 @@ namespace Dash
                 }
             }
 
-            tagMode.Click += EnterTagMode;
-            contextMenu.Items.Add(tagMode);
-            elementsToBeRemoved.Add(tagMode);
+                var icon1 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Tags
+                };
+                tagMode.Icon = icon1;
+
+                tagMode.Click += EnterTagMode;
+                contextMenu.Items.Add(tagMode);
+                elementsToBeRemoved.Add(tagMode);
 
             // add another horizontal separator
             var separatorTwo = new MenuFlyoutSeparator();
+
             contextMenu.Items.Add(separatorTwo);
             elementsToBeRemoved.Add(separatorTwo);
 
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
+
+            var icon5 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Code
+            };
+            newRepl.Icon = icon5;
             newRepl.Click += ReplFlyout_OnClick;
             contextMenu.Items.Add(newRepl);
             elementsToBeRemoved.Add(newRepl);
-
-
+            
             // add the item to create a scripting view
             var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
+            var icon6 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            newScriptEdit.Icon = icon6;
             newScriptEdit.Click += ScriptEdit_OnClick;
             contextMenu.Items.Add(newScriptEdit);
             elementsToBeRemoved.Add(newScriptEdit);
@@ -180,6 +198,11 @@ namespace Dash
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
+            var icon2 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Eye
+            };
+            viewCollectionAs.Icon = icon2;
             contextMenu.Items.Add(viewCollectionAs);
             elementsToBeRemoved.Add(viewCollectionAs);
 
@@ -202,12 +225,22 @@ namespace Dash
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
             viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+            var icon3 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.Search
+            };
+            viewCollectionPreview.Icon = icon3;
             contextMenu.Items.Add(viewCollectionPreview);
             elementsToBeRemoved.Add(viewCollectionPreview);
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
             fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+            var icon4 = new FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            fitToParent.Icon = icon4;
             contextMenu.Items.Add(fitToParent);
             elementsToBeRemoved.Add(fitToParent);
 
@@ -318,6 +351,10 @@ namespace Dash
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
+                    break;
+                case CollectionViewType.Graph:
+                    if (CurrentView is CollectionGraphView) return;
+                    CurrentView = new CollectionGraphView();
                     break;
                 case CollectionViewType.Standard:
                     if (CurrentView is CollectionStandardView) return;

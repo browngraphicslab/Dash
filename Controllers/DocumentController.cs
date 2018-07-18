@@ -10,12 +10,13 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Type = Zu.TypeScript.TsTypes.Type;
 
 namespace Dash
 {
-    /// <summary>
-    /// Allows interactions with underlying DocumentModel.
-    /// </summary>
+	/// <summary>
+	/// Allows interactions with underlying DocumentModel.
+	/// </summary>
 	[DebuggerDisplay("DocumentController: {Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
@@ -47,6 +48,7 @@ namespace Dash
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
+            TypeInfo = TypeInfo.Document;
             if (saveOnServer)
             {
                 IsOnServer(delegate (bool onServer)
@@ -377,13 +379,12 @@ namespace Dash
         public void Link(DocumentController target)
         {
             var linkDocument = new RichTextNote("<link description>").Document;
-            
-            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
-            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { this }));
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { target }));
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ this });
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController> { target });
+            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
+            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
         }
-        
+
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
@@ -878,6 +879,16 @@ namespace Dash
             {
                 UpdateOnServer(withUndo ? newEvent : null);
             }
+
+            if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
+            {
+                if (doc.DocumentType.Equals(TemplateBox.DocumentType))
+                {
+                    // TODO: ask tyler about this next line? -sy
+                    //TypeInfo = TypeInfo.Template;
+                }
+            }
+
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
@@ -1352,6 +1363,7 @@ namespace Dash
 
 
         static string spaces = "";
+
         void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }

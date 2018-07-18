@@ -8,6 +8,14 @@ namespace Dash
     {
         public ReplLineViewModel() { }
 
+        public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
+        {
+            _outputValue = outputValue;
+            LineText = lineText;
+            //LineText = GetValueFromResult(value);
+            Value = value;
+        }
+
         public event EventHandler Updated;
 
         public void Update() => Updated?.Invoke(this, EventArgs.Empty);
@@ -21,6 +29,8 @@ namespace Dash
             set => SetProperty(ref _lineText, value);
         }
 
+        public string GetLineText() => _lineText;
+        
         private string _resultText;
         public string ResultText
         {
@@ -28,7 +38,7 @@ namespace Dash
             set => SetProperty(ref _resultText, value);
         }
 
-        private bool _editTextValue;
+        private bool _editTextValue = false;
         public bool EditTextValue
         {
             get => _editTextValue;
@@ -43,6 +53,8 @@ namespace Dash
         public bool DisplayableOnly { get; set; }
 
         public int Indent { get; set; }
+
+        private FieldControllerBase _outputValue;
 
         public bool NotEditTextValue => !_editTextValue;
 

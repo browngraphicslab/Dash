@@ -8,9 +8,9 @@
     xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="1044">
+    d:DesignWidth="944">
 
-    <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
+        <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
     <Grid Width="1012" Height="60">
         <Grid.Resources>
             <!--Button style set here-->
