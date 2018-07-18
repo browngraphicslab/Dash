@@ -70,7 +70,7 @@ namespace Dash
                     }
                 }
 
-                MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true);
+                MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
             }
             else
             {

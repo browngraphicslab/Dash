@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Printing3D;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -28,13 +29,27 @@ namespace Dash
 	    public VisualAnnotationManager Manager;
         public Point TopLeftPercentile;
         public Point BottomRightPercentile;
+	    public RegionSelectionState SelectionState;
+	    public bool IsPointerOver = false;
 
         public RegionBox()
         {
             this.InitializeComponent();
+	        PointerEntered += OnPointerEntered;
+	        PointerExited += OnPointerExited;
         }
 
-		//sets position of region box in center square of 3x3 grid (the entire grid is the size of the image)
+	    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+	    {
+		    IsPointerOver = false;
+	    }
+
+	    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+	    {
+		    IsPointerOver = true;
+	    }
+
+	    //sets position of region box in center square of 3x3 grid (the entire grid is the size of the image)
         public void SetPosition(Point topLeftPoint, Size size, Size imageSize)
         {
             var row1 = topLeftPoint.Y / imageSize.Height;
@@ -87,22 +102,42 @@ namespace Dash
             Row3.Height = new GridLength(row3 * 100, GridUnitType.Star);
         }
 
-        // TODO rewrite this (would need to write DeleteRegion into VisualAnnotationManager)
+        // TODO this has tentatively been replaced by alt-click but we should bring it back in some form
         private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
 		    //AnnotationManager?.DeleteRegion(this);
 	    }
 
-	    public void Hide()
+	    public void ToggleSelectionState(RegionSelectionState state)
 	    {
-		    xRegionBox.Opacity = 0;
+		    SelectionState = state;
+		    switch (state)
+		    {
+				case RegionSelectionState.Select:
+					xRegionBox.StrokeDashArray = new DoubleCollection { 1, 0 };
+					xRegionBox.StrokeThickness = 2;
+					xRegionBoxFill.Opacity = 0.4;
+					break;
+				case RegionSelectionState.Hover:
+					xRegionBox.StrokeDashArray = new DoubleCollection { 4 };
+					xRegionBox.StrokeThickness = 1;
+					xRegionBoxFill.Opacity = 0.2;
+					break;
+				case RegionSelectionState.None:
+					xRegionBox.StrokeDashArray = new DoubleCollection { 4 };
+					xRegionBox.StrokeThickness = 1;
+					xRegionBoxFill.Opacity = 0;
+					break;
+		    }
 	    }
 
-	    public void Show()
-	    {
-		    xRegionBox.Opacity = 1;
-		    xRegionBoxFill.Opacity = 0.1;
-	    }
     }
+
+	public enum RegionSelectionState
+	{
+		Select,
+		Hover,
+		None
+	}
 }

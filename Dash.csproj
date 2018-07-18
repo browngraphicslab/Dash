@@ -208,6 +208,9 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
+    <Compile Include="Util\DashColorPicker.xaml.cs">
+      <DependentUpon>DashColorPicker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\DSL\DuplicateVariableDeclarationErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\DocumentationNotFoundErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
@@ -508,6 +511,9 @@
     <Compile Include="Views\Document Menu\Toolbar\ICommandBarBased.cs" />
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml.cs">
+      <DependentUpon>PdfSubToolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
       <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
@@ -935,6 +941,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Util\DashColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ViewModels\ReplLineNode.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1020,6 +1030,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

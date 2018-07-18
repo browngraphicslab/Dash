@@ -1,3 +1,25 @@
+var loadingBarWidth = 0;
+var loadToPercentage = 0;
+
+var loadBarTo = function () {
+    var loadingBar = document.getElementById("loadingBar");
+
+    if (loadingBarWidth >= loadToPercentage) {
+        if (loadingBarWidth == 100) {
+            setTimeout(function() {
+                    loadingBar.style.width = 0;
+                    loadingBarWidth = 0;
+                    loadToPercentage = 0;
+                },
+                100);
+        }
+        return;
+    }
+    loadingBarWidth++;
+    loadingBar.style.width = loadingBarWidth + "%";
+    setTimeout(loadBarTo, loadingBarWidth);
+};
+
 document.addEventListener('DOMContentLoaded',
     function () {
 
@@ -14,6 +36,8 @@ document.addEventListener('DOMContentLoaded',
         const addDocButton = document.getElementById('addDoc');
         addDocButton.addEventListener('click',
             function () {
+                loadToPercentage = 80;
+                loadBarTo();
                 chrome.tabs.getSelected(null,
                     function (tab) {
                             //allows user to type in info to save their authentication token as token
@@ -29,6 +53,7 @@ document.addEventListener('DOMContentLoaded',
                                         if (tab.url.includes("docs.google.com")) {
                                             let urlSections = tab.url.split("/");
                                             let fileId = urlSections[urlSections.length - 2];
+                                            console.log(fileId);
                                             path = "https://www.googleapis.com/drive/v3/files/" +
                                                 fileId +
                                                 "/export?mimeType=application%2Fpdf";
@@ -66,6 +91,9 @@ document.addEventListener('DOMContentLoaded',
                                                 chrome.runtime.sendMessage({ type: "sendRequest", data: request });
 
                                             }
+
+                                            loadToPercentage = 100;
+                                            loadBarTo();
                                         };
                                         //var array = new Uint8Array(pdf);
 
@@ -80,7 +108,6 @@ document.addEventListener('DOMContentLoaded',
 
 
                                         xhr.send('alt=media');
-
                                     }
                                 });
 

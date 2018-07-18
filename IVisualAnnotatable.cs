@@ -22,11 +22,10 @@ namespace Dash
         // the UIElement to figure out where the pointer is relative to
         FrameworkElement GetPositionReference();
         // since this is different for every class, they must implement this part themselves
+
+        VisualAnnotationManager GetAnnotationManager();
         DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType);
 
-        // Invoke these when the region preview boxes should be altered
-        event PointerEventHandler NewRegionStarted;
-        event PointerEventHandler NewRegionMoved;
-        event PointerEventHandler NewRegionEnded;
+	    event PointerEventHandler NewRegionStarted;
     }
 }

@@ -14,6 +14,7 @@ using Dash;
 using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
+using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 
 namespace Dash
 {
@@ -566,9 +567,9 @@ namespace Dash
         // If you want to add new code into the ElementOnManipulationStarted handler, use this one. It will always be called.
         public void ElementOnManipulationStarted()
         {
+            UndoManager.StartBatch();
             ManipulationStartX = ParentDocument.ViewModel.XPos;
             ManipulationStartY = ParentDocument.ViewModel.YPos;
-
             OnManipulatorStarted?.Invoke();
         }
 
@@ -642,7 +643,6 @@ namespace Dash
         // If you want to add code that runs after ANY document's manipulation is completed, use this method.
         public void ElementOnManipulationCompleted()
         {
-            UndoManager.StartBatch();
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             _previouslyHighlightedCollectionView?.Unhighlight();
@@ -659,7 +659,6 @@ namespace Dash
 
             OnManipulatorCompleted?.Invoke();
             Dock(false);
-            UndoManager.EndBatch();
 
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
         }

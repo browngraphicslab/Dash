@@ -39,7 +39,7 @@ namespace Dash
         }
 
         private RichEditBox _currBox;
-        private FormattingMenuView _menuView = null;
+        public FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
         private DocumentController _currentDocController;
@@ -51,13 +51,15 @@ namespace Dash
             _buttons = new Dictionary<string, Button>();
 
             _currBox = null;
+	        xBackgroundColorPicker.ParentFlyout = xColorPickerFlyout;
 
             //add an additional sub-toolbar for further operations
-            this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
+			/*
+            var addButton = this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
             {
                 /**
                  * When the Font Button is clicked, the font menu visibility is toggled, giving user access to additional editing operations like font style, etc.
-                 */
+                 
                 if (_currBox != null && _menuView == null)
                 {
                     //create a formatting menu and bind it to the currently selected richEditBox's view
@@ -70,16 +72,19 @@ namespace Dash
                     xStack.Children.Add(_menuView);
                     //collapse other text menu
                     xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
-                    _buttons.TryGetValue("Font", out var fontButton);
+	                //xBackgroundColorButton.Visibility = Visibility.Collapsed;
+
+					_buttons.TryGetValue("Font", out var fontButton);
                     if (fontButton != null)
                     {
                         //Width meant to be 67 to match actual rendered width of main toolbar collapse button
                         fontButton.Width = 67;
                     }
+					
                 }
                 //Width meant to be 67 to match actual rendered width of main toolbar collapse button
             }, 67, 100);
-
+		*/
             //binds orientation of toolbar to the orientation of the main toolbar
             xDashTextSubtoolbar.Loaded += delegate
             {
@@ -117,6 +122,7 @@ namespace Dash
                 Width = width,
                 Height = height,
             }; //add to toolbar
+	        button.Height = height;
             xDashTextSubtoolbar.CustomButtons.Add(button);
             //assign event handler to button on tapped
             button.Tapped += onTapped;
@@ -132,8 +138,9 @@ namespace Dash
 		 */
         public void SetCurrTextBox(RichEditBox box)
         {
-            _currBox = box;
-        }
+	        _currBox = box;
+			if (_menuView != null) _menuView.xRichEditBox = _currBox;
+		}
 
         /**
 		 * Setter for the documnentview of the richedittextbox, used for accessing text edit methods
@@ -141,10 +148,13 @@ namespace Dash
         public void SetDocs(DocumentView docs)
         {
             _docs = docs;
-            _currentDocController = docs.ViewModel.DocumentController;
+	        if (_menuView != null) _menuView.richTextView = _docs.GetFirstDescendantOfType<RichTextView>();
+			_currentDocController = docs.ViewModel.DocumentController;
             var ccol = _currentDocController.GetBackgroundColor() ?? Colors.Transparent;
-            xOpacitySlider.Value = ccol.A / 255.0 * xOpacitySlider.Maximum;
+            //xOpacitySlider.Value = ccol.A / 255.0 * xOpacitySlider.Maximum;
             xBackgroundColorPicker.SelectedColor = ccol;
+
+				
         }
 
 
@@ -156,14 +166,24 @@ namespace Dash
             xStack.Children.Remove(_menuView);
             _menuView = null;
             //restore other menu
-            xDashTextSubtoolbar.Visibility = Visibility.Visible;
+            //xDashTextSubtoolbar.Visibility = Visibility.Visible;
+	        //xBackgroundColorButton.Visibility = Visibility.Visible;
+	        xInitialGrid.Visibility = Visibility.Visible;
 
         }
 
-        /*
+	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
+	    {
+		    _currentDocController?.SetBackgroundColor(e);
+		   // _currBox.Background = new SolidColorBrush(e);
+	    }
+
+		#region Old Opacity/Color Code No Longer In Use
+		/*
+		/*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
-         */
-        private Windows.UI.Color GetColorWithUpdatedOpacity()
+         
+		private Windows.UI.Color GetColorWithUpdatedOpacity()
         {
             if (_currentColor == null)
                 return Windows.UI.Color.FromArgb(0x80, 0x00, 0x00, 0x00); //A fallback during startup (edge case) where current color string is null
@@ -178,7 +198,7 @@ namespace Dash
         }
         /*
          * Ensures current color reflects desired opacity and then updates the appropriate bindings for...
-         */
+         
         private void UpdateColor()
         {
             _currentColor = GetColorWithUpdatedOpacity();
@@ -186,7 +206,8 @@ namespace Dash
             //...shape's background color
             _currentDocController?.SetBackgroundColor(_currentColor);
         }
-
+		*/
+		/* NO LONGER NEED OPACITY SLIDER
         private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e) => UpdateColor();
 
         private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -194,5 +215,40 @@ namespace Dash
             xOpacitySlider.Value = 128;
             UpdateColor();
         }
+		*/
+		#endregion
+		
+		//prevents the color from seeing invisible
+	    private void XBackgroundColorButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+		    if (xBackgroundColorPicker.SelectedColor.A.Equals(0)) xBackgroundColorPicker.SetOpacity(150);
+	    }
+
+	    private void XMoreButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+			if (_currBox != null && _menuView == null)
+			{
+				//create a formatting menu and bind it to the currently selected richEditBox's view
+				_menuView = new FormattingMenuView(this)
+				{
+					richTextView = _docs.GetFirstDescendantOfType<RichTextView>(),
+					xRichEditBox = _currBox
+				};
+				//add the menu to the stack panel
+				xStack.Children.Insert(0,_menuView);
+				//collapse other text menu
+				//xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+				//xBackgroundColorButton.Visibility = Visibility.Collapsed;
+				xInitialGrid.Visibility = Visibility.Collapsed;
+
+				_buttons.TryGetValue("Font", out var fontButton);
+				if (fontButton != null)
+				{
+					//Width meant to be 67 to match actual rendered width of main toolbar collapse button
+					fontButton.Width = 67;
+				}
+
+			}
+		}
     }
 }
