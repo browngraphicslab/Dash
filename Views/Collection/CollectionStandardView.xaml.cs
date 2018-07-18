@@ -61,9 +61,9 @@ namespace Dash
             UpdateViewLevel();
         }
 
-        public override Canvas GetCanvas()
+        public override Panel GetCanvas()
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override ItemsControl GetItemsControl()
