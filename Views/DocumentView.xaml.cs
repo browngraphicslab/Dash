@@ -935,6 +935,7 @@ namespace Dash
            
 
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            //problem is that cumulativeDelta.Y is 0
             var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
 
             //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
