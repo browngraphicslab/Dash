@@ -762,14 +762,16 @@ namespace Dash
 
                     DocumentController htmlNote = null;
 
-                    if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
+                    if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && !MainPage.Instance.IsCtrlPressed()) || 
+                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
                     {
 
                         htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
 
                     }
 
-                    else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) || (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
+                    else if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && !MainPage.Instance.IsCtrlPressed()) || 
+                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
                     {
 
                         //copy html to clipboard
