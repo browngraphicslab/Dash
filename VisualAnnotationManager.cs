@@ -295,21 +295,6 @@ namespace Dash
             DeselectRegions();
         }
 
-        //called when the selected region changes
-        public void UpdateHighlight(DocumentView nearestOnCollection)
-        {
-            //unhighlight last doc
-            if (_lastNearest?.ViewModel != null)
-            {
-                MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-            }
-
-	        if (nearestOnCollection == null) return;
-            //highlight this linked doc
-            _lastNearest = nearestOnCollection;
-            MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
-        }
-
         //deselects all regions on a view
         private void DeselectRegions()
         {
@@ -410,7 +395,6 @@ namespace Dash
                 else
                 {
                     Debug.Assert(_overlay.PostVisibility == Visibility.Visible);
-
                     annotationType = AnnotationType.RegionBox;
                 }
                 note = _element.GetDocControllerFromSelectedRegion(annotationType);

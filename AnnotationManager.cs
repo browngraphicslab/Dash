@@ -22,6 +22,8 @@ namespace Dash
 	{
 		private FrameworkElement    _element;
 		private MenuFlyout   _linkFlyout;
+		private List<DocumentController> _lastHighlighted = new List<DocumentController>();
+
 		public enum AnnotationType
 		{
 			None,
@@ -44,6 +46,7 @@ namespace Dash
 				// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
 				// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
                 FollowDocument(chosenDC, pos);
+	            SelectionManager.SelectRegion(chosenDC);
             }
             else
 			{
@@ -56,13 +59,14 @@ namespace Dash
 	                if (_linkFlyout.Items == null || _linkFlyout.Items.Count != 0) return;
 
 	                if (toLinks?.Count + fromLinks?.Count == 1)
-	                {
-		                var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-		                dc = dc.GetDataDocument()
+					{
+						var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
+						SelectionManager.SelectRegion(theDoc);
+						dc = dc.GetDataDocument()
 			                .GetDereferencedField<ListController<DocumentController>>(
 				                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
 		                FollowDocument(dc, pos);
-		                return;
+						return;
 	                }
 
 					if (toLinks != null)
@@ -74,20 +78,16 @@ namespace Dash
 	                if (_linkFlyout.Items.Count > 0)
 		                _linkFlyout.ShowAt(_element);
                 }
-				// shows everything
+				// shows everything if it's not selected already. Otherwise, it'll toggle.
 				else
 				{
-					// cycle through and show everything
-					foreach (var dc in toLinks)
-					{
-						
-					}
+					SelectionManager.SelectRegion(theDoc);
 				}
 
             }
         }
 
-        // follows the document in the workspace, and heuristically determines if it's too far away and should be docked
+		// follows the document in the workspace, and heuristically determines if it's too far away and should be docked
 	    private void FollowDocument(DocumentController target, Point pos)
 	    {
 		    DocumentController docToFollow = target;
@@ -147,14 +147,28 @@ namespace Dash
 			    pdf.ScrollToRegion(target);
 		    }
 
-		    //images have additional highlighting features that should be implemented
-			if (!(_element is IVisualAnnotatable)) return;
-
-			var element = (IVisualAnnotatable)_element;
-			element.GetAnnotationManager().UpdateHighlight(toFollow);
+		    UpdateHighlight(new List<DocumentController> {toFollow.ViewModel.DocumentController});
 		}
-        
-        List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)
+
+		//called when the selected region changes
+		private void UpdateHighlight(List<DocumentController> toHighlight)
+		{
+			foreach (var unhighlight in _lastHighlighted)
+			{
+				MainPage.Instance.HighlightDoc(unhighlight, false, 2);
+			}
+
+			_lastHighlighted.Clear();
+
+			// cycle through and show everything
+			foreach (var dc in toHighlight)
+			{
+				MainPage.Instance.HighlightDoc(dc, false, 1);
+				_lastHighlighted.Add(dc);
+			}
+		}
+
+		List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)
         {
 	        var links = getFromLinks ? theDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData : theDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
 
@@ -238,10 +252,10 @@ namespace Dash
 		private void TriggerVisibilityBehaviorOnAnnotation(DocumentController target, bool isRegionCurrentlySelected, Point pos)
 		{
 			// toggle visibility
-			if (isRegionCurrentlySelected)
-				target.TogglePinUnpin();
-			else
-				ShowOrHideDocument(target, pos, true);
+			//if (isRegionCurrentlySelected)
+				//target.TogglePinUnpin();
+			//else
+				//ShowOrHideDocument(target, pos, true);
 		}
 
 		// TODO: figure out this interaction once region selection is working

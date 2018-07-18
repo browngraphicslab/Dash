@@ -1433,25 +1433,22 @@ namespace Dash
         #endregion
 
 		/// <summary>
-		/// Decides whether or not this pin should now be hidden or stay shown, and then reverses the setting
+		/// Shows or hides the pin, and optionally also sets the key as well.
 		/// </summary>
 		/// <returns></returns>
-	    public void TogglePinUnpin()
+	    public void ToggleAnnotationPin(bool toVisible, bool changeKey)
 	    {
-		    var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
-
-		    // reverse the setting
-		    SetField(KeyStore.AnnotationVisibilityKey, new BoolController(!isCurrentlyPinned), true);
-		    this.SetHidden(!isCurrentlyPinned);
+			if (changeKey)
+				SetField(KeyStore.AnnotationVisibilityKey, new BoolController(toVisible), true);
+		    this.SetHidden(!toVisible);
 	    }
 
 		/// <summary>
-		/// Sets the visibility based on pinned or unpinned.
+		/// Returns the visibility based on pinned or unpinned.
 		/// </summary>
-	    public void ResetPinVisibility()
+	    public bool GetAnnotationPin()
 		{
-			var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
-			this.SetHidden(!isCurrentlyPinned);
+			return GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
 		}
 
 		
