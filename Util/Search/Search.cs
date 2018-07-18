@@ -410,7 +410,7 @@ namespace Dash
             if (endParenthesis > 0 || (inputString.TrimStart('!').StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
                 string newInput = modInput.Substring(1, modInput.Length - 2);
-                searchResults.Concat(ParseToSearchTerms(newInput));
+                searchResults.AddRange(ParseToSearchTerms(newInput));
             }
             else
             {

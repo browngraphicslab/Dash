@@ -54,7 +54,7 @@ namespace Dash
         {
             ContextualTexts = contextualTexts.Select(t => t.Replace("\r", " \\r ").Replace("\n", " \\n ").Replace("\t", " \\t ")).ToList();
             Titles = titles;
-            FieldCount = Titles.Count;
+            FieldCount = Titles.Count; 
             ViewDocument = viewDoc;
             DocumentCollection = documentCollectionController;
             IsLikelyUsefulContextText = isLikelyUsefulContextText;
