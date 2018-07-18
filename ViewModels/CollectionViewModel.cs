@@ -692,8 +692,6 @@ namespace Dash
                 // accept move, then copy, and finally accept whatever they requested (for now)
                 if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
                     e.AcceptedOperation = DataPackageOperation.Move;
-                else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
-                    e.AcceptedOperation = DataPackageOperation.Copy;
                 else e.AcceptedOperation = e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as UserControl);
@@ -992,11 +990,9 @@ namespace Dash
                             if (p.GetActiveLayout() == null &&
                                 p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
                                 p.SetActiveLayout(new DefaultLayout().Document, true, true);
-                            var newDoc = e.AcceptedOperation == DataPackageOperation.Move
-                                ? p.GetSameCopy(where)
-                                : e.AcceptedOperation == DataPackageOperation.Link
-                                    ? p.GetKeyValueAlias(where)
-                                    : p.GetCopy(where);
+                            var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where)
+                                       : e.AcceptedOperation == DataPackageOperation.Link ? p.GetViewCopy(where)
+                                       : p.GetCopy(where);
                             if (double.IsNaN(newDoc.GetWidthField().Data))
                                 newDoc.SetWidth(dragData.Width ?? double.NaN);
                             if (double.IsNaN(newDoc.GetHeightField().Data))
