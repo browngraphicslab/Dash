@@ -18,13 +18,15 @@ namespace Dash
         private int _pageNumber;
         private double _largestSpaceWidth;
         private List<SelectableElement> _elements = new List<SelectableElement>();
+        private List<Rectangle> _pages = new List<Rectangle>();
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {
             _pageNumber = pageNumber;
             _pageSize = pageSize;
             _pageOffset = pageOffset;
-            //TODO Cache rects per page, since elements can't cross over pages
+            _pages.Add(new Rectangle(pageSize.GetX(), (float) (pageSize.GetY() + pageOffset), pageSize.GetWidth(),
+                pageSize.GetHeight()));
         }
 
         public override void EventOccurred(IEventData data, EventType type)
@@ -56,21 +58,52 @@ namespace Dash
                         _pageSize.GetHeight() - start.Get(1) + _pageOffset,
                         Math.Abs(end.Get(0) - start.Get(0)),
                         Math.Abs(end.Get(1) - start.Get(1)))));
-                if (textData.GetSingleSpaceWidth() > _largestSpaceWidth)
-                {
-                    _largestSpaceWidth = textData.GetSingleSpaceWidth();
-                }
             }
         }
 
         public List<SelectableElement> GetSelectableElements()
         {
-            FindColumns();
-            
+            var pageElements = new List<List<SelectableElement>>();
+            foreach (var page in _pages)
+            {
+                foreach (var selectableElement in _elements)
+                {
+                    if (page.Contains(new Rectangle((float) selectableElement.Bounds.X,
+                        (float) selectableElement.Bounds.Y,
+                        (float) selectableElement.Bounds.Width, (float) selectableElement.Bounds.Height)))
+                    {
+                        if (pageElements.Count > _pages.IndexOf(page))
+                        {
+                            pageElements[_pages.IndexOf(page)].Add(selectableElement);
+                        }
+                        else
+                        {
+                            pageElements.Add(new List<SelectableElement> {selectableElement});
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            var elements = new List<SelectableElement>(_elements.Count);
+            foreach (var page in pageElements)
+            {
+                elements.AddRange(GetSelectableElements(page, elements.Count));
+            }
+
+            return elements;
+        }
+
+        private List<SelectableElement> GetSelectableElements(List<SelectableElement> page, int elementCount)
+        {
+            page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
             List<List<SelectableElement>> lines = new List<List<SelectableElement>>();
-            lines.Add(new List<SelectableElement> { _elements.First() });
-            SelectableElement element = _elements.First();
-            foreach (var selectableElement in _elements.Skip(1))
+            lines.Add(new List<SelectableElement> { page.First() });
+            SelectableElement element = page.First();
+            foreach (var selectableElement in page.Skip(1))
             {
                 if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
@@ -84,15 +117,48 @@ namespace Dash
                 }
             }
 
-            List<SelectableElement> elements = new List<SelectableElement>(_elements.Count);
+            List<List<SelectableElement>> columns = new List<List<SelectableElement>>();
+            columns.Add(new List<SelectableElement>());
             foreach (var line in lines)
             {
+                line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+                element = line.First();
+                columns[0].Add(element);
+                var col = 0;
                 foreach (var selectableElement in line)
                 {
-                    selectableElement.Index = elements.Count;
+                    var currFontWidth = selectableElement.Bounds.Width;
+                    if (selectableElement.Bounds.X - element.Bounds.X > 4 * currFontWidth)
+                    {
+                        col++;
+                        if (columns.Count > col)
+                        {
+                            columns[col].Add(selectableElement);
+                        }
+                        else
+                        {
+                            columns.Add(new List<SelectableElement> { selectableElement });
+                        }
+                    }
+                    else
+                    {
+                        columns[col].Add(selectableElement);
+                    }
+
+                    element = selectableElement;
+                }
+            }
+
+            List<SelectableElement> elements = new List<SelectableElement>();
+            foreach (var column in columns)
+            {
+                foreach (var selectableElement in column)
+                {
+                    selectableElement.Index = elements.Count + elementCount;
                     elements.Add(selectableElement);
                 }
             }
+
             return elements;
         }
 
