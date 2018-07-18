@@ -130,7 +130,7 @@ namespace Dash
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
                 element = line.First();
                 var col = 0;
-                List<SelectableElement> newColumn = null;
+                List<List<SelectableElement>> newColumns = new List<List<SelectableElement>>();
                 foreach (var column in columns)
                 {
                     if (column.Any())
@@ -139,9 +139,21 @@ namespace Dash
                         var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
                         if (colWidth / lineWidth > 1.2 && Math.Abs(column.First().Bounds.X - line.First().Bounds.X) > lineWidth / 2)
                         {
+                            var temp = line.First().Bounds.X;
+                            while (temp >= column.First().Bounds.X + lineWidth && lineWidth != 0)
+                            {
+                                temp -= lineWidth;
+                                col++;
+                            }
+
+                            var colTemp = col;
+                            while (colTemp > columns.Count - 1 + newColumns.Count)
+                            {
+                                newColumns.Add(new List<SelectableElement>());
+                            }
                             // TODO: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                             //col = (int) Math.Floor(Math.Abs(colWidth - lineWidth) / line.First().Bounds.X);
-                            
+
                             //if (columns.Count - 1 < col)
                             //{
                             //    newColumn = new List<SelectableElement>();
@@ -149,6 +161,8 @@ namespace Dash
                         }
                     }
                 }
+
+                columns.AddRange(newColumns);
                 
                 columns[col].Add(element);
                 var currFontWidth = AverageFontSize(line);
