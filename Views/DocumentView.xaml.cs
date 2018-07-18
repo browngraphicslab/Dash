@@ -914,14 +914,22 @@ namespace Dash
 
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
-
         {
             if (this.IsRightBtnPressed() || PreventManipulation)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
             e.Handled = true;
-            var extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+            double extraOffsetX = 0;
+            if (!Double.IsNaN((ViewModel.Width)))
+            {
+                extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+            }
+            else
+            {
+                extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
+            }
+            
             double extraOffsetY = 0;
 
             if (!Double.IsNaN(ViewModel.Height))
