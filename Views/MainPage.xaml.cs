@@ -84,6 +84,14 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
+            Window.Current.CoreWindow.SizeChanged += (s, e) =>
+            {
+                double newHeight = e.Size.Height;
+                double newWidth = e.Size.Width;
+                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
+                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+            };
+
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
         }
@@ -778,8 +786,8 @@ namespace Dash
                     xErrorMessageText.Visibility = Visibility.Visible;
                 }
             }
-            LayoutPopup.HorizontalOffset = (xCanvas.ActualWidth / 2) - 200;
-            LayoutPopup.VerticalOffset = (xCanvas.ActualHeight / 2) - 150;
+            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
 
             LayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;
