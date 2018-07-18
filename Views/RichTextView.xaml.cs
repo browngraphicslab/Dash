@@ -698,9 +698,9 @@ namespace Dash
         {
             if (getDocView() == null)
                 return;
-            this.ClearSearchHighlights();
+            ClearSearchHighlights();
             _nextMatch = 0;
-            _prevQueryLength = queries?.First() == null ? 0 : queries.First().Data.Length;
+            _prevQueryLength = queries?.FirstOrDefault() == null ? 0 : queries.First().Data.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
