@@ -13,7 +13,7 @@
             font-size: 100%;
         }
 
-        button {
+        button, #addDoc {
             margin-top: 5px;
             background: black;
             color: white;
@@ -34,15 +34,29 @@
         }
 
         #loadingBar {
-            margin-top: 5px;
-            width: 100%;
+            width: 0;
             height: 100%;
-            background: blue;
+            background: green;
         }
 
-        #loadingBarCont {
+        #addDocButton {
+            color: white;
             width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            vertical-align: top
+        }
+
+        #addDoc {
+            background: black;
+            margin-top: 5px;
             height: auto;
+        }
+
+        #addText {
+            width: fit-content;
+            margin: 0 4.5px;
         }
 
         #mainCont {
@@ -60,9 +74,14 @@
         <img id="image-result" hidden>
         <h1>Dash</h1>
         <button id="openDash">Open Dash </button>
-        <div id="loadingBarCont">
-            <div id="loadingBar"></div>
-            <button id="addDoc" style="visibility: collapse">Add Document to Dash </button>
+        <div id="addDoc">
+            <button id="addDocButton">
+                <div id="loadingBar">
+                    <div id="addText">
+                        Add Document to Dash
+                    </div>
+                </div>
+            </button>
         </div>
     </div>
 </body>

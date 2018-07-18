@@ -12,8 +12,7 @@ namespace Dash
         /*
          * TODO: ENUMS ARE DIRECTLY CONVERTED TO STRINGS FOR INTERPRETATION! If you want to rename, use resharper by hitting ctrl r r to update name globally
          */
-
-
+          
         public enum Name
         {
             //TODO: MAKE YOUR OWN CATEGORIES PLS

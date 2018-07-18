@@ -31,7 +31,7 @@ namespace Dash
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-		    xPdfCommandbar.IsOpen = true;
+		   // xPdfCommandbar.IsOpen = true;
 			_currentPdfView?.AnnotationManager.ShowRegions();
 		    xToggleAnnotations.Label = "Visible";
 	
@@ -39,7 +39,7 @@ namespace Dash
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-		    xPdfCommandbar.IsOpen = true;
+		   // xPdfCommandbar.IsOpen = true;
 			_currentPdfView?.AnnotationManager.HideRegions();
 		    xToggleAnnotations.Label = "Hidden";
 	    }
@@ -60,8 +60,8 @@ namespace Dash
             xRegionToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
 
-            xPdfCommandbar.IsOpen = true;
-            xPdfCommandbar.IsEnabled = true;
+           // xPdfCommandbar.IsOpen = true;
+           // xPdfCommandbar.IsEnabled = true;
             _currentPdfView.AnnotationManager.CurrentAnnotationType = AnnotationManager.AnnotationType.Ink;
         }
 
@@ -70,8 +70,8 @@ namespace Dash
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
 
-            xPdfCommandbar.IsOpen = true;
-            xPdfCommandbar.IsEnabled = true;
+           // xPdfCommandbar.IsOpen = true;
+           // xPdfCommandbar.IsEnabled = true;
             _currentPdfView.AnnotationManager.CurrentAnnotationType = AnnotationManager.AnnotationType.TextSelection;
         }
 
@@ -80,20 +80,40 @@ namespace Dash
             xInkToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
 
-            xPdfCommandbar.IsOpen = true;
-            xPdfCommandbar.IsEnabled = true;
+           // xPdfCommandbar.IsOpen = true;
+          //  xPdfCommandbar.IsEnabled = true;
             _currentPdfView.AnnotationManager.CurrentAnnotationType = AnnotationManager.AnnotationType.RegionBox;
         }
 
         public void CommandBarOpen(bool status)
         {
-            xPdfCommandbar.IsOpen = status;
-            xPdfCommandbar.IsEnabled = true;
+           // xPdfCommandbar.IsOpen = status;
+          //  xPdfCommandbar.IsEnabled = true;
             xPdfCommandbar.Visibility = Visibility.Visible;
         }
 
         public void SetComboBoxVisibility(Visibility visibility)
         {
         }
+
+	    private void XPdfCommandbar_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+	    {
+		    //xPdfCommandbar.IsOpen = true;
+	    }
+
+	    private void XInkToggle_OnUnchecked(object sender, RoutedEventArgs e)
+	    {
+			//xPdfCommandbar.IsOpen = true;
+		}
+
+	    private void XTextToggle_OnUnchecked(object sender, RoutedEventArgs e)
+	    {
+		    //xPdfCommandbar.IsOpen = true;
+	    }
+
+	    private void XRegionToggle_OnUnchecked(object sender, RoutedEventArgs e)
+	    {
+			//xPdfCommandbar.IsOpen = true;
+		}
     }
 }
