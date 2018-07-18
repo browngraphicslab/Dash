@@ -33,7 +33,7 @@ namespace Dash
 	    {
 		   // xPdfCommandbar.IsOpen = true;
 			_currentPdfView?.AnnotationManager.ShowRegions();
-		    xToggleAnnotations.Label = "Hide";
+		    xToggleAnnotations.Label = "Visible";
 	
 	    }
 
@@ -41,7 +41,7 @@ namespace Dash
 	    {
 		   // xPdfCommandbar.IsOpen = true;
 			_currentPdfView?.AnnotationManager.HideRegions();
-		    xToggleAnnotations.Label = "Show";
+		    xToggleAnnotations.Label = "Hidden";
 	    }
 
         /// <summary>
@@ -52,6 +52,26 @@ namespace Dash
             _currentDocView = selection;
             _currentPdfView = _currentDocView.GetFirstDescendantOfType<CustomPdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
+	        xToggleAnnotations.IsChecked = _currentPdfView.AnnotationManager.AreAnnotationsVisible();
+
+			//update selected annotation type according to this newly selected PDF
+	        switch (_currentPdfView.AnnotationManager.CurrentAnnotationType)
+	        {
+				case AnnotationManager.AnnotationType.Ink:
+					xInkToggle.IsChecked = true;
+					break;
+				case AnnotationManager.AnnotationType.TextSelection:
+					xTextToggle.IsChecked = true;
+					break;
+				case AnnotationManager.AnnotationType.RegionBox:
+					xRegionToggle.IsChecked = true;
+					break;
+				default:
+					xInkToggle.IsChecked = false;
+					xTextToggle.IsChecked = false;
+					xRegionToggle.IsChecked = false;
+					break;
+	        }
         }
 
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
@@ -95,24 +115,5 @@ namespace Dash
         {
         }
 
-	    private void XPdfCommandbar_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-	    {
-		    //xPdfCommandbar.IsOpen = true;
-	    }
-
-	    private void XInkToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-			//xPdfCommandbar.IsOpen = true;
-		}
-
-	    private void XTextToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-		    //xPdfCommandbar.IsOpen = true;
-	    }
-
-	    private void XRegionToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-			//xPdfCommandbar.IsOpen = true;
-		}
     }
 }

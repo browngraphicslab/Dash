@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,6 +42,8 @@ namespace Dash
             get => xRegionPostManipulationPreview.Visibility;
             set => xRegionPostManipulationPreview.Visibility = value;
         }
+
+	    public bool AnnotationsVisible = true;
 
         public AnnotationOverlay()
         {
@@ -143,5 +146,47 @@ namespace Dash
             xInkCanvas.IsHitTestVisible = value;
             xInkCanvas.InkPresenter.IsInputEnabled = value;
         }
-    }
+
+
+	    public void ShowAnnotations(bool shouldShow)
+	    {
+		    AnnotationsVisible = shouldShow;
+		    xAnnotationGrid.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
+
+			//hide or show all linked annotations for selected text
+		    foreach (var region in xRegionsCanvas.Children)
+		    {
+			    var regionDoc = (region as Rectangle)?.DataContext as DocumentController;
+
+			    if (regionDoc != null)
+			    {
+				    var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				    foreach (var dc in newToLinks)
+				    {
+					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+					    if (docCtrl == null) return;
+					    docCtrl.SetHidden(!shouldShow);
+				    }
+				}
+			   }
+
+		    //hide or show all linked annotations for region boxes
+			foreach (var box in xRegionsGrid.Children)
+			{
+				var regionDoc = (box as RegionBox)?.LinkTo;
+
+				if (regionDoc != null)
+				{
+					var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+					foreach (var dc in newToLinks)
+					{
+						var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+						if (docCtrl == null) return;
+						docCtrl.SetHidden(!shouldShow);
+					}
+				}
+			}
+			
+		}
+	}
 }
