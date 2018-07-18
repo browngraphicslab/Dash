@@ -368,12 +368,10 @@ namespace Dash
 
         public static void UnHighlightAllDocs()
         {
-
             //TODO:call this when search is unfocused
 
             //list of all collections
-            var allCollections =
-                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+            var allCollections = MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
 
             foreach (var coll in allCollections)
             {
@@ -388,7 +386,6 @@ namespace Dash
                 {
                     a.RemoveField(CollectionDBView.SelectedKey);
                 }
-
             }
         }
 

@@ -100,7 +100,7 @@ namespace Dash
         public void DeleteDocument(T document, Action success, Action<Exception> error)
         {
             ContentController<T>.RemoveController(document.Id);
-             _endpoint.DeleteDocument(document, success, error);
+            _endpoint.DeleteDocument(document, success, error);
         }
 
         public void DeleteDocuments(IEnumerable<T> documents, Action success, Action<Exception> error)

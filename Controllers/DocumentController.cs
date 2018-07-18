@@ -32,7 +32,8 @@ namespace Dash
 
         public override string ToString()
         {
-            return "@"+Title;
+            string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";
+            return $"{prefix}{Title}";
         }
 
         /// <summary>

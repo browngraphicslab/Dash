@@ -12,6 +12,8 @@ namespace Dash
         {
         }
 
+        public bool Indexed { get; set; }
+
         public override TypeInfo TypeInfo => TypeInfo.List;
 
         public abstract TypeInfo ListSubTypeInfo { get; }
@@ -24,8 +26,6 @@ namespace Dash
         public abstract FieldControllerBase GetValue(int index);
 
         public int Count => Data.Count;
-
-        public bool Indexed { get; set; }
 
         public override bool CheckType(FieldControllerBase fmc)
         {
