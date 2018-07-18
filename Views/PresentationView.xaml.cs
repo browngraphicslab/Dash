@@ -139,6 +139,20 @@ namespace Dash
             ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
 
             DrawLinesWithNewDocs();
+
+            int selectedIndex = PinnedNodesListView.SelectedIndex;
+            if (selectedIndex == PinnedNodesListView.Items.Count - 1 && !_repeat)
+            {
+                //end presentation
+                NextButton.IsEnabled = false;
+                NextButton.Opacity = 0.3;
+            }
+            if (selectedIndex == 0 && !_repeat)
+            {
+                //disable back button
+                BackButton.IsEnabled = false;
+                BackButton.Opacity = 0.3;
+            }
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
@@ -401,17 +415,14 @@ namespace Dash
                 //create nest of elements to show segment
                 var segment =
                     new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
-
                 var segments = new PathSegmentCollection {segment};
                 var pathFig = new PathFigure
                 {
                     StartPoint = startPoint,
                     Segments = segments
                 };
-
                 var figures = new PathFigureCollection {pathFig};
                 var pathGeo = new PathGeometry {Figures = figures};
-
                 var path = new Windows.UI.Xaml.Shapes.Path
                 {
                     Data = pathGeo,
@@ -419,7 +430,7 @@ namespace Dash
                     StrokeThickness = 2
 
                 };
-
+                Canvas.SetZIndex(path, -1);
                 _paths.Add(path);
                 canvas.Children.Add(path);
 
@@ -454,6 +465,7 @@ namespace Dash
                     },
                     Fill = new SolidColorBrush(Colors.Black)
                 };
+                Canvas.SetZIndex(arrow, -1);
 
                 _paths.Add(arrow);
                 canvas.Children.Add(arrow);

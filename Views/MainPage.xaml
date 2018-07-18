@@ -81,6 +81,9 @@
                             </ComboBox>
                         </StackPanel>
 
+                        <CheckBox x:Name="xSaveHtmlType" 
+                                  Content="Remember my choice."/>
+
                         <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
                             <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
                         </Button>
@@ -117,7 +120,7 @@
 
         </Grid>
 
-        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public"/>
+        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
         <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
         
