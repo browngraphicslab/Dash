@@ -54,8 +54,11 @@ namespace Dash
                 //            Math.Abs(end.Get(1) - start.Get(1)))));
                 //}
 
-                if (!_elements.Any() || !_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
-                    _elements.Last().Bounds.Contains(new Point(textData.GetAscentLine().GetEndPoint().Get(0), textData.GetAscentLine().GetEndPoint().Get(1))))
+                if (!_elements.Any() || ((!_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
+                                          !_elements.Last().Bounds.Contains(new Point(
+                                              textData.GetAscentLine().GetEndPoint().Get(0),
+                                              textData.GetAscentLine().GetEndPoint().Get(1)))) &&
+                                         !(_elements.Last().Contents as string).Equals(textData.GetText())))
                 {
                     _elements.Add(new SelectableElement(-1, textData.GetText(),
                         new Rect(start.Get(0),
@@ -124,51 +127,67 @@ namespace Dash
 
             List<List<SelectableElement>> columns = new List<List<SelectableElement>>();
             columns.Add(new List<SelectableElement>());
-            var prevLine = new List<SelectableElement>();
             foreach (var line in lines)
             {
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
                 element = line.First();
                 var col = 0;
-                List<List<SelectableElement>> newColumns = new List<List<SelectableElement>>();
-                foreach (var column in columns)
+                var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
+                //var colWidth = Math.Abs(columns[col].First().Bounds.X - columns[col].Last().Bounds.X);
+
+                if (columns.Any() && line.Any())
                 {
-                    if (column.Any())
+                    var temp = line.First().Bounds.X;
+                    while (columns[col].Any() && temp - lineWidth > columns[col].Min(i => i.Bounds.X) && lineWidth != 0.0)
                     {
-                        var colWidth = Math.Abs(column.First().Bounds.X - column.Last().Bounds.X);
-                        var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
-                        if (colWidth / lineWidth > 1.2 && Math.Abs(column.First().Bounds.X - line.First().Bounds.X) > lineWidth / 2)
+                        temp -= lineWidth;
+                        col++;
+                        if (columns.Count - 1 < col)
                         {
-                            var temp = line.First().Bounds.X;
-                            while (temp >= column.First().Bounds.X + lineWidth && lineWidth != 0)
-                            {
-                                temp -= lineWidth;
-                                col++;
-                            }
-
-                            var colTemp = col;
-                            while (colTemp > columns.Count - 1 + newColumns.Count)
-                            {
-                                newColumns.Add(new List<SelectableElement>());
-                            }
-                            // TODO: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                            //col = (int) Math.Floor(Math.Abs(colWidth - lineWidth) / line.First().Bounds.X);
-
-                            //if (columns.Count - 1 < col)
-                            //{
-                            //    newColumn = new List<SelectableElement>();
-                            //}
+                            columns.Add(new List<SelectableElement>());
                         }
                     }
                 }
 
-                columns.AddRange(newColumns);
-                
                 columns[col].Add(element);
+                //List<List<SelectableElement>> newColumns = new List<List<SelectableElement>>();
+                //foreach (var column in columns)
+                //{
+                //    if (column.Any())
+                //    {
+                //        var colWidth = Math.Abs(column.First().Bounds.X - column.Last().Bounds.X);
+                //        var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
+                //        if (colWidth / lineWidth > 2 && Math.Abs(column.First().Bounds.X - line.First().Bounds.X) > lineWidth / 2)
+                //        {
+                //            var temp = line.First().Bounds.X;
+                //            while (temp >= column.First().Bounds.X + lineWidth && lineWidth != 0)
+                //            {
+                //                temp -= lineWidth;
+                //                col++;
+                //            }
+
+                //            var colTemp = col;
+                //            while (colTemp > columns.Count - 1 + newColumns.Count)
+                //            {
+                //                newColumns.Add(new List<SelectableElement>());
+                //            }
+
+                //            col = (int) Math.Floor(Math.Abs(colWidth - lineWidth) / line.First().Bounds.X);
+
+                //            if (columns.Count - 1 + newColumns.Count < col)
+                //            {
+                //                col = columns.Count - 1 + newColumns.Count;
+                //            }
+                //        }
+                //    }
+                //}
+
+                //columns.AddRange(newColumns);
+                
                 var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line)
                 {
-                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 3.5 * currFontWidth)
+                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 2.75 * currFontWidth)
                     {
                         col++;
                         if (columns.Count > col)
@@ -187,9 +206,46 @@ namespace Dash
 
                     element = selectableElement;
                 }
-
-                prevLine = line;
             }
+
+            //var dictionary = new Dictionary<double, List<SelectableElement>>();
+            //foreach (var line in lines)
+            //{
+            //    foreach (var e in line)
+            //    {
+            //        if (dictionary.ContainsKey(e.Bounds.X))
+            //        {
+            //            dictionary[e.Bounds.X].Add(e);
+            //        }
+            //        else
+            //        {
+            //            dictionary.Add(e.Bounds.X, new List<SelectableElement>{e});
+            //        }
+            //    }
+            //}
+            
+            //var columnPositions = dictionary.Where(i => i.Value.Count > 5).OrderBy(j => j.Key);
+            //var columns2 = new List<List<SelectableElement>>();
+            //foreach (var columnPos in columnPositions)
+            //{
+            //    columns2.Add(new List<SelectableElement>());
+            //    for (var i = 0; i < columnPos.Value.Count; i++)
+            //    {
+            //        var avgSize = AverageFontSize(columnPos.Value);
+            //        var line = lines.Find(j => j.Contains(columnPos.Value[i]));
+            //        for (var k = 0; k < line.Count; k++)
+            //        {
+            //            if (line[k + 1].Bounds.X - (line[k].Bounds.X + line[k].Bounds.Width) > 3.5 * avgSize)
+            //            {
+            //                columns2.Last().Add(line[k]);
+            //            }
+            //            else
+            //            {
+            //                columns2.Add(new List<SelectableElement> {line[k]});
+            //            }
+            //        }
+            //    }
+            //}
 
             List<SelectableElement> elements = new List<SelectableElement>();
             foreach (var column in columns)
