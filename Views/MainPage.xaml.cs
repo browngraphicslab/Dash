@@ -778,8 +778,8 @@ namespace Dash
                     xErrorMessageText.Visibility = Visibility.Visible;
                 }
             }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - xBorder.ActualWidth / 2;
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - xBorder.ActualHeight / 2 - 160;
+            LayoutPopup.HorizontalOffset = (xCanvas.ActualWidth / 2) - 200;
+            LayoutPopup.VerticalOffset = (xCanvas.ActualHeight / 2) - 150;
 
             LayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;
