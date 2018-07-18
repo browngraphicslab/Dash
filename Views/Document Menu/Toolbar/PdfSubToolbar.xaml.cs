@@ -66,6 +66,11 @@ namespace Dash
 				case AnnotationManager.AnnotationType.RegionBox:
 					xRegionToggle.IsChecked = true;
 					break;
+				default:
+					xInkToggle.IsChecked = false;
+					xTextToggle.IsChecked = false;
+					xRegionToggle.IsChecked = false;
+					break;
 	        }
         }
 
@@ -110,24 +115,5 @@ namespace Dash
         {
         }
 
-	    private void XPdfCommandbar_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-	    {
-		    //xPdfCommandbar.IsOpen = true;
-	    }
-
-	    private void XInkToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-			//xPdfCommandbar.IsOpen = true;
-		}
-
-	    private void XTextToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-		    //xPdfCommandbar.IsOpen = true;
-	    }
-
-	    private void XRegionToggle_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-			//xPdfCommandbar.IsOpen = true;
-		}
     }
 }
