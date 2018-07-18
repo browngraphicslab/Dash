@@ -154,11 +154,6 @@ namespace Dash
                 }
             }
 
-            foreach (var column in columns)
-            {
-
-            }
-
             List<SelectableElement> elements = new List<SelectableElement>();
             foreach (var column in columns)
             {
@@ -169,7 +164,45 @@ namespace Dash
                 }
             }
 
+            var columnThreshold = _pageSize.GetWidth() / columns.Count;
+            foreach (var column in columns)
+            {
+                foreach (var line in lines)
+                {
+                    var lineWidthBefore = LineWidth(lines[lines.IndexOf(line) > 0 ? lines.IndexOf(line) - 1 : 0],
+                        column);
+                    var lineWidth = LineWidth(line, column);
+                    var lineWidthAfter =
+                        LineWidth(
+                            lines[lines.IndexOf(line) < lines.Count - 1 ? lines.IndexOf(line) + 1 : lines.Count - 1],
+                            column);
+                    var averageWidth = lineWidthBefore + lineWidthAfter / 2;
+                    if (averageWidth - lineWidth > columnThreshold)
+                    {
+                        var nextColumn = columns.IndexOf(column) < columns.Count
+                            ? columns.IndexOf(column) + 1
+                            : columns.Count - 1;
+                        if (columns[nextColumn] != column)
+                        {
+                            var nextColumnLine = columns[nextColumn].Where(i => line.Contains(i));
+                            var range = elements.GetRange(nextColumnLine.First().Index,
+                                nextColumnLine.Last().Index - nextColumnLine.First().Index);
+                            var insertIndex = line.Last(i => column.Contains(i)).Index;
+                            elements.RemoveRange(range.First().Index, range.Count);
+                            elements.InsertRange(insertIndex, range);
+                        }
+                    }
+                }
+            }
+
             return elements;
+        }
+
+        private double LineWidth(List<SelectableElement> line, List<SelectableElement> column = null)
+        {
+            var start = line.First(i => column?.Contains(i) ?? true);
+            var end = line.Last(i => column?.Contains(i) ?? true);
+            return end.Bounds.X + end.Bounds.Width - start.Bounds.X;
         }
 
         private void FindColumns()
