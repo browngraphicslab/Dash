@@ -1078,7 +1078,6 @@ namespace Dash
 							// note is the new annotation textbox that is created
 							var note = new RichTextNote("<annotation>", where).Document;
 	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-							
 
                             dragDoc.Link(note);
                             AddDocument(note);
