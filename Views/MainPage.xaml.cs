@@ -739,7 +739,9 @@ namespace Dash
             {
                 //close presentation
                 xUtilTabColumn.Width = new GridLength(0);
-
+                var presView = Instance.xPresentationView;
+                presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                presView.RemoveLines();
             }
              
         }

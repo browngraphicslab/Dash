@@ -525,5 +525,11 @@ namespace Dash
         {
             _repeat = false;
         }
+
+        private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
+        {
+            //close presentation
+            MainPage.Instance.TogglePresentationMode();
+        }
     }
 }
