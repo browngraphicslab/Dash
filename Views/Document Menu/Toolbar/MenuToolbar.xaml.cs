@@ -346,6 +346,15 @@ namespace Dash
                         subtoolbarElement = xGroupToolbar;
                     }
 
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
+                    {
+                        containsInternalContent = true;
+                        baseLevelContentToolbar = xPdfToolbar;
+                        xPdfToolbar.SetPdfBinding(selection);
+                        subtoolbarElement = xPdfToolbar;
+                        xGroupToolbar.TryMakeGroupEditable(true);
+                    }
+
                     // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
                     // TODO Revisit this when selection is refactored
@@ -531,13 +540,12 @@ namespace Dash
                 {
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
-                    if (docController != null)
-                    {
-                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                        docController.GetPositionField().Data = where;
-                        mainPageCollectionView.ViewModel.AddDocument(docController);
-                    }
+                    if (docController == null) continue;
+
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
+                    docController.GetPositionField().Data = @where;
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
             }
             else

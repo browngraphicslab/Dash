@@ -421,7 +421,7 @@ namespace Dash
 		    return AnnotationManager.GetRegionDocument();
 		}
 
-	    public DocumentController GetDocControllerFromSelectedRegion()
+	    public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
 	    {
 			// calculate the starting point since the overlay only gives us the percentile
 		    var topLeft = xAnnotations.GetTopLeftPercentile();
@@ -431,7 +431,7 @@ namespace Dash
             // the bitmap streaming to crop doesn't work yet
 	        var imNote = new ImageNote(_imgctrl.ImageSource, new Point(x, y),
 	                xAnnotations.GetDuringPreviewActualSize()).Document;
-            imNote.SetRegionDefinition(_docCtrl);
+	        imNote.SetRegionDefinition(_docCtrl, annotationType);
 
 	        return imNote;
 	    }

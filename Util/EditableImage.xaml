@@ -16,7 +16,7 @@
 
     <Grid x:Name="xGrid" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
           PointerPressed="OnPointerPressed">
-        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" CacheMode="BitmapCache" />
+        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Fill" CacheMode="BitmapCache" />
         <dash:AnnotationOverlay x:Name="xAnnotations"/>
         <!--<StackPanel x:Name="xLinkStack" Visibility="Collapsed"/>-->
         <FlyoutBase.AttachedFlyout>

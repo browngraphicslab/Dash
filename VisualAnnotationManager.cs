@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Input.Inking;
@@ -11,15 +9,14 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Zu.TypeScript.TsTypes;
 using Canvas = Windows.UI.Xaml.Controls.Canvas;
 
 namespace Dash
 {
-    /// <summary>
-    /// These EventArgs are used for regioning-related events.
-    /// </summary>
-    public class RegionEventArgs : EventArgs
+	/// <summary>
+	/// These EventArgs are used for regioning-related events.
+	/// </summary>
+	public class RegionEventArgs : EventArgs
     {
         public DocumentController Link { get; set; }
     }
@@ -295,21 +292,6 @@ namespace Dash
             DeselectRegions();
         }
 
-        //called when the selected region changes
-        public void UpdateHighlight(DocumentView nearestOnCollection)
-        {
-            //unhighlight last doc
-            if (_lastNearest?.ViewModel != null)
-            {
-                MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-            }
-
-	        if (nearestOnCollection == null) return;
-            //highlight this linked doc
-            _lastNearest = nearestOnCollection;
-            MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
-        }
-
         //deselects all regions on a view
         private void DeselectRegions()
         {
@@ -374,17 +356,13 @@ namespace Dash
 
                 foreach (RegionBox region in _visualRegions)
                 {
-                    //region.Visibility = Visibility.Collapsed;
 	                region.ToggleSelectionState(RegionSelectionState.None);
-	                region.LinkTo.GetDataDocument()
-		                .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData
-		                .First().SetHidden(true);
                 }
-
 				_overlay.ShowAnnotations(false);
 			}
         }
 		
+
         public void SetSelectionRegion(IEnumerable<SelectableElement> elements)
         {
             _selectableElements = elements;
@@ -418,7 +396,6 @@ namespace Dash
                 else
                 {
                     Debug.Assert(_overlay.PostVisibility == Visibility.Visible);
-
                     annotationType = AnnotationType.RegionBox;
                 }
                 note = _element.GetDocControllerFromSelectedRegion(annotationType);
@@ -532,5 +509,10 @@ namespace Dash
                 Link = dc,
             });
         }
+
+	    public bool AreAnnotationsVisible()
+	    {
+		    return _overlay.AnnotationsVisible;
+	    }
     }
 }

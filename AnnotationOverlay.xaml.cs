@@ -6,6 +6,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -13,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -40,10 +43,30 @@ namespace Dash
             set => xRegionPostManipulationPreview.Visibility = value;
         }
 
+	    public bool AnnotationsVisible = true;
+
         public AnnotationOverlay()
         {
             this.InitializeComponent();
             Loaded += OnLoaded;
+
+            xInkCanvas.InkPresenter.InputDeviceTypes =
+                CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            xInkCanvas.InkPresenter.StrokesCollected += (sender, args) => UpdateStrokes();
+            xInkCanvas.InkPresenter.StrokesErased += (sender, args) => UpdateStrokes();
+            SetInkEnabled(false);
+        }
+
+        public event EventHandler<IEnumerable<InkStroke>> InkUpdated;
+
+        public void InitStrokes(IEnumerable<InkStroke> strokes)
+        {
+            xInkCanvas.InkPresenter.StrokeContainer.AddStrokes(strokes);
+        }
+
+        private void UpdateStrokes()
+        {
+            InkUpdated?.Invoke(this, xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -65,6 +88,11 @@ namespace Dash
 		public void AddRegion(RegionBox box)
         {
             xRegionsGrid.Children.Add(box);
+        }
+
+        public void AddCanvasRegion(FrameworkElement element)
+        {
+            xRegionsCanvas.Children.Add(element);
         }
 
         public void RemoveRegion(RegionBox box)
@@ -109,8 +137,55 @@ namespace Dash
             xRegionPostManipulationPreview.SetPosition(
                 new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
                 new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
-                totalSize
-            );
+                totalSize);
         }
-    }
+
+        public void SetInkEnabled(bool value)
+        {
+            xInkCanvas.IsHitTestVisible = value;
+            xInkCanvas.InkPresenter.IsInputEnabled = value;
+        }
+
+
+	    public void ShowAnnotations(bool shouldShow)
+	    {
+		    AnnotationsVisible = shouldShow;
+		    xAnnotationGrid.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
+
+			//hide or show all linked annotations for selected text
+		    foreach (var region in xRegionsCanvas.Children)
+		    {
+			    var regionDoc = (region as Rectangle)?.DataContext as DocumentController;
+
+			    if (regionDoc != null)
+			    {
+				    var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				    foreach (var dc in newToLinks)
+				    {
+					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+					    if (docCtrl == null) return;
+					    docCtrl.SetHidden(!shouldShow);
+				    }
+				}
+			   }
+
+		    //hide or show all linked annotations for region boxes
+			foreach (var box in xRegionsGrid.Children)
+			{
+				var regionDoc = (box as RegionBox)?.LinkTo;
+
+				if (regionDoc != null)
+				{
+					var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+					foreach (var dc in newToLinks)
+					{
+						var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+						if (docCtrl == null) return;
+						docCtrl.SetHidden(!shouldShow);
+					}
+				}
+			}
+			
+		}
+	}
 }

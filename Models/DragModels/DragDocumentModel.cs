@@ -97,8 +97,6 @@ namespace Dash.Models.DragModels
                     vcopy.SetHeight(300);
                     vcopy.SetFitToParent(true);
                 }
-                else if (double.IsNaN(vcopy.GetWidthField().Data))
-                    vcopy.SetWidth(500);
                 return vcopy;
             }
 

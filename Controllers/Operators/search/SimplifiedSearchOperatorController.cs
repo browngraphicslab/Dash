@@ -3,53 +3,46 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using DashShared;
 
+// ReSharper disable CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.find_s, Op.Name.find_single, Op.Name.fs)]
-    public class FindSingleDocumentOperatorController : OperatorController
+    [OperatorType(Op.Name.find, Op.Name.f/*, Op.Name.search*/)]
+    public sealed class SimplifiedSearchOperatorController : OperatorController
     {
+
         //Input keys
         public static readonly KeyController QueryKey = new KeyController("Query");
 
         //Output keys
         public static readonly KeyController ResultsKey = new KeyController("Results");
 
-        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
-        public FindSingleDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
+        public SimplifiedSearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new SimplifiedSearchOperatorController();
-        }
+        public override FieldControllerBase GetDefaultController() => new SimplifiedSearchOperatorController();
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {
             new KeyValuePair<KeyController, IOInfo>(QueryKey, new IOInfo(TypeInfo.Text, true)),
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
-            [ResultsKey] = TypeInfo.Document
+            [ResultsKey] = TypeInfo.List
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Simple Single Search", "C35B553E-F12A-483A-AED9-30927606B897");
+        private static readonly KeyController TypeKey = new KeyController("Simple Search", "F0D6FCB0-4635-4ECF-880F-81D2738A1350");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
-
-            var result = Search.Parse(searchQuery).First().ViewDocument;
-            outputs[ResultsKey] = result;
+            var results = new ListController<FieldControllerBase>();
+            results.AddRange(Search.Parse(searchQuery).Select(res => res.ViewDocument).ToList());
+            outputs[ResultsKey] = results;
         }
     }
 }
-

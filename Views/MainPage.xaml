@@ -22,21 +22,21 @@
         </Grid.ColumnDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        
+
         <!-- MainDocView -->
-        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <local:DockingFrame.DocumentContent>
                 <Grid>
                     <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
-                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                             <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                         </Grid>
-                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
+                        <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
                         </Button>
-                        <Button Name="xBackButton" VerticalAlignment="Stretch">
-                            <SymbolIcon Symbol="Back"/>
+                        <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -52,10 +52,42 @@
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
+        <Canvas x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+            <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
+                <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
+            
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened" Closed="Popup_OnClosed">
+                <Border x:Name="xBorder"
+                        BorderBrush="{StaticResource AccentGreenLight}"
+                        Background="White"
+                        BorderThickness="2 40 2 2" Width="400" Height="300">
+                        <Grid>
+
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock FontSize="18" Margin="-10 -100 0 0">A webpage has been dragged into Dash.</TextBlock>
+                                <ComboBox x:Name="xComboBox" Width="350" Margin="0 -40 0 -20" Header="Which format should be applied to this webpage?">
+                                    <ComboBoxItem>HTML</ComboBoxItem>
+                                    <ComboBoxItem>RTF</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
+                                <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
+                            </Button>
+
+                            <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ErrorIcon}"/>
+                                <TextBlock x:Name="xErrorMessageText" Visibility="Collapsed" FontSize="12" Foreground="DarkRed" Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
+
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+            </Popup>
+            </Grid>
         </Canvas>
+       
 
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -64,12 +96,12 @@
                 <RowDefinition Height="325" />
             </Grid.RowDefinitions>
 
-          
+
 
             <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                
+
             </Grid>
-            
+
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
 
             <localMicrosoft:GridSplitter 
@@ -80,6 +112,8 @@
         <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch"/>
 
         <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+        
+        
     </Grid>
 </Page>
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,9 @@ using Windows.UI;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Dash;
 using Dash.Views;
+using iText.StyledXmlParser.Jsoup.Select;
 
 namespace Dash
 {
@@ -19,6 +22,15 @@ namespace Dash
 	{
 		private FrameworkElement    _element;
 		private MenuFlyout   _linkFlyout;
+		private List<DocumentController> _lastHighlighted = new List<DocumentController>();
+
+		public enum AnnotationType
+		{
+			None,
+			RegionBox,
+			TextSelection,
+			Ink
+		}
 
 		public AnnotationManager(FrameworkElement uiElement)
 		{
@@ -34,6 +46,7 @@ namespace Dash
 				// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
 				// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
                 FollowDocument(chosenDC, pos);
+	            SelectionManager.SelectRegion(chosenDC);
             }
             else
 			{
@@ -46,13 +59,14 @@ namespace Dash
 	                if (_linkFlyout.Items == null || _linkFlyout.Items.Count != 0) return;
 
 	                if (toLinks?.Count + fromLinks?.Count == 1)
-	                {
-		                var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-		                dc = dc.GetDataDocument()
+					{
+						var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
+						SelectionManager.SelectRegion(theDoc);
+						dc = dc.GetDataDocument()
 			                .GetDereferencedField<ListController<DocumentController>>(
 				                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
 		                FollowDocument(dc, pos);
-		                return;
+						return;
 	                }
 
 					if (toLinks != null)
@@ -64,20 +78,16 @@ namespace Dash
 	                if (_linkFlyout.Items.Count > 0)
 		                _linkFlyout.ShowAt(_element);
                 }
-				// shows everything
+				// shows everything if it's not selected already. Otherwise, it'll toggle.
 				else
 				{
-					// cycle through and show everything
-					foreach (var dc in toLinks)
-					{
-						
-					}
+					SelectionManager.SelectRegion(theDoc);
 				}
 
             }
         }
 
-        // follows the document in the workspace, and heuristically determines if it's too far away and should be docked
+		// follows the document in the workspace, and heuristically determines if it's too far away and should be docked
 	    private void FollowDocument(DocumentController target, Point pos)
 	    {
 		    DocumentController docToFollow = target;
@@ -89,20 +99,23 @@ namespace Dash
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, docToFollow?.GetDataDocument(), false);
 
-			// we only want to pan when the document isn't currently on the screen
-			if (nearestOnScreen == null)
+		    var toFollow = nearestOnScreen ?? nearestOnCollection;
+		    if (toFollow == null) return;
+			// true if it's in sight, false if hidden
+		    var intersectWithParentCollection = RectHelper.Intersect(toFollow.GetBoundingRect(MainPage.Instance),
+			                                        toFollow.GetFirstAncestorOfType<CollectionFreeformView>()
+				                                        .GetBoundingRect(MainPage.Instance)) !=
+		                                        Rect.Empty || toFollow.GetFirstAncestorOfType<CollectionFreeformView>().Equals(MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>());
+
+			if (nearestOnScreen == null || !intersectWithParentCollection)
 			{
 				// calculate distance of how off-screen it is
 				var distPoint = MainPage.Instance.GetDistanceFromMainDocCenter(docToFollow);
 				var dist = Math.Sqrt(distPoint.X * distPoint.X + distPoint.Y * distPoint.Y);
+			    var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
 
-				var threshold = MainPage.Instance.MainDocView.ActualWidth * 1.5;
-
-				if (dist < threshold)
-			    {
-				    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-				}
-				else
+				// not visible in its current collectionview, or too far away: dock it
+				if (dist > threshold || !intersectWithParentCollection)
 				{
 					// see if it's already docked
 					var dv = MainPage.Instance.DockManager.GetDockedView(target);
@@ -113,30 +126,49 @@ namespace Dash
 						var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
 						MainPage.Instance.DockManager.Dock(target, dir);
 					}
+
 					// if it's already docked, then highlight it instead of docking it again
 					else
 					{
 						dv.FlashSelection();
 					}
 				}
+				// should always be true
+				else if (dist <= threshold)
+				{
+					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+				}
 		    }
-
-		    var viewToFollow = nearestOnScreen ?? nearestOnCollection;
-		    var va = viewToFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
+			
+		    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
 		    va?.GetAnnotationManager().SelectRegion(target);
 		    if (va is CustomPdfView pdf)
 		    {
-				// TODO make it scroll to the region's position as well
+			    pdf.ScrollToRegion(target);
 		    }
 
-		    //images have additional highlighting features that should be implemented
-			if (!(_element is IVisualAnnotatable)) return;
-
-			var element = (IVisualAnnotatable)_element;
-			element.GetAnnotationManager().UpdateHighlight(viewToFollow);
+		    UpdateHighlight(new List<DocumentController> {toFollow.ViewModel.DocumentController});
 		}
-        
-        List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)
+
+		//called when the selected region changes
+		private void UpdateHighlight(List<DocumentController> toHighlight)
+		{
+			foreach (var unhighlight in _lastHighlighted)
+			{
+				MainPage.Instance.HighlightDoc(unhighlight, false, 2);
+			}
+
+			_lastHighlighted.Clear();
+
+			// cycle through and show everything
+			foreach (var dc in toHighlight)
+			{
+				MainPage.Instance.HighlightDoc(dc, false, 1);
+				_lastHighlighted.Add(dc);
+			}
+		}
+
+		List<DocumentController> GetLinks(DocumentController theDoc, bool getFromLinks)
         {
 	        var links = getFromLinks ? theDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData : theDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
 
@@ -147,31 +179,72 @@ namespace Dash
         //finds the nearest document view of the desired document controller that is displayed on the canvas
         DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
         {
-            var dist = double.MaxValue;
-            DocumentView nearest = null;
-	        var collection = _element.GetFirstAncestorOfType<CollectionView>() ?? MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-	        var itemsPanelRoot = ((CollectionFreeformView) collection.CurrentView).xItemsControl
-                .ItemsPanelRoot;
-	        if (itemsPanelRoot == null) return nearest;
-	        foreach (var presenter in
-		        itemsPanelRoot.Children.Select(c => c as ContentPresenter))
-	        {
-		        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-		        if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
-				var mprect = dvm.GetBoundingRect(MainPage.Instance);
-				var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-				if (onlyOnPage && RectHelper.Intersect(MainPage.Instance.GetBoundingRect(), mprect).IsEmpty)
-				{
-					continue;
-				}
+	        var collection = _element.GetFirstAncestorOfType<CollectionView>();
+	        DocumentView nearest = null;
 
-				var d = Math.Sqrt((@where.X - center.X) * (@where.X - center.X) +
-		                          (@where.Y - center.Y) * (@where.Y - center.Y));
-		        if (!(d < dist)) continue;
-		        nearest = dvm;
+	        if (collection != null) nearest = NearestOnCollection(where, targetData, collection, onlyOnPage);
+
+			// means something was found
+	        if (nearest != null) return nearest;
+
+	        // haven't found a doc of the matching criteria on this current collection, so queue up all the collections and start searching
+			var q = new Queue<CollectionView>();
+	        var mainCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			q.Enqueue(mainCollection);
+	        foreach (var nestedCollection in mainCollection.GetDescendantsOfType<CollectionView>())
+	        {
+		        q.Enqueue(nestedCollection);
 	        }
 
-	        return nearest;
+			// iterate through every document looking for it
+	        var dist = double.MaxValue;
+			while (q.Count != 0)
+	        {
+		        var curr = q.Dequeue();
+		        var nearestOnThisCollection = NearestOnCollection(where, targetData, curr, onlyOnPage);
+		        if (nearestOnThisCollection == null) continue;
+		        var d = GetDistanceFromDocument(where, nearestOnThisCollection);
+		        if (d < dist)
+		        {
+			        dist = d;
+			        nearest = nearestOnThisCollection;
+		        }
+	        }
+
+		    return nearest;
+        }
+
+		private DocumentView NearestOnCollection(Point where, DocumentController targetData, CollectionView collection, bool onlyOnPage = true)
+		{
+			var dist = double.MaxValue;
+			DocumentView nearest = null;
+			
+			// TODO expand this to work with treeviews too...?
+			var itemsPanelRoot = (collection.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot;
+			if (itemsPanelRoot == null) return null;
+			foreach (var presenter in itemsPanelRoot.Children.Select(c => c as ContentPresenter))
+			{
+				var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+				if (dvm?.ViewModel.DataDocument.Id != targetData?.Id) continue;
+				var mprect = dvm.GetBoundingRect(MainPage.Instance);
+				if (onlyOnPage && RectHelper.Intersect(MainPage.Instance.GetBoundingRect(), mprect).IsEmpty) continue;
+
+				var d = GetDistanceFromDocument(where, dvm);
+
+				if (d < dist)
+				{
+					dist = d;
+					nearest = dvm;
+				}
+			}
+			return nearest;
+		}
+
+		private double GetDistanceFromDocument(Point where, DocumentView view)
+		{
+			var mprect = view.GetBoundingRect(MainPage.Instance);
+			var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+			return Math.Sqrt((@where.X - center.X) * (@where.X - center.X) + (@where.Y - center.Y) * (@where.Y - center.Y));
 		}
 
 		// TODO: figure out this interaction once region selection is working
@@ -179,10 +252,10 @@ namespace Dash
 		private void TriggerVisibilityBehaviorOnAnnotation(DocumentController target, bool isRegionCurrentlySelected, Point pos)
 		{
 			// toggle visibility
-			if (isRegionCurrentlySelected)
-				target.TogglePinUnpin();
-			else
-				ShowOrHideDocument(target, pos, true);
+			//if (isRegionCurrentlySelected)
+				//target.TogglePinUnpin();
+			//else
+				//ShowOrHideDocument(target, pos, true);
 		}
 
 		// TODO: figure out this interaction once region selection is working

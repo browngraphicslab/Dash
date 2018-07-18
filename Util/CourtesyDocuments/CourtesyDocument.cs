@@ -355,9 +355,18 @@ namespace Dash
         {
             return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
         }
-        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent, AnnotationManager.AnnotationType annotationType)
         {
             document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+            document.SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
+        }
+
+        public static AnnotationManager.AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationManager.AnnotationType.None
+                : Enum.Parse<AnnotationManager.AnnotationType>(t.Data);
         }
 
         public static bool GetTransient(this DocumentController document)

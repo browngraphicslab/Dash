@@ -30,11 +30,24 @@ namespace Dash
         public Point TopLeftPercentile;
         public Point BottomRightPercentile;
 	    public RegionSelectionState SelectionState;
+	    public bool IsPointerOver = false;
 
         public RegionBox()
         {
             this.InitializeComponent();
+	        PointerEntered += OnPointerEntered;
+	        PointerExited += OnPointerExited;
         }
+
+	    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+	    {
+		    IsPointerOver = false;
+	    }
+
+	    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+	    {
+		    IsPointerOver = true;
+	    }
 
 	    //sets position of region box in center square of 3x3 grid (the entire grid is the size of the image)
         public void SetPosition(Point topLeftPoint, Size size, Size imageSize)
