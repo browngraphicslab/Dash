@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
@@ -21,6 +22,7 @@ using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Dash.Views;
+using iText.StyledXmlParser.Jsoup.Nodes;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -196,23 +198,23 @@ namespace Dash
 
                 switch (type)
                 {
-                    case TypeInfo.Image:
+                    case DashShared.TypeInfo.Image:
                         xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
                         break;
-                    case TypeInfo.Audio:
+                    case DashShared.TypeInfo.Audio:
                         xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
                         break;
-                    case TypeInfo.Video:
+                    case DashShared.TypeInfo.Video:
                         xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
                         break;
-                    case TypeInfo.RichText:
-                    case TypeInfo.Text:
+                    case DashShared.TypeInfo.RichText:
+                    case DashShared.TypeInfo.Text:
                         xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
                         break;
-                    case TypeInfo.Document:
+                    case DashShared.TypeInfo.Document:
                         xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
                         break;
-                    case TypeInfo.Template:
+                    case DashShared.TypeInfo.Template:
                         xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                         break;
                     default:
@@ -221,7 +223,7 @@ namespace Dash
 
                 }
 
-                if (type.Equals(TypeInfo.Template))
+                if (type.Equals(DashShared.TypeInfo.Template))
                 {
                     xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                 }
@@ -915,6 +917,15 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+
+            if (sender.DataContext.ToString().Equals("@Audio Box"))
+            {
+                shiftTop = false;
+                shiftLeft = false
+            }
+
+            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
+           
             if (this.IsRightBtnPressed() || PreventManipulation)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
