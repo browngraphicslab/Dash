@@ -266,11 +266,13 @@ namespace Dash
             }
 
             var minMax = new List<double>();
+
+
             //add numbers for margins
             minMax.Add(minX - (minX * .1));
             minMax.Add(maxX);
-            minMax.Add(minY - (minY * .1));
-            minMax.Add(maxY + (maxY * .1));
+            minMax.Add(minY - (Math.Abs(minY) * .1));
+            minMax.Add(maxY + (Math.Abs(maxY) * .1));
             return minMax;
         }
 
