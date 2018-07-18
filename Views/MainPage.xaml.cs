@@ -723,7 +723,17 @@ namespace Dash
         {
             IsPresentationModeToggled = !IsPresentationModeToggled;
             xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
+            if (IsPresentationModeToggled)
+            {
+                xUtilTabColumn.Width = new GridLength(330);
+            }
+            else
+            {
+                //close presentation
+                xUtilTabColumn.Width = new GridLength(0);
+
+            }
+             
         }
 
         public void PinToPresentation(DocumentController dc)
