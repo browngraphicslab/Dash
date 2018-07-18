@@ -112,7 +112,7 @@
 
         </Grid>
 
-        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch"/>
+        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public"/>
 
         <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
         

@@ -19,7 +19,7 @@ namespace Dash
         FrameworkElement   _eventElement;
         CollectionView     _collection;
         DocumentView       _manipulationDocumentTarget = null;
-        Canvas             freeformCanvas = null;
+        Panel freeformCanvas = null;
         PointerEventHandler move_hdlr;
         PointerEventHandler release_hdlr;
         Point _rightDragLastPosition, _rightDragStartPosition;

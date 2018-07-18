@@ -243,9 +243,9 @@ namespace Dash
             }
 
             //get right collection
-            Canvas docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+            var docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
                 .GetCanvas();
-            Canvas docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+            var docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
                 .GetCanvas();
             var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>()
                 .Reverse();
@@ -348,7 +348,7 @@ namespace Dash
             }
         }
 
-        private void DrawLines()
+        public void DrawLines()
         {
             var canvas = MainPage.Instance.xCanvas;
             //only recalcualte if you need to 
@@ -429,7 +429,7 @@ namespace Dash
             }
         }
 
-        private void RemoveLines()
+        public void RemoveLines()
         {
             //remove all paths
             var canvas = MainPage.Instance.xCanvas;

@@ -38,10 +38,10 @@
                     <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
-                            Width="0"
-                            Height="0"
-                            VerticalAlignment="Top"
-                            HorizontalAlignment="Left"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Width="0"
+                           Height="0"
                             RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                             >
                     </Canvas>

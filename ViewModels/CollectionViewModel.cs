@@ -702,7 +702,7 @@ namespace Dash
                 var where = new Point();
                 if (senderView is CollectionFreeformBase)
                     where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
-                        e.GetPosition(MainPage.Instance));
+                        e.GetPosition(MainPage.Instance.MainDocView));
                 else if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
@@ -811,8 +811,13 @@ namespace Dash
 
                             await DotNetRPC.CallRPCAsync(table);
                             var dataPackageView = Clipboard.GetContent();
-                            var richtext = await dataPackageView.GetRtfAsync();
-                            htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                            if (dataPackageView.Contains(StandardDataFormats.Rtf))
+                            {
+                                var richtext = await dataPackageView.GetRtfAsync();
+                                htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                            }
+                            else
+                                htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                         }
 
                     }
