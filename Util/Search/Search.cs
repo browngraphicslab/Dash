@@ -354,6 +354,118 @@ namespace Dash
             }
         }
 
+
+        public struct SearchTerm {
+
+            public bool Negate { get; set; }
+            public readonly string _term;
+            public SearchTerm(string term, bool negate)
+            {
+                Negate = negate;
+                _term = term;
+            }
+            public void Invert()
+            {
+                Negate = !Negate;
+            }
+        }
+        // Breaks down inputstring into a list of separate string queries- mainly for highlighting in RichTextView
+        private static List<SearchTerm> ParseToSearchTerms(string inputString)
+        {
+            if (string.IsNullOrEmpty(inputString))
+            {
+                return new List<SearchTerm>();
+            }
+            int dividerIndex = FindNextDivider(inputString);
+            string searchTerm = inputString.Substring(0, dividerIndex);
+            int negate = 0;
+            for (int i = 0; i < searchTerm.Length; i++)
+            {
+                if (searchTerm[i] != '!')
+                {
+                    negate = i;
+                    break;
+                }
+            }
+
+            string modifiedSearchTerm = searchTerm.TrimStart('!');
+
+            if (modifiedSearchTerm.Length > 2 && modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
+            {
+                modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
+            }
+
+            string modInput = inputString.TrimStart('!');
+
+            int endParenthesis = -2;
+
+            // Making sure parenthesis doesn't clash with regex
+            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")))
+            {
+                endParenthesis = FindEndParenthesis(inputString);
+            }
+
+
+            List<SearchTerm> searchResults = new List<SearchTerm>();
+            if (endParenthesis > 0 || (inputString.TrimStart('!').StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
+            {
+                string newInput = modInput.Substring(1, modInput.Length - 2);
+                searchResults.Concat(ParseToSearchTerms(newInput));
+            }
+            else
+            {
+                searchResults.Add(new SearchTerm(modifiedSearchTerm, false));
+            }
+
+            if (negate >= 0 && negate % 2 == 1)
+            {
+                // This is probably the wrong way to do it
+                var list = new List<SearchTerm>();
+                foreach (var term in searchResults)
+                {
+                    list.Add(new SearchTerm(term._term, !term.Negate));
+                }
+                searchResults = list;
+            }
+
+            int len = inputString.Length;
+
+            if (dividerIndex == len)
+            {
+                return searchResults;
+            }
+
+            char divider = inputString[dividerIndex];
+            string rest = inputString.Substring(dividerIndex + 1);
+
+            switch (divider)
+            {
+                case ' ':
+                    searchResults.AddRange(ParseToSearchTerms(rest));
+                    break;
+                case '|':
+                    searchResults.AddRange(ParseToSearchTerms(rest));
+                    break;
+                default:
+                    throw new Exception("Unknown Divider");
+            }
+            return searchResults;
+        }
+
+        public static ListController<TextController> ConvertSearchTerms(string inputString)
+        {
+            var searchTerms = ParseToSearchTerms(inputString);
+            var list = new ListController<TextController>();
+            foreach (var term in searchTerms)
+            {
+                if (!term.Negate)
+                {
+                    list.Add(new TextController(term._term));
+                }
+            }
+            return list;
+        }
+
         private static IEnumerable<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
         {
             var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));

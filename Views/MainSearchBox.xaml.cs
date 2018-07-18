@@ -332,12 +332,14 @@ namespace Dash
             //highlight doc results
             HighlightSearchResults(docs);
 
+
+            var searchTerms = Search.ConvertSearchTerms(text);
             var vmGroups = new List<SearchResultViewModel>();
             foreach (SearchResult res in searchRes)
             {
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
-                    res.DataDocument.SetField<TextController>(CollectionDBView.SelectedKey, text, true);
+                    res.DataDocument.SetField(CollectionDBView.SelectedKey, searchTerms, true);
                 }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;

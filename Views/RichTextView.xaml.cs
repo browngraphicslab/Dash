@@ -183,16 +183,16 @@ namespace Dash
         DocumentView getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         DocumentController getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
-        string getSelected()
+        List<TextController> getSelected()
         {
-            return getDataDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
-                   getLayoutDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
+            return getDataDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData
+                ?? getLayoutDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData;
         }
         DocumentController _lastDoc = null;
         void setSelected(string query)
         {
             _lastDoc = getDataDoc() ?? _lastDoc;
-            _lastDoc?.SetField<TextController>(CollectionDBView.SelectedKey, query, true);
+            _lastDoc?.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController(query)), true);
         }
         string getReadableText()
         {
@@ -236,7 +236,7 @@ namespace Dash
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                     _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
                 }
-                if (getSelected() is string selected)
+                if (getSelected()?.First()?.Data is string selected)
                 {
                     _prevQueryLength = selected.Length;
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
@@ -546,7 +546,7 @@ namespace Dash
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
 
-            if (string.IsNullOrEmpty(this.getSelected()))
+            if (string.IsNullOrEmpty(this.getSelected()?.First()?.Data))
             {
                 if (theDoc != null) this.xRichEditBox.Document.Selection.Text = theDoc.Title;
             }
@@ -694,13 +694,13 @@ namespace Dash
 
         #region search
 
-        private void MatchQuery(string query)
+        private void MatchQuery(List<TextController> queries)
         {
             if (getDocView() == null)
                 return;
             this.ClearSearchHighlights();
             _nextMatch = 0;
-            _prevQueryLength = query == null ? 0 : query.Length;
+            _prevQueryLength = queries?.First() == null ? 0 : queries.First().Data.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
@@ -708,23 +708,36 @@ namespace Dash
             xRichEditBox.Document.Selection.EndPosition = 0;
             int i = 1;
             // find and highlight all matches
-            while (i > 0 && !string.IsNullOrEmpty(query))
+
+            // the following if statement might not be necessary, but I'll leave it just in case so that it doesn't crash during demo
+            if (queries == null)
             {
-                i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
-                var s = xRichEditBox.Document.Selection.StartPosition;
-                var selectedText = xRichEditBox.Document.Selection;
-                if (i > 0 && !_originalCharFormat.ContainsKey(s))
-                {
-                    _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
-                }
-                if (selectedText != null)
-                {
-                    selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
-                }
-                xRichEditBox.Document.Selection.Collapse(false);
+                xRichEditBox.Document.Selection.StartPosition = 0;
+                xRichEditBox.Document.Selection.EndPosition = 0;
+                return;
             }
-            xRichEditBox.Document.Selection.StartPosition = 0;
-            xRichEditBox.Document.Selection.EndPosition = 0;
+            foreach (var query in queries.Select(t => t.Data))
+            {
+                while (i > 0 && !string.IsNullOrEmpty(query))
+                {
+                    i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
+                    var s = xRichEditBox.Document.Selection.StartPosition;
+                    var selectedText = xRichEditBox.Document.Selection;
+                    if (i > 0 && !_originalCharFormat.ContainsKey(s))
+                    {
+                        _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
+                    }
+                    if (selectedText != null)
+                    {
+                        selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    }
+                    xRichEditBox.Document.Selection.Collapse(false);
+                }
+
+                xRichEditBox.Document.Selection.StartPosition = 0;
+                xRichEditBox.Document.Selection.EndPosition = 0;
+                i = 1;
+            }
         }
 
         /// <summary>
