@@ -42,17 +42,17 @@ namespace Dash
             {
                 var start = textData.GetAscentLine().GetStartPoint();
                 var end = textData.GetDescentLine().GetEndPoint();
-                if (_elements.Any() &&
-                    Math.Abs(Math.Abs(start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width) -
-                             textData.GetSingleSpaceWidth()) <=
-                    0.1)
-                {
-                    _elements.Add(new SelectableElement(-1, " ",
-                        new Rect(_elements.Last().Bounds.X,
-                            _pageSize.GetHeight() - start.Get(1) - _elements.Last().Bounds.Width + _pageOffset,
-                            Math.Abs(start.Get(0) - _elements.Last().Bounds.X),
-                            Math.Abs(end.Get(1) - start.Get(1)))));
-                }
+                //if (_elements.Any() &&
+                //    Math.Abs(Math.Abs(start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width)) -
+                //             textData.GetSingleSpaceWidth()) <=
+                //    0.1)
+                //{
+                //    _elements.Add(new SelectableElement(-1, " ",
+                //        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
+                //            _pageSize.GetHeight() - start.Get(1) - (_elements.Last().Bounds.Width + _pageOffset),
+                //            textData.GetSingleSpaceWidth(),
+                //            Math.Abs(end.Get(1) - start.Get(1)))));
+                //}
 
                 if (!_elements.Any() || !_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
                     _elements.Last().Bounds.Contains(new Point(textData.GetAscentLine().GetEndPoint().Get(0), textData.GetAscentLine().GetEndPoint().Get(1))))
@@ -128,12 +128,24 @@ namespace Dash
             {
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
                 element = line.First();
-                columns[0].Add(element);
                 var col = 0;
+                foreach (var column in columns)
+                {
+                    if (column.Any())
+                    {
+                        if (column.First().Bounds.X < element.Bounds.X &&
+                            column.Last().Bounds.X + column.Last().Bounds.Width > element.Bounds.X)
+                        {
+                            col = columns.IndexOf(column);
+                        }
+                    }
+                }
+
+                columns[col].Add(element);
                 var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line)
                 {
-                    if (selectableElement.Bounds.X - element.Bounds.X + element.Bounds.Width > 1.75 * currFontWidth)
+                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 3.5 * currFontWidth)
                     {
                         col++;
                         if (columns.Count > col)
@@ -200,14 +212,13 @@ namespace Dash
 
         private double AverageFontSize(List<SelectableElement> line)
         {
-            var trimmedLine = line.Skip(1).SkipLast(1).ToList();
             var cumulativeWidth = 0.0;
             var numberOfSpaces = 0;
-            for (var i = 0; i < trimmedLine.Count; i++)
+            for (var i = 1; i < line.Count - 1; i++)
             {
-                if ((line[i + 1].Contents as string).Equals(" "))
+                if (Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width)) >  line[i].Bounds.Width)
                 {
-                    cumulativeWidth += line[i + 2].Bounds.X - line[i].Bounds.X + line[i].Bounds.Width;
+                    cumulativeWidth += Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width));
                     numberOfSpaces++;
                 }
             }
