@@ -5,7 +5,7 @@ var loadBarTo = function () {
     var loadingBar = document.getElementById("loadingBar");
 
     if (loadingBarWidth >= loadToPercentage) {
-        if (loadingBarWidth == 100) {
+        if (loadingBarWidth === 100) {
             setTimeout(function() {
                     loadingBar.style.width = 0;
                     loadingBarWidth = 0;
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded',
                 //tab.url can now be used to get url
                 let url = tab.url;
                 //TODO: if local files are fixed, removed the check for not file in url
-                if (url.includes("docs.google.com") || (url.includes(".pdf") || url.includes(".PDF") && !url.includes("file"))) {
+                if (url.includes("docs.google.com") || ((url.includes(".pdf") || url.includes(".PDF")) && !url.includes("file"))) {
                     //google doc is open
                     document.getElementById("addDocButton").style.visibility = "visible";
                 } 
