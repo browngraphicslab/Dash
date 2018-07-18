@@ -179,6 +179,7 @@
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
+    <Compile Include="Controllers\HtmlController.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Models\HtmlModel.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
       <DependentUpon>DashColorPicker.xaml</DependentUpon>

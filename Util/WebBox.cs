@@ -76,7 +76,7 @@ namespace Dash
 
             var webView = new WebBoxView();
             var web = webView.GetView();
-            var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
+            var html = docController.GetDereferencedField<HtmlController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
                 if (html.StartsWith("http"))
                 {
