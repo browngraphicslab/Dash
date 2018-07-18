@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Input.Inking;
@@ -11,15 +9,14 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Zu.TypeScript.TsTypes;
 using Canvas = Windows.UI.Xaml.Controls.Canvas;
 
 namespace Dash
 {
-    /// <summary>
-    /// These EventArgs are used for regioning-related events.
-    /// </summary>
-    public class RegionEventArgs : EventArgs
+	/// <summary>
+	/// These EventArgs are used for regioning-related events.
+	/// </summary>
+	public class RegionEventArgs : EventArgs
     {
         public DocumentController Link { get; set; }
     }
@@ -340,8 +337,11 @@ namespace Dash
                 foreach (RegionBox region in _visualRegions)
                 {
 	                region.ToggleSelectionState(RegionSelectionState.Hover);
-                }
-            }
+	               // region.LinkTo?.SetHidden(false);
+				}
+
+	            _overlay.ShowAnnotations(true);
+			}
         }
 
         //hides all visible regions 
@@ -356,11 +356,12 @@ namespace Dash
 
                 foreach (RegionBox region in _visualRegions)
                 {
-                    //region.Visibility = Visibility.Collapsed;
 	                region.ToggleSelectionState(RegionSelectionState.None);
                 }
-            }
+				_overlay.ShowAnnotations(false);
+			}
         }
+		
 
         public void SetSelectionRegion(IEnumerable<SelectableElement> elements)
         {
@@ -508,5 +509,10 @@ namespace Dash
                 Link = dc,
             });
         }
+
+	    public bool AreAnnotationsVisible()
+	    {
+		    return _overlay.AnnotationsVisible;
+	    }
     }
 }
