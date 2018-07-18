@@ -27,7 +27,7 @@ namespace Dash
 
         //TODO Make this be a list of some class that knows if its a function, name, etc so that SelectPopup can be much simpler
         //TODO This also shouldn't be static
-        private static List<string> _dataset;
+        private static List<ReplPopupSuggestion> _dataset;
 
         private int _currentTab = 3;
 
@@ -118,10 +118,13 @@ namespace Dash
         {
             ViewModel.Items.Clear();
             if (!clearData) return;
+
             _dataDoc.SetField(KeyStore.ReplScopeKey, new DocumentController(), true);
             NewBlankScopeAndDSL();
             _lineTextList?.Clear();
             _valueList?.Clear();
+            _indents?.Clear();
+            _dataset = _dataset.Where(s => !(s is VariableSuggestion)).ToList();
         }
 
         public void Close(bool closeAll)
@@ -138,15 +141,15 @@ namespace Dash
             //if (_viewModelsInSession.Count > 0 && _viewModelsInSession.Last().ArrowState is ReplLineNode.ArrowState.Open) _viewModelsInSession.Last().ArrowState = ReplLineNode.ArrowState.Closed;
         }
 
-        public static void SetDataset(List<string> data) => _dataset = data;
+        public static void SetDataset(List<string> data) => _dataset = data.Select(func => new FunctionSuggestion(func) as ReplPopupSuggestion).ToList();
 
         public static void NewVariable(string var)
         {
             if (_dataset == null)
             {
-                var op = OperatorScript.Instance;//This will set _dataset
+                OperatorScript op = OperatorScript.Instance; //This will set _dataset
             }
-            _dataset.Add(var);
+            _dataset?.Add(new VariableSuggestion(var));
         }
 
         private void MoveCursorToEnd(TextBox elem = null, int? end = null)
@@ -647,7 +650,7 @@ namespace Dash
 
             void RightPressed(KeyRoutedEventArgs e)
             {
-                if (xSuggestions.SelectedIndex > -1) SelectPopup(xSuggestions.SelectedItem?.ToString());
+                if (xSuggestions.SelectedIndex > -1) SelectPopup(xSuggestions.SelectedItem as ReplPopupSuggestion);
                 xSuggestions.SelectedIndex = -1;
             }
 
@@ -766,7 +769,7 @@ namespace Dash
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            _currentHistoryIndex = ViewModel.Items.Count;
+            //_currentHistoryIndex = ViewModel.Items.Count;
 
             if (xTextBox.Text.Equals(""))
             {
@@ -786,10 +789,10 @@ namespace Dash
 
                 if (_dataset == null)
                 {
-                    var op = OperatorScript.Instance;//This creates the OperatorScript if necessary, which calls init
+                    var op = OperatorScript.Instance; //This creates the OperatorScript if necessary, which calls init
                 }
 
-                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+                var suggestions = _dataset?.Where(x => x.Name.StartsWith(lastWord)).ToList();
                 xSuggestions.ItemsSource = suggestions;
 
                 var numSug = suggestions?.Count;
@@ -815,63 +818,24 @@ namespace Dash
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
             //get selected item
-            var selectedItem = e.ClickedItem.ToString();
+            var selectedItem = e.ClickedItem as ReplPopupSuggestion;
             SelectPopup(selectedItem);
         }
 
-        private void SelectPopup(string selectedItem)
+        private void SelectPopup(ReplPopupSuggestion selectedItem)
         {
-
             //only change last word to new text
-            var currentText = xTextBox.Text.Replace('\r', ' ').Split(' ');
+            var currentText = xTextBox.Text.Split(new []{' ', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             var keepText = "";
             if (currentText.Length > 1)
             {
-                var lastWordLength = currentText[currentText.Length - 1].Length;
+                int lastWordLength = currentText[currentText.Length - 1].Length;
                 keepText = xTextBox.Text.Substring(0, xTextBox.Text.Length - lastWordLength);
             }
 
-            //if it is function, set up sample inputs
-            var funcName = Op.Parse(selectedItem);
-            var isOverloaded = OperatorScript.IsOverloaded(funcName);
-            var inputTypes = OperatorScript.GetDefaultInputTypeListFor(funcName);
-            var numInputs = inputTypes.Count;
-
-            var functionEnding = "";
-            var offset = 1;
-            if (numInputs > 0)
-            {
-                functionEnding = "(";
-                if (inputTypes[0] == TypeInfo.Text) offset++;
-
-                for (var i = 0; i < numInputs; i++)
-                {
-                    var symbol = "_";
-                    if (!isOverloaded)
-                    {
-                        switch (inputTypes[i])
-                        {
-                            case TypeInfo.Text:
-                                symbol = "\"\"";
-                                break;
-                            case TypeInfo.Number:
-                                symbol = "#";
-                                break;
-                        }
-                    }
-                    functionEnding = functionEnding + $"{symbol}, ";
-                }
-                //delete last comma and space and add ending paranthesis
-                functionEnding = functionEnding.Substring(0, functionEnding.Length - 2) + ")";
-            }
-            else
-            {
-                functionEnding = "()";
-            }
-
-            xTextBox.Text = keepText + selectedItem + functionEnding;
+            xTextBox.Text = keepText + selectedItem.FormattedText();
             xTextBox.Focus(FocusState.Pointer);
-            MoveCursorToEnd(xTextBox, (keepText + selectedItem).Length + offset);
+            MoveCursorToEnd(xTextBox, (keepText + selectedItem.Name).Length);
 
             xSuggestionsPopup.IsOpen = false;
             xSuggestionsPopup.Visibility = Visibility.Collapsed;

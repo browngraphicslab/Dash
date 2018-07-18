@@ -84,10 +84,10 @@ namespace Dash
         public static KeyController ReplCurrentIndentKey = new KeyController("_Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
         public static KeyController ReplScopeKey = new KeyController("_Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");
         public static KeyController ScriptTextKey = new KeyController("_Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
-        public static KeyController ExceptionKey = new KeyController("_Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
-        public static KeyController ReceivedKey = new KeyController("_Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
-        public static KeyController ExpectedKey = new KeyController("_Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
-        public static KeyController FeedbackKey = new KeyController("_Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
+        public static KeyController ExceptionKey = new KeyController("Exception", "34171C23-6A1B-4760-BF71-06758507B26C");
+        public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
+        public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
+        public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
         public static KeyController CollectionFitToParentKey = new KeyController("_CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");

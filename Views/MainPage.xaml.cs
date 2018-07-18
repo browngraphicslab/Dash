@@ -530,7 +530,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
-                if (!(FocusManager.GetFocusedElement() is TextBox))
+                if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox))
                 {
                     foreach (var doc in SelectionManager.SelectedDocs)
                     {
