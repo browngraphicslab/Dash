@@ -81,7 +81,14 @@ namespace Dash
 				// shows everything if it's not selected already. Otherwise, it'll toggle.
 				else
 				{
-					SelectionManager.SelectRegion(theDoc);
+					if (theDoc.Equals(SelectionManager.SelectedRegion))
+					{
+						ToggleAnnotationVisibility(theDoc);
+					}
+					else
+					{
+						SelectionManager.SelectRegion(theDoc);
+					}
 				}
 
             }
@@ -246,34 +253,22 @@ namespace Dash
 			var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
 			return Math.Sqrt((@where.X - center.X) * (@where.X - center.X) + (@where.Y - center.Y) * (@where.Y - center.Y));
 		}
-
-		// TODO: figure out this interaction once region selection is working
-		// figures out what to do once a link's home region has been tapped based on the current selection status
-		private void TriggerVisibilityBehaviorOnAnnotation(DocumentController target, bool isRegionCurrentlySelected, Point pos)
+		
+		// figures out what to do once a region has been tapped again after beign selected (shows/hides its regions)
+		private void ToggleAnnotationVisibility(DocumentController region)
 		{
-			// toggle visibility
-			//if (isRegionCurrentlySelected)
-				//target.TogglePinUnpin();
-			//else
-				//ShowOrHideDocument(target, pos, true);
+			if (region == null) return;
+			var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+			if (toLinks == null) return;
+			foreach (var dc in toLinks)
+			{
+				var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+				if (docCtrl == null) return;
+				var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
+				if (isVisible == null) return;
+				docCtrl.ToggleAnnotationPin(!isVisible.Data, true);
+			}
 		}
-
-		// TODO: figure out this interaction once region selection is working
-		// shows the document
-		private void ShowOrHideDocument(DocumentController target, Point pos, bool toVisible)
-        {
-	        if (target != null)
-		        target.SetHidden(!toVisible);
-	        else if (_element is RichTextView rtv)
-	        {
-		        //find nearest linked doc that is currently displayed
-		        var nearestOnCollection = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), false);
-		        var docview = _element.GetFirstAncestorOfType<DocumentView>();
-		        var pt = new Point(docview.ViewModel.XPos + docview.ActualWidth, docview.ViewModel.YPos);
-
-		        rtv.CheckWebContext(nearestOnCollection, pt, target);
-	        }
-        }
 
         //creates & adds handlers to the link menu
         private void FormatLinkMenu()
