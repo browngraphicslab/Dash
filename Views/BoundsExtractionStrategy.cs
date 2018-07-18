@@ -130,10 +130,10 @@ namespace Dash
                 element = line.First();
                 columns[0].Add(element);
                 var col = 0;
+                var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line)
                 {
-                    var currFontWidth = (selectableElement.Bounds.Width + element.Bounds.Width) / 2;
-                    if (selectableElement.Bounds.X - element.Bounds.X + element.Bounds.Width > 3.5 * currFontWidth)
+                    if (selectableElement.Bounds.X - element.Bounds.X + element.Bounds.Width > 1.75 * currFontWidth)
                     {
                         col++;
                         if (columns.Count > col)
@@ -164,38 +164,55 @@ namespace Dash
                 }
             }
 
-            var columnThreshold = _pageSize.GetWidth() / columns.Count;
-            foreach (var column in columns)
+            //var columnThreshold = _pageSize.GetWidth() / columns.Count;
+            //foreach (var column in columns)
+            //{
+            //    foreach (var line in lines)
+            //    {
+            //        var lineWidthBefore = LineWidth(lines[lines.IndexOf(line) > 0 ? lines.IndexOf(line) - 1 : 0],
+            //            column);
+            //        var lineWidth = LineWidth(line, column);
+            //        var lineWidthAfter =
+            //            LineWidth(
+            //                lines[lines.IndexOf(line) < lines.Count - 1 ? lines.IndexOf(line) + 1 : lines.Count - 1],
+            //                column);
+            //        var averageWidth = lineWidthBefore + lineWidthAfter / 2;
+            //        if (averageWidth - lineWidth > columnThreshold)
+            //        {
+            //            var nextColumn = columns.IndexOf(column) < columns.Count
+            //                ? columns.IndexOf(column) + 1
+            //                : columns.Count - 1;
+            //            if (columns[nextColumn] != column)
+            //            {
+            //                var nextColumnLine = lines.First(ln => ln.Any(i => columns[nextColumn].Contains(i)));
+            //                var range = elements.GetRange(nextColumnLine.First().Index,
+            //                    nextColumnLine.Last().Index - nextColumnLine.First().Index);
+            //                var insertIndex = line.Last(i => column.Contains(i)).Index;
+            //                elements.RemoveRange(range.First().Index, range.Count);
+            //                elements.InsertRange(insertIndex, range);
+            //            }
+            //        }
+            //    }
+            //}
+
+            return elements;
+        }
+
+        private double AverageFontSize(List<SelectableElement> line)
+        {
+            var trimmedLine = line.Skip(1).SkipLast(1).ToList();
+            var cumulativeWidth = 0.0;
+            var numberOfSpaces = 0;
+            for (var i = 0; i < trimmedLine.Count; i++)
             {
-                foreach (var line in lines)
+                if ((line[i + 1].Contents as string).Equals(" "))
                 {
-                    var lineWidthBefore = LineWidth(lines[lines.IndexOf(line) > 0 ? lines.IndexOf(line) - 1 : 0],
-                        column);
-                    var lineWidth = LineWidth(line, column);
-                    var lineWidthAfter =
-                        LineWidth(
-                            lines[lines.IndexOf(line) < lines.Count - 1 ? lines.IndexOf(line) + 1 : lines.Count - 1],
-                            column);
-                    var averageWidth = lineWidthBefore + lineWidthAfter / 2;
-                    if (averageWidth - lineWidth > columnThreshold)
-                    {
-                        var nextColumn = columns.IndexOf(column) < columns.Count
-                            ? columns.IndexOf(column) + 1
-                            : columns.Count - 1;
-                        if (columns[nextColumn] != column)
-                        {
-                            var nextColumnLine = columns[nextColumn].Where(i => line.Contains(i));
-                            var range = elements.GetRange(nextColumnLine.First().Index,
-                                nextColumnLine.Last().Index - nextColumnLine.First().Index);
-                            var insertIndex = line.Last(i => column.Contains(i)).Index;
-                            elements.RemoveRange(range.First().Index, range.Count);
-                            elements.InsertRange(insertIndex, range);
-                        }
-                    }
+                    cumulativeWidth += line[i + 2].Bounds.X - line[i].Bounds.X + line[i].Bounds.Width;
+                    numberOfSpaces++;
                 }
             }
 
-            return elements;
+            return cumulativeWidth / numberOfSpaces;
         }
 
         private double LineWidth(List<SelectableElement> line, List<SelectableElement> column = null)
