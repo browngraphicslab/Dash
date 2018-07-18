@@ -12,7 +12,7 @@
     SizeChanged="CustomPdfView_OnSizeChanged"
     KeyDown="CustomPdfView_OnKeyDown">
 
-    <Grid>
+    <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>

@@ -115,7 +115,7 @@ namespace Dash
 				if (dataRegions != null)
 				{
 					// the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
-					xAnnotations.Height = ScrollViewer.ExtentHeight;
+					xAnnotations.Height = PdfTotalHeight;
 					foreach (var region in dataRegions.TypedData)
 					{
 						var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey).Data;
@@ -129,7 +129,7 @@ namespace Dash
 		private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
 		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
-		}
+	    }
 	    
 	    // adds to the side of the PDFView
 	    private void MakeRegionMarker(double offset, DocumentController dc)
@@ -644,12 +644,12 @@ namespace Dash
 			MarkerSelected(prevOffset);
 		}
 
-		private void xRegionsScrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+		private void Scrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
 			if (_markers.Count > 0) xAnnotationNavigation.Opacity = 0.8;
 		}
 
-		private void xRegionsScrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
+		private void Scrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
 			xAnnotationNavigation.Opacity = 0;
 		}
