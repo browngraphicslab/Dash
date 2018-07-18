@@ -84,6 +84,12 @@ namespace Dash
             }
         }
 
+        private void XAutoSuggestBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            //xAutoSuggestBox.Text = "";
+            UnHighlightAllDocs();
+        }
+
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))

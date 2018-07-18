@@ -39,6 +39,7 @@
                     UpdateTextOnSelect="False"
                     Name="xAutoSuggestBox"
                     GotFocus="XAutoSuggestBox_OnGotFocus"
+                    LostFocus="XAutoSuggestBox_OnLostFocus"
                     TextBoxStyle="{StaticResource AutoFontSize}"
                     VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"

@@ -514,6 +514,13 @@ namespace Dash
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
 
+            if(this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
+            {
+                xSearchBoxGrid.Visibility = Visibility.Visible;
+                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                xMainSearchBox.Focus(FocusState.Programmatic);
+            }
+
             if (DocumentView.FocusedDocument != null && !e.Handled)
             {
                 if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
@@ -575,7 +582,14 @@ namespace Dash
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
+            {
+                if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
+                {
+                    xSearchBoxGrid.Visibility = Visibility.Collapsed;
+                    xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
+                }
                 return;
+            }
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
                 MainDocView_OnDoubleTapped(null, null);
