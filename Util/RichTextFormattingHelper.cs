@@ -147,7 +147,7 @@ namespace Dash
         /// <param name="updateDocument"></param>
         public static void Foreground(this RichTextView v, Color color, bool updateDocument)
         {
-            v.xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
+	        v.xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
             if (updateDocument) v.UpdateDocumentFromXaml();
         }
 

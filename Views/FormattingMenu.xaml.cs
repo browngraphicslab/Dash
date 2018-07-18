@@ -275,11 +275,12 @@ namespace Dash
 	        {
 		        xRichEditBox.Focus(FocusState.Pointer);
 				xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
-			}
+	        }
 
 	        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-			
-        }
+	        richTextView.UpdateDocumentFromXaml();
+
+		}
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -293,6 +294,7 @@ namespace Dash
 					xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
 		        }
 		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
+		        richTextView.UpdateDocumentFromXaml();
 			}
                
         }

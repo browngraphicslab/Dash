@@ -144,7 +144,7 @@ namespace Dash
             
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
-            if (DataContext != null && Text != null)
+            if (DataContext != null)
             {
                 convertTextFromXamlRTF();
 
