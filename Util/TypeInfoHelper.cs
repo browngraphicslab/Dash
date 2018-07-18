@@ -23,6 +23,7 @@ namespace Dash
             [typeof(AudioController)] = TypeInfo.Audio,
             [typeof(BoolController)] = TypeInfo.Bool,
             [typeof(DateTimeController)] = TypeInfo.DateTime,
+            [typeof(DocumentReferenceController)] = TypeInfo.DocumentReference,
 
             [typeof(FieldControllerBase)] = TypeInfo.Any
         };

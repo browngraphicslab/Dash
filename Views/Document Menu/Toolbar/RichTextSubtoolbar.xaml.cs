@@ -28,9 +28,9 @@ namespace Dash
     /// <summary>
     /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
     /// </summary>
-    public sealed partial class TextSubtoolbar : UserControl
+    public sealed partial class RichTextSubtoolbar : UserControl
     {
-        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(RichTextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
@@ -45,7 +45,7 @@ namespace Dash
         private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
 
-        public TextSubtoolbar()
+        public RichTextSubtoolbar()
         {
             this.InitializeComponent();
             _buttons = new Dictionary<string, Button>();
@@ -72,9 +72,15 @@ namespace Dash
                     xStack.Children.Add(_menuView);
                     //collapse other text menu
                     xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+<<<<<<< HEAD:Views/Document Menu/Toolbar/RichTextSubtoolbar.xaml.cs
+	                xFontColor.Visibility = Visibility.Collapsed;
+	                xOpacitySlider.Visibility = Visibility.Collapsed;
+                    _buttons.TryGetValue("Font", out var fontButton);
+=======
 	                //xBackgroundColorButton.Visibility = Visibility.Collapsed;
 
 					_buttons.TryGetValue("Font", out var fontButton);
+>>>>>>> d252c8c1d300efc5320cbd8eeb5250c6fa1e4bbb:Views/Document Menu/Toolbar/TextSubtoolbar.xaml.cs
                     if (fontButton != null)
                     {
                         //Width meant to be 67 to match actual rendered width of main toolbar collapse button
@@ -105,6 +111,8 @@ namespace Dash
         public void SetMenuToolBarBinding(RichEditBox selection)
         {
             xDashTextSubtoolbar.Editor = selection;
+            xDashTextSubtoolbar.Visibility = Visibility.Visible;
+            xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>().Orientation = Orientation;
         }
 
         /**
@@ -169,8 +177,7 @@ namespace Dash
             //xDashTextSubtoolbar.Visibility = Visibility.Visible;
 	        //xBackgroundColorButton.Visibility = Visibility.Visible;
 	        xInitialGrid.Visibility = Visibility.Visible;
-
-        }
+		}
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {

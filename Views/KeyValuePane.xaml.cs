@@ -37,7 +37,7 @@ namespace Dash
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
-        public KeyValuePane()
+        public KeyValuePane(bool AllowClose = false)
         {
             InitializeComponent();
 
@@ -46,6 +46,11 @@ namespace Dash
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+
+            if (AllowClose)
+            {
+                xCloseButton.Visibility = Visibility.Collapsed;
+            }
 
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;

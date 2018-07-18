@@ -90,8 +90,8 @@ namespace Dash.Models.DragModels
                 var vcopy = DraggedDocument.GetViewCopy(where);
                 // when we drop a collection that has no bounds (e.g., a workspace), then we create
                 // an arbitrary size for it and zero out its pan position so that it will FitToParent
-                if (double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data) &&                    
-                    vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType))
+                if (vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType) &&
+                    double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data))
                 {
                     vcopy.SetWidth(500);
                     vcopy.SetHeight(300);

@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Background="Transparent">
+    <Grid Background="Transparent" x:Name="xAnnotationGrid">
         <Grid x:Name="xRegionsGrid"/>
         <Canvas x:Name="xRegionsCanvas"/>
         <local:RegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed" />

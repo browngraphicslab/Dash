@@ -89,6 +89,8 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView, RichTextBox.MakeRegionDocument);
+                    KeyStore.RegisterDocumentTypeRenderer(TemplateEditorBox.DocumentType, TemplateEditorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(TemplateBox.DocumentType, TemplateBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
