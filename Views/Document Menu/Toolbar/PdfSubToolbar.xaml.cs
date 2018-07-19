@@ -59,12 +59,18 @@ namespace Dash
 	        {
 				case AnnotationManager.AnnotationType.Ink:
 					xInkToggle.IsChecked = true;
-					break;
+				    xTextToggle.IsChecked = false;
+				    xRegionToggle.IsChecked = false;
+                    break;
 				case AnnotationManager.AnnotationType.TextSelection:
-					xTextToggle.IsChecked = true;
-					break;
+				    xInkToggle.IsChecked = false;
+                    xTextToggle.IsChecked = true;
+				    xRegionToggle.IsChecked = false;
+                    break;
 				case AnnotationManager.AnnotationType.RegionBox:
-					xRegionToggle.IsChecked = true;
+				    xInkToggle.IsChecked = false;
+				    xTextToggle.IsChecked = false;
+                    xRegionToggle.IsChecked = true;
 					break;
 				default:
 					xInkToggle.IsChecked = false;
