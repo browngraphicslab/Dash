@@ -43,6 +43,7 @@ namespace Dash
            var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
+            
 
             // setup bindings on the image
             SetupBindings(image, docController, context);

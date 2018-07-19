@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
@@ -21,6 +22,7 @@ using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Dash.Views;
+using iText.StyledXmlParser.Jsoup.Nodes;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -177,6 +179,10 @@ namespace Dash
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
+                //var cview = this.GetFirstAncestorOfType<CollectionView>();
+                //var container = cview?.CurrentView as CollectionFreeformView;
+                //if (container != null && container.ViewModel.FitToParent)
+                //    container.ViewModel.FitContents(cview);
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 PositionContextPreview();
             }
@@ -187,7 +193,6 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
 
                 var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
@@ -196,23 +201,23 @@ namespace Dash
 
                 switch (type)
                 {
-                    case TypeInfo.Image:
+                    case DashShared.TypeInfo.Image:
                         xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
                         break;
-                    case TypeInfo.Audio:
+                    case DashShared.TypeInfo.Audio:
                         xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
                         break;
-                    case TypeInfo.Video:
+                    case DashShared.TypeInfo.Video:
                         xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
                         break;
-                    case TypeInfo.RichText:
-                    case TypeInfo.Text:
+                    case DashShared.TypeInfo.RichText:
+                    case DashShared.TypeInfo.Text:
                         xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
                         break;
-                    case TypeInfo.Document:
+                    case DashShared.TypeInfo.Document:
                         xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
                         break;
-                    case TypeInfo.Template:
+                    case DashShared.TypeInfo.Template:
                         xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                         break;
                     default:
@@ -221,7 +226,7 @@ namespace Dash
 
                 }
 
-                if (type.Equals(TypeInfo.Template))
+                if (type.Equals(DashShared.TypeInfo.Template))
                 {
                     xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
                 }
@@ -914,14 +919,30 @@ namespace Dash
 
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
-
         {
+       
+           
+
+            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
+           
             if (this.IsRightBtnPressed() || PreventManipulation)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+            var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
+                ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
             e.Handled = true;
-            var extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+
+            double extraOffsetX = 0;
+            if (!Double.IsNaN((ViewModel.Width)))
+            {
+                extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+            }
+            else
+            {
+                extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
+            }
+            
+
             double extraOffsetY = 0;
 
             if (!Double.IsNaN(ViewModel.Height))
@@ -935,6 +956,7 @@ namespace Dash
            
 
             var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            //problem is that cumulativeDelta.Y is 0
             var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
 
             //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
@@ -987,7 +1009,7 @@ namespace Dash
                 useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
             }
 
-            var proportional = (!isTextBox && maintainAspectRatio)
+            var proportional = (!isImage && maintainAspectRatio)
                 ? this.IsShiftPressed()
                 : (this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
@@ -1006,11 +1028,21 @@ namespace Dash
                     : cursorXDirection * delta.X;
             }
 
+
+           
+
             var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
             // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
             var newPos = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+
+            if (ViewModel.DocumentController.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                MinWidth = 200;
+                newSize.Height = oldSize.Height;
+                newPos.Y = ViewModel.YPos;
+            }
 
 
             // re-clamp the position to keep it in bounds
@@ -1033,10 +1065,12 @@ namespace Dash
                 newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
             }
 
+           
+
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
 
-            if (delta.Y != 0 || this.IsShiftPressed() || isTextBox)
+            if (delta.Y != 0 || this.IsShiftPressed() || isImage)
                 ViewModel.Height = newSize.Height;
         }
 
@@ -1422,7 +1456,7 @@ namespace Dash
             {
                 collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
                 if (collectionView.ViewModel.FitToParent)
-                    collectionView.ViewModel.FitContents();
+                    collectionView.ViewModel.FitContents(collectionView);
             }
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }

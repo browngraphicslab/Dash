@@ -168,16 +168,19 @@ namespace Dash
         /// </summary>
         public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
         {
-            var imgWidth = await GetImageWidth(localFile);
+            var size = await GetImageSize(localFile);
+            var imgWidth = size.X;
+            var imgHeight = size.Y;
 
-            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgWidth, double.NaN), title).Document;
+            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgWidth, imgHeight), title).Document;
         }
 
         /// <summary>
         /// Return the height and width of an image stored in a randomaccess stream
         /// </summary>
-        private static async Task<double> GetImageWidth(IRandomAccessStreamReference streamRef)
+        private static async Task<Point> GetImageSize(IRandomAccessStreamReference streamRef)
         {
+           
             const double maxDim = 250;
             double pictureHeight;
             double pictureWidth;
@@ -198,7 +201,10 @@ namespace Dash
                     pictureWidth = maxDim;
                 }
             }
-            return pictureWidth;
+            Point size = new Point(pictureWidth, pictureHeight);
+            return size;
         }
+
+       
     }
 }

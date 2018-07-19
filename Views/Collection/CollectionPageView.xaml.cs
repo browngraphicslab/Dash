@@ -38,7 +38,7 @@ namespace Dash
             xThumbs.SizeChanged += (sender, e) =>
             {
                 if (CurPage?.Content is CollectionView cview)
-                    cview.ViewModel.FitContents();
+                    cview.ViewModel.FitContents(cview);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
@@ -229,16 +229,16 @@ namespace Dash
                     {
                         void ContainerDocument_FieldModelUpdated(FieldControllerBase s, FieldUpdatedEventArgs args, Context context)
                         {
-                            cview.ViewModel.FitContents();
+                            cview.ViewModel.FitContents(cview);
                         }
                         cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
                         cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
-                        cview.ViewModel.FitContents();
+                        cview.ViewModel.FitContents(cview);
                     }
                     cview.ViewModel.ContainerDocument.SetActualSize(new Windows.Foundation.Point(xDocView.ActualWidth, xDocView.ActualHeight));
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
-                    cview.ViewModel.FitContents();
+                    cview.ViewModel.FitContents(cview);
                 }
             }
         }
