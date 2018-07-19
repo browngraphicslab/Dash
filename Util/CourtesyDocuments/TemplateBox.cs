@@ -75,6 +75,13 @@ namespace Dash
             };
 
             docController.AddFieldUpdatedListener(KeyStore.TemplateStyleKey, OnTemplateStyleUpdatedHandler);
+            docController.GetDataDocument().FieldModelUpdated += TemplateBox_FieldModelUpdated;
+
+            void TemplateBox_FieldModelUpdated(FieldControllerBase fieldControllerBase,
+                FieldUpdatedEventArgs fieldUpdatedEventArgs, Context secondContext)
+            {
+                LayoutDocuments(docController, context, grid);
+            }
 
             // determine if the document controller is set up to utilize a grid view
             if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
@@ -140,12 +147,6 @@ namespace Dash
 
             }
 
-            void OnLayoutDocumentFieldUpdatedHandler(DocumentController sender,
-                DocumentController.DocumentFieldUpdatedEventArgs args, Context layoutContext)
-            {
-                LayoutDocuments(sender, new Context(docController), grid);
-            }
-
             grid.Loaded += delegate
             {
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
@@ -186,7 +187,6 @@ namespace Dash
 
             return parentGrid;
         }
-
 
         private static void LayoutDocuments(DocumentController docController, Context context, Panel grid)
         {
