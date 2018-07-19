@@ -17,7 +17,7 @@
     <StackPanel Orientation="Horizontal">
         <Grid x:Name="xZoom">
             <Canvas>
-                <PdfViewer:SfPdfViewerControl x:Name="xPdfView" 
+                <PdfViewer:SfPdfViewerControl x:Name="xPdfView"
                                                   HorizontalAlignment="Left" VerticalAlignment="Top" 
                                                   ViewMode="FitWidth" HorizontalContentAlignment="Left"
                                                   HorizontalScrollBarVisibility="Hidden"
