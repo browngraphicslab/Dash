@@ -308,8 +308,9 @@ namespace Dash
 
                 ToggleSelectOptions(docs.Count() > 0);
 
+
                 // just single select
-                if (docs.Count() == 1)
+                if (docs.Count() == 1 )
                 {
                     var selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
@@ -375,7 +376,7 @@ namespace Dash
                                 if (!containsInternalContent)
                                 {
                                     var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                    xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                    xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                     subtoolbarElement = xCollectionToolbar;
                                 }
                                 else
@@ -386,7 +387,7 @@ namespace Dash
                             else
                             {
                                 var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
                             xGroupToolbar.TryMakeGroupEditable(false);
@@ -438,7 +439,7 @@ namespace Dash
                             if (!containsInternalContent)
                             {
                                 var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
                             else
@@ -449,7 +450,7 @@ namespace Dash
                         else
                         {
                             var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                            xCollectionToolbar.SetCollectionBinding(thisCollection);
+                            xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                             subtoolbarElement = xCollectionToolbar;
                         }
                         xGroupToolbar.TryMakeGroupEditable(false);
@@ -471,23 +472,12 @@ namespace Dash
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
-                        if (subtoolbarElement is ICommandBarBased toOpen)
-                        {
-                            toOpen.CommandBarOpen(true);
-                            //Displays padding in stack panel only if the menu isn't collapsed
-                            //if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
-                            var margin = xSubtoolbarStackPanel.Margin;
-                            margin.Top = 20;
-                            xSubtoolbarStackPanel.Margin = margin;
-                        }
-                        else
-                        {
-                            //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                          //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
                             var margin = xSubtoolbarStackPanel.Margin;
                             margin.Top = 7;
-                            xSubtoolbarStackPanel.Margin = margin;
-                            //xPadding.Visibility = Visibility.Collapsed;
-                        }
+                          xSubtoolbarStackPanel.Margin = margin;
+                         //xPadding.Visibility = Visibility.Collapsed;
+                     
                     }
                     else
                     {

@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Views.Document_Menu.Toolbar;
 using System.Collections.ObjectModel;
+using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,7 +29,7 @@ namespace Dash
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
             "Orientation", typeof(Orientation), typeof(CollectionSubtoolbar), new PropertyMetadata(default(Orientation)));
-
+		
         public Orientation Orientation
         {
             get { return (Orientation)GetValue(OrientationProperty); }
@@ -41,6 +42,7 @@ namespace Dash
         public void SetComboBoxVisibility(Visibility visibility) => xViewModesDropdown.Visibility = visibility;
 
         private CollectionView _collection;
+	    private DocumentController _docController;
 
         public CollectionSubtoolbar()
         {
@@ -60,6 +62,9 @@ namespace Dash
                 Visibility = Visibility.Collapsed;
                 xViewModesDropdown.ItemsSource = Enum.GetValues(typeof(CollectionView.CollectionViewType));
             };
+
+			xBackgroundColorPicker.SetOpacity(75);
+	        xBackgroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
         /// <summary>
@@ -120,10 +125,19 @@ namespace Dash
             xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
-        public void SetCollectionBinding(CollectionView thisCollection)
+        public void SetCollectionBinding(CollectionView thisCollection, DocumentController docController)
         {
             _collection = thisCollection;
             xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionView.CollectionViewType)), _collection.ViewModel.ViewType);
+	        _docController = docController;
         }
+
+	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
+	    {
+		    //_docController?.GetDataDocument().SetField(KeyStore.BackgroundColorKey, new TextController(e.ToString()), false);
+		    _collection?.GetFirstAncestorOfType<DocumentView>().SetBackgroundColor(e);
+		    //if (_collection?.CurrentView is CollectionFreeformView) (_collection.CurrentView as CollectionFreeformView).xOuterGrid.Background = new SolidColorBrush(e);
+		    //_docController?.SetField(KeyStore.BackgroundColorKey, new TextController(e.ToString()), false);
+	    }
     }
 }

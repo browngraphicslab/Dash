@@ -1104,7 +1104,11 @@ namespace Dash
 	        {
 		        docView.ViewModel.DocumentController.SetWidth(250);
 		        docView.ViewModel.DocumentController.SetHeight(300);
-			}
+			} else if (docView.ViewModel.Content is CollectionView)
+	        {
+				docView.ViewModel.DocumentController.SetWidth(200);
+				docView.ViewModel.DocumentController.SetHeight(200);
+	        }
 
             // hacky way of resizing bounds, bob and tyler are working on improving resizing in general
             var currPos = docView.ViewModel.DocumentController

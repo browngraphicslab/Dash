@@ -109,7 +109,7 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
-                BindBackgroundColor(rtv, docController, context);
+                //BindBackgroundColor(rtv, docController, context);
 
             return rtv;
         }

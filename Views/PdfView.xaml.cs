@@ -435,6 +435,12 @@ namespace Dash
             PdfTest();
             NewRegionStarted?.Invoke(sender, e);
         }
+
+		DocumentView IVisualAnnotatable.GetDocView()
+		{
+			return this.GetFirstAncestorOfType<DocumentView>();
+		}
+
     }
     
 }

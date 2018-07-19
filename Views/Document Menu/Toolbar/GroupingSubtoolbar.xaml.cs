@@ -258,9 +258,7 @@ namespace Dash
             xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
             xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
-
-        
-
+		
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var inc = (MainPage.Instance.IsShiftPressed()) ? GroupGeometryConstants.MassiveInc : GroupGeometryConstants.SmallInc;

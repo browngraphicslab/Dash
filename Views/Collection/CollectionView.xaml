@@ -14,7 +14,7 @@
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
 
-    <Grid x:Name="xOuterGrid" x:FieldModifier="public" BorderThickness="8" BorderBrush="{ThemeResource CollectionBorderBrush}">
+    <Grid x:Name="xOuterGrid" x:FieldModifier="public" BorderThickness="8" BorderBrush="{ThemeResource CollectionBorderBrush}" Background="Transparent">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>

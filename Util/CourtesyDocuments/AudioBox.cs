@@ -5,6 +5,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Windows.Management.Deployment;
+using Windows.System;
 using Dash.Converters;
 
 namespace Dash
@@ -38,9 +40,23 @@ namespace Dash
                 MinHeight = 50
             };
 
-            // setup bindings on the audio
-            SetupBindings(audio, docController, context);
+	        //enables fullscreen exit with escape shortcut
+	        audio.KeyDown += (s, e) =>
+	        {
+		        if (e.Key == VirtualKey.Escape && audio.IsFullWindow)
+		        {
+			        audio.IsFullWindow = false;
+		        }
+	        };
+			
+
+			// setup bindings on the audio
+			SetupBindings(audio, docController, context);
             SetupAudioBinding(audio, docController, context);
+
+			//disables audio's fullscreen mode
+	        audio.TransportControls.IsFullWindowEnabled = false;
+	        audio.TransportControls.IsFullWindowButtonVisible = false;
 
             return audio;
         }
