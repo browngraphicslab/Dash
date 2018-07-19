@@ -737,7 +737,7 @@ namespace Dash
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n").Where(s => s != "").ToList();
                     var uri = introParts.Last().Substring(10);
-                    var addition = "<div> From < <a href = \"" + uri + "\" >" + uri + "</a>> </div>";
+                    var addition = "<br><div> From < <a href = \"" + uri + "\" >" + uri + "</a>> </div>";
 
                     //update html length in intro - the way that word reads HTML is kinda funny
                     //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
@@ -944,6 +944,9 @@ namespace Dash
                             }
                         }
                     }
+
+                    //make context navigate back to website
+                    htmlNote.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(uri), true);
 
                     AddDocument(htmlNote);
                 }

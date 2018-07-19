@@ -323,7 +323,7 @@ namespace Dash
             var dataDocument = doc.GetDataDocument();
             var neighboringRaw = dataDocument.GetDereferencedField(KeyStore.WebContextKey, null);
             string url = null;
-            var type = neighboringRaw.TypeInfo.ToString();
+            var type = neighboringRaw?.TypeInfo.ToString();
             if (type == "List")
             {
                 var neighboring = neighboringRaw as ListController<TextController>;
