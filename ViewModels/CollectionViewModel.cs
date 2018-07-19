@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -735,9 +736,36 @@ namespace Dash
                     //get url of where this html is coming from
                     var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
                     var beforeHtml = html.Substring(0, htmlStartIndex);
-                    var introParts = beforeHtml.Split("\r\n").Where(s => s != "").ToList();
+                    var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.Last().Substring(10);
-                    var addition = "<br><div> From < <a href = \"" + uri + "\" >" + uri + "</a>> </div>";
+                  
+
+                    //try to get website title
+                    var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
+                    webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
+                        webName.Replace('_', ' ').Replace('-', ' '));
+                    var pageTitle = uriParts[uriParts.Count - 1];
+                    //check if pageTitle is some id
+                    pageTitle = (uriParts.Count > 1 && (pageTitle.Count(Char.IsDigit) + 2 > pageTitle.Length / 2 || pageTitle[0] == '#' || pageTitle == "index.html")) ? 
+                        uriParts[uriParts.Count - 2] : pageTitle;
+                    pageTitle = pageTitle.Contains(".html") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
+                    pageTitle = pageTitle.Contains(".htm") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+                    pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ');
+                    //if first word is basically all numbers, its id, so delete
+                    var firstTitleWord = pageTitle.Split(' ').First();
+                    pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length - 2 &&
+                                 pageTitle.Length > firstTitleWord.Length) ?
+                        pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
+                    //if last word is basically all numbers, its id, so delete
+                    var lastTitleWord = pageTitle.Split(' ').Last();
+                    pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length - 2 &&
+                                    pageTitle.Length > lastTitleWord.Length) ? 
+                        pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
+                    pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+
+                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + webName + " (" + pageTitle + ") </a> </div>";
 
                     //update html length in intro - the way that word reads HTML is kinda funny
                     //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
