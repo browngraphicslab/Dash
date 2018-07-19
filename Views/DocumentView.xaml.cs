@@ -917,12 +917,8 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-
-            if (sender.DataContext.ToString().Equals("@Audio Box"))
-            {
-                shiftTop = false;
-                shiftLeft = false;
-            }
+       
+           
 
             //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
            
@@ -1027,11 +1023,21 @@ namespace Dash
                     : cursorXDirection * delta.X;
             }
 
+
+           
+
             var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
             // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
             var newPos = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+
+            if (ViewModel.DocumentController.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                MinWidth = 200;
+                newSize.Height = oldSize.Height;
+                newPos.Y = ViewModel.YPos;
+            }
 
 
             // re-clamp the position to keep it in bounds
@@ -1053,6 +1059,8 @@ namespace Dash
                 var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), Bounds.Rect);
                 newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
             }
+
+           
 
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;

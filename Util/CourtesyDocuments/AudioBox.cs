@@ -14,6 +14,7 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("41D7DF1F-4E3B-4770-9041-36835FF171FC", "Audio Box");
         private static readonly string PrototypeId = "77E99E16-560C-4BB4-9FCD-E7A6F8CD5517";
         private static Uri DefaultAudiooUri => new Uri("ms-appx://Dash/Assets/DefaultAudio.mp3");
+        private static MediaPlayerElement _audioplayer;
 
         public AudioBox(FieldControllerBase refToAudio, double x = 0, double y = 0, double w = 320, double h = 180)
         {
@@ -37,6 +38,8 @@ namespace Dash
                 MinWidth = 200,
                 MinHeight = 50
             };
+
+            _audioplayer = audio;
 
             // setup bindings on the audio
             SetupBindings(audio, docController, context);
@@ -86,6 +89,12 @@ namespace Dash
             };
             //bind to source property of MediaPlayerElement
             audio.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
+        }
+
+        public void setMargin(Double x)
+        {
+            Thickness margin = new Thickness(0, x, 0, x);
+            _audioplayer.Margin = margin;
         }
     }
 }
