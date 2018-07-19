@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,7 @@ namespace OfficeInterop
         /// <returns></returns>
         public ValueSet ProcessMessage(ValueSet request)
         {
+            Debug.WriteLine("LOOOK HERE-- M ");
             string value = request["REQUEST"] as string;
             var response = new ValueSet();
             string debug = "";

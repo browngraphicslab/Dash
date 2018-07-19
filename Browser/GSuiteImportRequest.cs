@@ -19,6 +19,8 @@ namespace Dash
 
         public string data { get; set; }
 
+        public string url { get; set; }
+
         public override async Task Handle(BrowserView browser)
         {
             byte[] bdata = Convert.FromBase64String(data);
@@ -36,6 +38,8 @@ namespace Dash
                             MainPage.Instance.MainDocView.ActualHeight / 2));
                         doc.SetField(KeyStore.PositionFieldKey, new PointController(point), true);
                     }
+
+                    doc.SetField(KeyStore.SourecUriKey, new TextController(url), true);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()?.ViewModel
                         .AddDocument(doc);
                 });
