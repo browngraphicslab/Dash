@@ -173,7 +173,7 @@ namespace Dash
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Link;
 
         }
 
