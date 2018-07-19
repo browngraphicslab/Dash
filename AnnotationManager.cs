@@ -45,8 +45,8 @@ namespace Dash
             {
 				// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
 				// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
-                FollowDocument(chosenDC, pos);
-	            SelectionManager.SelectRegion(chosenDC);
+				SelectionManager.SelectRegion(theDoc);
+	            FollowDocument(chosenDC, pos);
             }
             else
 			{
@@ -55,13 +55,13 @@ namespace Dash
 
 				// choose link to follow by showing flyout
 				if (MainPage.Instance.IsCtrlPressed())
-                {
-	                if (_linkFlyout.Items == null || _linkFlyout.Items.Count != 0) return;
+				{
+					SelectionManager.SelectRegion(theDoc);
+					if (_linkFlyout.Items == null || _linkFlyout.Items.Count != 0) return;
 
 	                if (toLinks?.Count + fromLinks?.Count == 1)
 					{
 						var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-						SelectionManager.SelectRegion(theDoc);
 						dc = dc.GetDataDocument()
 			                .GetDereferencedField<ListController<DocumentController>>(
 				                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
@@ -97,6 +97,7 @@ namespace Dash
 		// follows the document in the workspace, and heuristically determines if it's too far away and should be docked
 	    private void FollowDocument(DocumentController target, Point pos)
 	    {
+			SelectionManager.SelectRegion(null);
 		    DocumentController docToFollow = target;
 
 			// is a region
