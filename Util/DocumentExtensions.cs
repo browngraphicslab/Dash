@@ -321,16 +321,23 @@ namespace Dash
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            var neighboringRaw = dataDocument.GetDereferencedField(KeyStore.WebContextKey, null);
+            DocumentContext context = null;
+            if (neighboringRaw.TypeInfo.ToString() == "List")
             {
-                var context = doc.GetFirstContext();
-                if (context != null)
+                var neighboring = neighboringRaw as ListController<TextController>;
+                if (neighboring != null && neighboring.TypedData.Count > 0)
                 {
-                    MainPage.Instance.WebContext.SetUrl(context.Url);
-                    MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                   context = doc.GetFirstContext();
                 }
+            } 
+
+            if (context != null)
+            {
+                MainPage.Instance.WebContext.SetUrl(context.Url);
+                MainPage.Instance.WebContext.SetScroll(context.Scroll);
             }
+
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
