@@ -732,6 +732,36 @@ namespace Dash
                     _pasteWhereHack = where;
                     var html = await e.DataView.GetHtmlFormatAsync();
 
+                    //get url of where this html is coming from
+                    var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
+                    var beforeHtml = html.Substring(0, htmlStartIndex);
+                    var introParts = beforeHtml.Split("\r\n").Where(s => s != "").ToList();
+                    var uri = introParts.Last().Substring(10);
+                    var addition = "<div> From < <a href = \"" + uri + "\" >" + uri + "</a>> </div>";
+
+                    //update html length in intro - the way that word reads HTML is kinda funny
+                    //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
+                    //we must change these numbers
+                    var endingInfo = introParts.ElementAt(2);
+                    var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[2] = endingInfo.Substring(0, 8) + endingNum;
+                    var endingInfo2 = introParts.ElementAt(4);
+                    var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
+                    var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
+
+
+                    //get parts so additon is before closing
+                    var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
+                    var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
+                    var htmlClose = html.Substring(endPoint);
+                   
+
+                    //combine all parts
+                    html = newHtmlStart + mainHtml + addition + htmlClose;
+
                     //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
                     html = String.Concat(html,
                         @"<style>
@@ -788,6 +818,9 @@ namespace Dash
                         await DotNetRPC.CallRPCAsync(table);
                         var dataPackageView = Clipboard.GetContent();
                         var richtext = await dataPackageView.GetRtfAsync();
+                        //richtext +=
+                        //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                        //            "\"} {\\fldrslt" + uri + "}}";
                         htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                     }
 
@@ -814,6 +847,9 @@ namespace Dash
                             if (dataPackageView.Contains(StandardDataFormats.Rtf))
                             {
                                 var richtext = await dataPackageView.GetRtfAsync();
+                                //richtext +=
+                                //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                                //    "\"} {\\fldrslt" + uri + "}}";
                                 htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                             }
                             else
