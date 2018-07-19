@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" Height ="52" Canvas.ZIndex="2">
+    <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" Height ="52" >
         <StackPanel Height="50" Background="AliceBlue">
             <TextBlock Text="Keyboard" TextAlignment="Center" FontSize="13" Height="25"/>
             <TextBlock Text="Shortcuts:" TextAlignment="Center" FontSize="13" Height="25"  Margin="0,-3,0,0"/>

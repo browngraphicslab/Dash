@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded',
                                                     "url": tab.url
                                                 }
                                                 console.log(request);
-                                                chrome.runtime.sendMessage({ type: "sendRequest", data: request, url: tab.url });
+                                                chrome.runtime.sendMessage({ type: "sendRequest", data: request });
 
                                             } 
 
