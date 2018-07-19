@@ -86,7 +86,9 @@ namespace Dash
                 //add them each to the main canvas
                 foreach (DocumentViewModel vm in vms)
                 {
-                    mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
+	                vm.XPos += _collection.GetFirstAncestorOfType<DocumentView>().ViewModel.XPos;
+	                vm.YPos += _collection.GetFirstAncestorOfType<DocumentView>().ViewModel.YPos;
+					mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
                 }
 
                 //delete the sellected collection
