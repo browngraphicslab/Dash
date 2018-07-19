@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Windows.UI.Text;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 
 namespace Dash
@@ -91,7 +92,11 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            return StringSearchModel.False;
+            var richEditBox = new RichEditBox();
+            richEditBox.Document.SetText(TextSetOptions.FormatRtf, RichTextFieldModel.Data.RtfFormatString);
+            richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
+            readableText = readableText.Replace("\r", "\n");
+            return readableText.Contains(searchString) ? new StringSearchModel(readableText) : StringSearchModel.False;
         }
 
         public StringSearchModel SearchForStringInRichText(string searchString)
