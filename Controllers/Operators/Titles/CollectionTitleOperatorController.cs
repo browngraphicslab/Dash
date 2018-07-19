@@ -53,7 +53,7 @@ namespace Dash
                 // is  databox whose DataContext is the collection.  This needs to be replaced with a more general
                 // mechanism of identifying and halting an evaluation cycle
                 if (firstDoc?.DocumentType.Equals(DataBox.DocumentType) == true)
-                    output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null).ToString());
+                    output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null)?.ToString() ?? "");
                 else output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 

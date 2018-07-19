@@ -98,7 +98,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents();   // pan/zoom collection so all of its contents are visible
+                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
 
         public void Loaded(bool isLoaded)
@@ -191,11 +191,13 @@ namespace Dash
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
-        public void FitContents()
+        public void FitContents(CollectionView cview)
         {
             if (FitToParent && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                var parSize = ContainerDocument.GetActualSize() ?? new Point();
+                 var realPar = cview?.CurrentView;
+                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
