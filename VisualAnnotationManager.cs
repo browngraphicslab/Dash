@@ -205,6 +205,7 @@ namespace Dash
 
             _overlay.SetRegionBoxPosition(new Size(_element.GetPositionReference().ActualWidth, _element.GetPositionReference().ActualHeight));
             _overlay.PostVisibility = Visibility.Visible;
+	        SelectionManager.SelectRegion(null);
         }
 
         private void xRegion_OnTapped(object sender, TappedRoutedEventArgs e)

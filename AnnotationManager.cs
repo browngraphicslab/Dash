@@ -73,7 +73,7 @@ namespace Dash
 		                AddToLinksMenu(toLinks, KeyStore.LinkToKey, pos, theDoc);
 	                if (fromLinks != null)
 		                AddToLinksMenu(fromLinks, KeyStore.LinkFromKey, pos, theDoc);
-
+					 
 
 	                if (_linkFlyout.Items.Count > 0)
 		                _linkFlyout.ShowAt(_element);
