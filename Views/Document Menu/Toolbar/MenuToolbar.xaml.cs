@@ -195,7 +195,9 @@ namespace Dash
                 xGroup,
                 xInk,
                 xTouch,
-                xPin
+                xPin,
+                xUndo,
+                xRedo
             };
             allButtons = tempButtons;
 
@@ -205,7 +207,8 @@ namespace Dash
             {
                 xSepOne,
                 xSepTwo,
-                xSepThree
+                xSepThree,
+                xSepFour
             };
             allSeparators = tempSeparators;
 

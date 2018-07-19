@@ -115,15 +115,14 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) =>
+            xRichEditBox.LostFocus += (s, e) =>
             {
-                if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
+                if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();
                     if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
-                        docView.DeleteDocument(true);
+                        docView.DeleteDocument();
                 }
-                e.Handled = true;
             };
 
             xRichEditBox.ContextMenuOpening += (s, e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
