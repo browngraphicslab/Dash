@@ -34,6 +34,7 @@ using Windows.Foundation.Metadata;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Core;
+using Page = Microsoft.Office.Interop.Word.Page;
 
 namespace Dash
 {
@@ -749,20 +750,27 @@ namespace Dash
                     webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
                         webName.Replace('_', ' ').Replace('-', ' '));
                     var pageTitle = uriParts[uriParts.Count - 1];
+                    //handle complicated google search url
+                    var googleSearchRes = pageTitle.Split("q=");
+                    pageTitle = googleSearchRes.Length > 1 ?
+                        googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
                     //check if pageTitle is some id
-                    pageTitle = (uriParts.Count > 1 && (pageTitle.Count(Char.IsDigit) + 2 > pageTitle.Length / 2 || pageTitle[0] == '#' || pageTitle == "index.html")) ? 
+                    pageTitle = (uriParts.Count > 1 && 
+                                 (pageTitle.Count(x => Char.IsDigit(x) || x == '&' || x == '=' || x == '.') > pageTitle.Length / 3 
+                                                        || pageTitle[0] == '#' || pageTitle == "index.html")) ? 
                         uriParts[uriParts.Count - 2] : pageTitle;
                     pageTitle = pageTitle.Contains(".html") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
                     pageTitle = pageTitle.Contains(".htm") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+                    //dashes are used in urls as spaces
                     pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ');
                     //if first word is basically all numbers, its id, so delete
                     var firstTitleWord = pageTitle.Split(' ').First();
-                    pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length - 2 &&
+                    pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
                                  pageTitle.Length > firstTitleWord.Length) ?
                         pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
                     //if last word is basically all numbers, its id, so delete
                     var lastTitleWord = pageTitle.Split(' ').Last();
-                    pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length - 2 &&
+                    pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
                                     pageTitle.Length > lastTitleWord.Length) ? 
                         pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
                     pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
