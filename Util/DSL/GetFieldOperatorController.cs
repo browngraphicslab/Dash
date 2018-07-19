@@ -56,7 +56,7 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
-                outputs[ResultFieldKey] = doc.GetField(new KeyController(keyName))?? new TextController();
+                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(keyName), null);
             }
         }
     }
