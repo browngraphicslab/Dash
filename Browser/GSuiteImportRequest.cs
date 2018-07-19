@@ -39,10 +39,7 @@ namespace Dash
                         doc.SetField(KeyStore.PositionFieldKey, new PointController(point), true);
                     }
 
-                    var textController = new TextController(url);
-                    var urlList = new ListController<TextController>(textController);
-                    doc.GetDataDocument().SetField(KeyStore.WebContextKey, urlList, true);
-                    //doc.SetField(KeyStore.WebContextKey, new TextController(url), true);
+                    doc.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(url), true);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()?.ViewModel
                         .AddDocument(doc);
                 });

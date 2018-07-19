@@ -322,20 +322,26 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboringRaw = dataDocument.GetDereferencedField(KeyStore.WebContextKey, null);
-            DocumentContext context = null;
-            if (neighboringRaw.TypeInfo.ToString() == "List")
+            string url = null;
+            var type = neighboringRaw.TypeInfo.ToString();
+            if (type == "List")
             {
                 var neighboring = neighboringRaw as ListController<TextController>;
                 if (neighboring != null && neighboring.TypedData.Count > 0)
                 {
-                   context = doc.GetFirstContext();
+                    var context = doc.GetFirstContext();
+                    MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                    url = context.Url;
                 }
-            } 
-
-            if (context != null)
+            } else if (type == "Text")
             {
-                MainPage.Instance.WebContext.SetUrl(context.Url);
-                MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                url = (neighboringRaw as TextController).Data;
+            }
+
+            if (url != null)
+            {
+                MainPage.Instance.WebContext.SetUrl(url);
+                
             }
 
         }
