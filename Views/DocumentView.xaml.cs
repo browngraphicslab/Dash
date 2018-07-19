@@ -929,7 +929,8 @@ namespace Dash
             if (this.IsRightBtnPressed() || PreventManipulation)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+            var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
+                ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
             e.Handled = true;
             double extraOffsetX = 0;
             if (!Double.IsNaN((ViewModel.Width)))
@@ -1007,7 +1008,7 @@ namespace Dash
                 useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
             }
 
-            var proportional = (!isTextBox && maintainAspectRatio)
+            var proportional = (!isImage && maintainAspectRatio)
                 ? this.IsShiftPressed()
                 : (this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
@@ -1056,7 +1057,7 @@ namespace Dash
             ViewModel.Position = newPos;
             ViewModel.Width = newSize.Width;
 
-            if (delta.Y != 0 || this.IsShiftPressed() || isTextBox)
+            if (delta.Y != 0 || this.IsShiftPressed() || isImage)
                 ViewModel.Height = newSize.Height;
         }
 
