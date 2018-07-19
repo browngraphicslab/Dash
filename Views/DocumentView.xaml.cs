@@ -921,7 +921,7 @@ namespace Dash
             if (sender.DataContext.ToString().Equals("@Audio Box"))
             {
                 shiftTop = false;
-                shiftLeft = false
+                shiftLeft = false;
             }
 
             //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))

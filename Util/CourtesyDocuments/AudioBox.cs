@@ -41,6 +41,8 @@ namespace Dash
             // setup bindings on the audio
             SetupBindings(audio, docController, context);
             SetupAudioBinding(audio, docController, context);
+            audio.TransportControls.IsFullWindowEnabled = false;
+            audio.TransportControls.IsFullWindowButtonVisible = false;
 
             return audio;
         }
