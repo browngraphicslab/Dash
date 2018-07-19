@@ -177,6 +177,10 @@ namespace Dash
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
+                //var cview = this.GetFirstAncestorOfType<CollectionView>();
+                //var container = cview?.CurrentView as CollectionFreeformView;
+                //if (container != null && container.ViewModel.FitToParent)
+                //    container.ViewModel.FitContents(cview);
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 PositionContextPreview();
             }
@@ -187,7 +191,6 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
 
                 var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
@@ -1422,7 +1425,7 @@ namespace Dash
             {
                 collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
                 if (collectionView.ViewModel.FitToParent)
-                    collectionView.ViewModel.FitContents();
+                    collectionView.ViewModel.FitContents(collectionView);
             }
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
