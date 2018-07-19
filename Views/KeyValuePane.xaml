@@ -56,7 +56,7 @@
                     <ColumnDefinition Width="40"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,-4,0,0" VerticalAlignment="Center" FontWeight="Bold" FontStyle="Italic"  TextAlignment="Center" />
-                <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-7,-4,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
+                <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-12,-4,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
                 <AppBarButton Width="40" Height="48" Margin="-7, 6, 0, 0"  Foreground="White" IsCompact="true" Background="Transparent" Label="Data" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
                     <AppBarButton.Icon>
@@ -81,8 +81,17 @@
                     <ColumnDefinition Width="5*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <!--key listview-->
-                <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="True" DragItemsStarting="xKeyListView_DragItemsStarting"
+                <ListView 
+                    Name="xKeyListView" 
+                    ScrollViewer.VerticalScrollMode="Disabled" 
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                    ScrollViewer.IsVerticalRailEnabled="False"
+                    Grid.Column="0" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch" 
+                    SelectionMode="None" 
+                    CanDragItems="True" 
+                    DragItemsStarting="xKeyListView_DragItemsStarting"
                     ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem" x:Name="CollapseBox">
@@ -103,14 +112,23 @@
                 </ListView>
 
                 <!--field listview-->
-                <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                        Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        SelectionMode="None" CanDragItems="True" DragItemsStarting="xFieldListView_DragItemsStarting" ItemsSource="{x:Bind ListItemSource}">
+                <ListView 
+                    ScrollViewer.VerticalScrollMode="Disabled" 
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                    ScrollViewer.IsVerticalRailEnabled="False"
+                    Name="xFieldListView" 
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch" 
+                    SelectionMode="None" 
+                    CanDragItems="True" 
+                    DragItemsStarting="xFieldListView_DragItemsStarting" 
+                    ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Padding" Value="0, 0, 0, 0" />
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />

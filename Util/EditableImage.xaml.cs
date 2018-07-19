@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
@@ -212,12 +213,11 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None,
-            BitmapFlip flip = BitmapFlip.None)
+        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-            var file = await GetImageFile();
+            StorageFile file = await GetImageFile();
 
-			var fileProperties = await file.Properties.GetImagePropertiesAsync();
+			ImageProperties fileProperties = await file.Properties.GetImagePropertiesAsync();
 
 			if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
 			{

@@ -336,11 +336,7 @@ namespace Dash
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             DocumentController dataDocument = doc.GetDataDocument();
-
-            if (dataDocument.GetField<TextController>(KeyStore.VisibleTypeKey) == null) dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, doc.TypeInfo.ToString(), true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
-            if (dataDocument.GetField<DateTimeController>(KeyStore.DateCreatedKey) == null) dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
-            if (dataDocument.GetField<TextController>(KeyStore.AuthorKey) == null) dataDocument.SetField<TextController>(KeyStore.AuthorKey, "User", true);
 
             if (MainPage.Instance.WebContext == null) return;
 

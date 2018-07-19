@@ -25,6 +25,8 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
+        private void AlertModified() => _currentDocController.CaptureNeighboringContext();
+
         public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
         private DocumentView _currentDocView;
@@ -92,6 +94,7 @@ namespace Dash
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
             _currentImage.Revert();
+            AlertModified();
         }
 
         /// <summary>
@@ -117,11 +120,11 @@ namespace Dash
                 _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
                 await _currentImage.ReplaceImage();
+                AlertModified();
                 UndoManager.EndBatch();
             }
         }
-
-
+        
         /// <summary>
         /// Enables the subtoolbar access to the Document View of the image that was selected on tap.
         /// </summary>
@@ -137,18 +140,21 @@ namespace Dash
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.Rotate();
+            AlertModified();
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorVertical();
+            AlertModified();
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
+            AlertModified();
         }
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
