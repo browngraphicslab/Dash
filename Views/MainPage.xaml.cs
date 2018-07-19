@@ -699,7 +699,11 @@ namespace Dash
                 Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
+                mapTimer.Tick += (ss, ee) =>
+                {
+                    var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
+                    cview?.ViewModel?.FitContents(cview);
+                };
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
