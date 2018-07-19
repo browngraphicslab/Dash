@@ -921,7 +921,7 @@ namespace Dash
 
             var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
             e.Handled = true;
-            var extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+            var extraOffsetX = ViewModel.ActualSize.X - (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width);
             double extraOffsetY = 0;
 
             if (!Double.IsNaN(ViewModel.Height))
