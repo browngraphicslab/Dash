@@ -901,7 +901,7 @@ namespace Dash
                                 {
                                     var pair = new Regex(":").Split(match.ToString());
                                     htmlNote.GetDataDocument()
-                                        .SetField<TextController>(new KeyController(pair[0], pair[0]),
+                                        .SetField<TextController>(new KeyController(pair[0]),
                                             pair[1].Trim(),
                                             true);
                                 }

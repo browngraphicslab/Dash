@@ -20,6 +20,7 @@ using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -538,7 +539,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
-                if (!(FocusManager.GetFocusedElement() is TextBox))
+                if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     foreach (var doc in SelectionManager.SelectedDocs)
                     {
