@@ -59,7 +59,6 @@
                             <MenuFlyoutSeparator/>
                             <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
                             <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click"/>
-                            <MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click"/>
                             <MenuFlyoutSeparator/>
                             <MenuFlyoutItem Text="Fields" Icon="ShowResults"  Click="MenuFlyoutItemFields_Click"/>
                             <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click"/>

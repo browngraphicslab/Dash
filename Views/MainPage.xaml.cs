@@ -20,6 +20,7 @@ using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -538,7 +539,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
-                if (!(FocusManager.GetFocusedElement() is TextBox))
+                if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     foreach (var doc in SelectionManager.SelectedDocs)
                     {
@@ -698,7 +699,11 @@ namespace Dash
                 Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
+                mapTimer.Tick += (ss, ee) =>
+                {
+                    var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
+                    cview?.ViewModel?.FitContents(cview);
+                };
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -739,7 +744,9 @@ namespace Dash
             {
                 //close presentation
                 xUtilTabColumn.Width = new GridLength(0);
-
+                var presView = Instance.xPresentationView;
+                presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                presView.RemoveLines();
             }
              
         }
@@ -778,13 +785,25 @@ namespace Dash
                 xErrorMessageIcon.Visibility = Visibility.Collapsed;
                 xErrorMessageText.Visibility = Visibility.Collapsed;
 
+                var remember = xSaveHtmlType.IsChecked ?? false;
+
                 if (xComboBox.SelectedIndex == 0)
                 {
+                    if (remember)
+                    {
+                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
+                        xSaveHtmlType.IsChecked = false;
+                    }
                     tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
                     xConfirmButton.Tapped -= XConfirmButton_OnClick;
                 }
                 else if (xComboBox.SelectedIndex == 1)
                 {
+                    if (remember)
+                    {
+                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
+                        xSaveHtmlType.IsChecked = false;
+                    }
                     tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
                     xConfirmButton.Tapped -= XConfirmButton_OnClick;
                 }
