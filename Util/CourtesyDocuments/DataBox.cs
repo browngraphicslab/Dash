@@ -82,6 +82,7 @@ namespace Dash
 			{
                 return RichTextBox.MakeView(documentController, context);
             }
+
             return new Grid();
         }
     }

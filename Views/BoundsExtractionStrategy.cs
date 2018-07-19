@@ -37,9 +37,10 @@ namespace Dash
             {
                 return;
             }
+            
+            var mainData = (TextRenderInfo)data;
 
-            var mainTextData = (TextRenderInfo)data;
-            foreach (var textData in mainTextData.GetCharacterRenderInfos())
+            foreach (var textData in mainData.GetCharacterRenderInfos())
             {
                 // top left corner of the bounding box
                 var start = textData.GetAscentLine().GetStartPoint();

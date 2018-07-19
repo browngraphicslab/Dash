@@ -76,7 +76,7 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private ObservableCollection<ImageSource> _pages = new ObservableCollection<ImageSource>();
+        private ObservableCollection<ImageSource> _pages;
         public ObservableCollection<ImageSource> Pages
         {
             get => _pages;
@@ -98,6 +98,7 @@ namespace Dash
 
         public CustomPdfView()
         {
+            _pages = new ObservableCollection<ImageSource>();
             this.InitializeComponent();
         }
 
@@ -105,6 +106,7 @@ namespace Dash
         {
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
+            _pages = new ObservableCollection<ImageSource>();
             DataDocument = document.GetDataDocument();
 			DocumentLoaded += (sender, e) =>
 			{
@@ -170,6 +172,8 @@ namespace Dash
             return AnnotationManager?.GetRegionDocument();
         }
 
+        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
+        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private async Task OnPdfUriChanged()
         {
             if (PdfUri == null)
@@ -206,17 +210,9 @@ namespace Dash
                 var page = pdfDocument.GetPage(i);
                 var size = page.GetPageSize();
                 maxWidth = Math.Max(maxWidth, size.GetWidth());
-                strategy.SetPage(i - 1, offset, size);
-                offset += page.GetPageSize().GetHeight() + 10;
-                processor.ProcessPageContent(page);
             }
 
             PdfMaxWidth = maxWidth;
-            PdfTotalHeight = offset - 10;
-            
-            _selectableElements = strategy.GetSelectableElements();
-            reader.Close();
-            pdfDocument.Close();
 
             _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
             await RenderPdf(null);
@@ -227,7 +223,25 @@ namespace Dash
                 ScrollViewer.UpdateLayout();
                 ScrollViewer.ChangeView(null, scrollRatio.Data * ScrollViewer.ExtentHeight, null, true);
 			}
-			DocumentLoaded?.Invoke(this, new EventArgs());
+
+            await Task.Run(() =>
+            {
+                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                {
+                    var page = pdfDocument.GetPage(i);
+                    var size = page.GetPageSize();
+                    strategy.SetPage(i - 1, offset, size);
+                    offset += page.GetPageSize().GetHeight() + 10;
+                    processor.ProcessPageContent(page);
+                }
+            });
+
+            _selectableElements = strategy.GetSelectableElements();
+
+            reader.Close();
+            pdfDocument.Close();
+            PdfTotalHeight = offset - 10;
+            DocumentLoaded?.Invoke(this, new EventArgs());
 		}
 
         private CancellationTokenSource _renderToken;
@@ -247,6 +261,7 @@ namespace Dash
             }
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
             {
+                Debug.WriteLine($"{i}/{_wPdfDocument.PageCount}");
                 if (token.IsCancellationRequested)
                 {
                     return;
@@ -366,9 +381,8 @@ namespace Dash
             {
                 return;
             }
-
-            TestSelectionCanvas.Children.Remove(_selectedRectangles[index]);
-            _selectedRectangles.Remove(index);
+            
+            _selectedRectangles[index].Visibility = Visibility.Collapsed;
         }
 
         private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
@@ -377,27 +391,30 @@ namespace Dash
         {
             if (_selectedRectangles.ContainsKey(index))
             {
+                _selectedRectangles[index].Visibility = Visibility.Visible;
+                if (!TestSelectionCanvas.Children.Contains(_selectedRectangles[index]))
+                {
+                    TestSelectionCanvas.Children.Add(_selectedRectangles[index]);
+                }
+
                 return;
             }
 
-            var ele = _selectableElements[index];
+            var elem = _selectableElements[index];
             var rect = new Rectangle
             {
-                Width = ele.Bounds.Width,
-                Height = ele.Bounds.Height
+                Width = elem.Bounds.Width,
+                Height = elem.Bounds.Height
             };
-            Canvas.SetLeft(rect, ele.Bounds.Left);
-            Canvas.SetTop(rect, ele.Bounds.Top);
+            Canvas.SetLeft(rect, elem.Bounds.Left);
+            Canvas.SetTop(rect, elem.Bounds.Top);
             rect.Fill = _selectionBrush;
 
+            _selectedRectangles.Add(index, rect);
             TestSelectionCanvas.Children.Add(rect);
-
-            _selectedRectangles[index] = rect;
         }
 
 
-        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
-        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
         private void SelectElements(int startIndex, int endIndex)
         {
@@ -463,7 +480,10 @@ namespace Dash
             _currentSelectionStart = -1;
             _currentSelectionEnd = -1;
             _selectionStartPoint = null;
-            _selectedRectangles.Clear();
+            foreach (var rect in _selectedRectangles.Values)
+            {
+                rect.Visibility = Visibility.Collapsed;
+            }
             TestSelectionCanvas.Children.Clear();
 			AnnotationManager.SetSelectionRegion(null);
         }

@@ -29,6 +29,11 @@
                                 <Image Source="{x:Bind}" Margin="0,0,0,10" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                     </ItemsControl>
                     <!--Annotation overlay for block annotations-->
                     <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
