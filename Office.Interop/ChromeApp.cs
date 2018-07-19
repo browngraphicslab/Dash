@@ -50,7 +50,6 @@ namespace OfficeInterop
 
         private void ProcessEvents()
         {
-            Debug.WriteLine("LOOOK HERE-- M ");
             Debug.Assert(_client.State == WebSocketState.Open);
             byte[] rbuffer = new byte[512];
             string receiveString = "";
