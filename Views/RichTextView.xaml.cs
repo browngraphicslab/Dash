@@ -52,7 +52,7 @@ namespace Dash
         /// </summary>
         public RichTextView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Loaded += OnLoaded;
             Unloaded += UnLoaded;
 

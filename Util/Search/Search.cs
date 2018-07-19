@@ -169,9 +169,9 @@ namespace Dash
                     switch (name)
                     {
                         case "before":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data.ToString(), 1));
                         case "after":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data.ToString(), 1));
                     }
                     return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
                 }

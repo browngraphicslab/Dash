@@ -47,7 +47,10 @@ namespace Dash
         public static KeyController InkDataKey = new KeyController("_InkData", "1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6");
         public static KeyController ParsedFieldsKey = new KeyController("_Parsed Fields", "385D06F3-96A7-4ADF-B806-50DAB4488FD6");
         public static KeyController WebContextKey = new KeyController("_WebContext", "EFD56382-F8BA-45D2-86D3-085974EF4D9D");
-        public static KeyController ModifiedTimestampKey = new KeyController("ModifiedTime", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
+        public static KeyController DateModifiedKey = new KeyController("Date Modified", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
+        public static KeyController DateCreatedKey = new KeyController("Date Created", "1F322339-3FB0-4F70-918E-580D70F961EC");
+        public static KeyController AuthorKey = new KeyController("Author", "930E9E5F-06F5-4D61-A56A-8759FC4CC8DC");
+        public static KeyController VisibleTypeKey = new KeyController("Type", "B0150ECC-900E-42C4-9B86-824438647C12");
         public static KeyController LastWorkspaceKey = new KeyController("_Last Workspace", "66F05DB2-2F68-4E37-985D-36303A1AF4E4");
         public static KeyController WorkspaceHistoryKey = new KeyController("_Workspace History", "D0630828-1488-4F7B-B0D7-9E89EF05497F");
         public static KeyController PanPositionKey = new KeyController("_Pan Position", "8778D978-AEA2-470C-8DBD-C684131BA9B4");
