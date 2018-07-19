@@ -218,7 +218,7 @@ namespace Dash
                 }
 
                 vtype.Click += VType_OnClick;
-                vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
+                //vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
                 viewCollectionAs.Items.Add(vtype);
             }
 
