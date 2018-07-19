@@ -740,7 +740,9 @@ namespace Dash
             {
                 //close presentation
                 xUtilTabColumn.Width = new GridLength(0);
-
+                var presView = Instance.xPresentationView;
+                presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                presView.RemoveLines();
             }
              
         }
@@ -779,13 +781,25 @@ namespace Dash
                 xErrorMessageIcon.Visibility = Visibility.Collapsed;
                 xErrorMessageText.Visibility = Visibility.Collapsed;
 
+                var remember = xSaveHtmlType.IsChecked ?? false;
+
                 if (xComboBox.SelectedIndex == 0)
                 {
+                    if (remember)
+                    {
+                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
+                        xSaveHtmlType.IsChecked = false;
+                    }
                     tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
                     xConfirmButton.Tapped -= XConfirmButton_OnClick;
                 }
                 else if (xComboBox.SelectedIndex == 1)
                 {
+                    if (remember)
+                    {
+                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
+                        xSaveHtmlType.IsChecked = false;
+                    }
                     tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
                     xConfirmButton.Tapped -= XConfirmButton_OnClick;
                 }

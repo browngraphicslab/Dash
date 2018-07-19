@@ -261,7 +261,6 @@ namespace Dash
             var scaleMatrix = scale.GetMatrix();
             if (zoom)
             {
-
                 //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
                 //the higher number, the more it xooms, but doesn't actually change final view 
                 var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
