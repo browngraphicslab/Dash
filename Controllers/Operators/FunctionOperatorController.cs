@@ -67,6 +67,7 @@ namespace Dash
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [ResultKey] = TypeInfo.Any,
@@ -84,7 +85,7 @@ namespace Dash
                 //if not expected type , don't run
                 if (expectedType != TypeInfo.Any && value.TypeInfo != expectedType)
                 {
-                    throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType));
+                    throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType + ". Potentially other mismatched parameters."));
                 }
                 scope?.DeclareVariable(_inputNames[i], value);
             }

@@ -96,9 +96,22 @@ namespace Dash
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
                 getDocView().CacheMode = null;
+                ClearSearchHighlights();
+                SetSelected("");
+                xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
-            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
+            xRichEditBox.LostFocus += delegate
+            {
+                if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
+            };
+
+            xSearchBox.LostFocus += (s, e) =>
+            {
+                ClearSearchHighlights();
+                SetSelected("");
+                xSearchBoxPanel.Visibility = Visibility.Collapsed;
+            };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 

@@ -19,7 +19,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-             var typeInfo = TypeInfo.Any;
+             var typeInfo = TypeInfo.None;
             //  execute each element in list if it isn't null
             var outputList = new List<FieldControllerBase>();
             foreach (var elem in list)
@@ -38,6 +38,8 @@ namespace Dash
                     }
                 }
             }
+
+            typeInfo = typeInfo == TypeInfo.None ? TypeInfo.Any : typeInfo;
 
             var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
             foreach (var item in outputList)

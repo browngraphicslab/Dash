@@ -557,6 +557,7 @@ namespace Dash
                 if (CheckSpecialCommands(command))
                 {
                     ScrollToBottom();
+                    e.Handled = true;
                     return;
                 }
 
