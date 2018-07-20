@@ -98,7 +98,17 @@ namespace Dash
                 getDocView().CacheMode = null;
             };
 
-            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
+            xRichEditBox.LostFocus += delegate {
+                var docView = getDocView();
+                if (docView != null) getDocView().CacheMode = new BitmapCache();
+                if ((string.IsNullOrEmpty(getReadableText())))
+                {
+                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    {
+                        docView.DeleteDocument(false);
+                    }
+                }
+            };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -109,7 +119,7 @@ namespace Dash
                 {
                     var docView = getDocView();
                     if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
-                        docView.DeleteDocument(true);
+                        docView.SetSelectionBorder(true);
                 }
                 e.Handled = true;
             };

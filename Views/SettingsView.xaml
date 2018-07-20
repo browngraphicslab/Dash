@@ -36,12 +36,21 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource CollectionBackgroundBrush}" Padding="50">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource TitleStyle}">SETTINGS</TextBlock>
-        <StackPanel Orientation="Horizontal" Padding="20">
-            
-
+        <!--<StackPanel Orientation="Horizontal" Padding="20">-->
+        <GridView Grid.Row="1" CanDragItems="False" CanReorderItems="False" AllowFocusOnInteraction="False" SelectionMode="None">
+            <!--<GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid VerticalAlignment="Top" Width="Auto" Height="Auto"></Grid>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>-->
             <!--UI-->
-            <StackPanel x:Name="xCustomizeDisplayContent" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
+            <GridViewItem Width="Auto">
+                <StackPanel x:Name="xCustomizeDisplayContent" Height="500" Padding="0,0,10,0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Night Mode</TextBlock>
                 <ToggleSwitch x:Name="xNightModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
@@ -63,30 +72,36 @@
                 </StackPanel>
                 <Slider x:Name="xBackgroundOpacitySlider" Margin="10, 10, 0, 0" Header="Background Opacity" Maximum="1" Minimum="0" HorizontalAlignment="Left" Width="150" StepFrequency="0.05"></Slider>
             </StackPanel>
-
+            </GridViewItem>
+            
             <!--Controls-->
-            <StackPanel x:Name="xCustomizeControlsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
-                <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Mouse scroll mode</TextBlock>
-                <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
-                    <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
-                    <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
+            <GridViewItem Width="Auto">
+
+                <StackPanel x:Name="xCustomizeControlsContent" Height="500" Padding="0,0,10,0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
+                    <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Mouse scroll mode</TextBlock>
+                    <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
+                        <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
+                        <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
+                    </StackPanel>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Allow infinite upwards panning</TextBlock>
+                    <ToggleSwitch x:Name="xUpwardPanningToggle" Margin="10, 0, 0, 0"/>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Webpage import mode</TextBlock>
+                    <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
+                        <RadioButton x:Name="xRTFImport" GroupName="WebpageLayout">RTF Format</RadioButton>
+                        <RadioButton x:Name="xHTMLImport" GroupName="WebpageLayout">HTML Format</RadioButton>
+                        <RadioButton x:Name="xDefaultImport" GroupName="WebpageLayout"  IsChecked="True">Ask when Imported</RadioButton>
+                    </StackPanel>
+                    <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
+                    <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
+
                 </StackPanel>
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Allow infinite upwards panning</TextBlock>
-                <ToggleSwitch x:Name="xUpwardPanningToggle" Margin="10, 0, 0, 0"/>
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Webpage import mode</TextBlock>
-                <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
-                    <RadioButton x:Name="xRTFImport" GroupName="WebpageLayout">RTF Format</RadioButton>
-                    <RadioButton x:Name="xHTMLImport" GroupName="WebpageLayout">HTML Format</RadioButton>
-                    <RadioButton x:Name="xDefaultImport" GroupName="WebpageLayout"  IsChecked="True">Ask when Imported</RadioButton>
-                </StackPanel>
-                <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
-                <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
-                
-            </StackPanel>
+            </GridViewItem>
 
             <!--Backup-->
-                <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
+            <GridViewItem Width="Auto">
+
+                <StackPanel x:Name="xManageBackupsContent" Height="500" Padding="0,0,10,0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
                     <TextBlock Style="{StaticResource SubheaderStyle}">Database and Backups</TextBlock>
                     <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Erase current database</TextBlock>
                     <StackPanel Orientation="Horizontal">
@@ -138,7 +153,9 @@
                     StepFrequency="30"
                     SnapsTo="StepValues"/>
                 </StackPanel>
-        </StackPanel>
+            </GridViewItem>
+            <!--</StackPanel>-->
+        </GridView>
     </Grid>
 </Page>
 
