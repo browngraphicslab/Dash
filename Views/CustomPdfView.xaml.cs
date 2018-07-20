@@ -87,7 +87,7 @@ namespace Dash
             }
         }
 
-        private List<SelectableElement> _selectableElements;
+        public List<SelectableElement> SelectableElements = new List<SelectableElement>();
 
         public VisualAnnotationManager AnnotationManager { get; }
 
@@ -106,8 +106,7 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _pages = new DataVirtualizationSource<ImageSource>();
-            _pages.CollectionChanged += _pages_CollectionChanged;
+            _pages = new DataVirtualizationSource<ImageSource>(this);
 			DocumentLoaded += (sender, e) =>
 			{
 				AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -126,17 +125,10 @@ namespace Dash
 			            MakeRegionMarker(offset, region);
 			        }
 			    }
-
-			    //PageItemsControl.ItemsSource = Pages.ToList();
 			};
 
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
 		}
-
-        private void _pages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            PageItemsControl.ItemsSource = Pages.Get();
-        }
 
         private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
@@ -208,17 +200,18 @@ namespace Dash
                 }
             }
 
-            PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
+            var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
+            Strategy = strategy;
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
             double maxWidth = 0;
-            for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+            for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                _height = page.GetPageSize().GetHeight();
-                _width = page.GetPageSize().GetWidth();
+                Pages.Height = page.GetPageSize().GetHeight();
+                Pages.Width = page.GetPageSize().GetWidth();
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
@@ -236,7 +229,7 @@ namespace Dash
 
             await Task.Run(() =>
             {
-                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
                     var size = page.GetPageSize();
@@ -246,13 +239,13 @@ namespace Dash
                 }
             });
 
-            _selectableElements = strategy.GetSelectableElements();
-
             reader.Close();
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
 		}
+
+        public BoundsExtractionStrategy Strategy { get; set; }
 
         private CancellationTokenSource _renderToken;
         private int _currentPageCount = -1;
@@ -267,7 +260,7 @@ namespace Dash
             if (add)
             {
                 _currentPageCount = (int)_wPdfDocument.PageCount;
-                //Pages.Clear();
+                Pages.Clear();
             }
 
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
@@ -289,10 +282,10 @@ namespace Dash
                     return;
                 }
 
-                _pages.Add(source);
+                _pages.Width = options.DestinationWidth;
+                _pages.Height = options.DestinationHeight;
+                _pages[(int) i] = source;
             }
-
-             PageItemsControl.ItemsSource = Pages.Get();
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -363,7 +356,7 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in _selectableElements)
+            foreach (var selectableElement in SelectableElements)
             {
                 var b = selectableElement.Bounds;
                 if (b.Contains(p))
@@ -406,14 +399,14 @@ namespace Dash
                 return;
             }
 
-            var elem = _selectableElements[index];
+            var elem = SelectableElements[index];
             var rect = new Rectangle
             {
                 Width = elem.Bounds.Width,
                 Height = elem.Bounds.Height
             };
-            Canvas.SetLeft(rect, elem.Bounds.Left);
-            Canvas.SetTop(rect, elem.Bounds.Top);
+            Canvas.SetLeft(rect, elem.Bounds.X);
+            Canvas.SetTop(rect, elem.Bounds.Y);
             rect.Fill = _selectionBrush;
 
             _selectedRectangles.Add(index, rect);
@@ -498,7 +491,7 @@ namespace Dash
 		{
 			if (_currentSelectionStart == -1) return;//Not currently selecting anything
 			_selectionStartPoint = null;
-            AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
+            AnnotationManager.SetSelectionRegion(SelectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
         }
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -520,7 +513,7 @@ namespace Dash
 
                 for (var i = closest.Index; i >= 0; --i)
                 {
-                    var selectableElement = _selectableElements[i];
+                    var selectableElement = SelectableElements[i];
                     if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
                     {
                         SelectIndex(selectableElement.Index);
@@ -533,7 +526,7 @@ namespace Dash
 
                 for (var i = closest.Index; i >= 0; ++i)
                 {
-                    var selectableElement = _selectableElements[i];
+                    var selectableElement = SelectableElements[i];
                     if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
                     {
                         SelectIndex(selectableElement.Index);
@@ -638,60 +631,17 @@ namespace Dash
         private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
-            //var startIndex = 0;
-            //var endIndex = 1;
-            //var scale = e.NewSize.Width / _width;
-            //var height = _height * scale;
-            //var temp = _verticalOffset;
-            //while (temp - height > 0)
-            //{
-            //    temp -= height;
-            //    startIndex++;
-            //}
-
-            //var endHeight = ScrollViewer.ViewportHeight + _verticalOffset;
-            //while (endHeight - height > 0)
-            //{
-            //    endHeight -= height;
-            //    endIndex++;
-            //}
-
-            //Pages.RangesChanged(new ItemIndexRange(startIndex, (uint)(endIndex - startIndex)),
-            //    new List<ItemIndexRange>());
-            //PageItemsControl.ItemsSource = Pages.ToList();
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _verticalOffset = e.FinalView.VerticalOffset;
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
             LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
-            //var startIndex = 0;
-            //var endIndex = 1;
-            //var scale = ScrollViewer.ViewportWidth / _width;
-            //var height = _height * scale;
-            //var temp = e.FinalView.VerticalOffset;
-            //while (temp - height > 0)
-            //{
-            //    temp -= height;
-            //    startIndex++;
-            //}
-
-            //var endHeight = ScrollViewer.ViewportHeight + e.FinalView.VerticalOffset;
-            //while (endHeight - height > 0)
-            //{
-            //    endHeight -= height;
-            //    endIndex++;
-            //}
-
-            //Pages.RangesChanged(new ItemIndexRange(startIndex, (uint) (endIndex - startIndex)),
-            //    new List<ItemIndexRange>());
-            //PageItemsControl.ItemsSource = Pages.ToList();
         }
 
         public async void UnFreeze()
         {
-            //await RenderPdf(ScrollViewer.ActualWidth);
+            await RenderPdf(ScrollViewer.ActualWidth);
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -705,7 +655,7 @@ namespace Dash
                     StringBuilder sb = new StringBuilder();
                     for (var i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
                     {
-                        var selectableElement = _selectableElements[i];
+                        var selectableElement = SelectableElements[i];
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);
@@ -718,7 +668,7 @@ namespace Dash
                 }
                 else if (e.Key == VirtualKey.A)
                 {
-                    SelectElements(0, _selectableElements.Count - 1);
+                    SelectElements(0, SelectableElements.Count - 1);
                     e.Handled = true;
                 }
             }

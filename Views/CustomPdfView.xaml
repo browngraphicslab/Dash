@@ -16,21 +16,15 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <ScrollViewer x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging">
+        <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
             <Viewbox Grid.Column="0" Stretch="UniformToFill">
                 <!--This Grid will have the width and height of the pdf that is being displayed-->
                 <Grid x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                       PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
                     <!-- ItemsControl that stores the page images -->
-                    <ListView IsItemClickEnabled="False" x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}"
-                                  SelectionMode="None">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="ImageSource">
-                                <Image Source="{x:Bind}" Margin="0,0,0,10" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ListView>
+                    <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public">
+                    </ItemsControl>
                     <!--Annotation overlay for block annotations-->
                     <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
                     <!--Canvas for doing text selection-->

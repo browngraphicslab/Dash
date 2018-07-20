@@ -8,235 +8,269 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using Org.BouncyCastle.Security;
 
 namespace Dash
 {
-    public class DataVirtualizationSource<T> : IList, INotifyPropertyChanged, INotifyCollectionChanged, IItemsRangeInfo
+    public class DataVirtualizationSource<T>
     {
-        public ItemIndexRange VisibleItemsRange;
-        public IReadOnlyList<ItemIndexRange> TrackedItems;
-        private ObservableCollection<ImageSource> _cachedItems;
         private ObservableCollection<ImageSource> _images;
-        private int _bufferSize = 2;
+        private ObservableCollection<UIElement> _visibleElements;
+        private ScrollViewer _scrollViewer;
+        private int bufferSize = 1;
         private int _startIndex;
         private int _endIndex;
+        private CustomPdfView _view;
 
-        public DataVirtualizationSource()
+        public double Width { get; set; }
+        public double Height { get; set; }
+        private double _verticalOffset;
+
+        public DataVirtualizationSource(CustomPdfView view)
         {
+            _view = view;
+            _scrollViewer = view.ScrollViewer;
             _images = new ObservableCollection<ImageSource>();
-            _cachedItems = new ObservableCollection<ImageSource>();
-        }
-        
-        public void Dispose()
-        {
-            _cachedItems.Clear();
+            _visibleElements = new ObservableCollection<UIElement>();
+            view.PageItemsControl.ItemsSource = _visibleElements;
+            view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
+            view.SizeChanged += View_SizeChanged;
+            view.Loaded += View_Loaded;
         }
 
-        public void RangesChanged(ItemIndexRange visibleRange, IReadOnlyList<ItemIndexRange> trackedItems)
+        private void View_Loaded(object sender, RoutedEventArgs e)
         {
-            var startIndex = visibleRange.FirstIndex;
-            var endIndex = visibleRange.FirstIndex + visibleRange.Length;
-            foreach (var itemIndexRange in trackedItems)
+            var startIndex = 0;
+            var endIndex = 1;
+            var scale = _scrollViewer.ViewportWidth / Width;
+            var height = Height * scale;
+            var temp = _verticalOffset;
+            while (temp - height > 0)
             {
-                startIndex = Math.Min(startIndex, itemIndexRange.FirstIndex);
-                endIndex = Math.Max(endIndex, itemIndexRange.LastIndex);
+                temp -= height;
+                startIndex++;
             }
 
-            startIndex = Math.Max(startIndex - _bufferSize, 0);
-            endIndex = Math.Min(endIndex + _bufferSize, Count);
+            var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
+            while (endHeight - height > 0)
+            {
+                endHeight -= height;
+                endIndex++;
+            }
 
-            if (startIndex == _startIndex && endIndex == _endIndex)
+            _startIndex = startIndex;
+            _endIndex = endIndex;
+        }
+
+        private void View_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var startIndex = 0;
+            var endIndex = 1;
+            var scale = e.NewSize.Width / Width;
+            var height = Height * scale;
+            var temp = _verticalOffset;
+            while (temp - height > 0)
+            {
+                temp -= height;
+                startIndex++;
+            }
+
+            var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
+            while (endHeight - height > 0)
+            {
+                endHeight -= height;
+                endIndex++;
+            }
+
+            RenderIndices(startIndex, endIndex);
+
+            _startIndex = startIndex;
+            _endIndex = endIndex;
+        }
+
+        private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        {
+            _verticalOffset = e.FinalView.VerticalOffset;
+            var startIndex = 0;
+            var endIndex = 1;
+            var scale = _scrollViewer.ViewportWidth / Width;
+            var height = Height * scale;
+            var temp = e.FinalView.VerticalOffset;
+            while (temp - height > 0)
+            {
+                temp -= height;
+                startIndex++;
+            }
+
+            var endHeight = _scrollViewer.ViewportHeight + e.FinalView.VerticalOffset;
+            while (endHeight - height > 0)
+            {
+                endHeight -= height;
+                endIndex++;
+            }
+
+            RenderIndices(startIndex, endIndex);
+
+            _startIndex = startIndex;
+            _endIndex = endIndex;
+        }
+
+        private void RenderIndices(int startIndex, int endIndex)
+        {
+            if (!_visibleElements.Any())
             {
                 return;
             }
 
-            var length = endIndex - startIndex;
-            var newImages = new List<ImageSource>();
-            var createdImages = new List<KeyValuePair<int, ImageSource>>();
-            var images = _images;
-            for (var i = 0; i < length; ++i)
+            startIndex = Math.Max(startIndex - bufferSize, 0);
+            endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
+
+            var startOffset = Math.Abs(_startIndex - startIndex);
+            var startStart = Math.Min(_startIndex, startIndex);
+            if (_startIndex > startIndex)
             {
-                if (i + startIndex >= _startIndex && i + startIndex < _endIndex)
+                _view.SelectableElements.InsertRange(0, _view.Strategy.GetSelectableElements(startStart, startStart + startOffset));
+            }
+            else if (_startIndex < startIndex)
+            {
+                var removeFromStart = _view.Strategy.GetSelectableElements(startStart, startOffset);
+                _view.SelectableElements = _view.SelectableElements.Skip(removeFromStart.Count).ToList();
+            }
+
+            var endOffset = Math.Abs(_endIndex - endIndex);
+            var endStart = Math.Min(_startIndex, startIndex);
+            if (_endIndex < endIndex)
+            {
+                _view.SelectableElements.AddRange(_view.Strategy.GetSelectableElements(endStart, endStart + endOffset));
+            }
+            else if (_endIndex > endIndex)
+            {
+                var removeFromEnd = _view.Strategy.GetSelectableElements(endStart, endOffset);
+                _view.SelectableElements = _view.SelectableElements.SkipLast(removeFromEnd.Count).ToList();
+            }
+
+            for (var i = startIndex; i < endIndex; i++)
+            {
+                if (_visibleElements[i] is Image img)
                 {
-                    newImages.Add(_cachedItems[i + startIndex - _startIndex]);
+                    if (img.Source != _images[i])
+                    {
+                        img.Source = _images[i];
+                    }
                 }
                 else
                 {
-                    newImages.Add(_cachedItems[startIndex + i]);
-                    createdImages.Add(new KeyValuePair<int, ImageSource>(i + startIndex, _cachedItems  [startIndex + i]));
+                    _visibleElements[i] = new Image
+                    {
+                        Source = _images[i],
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
                 }
             }
 
-            _images = new ObservableCollection<ImageSource>(newImages);
-
-            _startIndex = startIndex;
-            _endIndex = (int) endIndex;
-
-            VisibleItemsRange = visibleRange;
-            TrackedItems = trackedItems;
-
-            foreach (var createdImage in createdImages)
+            for (var i = 0; i < _images.Count; i++)
             {
-                CollectionChanged?.Invoke(this,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, createdImage.Value,
-                        null, createdImage.Key));
+                if (i < startIndex || i > endIndex)
+                {
+                    if (_visibleElements[i] is Image img)
+                    {
+                        _visibleElements[i] = new Rectangle
+                        {
+                            Width = img.ActualWidth,
+                            Height = img.ActualHeight,
+                            Margin = new Thickness(0, 0, 0, 10)
+                        };
+                    }
+                }
             }
         }
 
-        public void Insert(int index, ImageSource item)
+        public void Add(ImageSource newImage)
         {
-            throw new NotImplementedException();
+            if (!_images.Contains(newImage))
+            {
+                _images.Add(newImage);
+                var i = _images.IndexOf(newImage);
+                if (_visibleElements.Count <= i)
+                {
+                    _visibleElements.Add(new Image
+                    {
+                        Source = newImage,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    });
+                }
+                else if (_visibleElements[i] is Image img)
+                {
+                    if (img.Source != newImage)
+                    {
+                        img.Source = newImage;
+                    }
+                }
+            }
         }
 
-        public void Remove(object value)
+        public void Clear()
         {
-            throw new NotImplementedException();
+            _images.Clear();
         }
 
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsFixedSize { get; }
-
-        public ImageSource this[int index]
+        public BitmapImage this[int i]
         {
             get
             {
-
-                if (index < 0 || index >= Count)
+                if (_images.Count <= i)
+                {
+                    return _images[i] as BitmapImage;
+                }
+                else
                 {
                     throw new IndexOutOfRangeException();
                 }
-                if (index < _startIndex || index >= _endIndex)
-                {
-                    return null;
-                }
-                return _cachedItems[index];
             }
             set
             {
-                var imgSrc = value as ImageSource;
-                if (imgSrc != null)
+                if (_images.Count > i)
                 {
-                    _cachedItems[index] = imgSrc;
-                    //CollectionChanged?.Invoke(this,
-                    //    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, imgSrc, i ndex));
+                    if (!_images[i].Equals(value))
+                    {
+                        _images[i] = value;
+                        if (_visibleElements[i] is Image img)
+                        {
+                            img.Source = value;
+                        }
+                    }
+                }
+                else if (value != null)
+                {
+                    _images.Add(value);
+                    if ((_startIndex != null && _startIndex <= i) && (_endIndex != null && _endIndex >= i))
+                    {
+                        _visibleElements.Add(new Image {Source = value, Margin = new Thickness(0, 0, 0, 10)});
+                    }
+                    else
+                    {
+                        _visibleElements.Add(new Rectangle
+                        {
+                            Width = Width,
+                            Height = Height,
+                            Margin = new Thickness(0, 0, 0, 10)
+                        });
+                    }
                 }
                 else
                 {
                     throw new InvalidParameterException();
                 }
             }
-        }
-
-        object IList.this[int index]
-        {
-            get => this[index];
-            set => throw new NotImplementedException();
-        }
-
-        public void Add(ImageSource item)
-        {
-            if (item != null)
-            {
-                _images.Add(item);
-                _cachedItems.Add(item);
-                OnPropertyChanged(nameof(Count));
-                OnPropertyChanged("Item[]");
-                //CollectionChanged?.Invoke(this,
-                //    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _images.IndexOf(item)));
-            }
-            else
-            {
-                throw new InvalidParameterException();
-            }
-        }
-
-        public int Add(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Clear()
-        {
-            _cachedItems.Clear();
-        }
-
-        public bool Contains(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int IndexOf(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(int index, object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Contains(ImageSource item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(ImageSource item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int Count
-        {
-            get => _cachedItems.Count;
-        }
-
-        public bool IsSynchronized { get; }
-        public object SyncRoot { get; }
-        public bool IsReadOnly { get; }
-
-        public IEnumerator GetEnumerator()
-        {
-            return _cachedItems.GetEnumerator();
-        }
-
-        public new virtual IList ToList()
-        {
-            return _cachedItems;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        public ObservableCollection<ImageSource> Get()
-        {
-            return _images;
         }
     }
 }

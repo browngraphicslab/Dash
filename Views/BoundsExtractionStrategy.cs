@@ -20,6 +20,7 @@ namespace Dash
         private List<SelectableElement> _elements = new List<SelectableElement>();
         private List<Rectangle> _pages = new List<Rectangle>();
         private double _smallestSpaceWidth;
+        public List<int> ElementCounts = new List<int>();
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {
@@ -104,10 +105,11 @@ namespace Dash
             }
         }
 
-        public List<SelectableElement> GetSelectableElements()
+        public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
         {
             var pageElements = new List<List<SelectableElement>>();
-            foreach (var page in _pages)
+            var requestedPages = _pages.GetRange(startPage, endPage - startPage);
+            foreach (var page in requestedPages)
             {
                 foreach (var selectableElement in _elements)
                 {
@@ -131,10 +133,17 @@ namespace Dash
                 }
             }
 
+            for (var i = 0; i < startPage; i++)
+            {
+                ElementCounts.Add(0);
+            }
+
             var elements = new List<SelectableElement>(_elements.Count);
             foreach (var page in pageElements)
             {
-                elements.AddRange(GetSelectableElements(page, elements.Count));
+                var newElements = GetSelectableElements(page, elements.Count);
+                elements.AddRange(newElements);
+                ElementCounts.Add(newElements.Count);
             }
 
             return elements;
@@ -204,7 +213,7 @@ namespace Dash
 
                 // find the average font size of the line's elements
                 var currFontWidth = AverageFontSize(line);
-                foreach (var selectableElement in line)
+                foreach (var selectableElement in line.Skip(1))
                 {
                     // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
                     if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 2.75 * currFontWidth)
@@ -240,7 +249,9 @@ namespace Dash
                     (float) (prevElem.Bounds.Y + prevElem.Bounds.Height), 0);
                 foreach (var selectableElement in column.Skip(1))
                 {
-                    if (selectableElement.Bounds.X - prevElem.Bounds.X <= 1 && selectableElement.Bounds.Y - prevElem.Bounds.Y > selectableElement.Bounds.Height / 2)
+                    if (selectableElement.Bounds.X - prevElem.Bounds.X <= 1 && Math.Abs(
+                            selectableElement.Bounds.Y - prevElem.Bounds.Y) < selectableElement.Bounds.Height / 2 &&
+                        prevElem.Contents as string == selectableElement.Contents as string)
                     {
                         var index = matchingColumn.IndexOf(selectableElement);
                         matchingColumn.RemoveAt(index);
@@ -263,10 +274,10 @@ namespace Dash
                             }
                             matchingColumn.Insert(index, new SelectableElement(-1, lnBr, bounds));
                         }
+                        prevElem = selectableElement;
+                        prevLineY = new Vector((float)selectableElement.Bounds.Y,
+                            (float)(selectableElement.Bounds.Y + selectableElement.Bounds.Height), 0);
                     }
-                    prevElem = selectableElement;
-                    prevLineY = new Vector((float)selectableElement.Bounds.Y,
-                        (float)(selectableElement.Bounds.Y + selectableElement.Bounds.Height), 0);
                 }
             }
 
@@ -282,7 +293,7 @@ namespace Dash
                     elements.Add(selectableElement);
                 }
             }
-
+            
             return elements;
         }
 
@@ -291,19 +302,21 @@ namespace Dash
             var cumulativeWidth = 0.0;
             var numberOfSpaces = 0;
             // skip the first and last items for simplicity
-            for (var i = 1; i < line.Count - 1; i++)
+            for (var i = 0; i < line.Count - 1; i++)
             {
                 // if the distance between the left and the right element is greater than the width of the ith element
-                if (Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width)) >  line[i].Bounds.Width)
+                if (Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width)) > 1 &&
+                    Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width)) <
+                    2 * line[i].Bounds.Width)
                 {
                     // add that distance to the cumulative width
-                    cumulativeWidth += Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width));
+                    cumulativeWidth += Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width));
                     numberOfSpaces++;
                 }
             }
-
+            
             // return the average of each space width
-            return cumulativeWidth / numberOfSpaces;
+            return 2;
         }
     }
 }
