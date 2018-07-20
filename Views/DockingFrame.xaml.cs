@@ -94,7 +94,8 @@ namespace Dash
                             Width = Double.NaN,
                             Height = Double.NaN,
                             DisableDecorations = true
-                        }
+                        },
+				ShowResize = false
             };
 
             DockedView dockedView = new DockedView(dir, toDock);

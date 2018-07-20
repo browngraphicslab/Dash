@@ -37,14 +37,15 @@ namespace Dash
 
 		protected static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
 		{
-			var contentBinding = new FieldBinding<TextController>()
+			var converter = new DataFieldToMakeViewConverter(docController, context);
+
+			var contentBinding = new FieldBinding<FieldControllerBase>()
 			{
 				Key = KeyStore.DataKey,
 				Document = docController,
-				Converter = new DataFieldToMakeViewConverter(docController, context),
+				Converter = converter,
 				Mode = BindingMode.TwoWay,
 				Context = context,
-				FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
 			};
 			presenter.AddFieldBinding(ContentPresenter.ContentProperty, contentBinding);
 		}

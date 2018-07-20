@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -74,6 +75,7 @@ namespace Dash
 						Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
                     var fieldData = field.GetValue(context);
+	                if (converter is DataFieldToMakeViewConverter) fieldData = field;
                     var xamlData = converter == null || fieldData == null
                         ? fieldData
                         : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
