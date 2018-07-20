@@ -587,6 +587,7 @@
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ILinkHandler.cs" />
     <Compile Include="Views\ImageNode.xaml.cs">
       <DependentUpon>ImageNode.xaml</DependentUpon>
     </Compile>

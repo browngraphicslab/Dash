@@ -22,6 +22,8 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl, IAnnotatable
     {
+        #region Intilization 
+
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
@@ -61,6 +63,7 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
+       
 
             Application.Current.Suspending += (sender, args) =>
             {
@@ -93,12 +96,15 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
                 getDocView().CacheMode = null;
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                Clipboard.ContentChanged += Clipboard_ContentChanged;
             };
 
             xRichEditBox.LostFocus += delegate
@@ -111,6 +117,7 @@ namespace Dash
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
@@ -233,6 +240,8 @@ namespace Dash
             _lastXamlRTFText = xamlRTF;
         }
 
+        #endregion
+
         #region eventhandlers
         string _lastXamlRTFText = "";
         static void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
@@ -242,7 +251,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
             {
                 var s1 = xRichEditBox.Document.Selection.StartPosition;
                 var s2 = xRichEditBox.Document.Selection.EndPosition;
@@ -441,6 +450,11 @@ namespace Dash
                 xRichEditBox.Document.Selection.TypeText("\t");
                 e.Handled = true;
             }
+            else if (e.Key == VirtualKey.Space)
+            {
+                xRichEditBox.Document.Selection.TypeText(Convert.ToChar(160).ToString());
+                e.Handled = true;
+            }
             else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
             {
                 switch (e.Key)
@@ -473,6 +487,19 @@ namespace Dash
             }
         }
 
+        private async void Clipboard_ContentChanged(object sender, object e)
+        {
+            Clipboard.ContentChanged -= Clipboard_ContentChanged;
+            var dataPackage = new DataPackage();
+            DataPackageView clipboardContent = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            dataPackage.SetText(await clipboardContent.GetTextAsync());
+            //set RichTextView property to this view
+            dataPackage.Properties[nameof(RichTextView)] = this;
+            Clipboard.SetContent(dataPackage);
+            Clipboard.ContentChanged += Clipboard_ContentChanged;
+        }
+
+
         #endregion
 
         #region load/unload
@@ -480,20 +507,45 @@ namespace Dash
         {
             MatchQuery(getSelected());
         }
+        public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            IsLoaded = false;
             ClearSearchHighlights(true);
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
         }
 
+        public const string HyperlinkMarker = "<hyperlink marker>";
+
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            IsLoaded = true;
+
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+            _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
+            this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+            if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
+            {
+                var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+
+                //this does better formatting/ parsing than the regex stuff can
+                var link =  CollectionViewModel.GetTitlesUrl(url);
+
+                this.xRichEditBox.Document.Selection.Text = link;
+                this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
+                this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
+            }
+
+            
         }
 
         #endregion

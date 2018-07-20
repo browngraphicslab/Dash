@@ -27,5 +27,7 @@ namespace Dash
         DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType);
 
 	    event PointerEventHandler NewRegionStarted;
+
+	    DocumentView GetDocView();
     }
 }

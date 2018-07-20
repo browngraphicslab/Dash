@@ -12,6 +12,7 @@ using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
 using Windows.UI.Core;
+using Dash.Converters;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -54,6 +55,7 @@ namespace Dash
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
+	        var color = xOuterGrid.Background;
         }
 
         /// <summary>
@@ -80,6 +82,7 @@ namespace Dash
                     if (parentParentFreeform != null)
                         CurrentView.ManipulationMode = ManipulationModes.None;
             }
+
         }
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -92,6 +95,8 @@ namespace Dash
         {
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
+
+	       // var docView = this.GetFirstAncestorOfType<DocumentView>();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocument == null)
@@ -327,7 +332,7 @@ namespace Dash
                 case CollectionViewType.Freeform:
                     if (CurrentView is CollectionFreeformView) return;
                     CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
-                    break;
+					break;
                 case CollectionViewType.Grid:
                     if (CurrentView is CollectionGridView) return;
                     CurrentView = new CollectionGridView();

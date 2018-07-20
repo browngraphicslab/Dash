@@ -4,7 +4,9 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 using System;
+using Windows.UI;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using static Dash.DocumentController;
 
@@ -64,9 +66,8 @@ namespace Dash
                 {
                     docController.RemoveFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
                 };
-
-
-                return view;
+				
+				return view;
             }
 
             return null;
