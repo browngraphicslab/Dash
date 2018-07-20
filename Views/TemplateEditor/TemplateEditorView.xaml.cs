@@ -1100,7 +1100,15 @@ namespace Dash
 	        {
 		        docView.ViewModel.DocumentController.SetWidth(250);
 		        docView.ViewModel.DocumentController.SetHeight(100);
-			}
+			}  else if (docView.ViewModel.Content is CustomPdfView)
+	        {
+		        docView.ViewModel.DocumentController.SetWidth(250);
+		        docView.ViewModel.DocumentController.SetHeight(300);
+			} else if (docView.ViewModel.Content is CollectionView)
+	        {
+				docView.ViewModel.DocumentController.SetWidth(200);
+				docView.ViewModel.DocumentController.SetHeight(200);
+	        }
 
             // hacky way of resizing bounds, bob and tyler are working on improving resizing in general
             var currPos = docView.ViewModel.DocumentController
@@ -2390,7 +2398,7 @@ namespace Dash
         //adds a freeform collection to the template on click
         private void AddFreeform_OnClick(object sender, RoutedEventArgs e)
         {
-            var freeform = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 100, 100)
+            var freeform = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 200, 200)
                 .Document;
             DocumentControllers.Add(freeform);
         }
@@ -2398,8 +2406,8 @@ namespace Dash
         //adds a grid collection to the template on click
         private void AddGrid_OnClick(object sender, RoutedEventArgs e)
         {
-            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Schema, 100,
-                100).Document);
+            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Schema, 200,
+                200).Document);
         }
 
         //adds a stackpanel to the template on click
@@ -2412,8 +2420,8 @@ namespace Dash
              list.PointerEntered
              DocumentControllers.Add(new DocumentController(new ListModel() as DocumentModel));
             */
-            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 100,
-                100).Document);
+            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 200,
+                200).Document);
             //IList<DocumentController> layoutList = new ObservableCollection<DocumentController>();
             //DocumentControllers.Add(new ListViewLayout(layoutList, new Point(0,0), new Size(100,200)).Document);
         }

@@ -720,7 +720,11 @@ namespace Dash
 		{
 			linkFlyout.ShowAt(this);
 		}
-		
+
+	    public DocumentView GetDocView()
+	    {
+		    return this.GetFirstAncestorOfType<DocumentView>();
+		}
 	}
 }
 
