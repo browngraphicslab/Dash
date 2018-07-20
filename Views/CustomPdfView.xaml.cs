@@ -165,10 +165,12 @@ namespace Dash
 
                     foreach (var annotation in dataAnnotations.TypedData)
                     {
-                        var docview = new DocumentView()
-                        {
-                            DataContext = new DocumentViewModel(annotation) { DisableDecorations = true }
-                        };
+
+                        var dmv = new DocumentViewModel(annotation);
+                        dmv.DisableDecorations = true;
+                        var docview = new DocumentView();
+                        docview.ViewModel = dmv;
+                        
                         Annotations.Add(docview);
                     }
                 }
