@@ -228,7 +228,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
             {
                 var s1 = this.xRichEditBox.Document.Selection.StartPosition;
                 var s2 = this.xRichEditBox.Document.Selection.EndPosition;
@@ -468,8 +468,10 @@ namespace Dash
         {
             MatchQuery(getSelected());
         }
+        public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            IsLoaded = false;
             ClearSearchHighlights(true);
             setSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
@@ -479,6 +481,11 @@ namespace Dash
 
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            IsLoaded = true;
+
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+            _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
