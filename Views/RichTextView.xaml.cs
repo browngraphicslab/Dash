@@ -484,14 +484,17 @@ namespace Dash
             {
                 var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
 
-                var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
-                var reg2 = new Regex(".*/([^/]*)");
-                var something = reg.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var other = reg2.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var reg3 = new Regex(".*/([^/]*)/");
-                if (string.IsNullOrEmpty(other.ToString()))
-                    other = reg3.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var link = "\r- " + something + ":" + other;
+                //var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
+                //var reg2 = new Regex(".*/([^/]*)");
+                //var something = reg.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                //var other = reg2.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                //var reg3 = new Regex(".*/([^/]*)/");
+                //if (string.IsNullOrEmpty(other.ToString()))
+                //    other = reg3.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                //var link = "\r- " + something + ":" + other;
+
+                //this does better formatting/ parsing than the regex stuff can
+                var link = "\r" + CollectionViewModel.getTitlesUrl(url);
 
                 this.xRichEditBox.Document.Selection.Text = link;
                 this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";

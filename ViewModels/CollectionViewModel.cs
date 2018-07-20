@@ -695,6 +695,43 @@ namespace Dash
             }
         }
 
+        public static string getTitlesUrl(string uri)
+        {
+            //try to get website title
+            var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
+            webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
+                webName.Replace('_', ' ').Replace('-', ' '));
+            var pageTitle = uriParts[uriParts.Count - 1];
+            //handle complicated google search url
+            var googleSearchRes = pageTitle.Split("q=");
+            pageTitle = googleSearchRes.Length > 1 ?
+                googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
+            //check if pageTitle is some id
+            pageTitle = (uriParts.Count > 1 &&
+                         (pageTitle.Count(x => Char.IsDigit(x) || x == '&' || x == '=' || x == '.') > pageTitle.Length / 3
+                                                || pageTitle[0] == '#' || pageTitle == "index.html")) ?
+                uriParts[uriParts.Count - 2] : pageTitle;
+            pageTitle = pageTitle.Contains(".html") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
+            pageTitle = pageTitle.Contains(".htm") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+            //dashes are used in urls as spaces
+            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ');
+            //if first word is basically all numbers, its id, so delete
+            var firstTitleWord = pageTitle.Split(' ').First();
+            pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
+                         pageTitle.Length > firstTitleWord.Length) ?
+                pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
+            //if last word is basically all numbers, its id, so delete
+            var lastTitleWord = pageTitle.Split(' ').Last();
+            pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
+                            pageTitle.Length > lastTitleWord.Length) ?
+                pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
+            pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+
+            return webName + " (" + pageTitle + ")";
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -722,10 +759,7 @@ namespace Dash
                     var lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
-
-
-
-
+                
 
                 // if we drag from the file system
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
@@ -753,41 +787,10 @@ namespace Dash
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.Last().Substring(10);
-                  
 
-                    //try to get website title
-                    var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-                    var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-                    var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
-                    webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
-                        webName.Replace('_', ' ').Replace('-', ' '));
-                    var pageTitle = uriParts[uriParts.Count - 1];
-                    //handle complicated google search url
-                    var googleSearchRes = pageTitle.Split("q=");
-                    pageTitle = googleSearchRes.Length > 1 ?
-                        googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
-                    //check if pageTitle is some id
-                    pageTitle = (uriParts.Count > 1 && 
-                                 (pageTitle.Count(x => Char.IsDigit(x) || x == '&' || x == '=' || x == '.') > pageTitle.Length / 3 
-                                                        || pageTitle[0] == '#' || pageTitle == "index.html")) ? 
-                        uriParts[uriParts.Count - 2] : pageTitle;
-                    pageTitle = pageTitle.Contains(".html") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
-                    pageTitle = pageTitle.Contains(".htm") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
-                    //dashes are used in urls as spaces
-                    pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ');
-                    //if first word is basically all numbers, its id, so delete
-                    var firstTitleWord = pageTitle.Split(' ').First();
-                    pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
-                                 pageTitle.Length > firstTitleWord.Length) ?
-                        pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
-                    //if last word is basically all numbers, its id, so delete
-                    var lastTitleWord = pageTitle.Split(' ').Last();
-                    pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
-                                    pageTitle.Length > lastTitleWord.Length) ? 
-                        pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
-                    pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
-
-                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + webName + " (" + pageTitle + ") </a> </div>";
+                    //try to get website and article title
+                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + getTitlesUrl(uri) + " </a> </div>";
+                   
 
                     //update html length in intro - the way that word reads HTML is kinda funny
                     //it uses numbers in heading that say when html starts and ends, so in order to edit html, 

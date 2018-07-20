@@ -40,6 +40,7 @@ namespace Dash
             if (urlSource != null)
             {
                 dataDocument.SetField<TextController>(KeyStore.SourceUriKey, urlSource, true);
+                dataDocument.SetField<TextController>(KeyStore.WebContextKey, urlSource, true);
             }
         }
     }
