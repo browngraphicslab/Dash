@@ -13,29 +13,31 @@
     KeyDown="CustomPdfView_OnKeyDown">
 
     <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
-        <Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
 
-            <ColumnDefinition Width="30"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel Grid.Column="0" Orientation="Vertical">
-            <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
-                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
-            </Grid>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Width="Auto">
+    
+                <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
+                </Grid>
 
-            <Grid>
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
-                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
-            </Grid>
+                <Grid>
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74A;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
+                </Grid>
 
-            <Grid>
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
-                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
-            </Grid>
+                <Grid>
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74B;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
+                </Grid>
+            
         </StackPanel>
-        <ScrollViewer  x:Name="ScrollViewer" Grid.Column="1" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
+        <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
