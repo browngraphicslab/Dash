@@ -645,8 +645,25 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            string urlSource = null;
+                            var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                            foreach (var str in html.Split(new char[] { '\r' }))
+                            {
+                                var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                if (matches.Count != 0)
+                                {
+                                    urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                    var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
+                                    var reg2 = new Regex(".*/([^/]*)");
+                                    var something = reg.Match(urlSource)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                                    var other = reg2.Match(urlSource)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                                    text += "\r-" + RichTextView.HyperlinkMarker + " " + something + ":"+other;
+                                    break;
+                                }
+                            }
+                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+
                         }
                     }
                 }
@@ -854,7 +871,7 @@ namespace Dash
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
                         {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
                                 matches[0].Value.Replace("SourceURL:", ""), true);
                             break;
                         }

@@ -100,8 +100,9 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) =>
+            xRichEditBox.KeyUp += async (s, e) =>
             {
+               
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
                 {
                     var docView = getDocView();
@@ -469,6 +470,8 @@ namespace Dash
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
         }
 
+        public const string HyperlinkMarker = "<hyperlink marker>";
+
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
@@ -476,6 +479,17 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
+            this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+            if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
+            {
+                var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                this.xRichEditBox.Document.Selection.Text = "";
+                this.xRichEditBox.Document.Selection.EndPosition = this.getRtfText().Length;
+                this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
+                this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
+            }
         }
 
         #endregion
