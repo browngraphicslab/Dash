@@ -76,8 +76,8 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private ObservableCollection<ImageSource> _pages;
-        public ObservableCollection<ImageSource> Pages
+        private DataVirtualizationSource<ImageSource> _pages;
+        public DataVirtualizationSource<ImageSource> Pages
         {
             get => _pages;
             set
@@ -98,7 +98,6 @@ namespace Dash
 
         public CustomPdfView()
         {
-            _pages = new ObservableCollection<ImageSource>();
             this.InitializeComponent();
         }
 
@@ -106,8 +105,9 @@ namespace Dash
         {
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
-            _pages = new ObservableCollection<ImageSource>();
             DataDocument = document.GetDataDocument();
+            _pages = new DataVirtualizationSource<ImageSource>();
+            _pages.CollectionChanged += _pages_CollectionChanged;
 			DocumentLoaded += (sender, e) =>
 			{
 				AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -115,21 +115,30 @@ namespace Dash
 
 				var dataRegions = DataDocument.GetDataDocument()
 					.GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-				if (dataRegions != null)
-				{
-					// the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
-					xAnnotations.Height = PdfTotalHeight;
-					foreach (var region in dataRegions.TypedData)
-					{
-						var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey).Data;
-						MakeRegionMarker(offset, region);
-					}
-				}
+			    if (dataRegions != null)
+			    {
+			        // the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
+			        xAnnotations.Height = PdfTotalHeight;
+			        foreach (var region in dataRegions.TypedData)
+			        {
+			            var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey)
+			                .Data;
+			            MakeRegionMarker(offset, region);
+			        }
+			    }
 
+			    //PageItemsControl.ItemsSource = Pages.ToList();
 			};
+
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
 		}
-		private void OnNewRegionMade(object sender, RegionEventArgs e)
+
+        private void _pages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            PageItemsControl.ItemsSource = Pages.Get();
+        }
+
+        private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
 		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
 	    }
@@ -208,8 +217,9 @@ namespace Dash
             for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                var size = page.GetPageSize();
-                maxWidth = Math.Max(maxWidth, size.GetWidth());
+                _height = page.GetPageSize().GetHeight();
+                _width = page.GetPageSize().GetWidth();
+                maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
             PdfMaxWidth = maxWidth;
@@ -257,8 +267,9 @@ namespace Dash
             if (add)
             {
                 _currentPageCount = (int)_wPdfDocument.PageCount;
-                Pages.Clear();
+                //Pages.Clear();
             }
+
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
             {
                 Debug.WriteLine($"{i}/{_wPdfDocument.PageCount}");
@@ -278,15 +289,10 @@ namespace Dash
                     return;
                 }
 
-                if ((int)i < Pages.Count)
-                {
-                    Pages[(int)i] = source;
-                }
-                else
-                {
-                    Pages.Add(source);
-                }
+                _pages.Add(source);
             }
+
+             PageItemsControl.ItemsSource = Pages.Get();
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -625,20 +631,67 @@ namespace Dash
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private double _scrollRatio;
+        private double _height;
+        private double _width;
+        private double _verticalOffset;
+
         private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
+            //var startIndex = 0;
+            //var endIndex = 1;
+            //var scale = e.NewSize.Width / _width;
+            //var height = _height * scale;
+            //var temp = _verticalOffset;
+            //while (temp - height > 0)
+            //{
+            //    temp -= height;
+            //    startIndex++;
+            //}
+
+            //var endHeight = ScrollViewer.ViewportHeight + _verticalOffset;
+            //while (endHeight - height > 0)
+            //{
+            //    endHeight -= height;
+            //    endIndex++;
+            //}
+
+            //Pages.RangesChanged(new ItemIndexRange(startIndex, (uint)(endIndex - startIndex)),
+            //    new List<ItemIndexRange>());
+            //PageItemsControl.ItemsSource = Pages.ToList();
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
+            _verticalOffset = e.FinalView.VerticalOffset;
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
             LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
+            //var startIndex = 0;
+            //var endIndex = 1;
+            //var scale = ScrollViewer.ViewportWidth / _width;
+            //var height = _height * scale;
+            //var temp = e.FinalView.VerticalOffset;
+            //while (temp - height > 0)
+            //{
+            //    temp -= height;
+            //    startIndex++;
+            //}
+
+            //var endHeight = ScrollViewer.ViewportHeight + e.FinalView.VerticalOffset;
+            //while (endHeight - height > 0)
+            //{
+            //    endHeight -= height;
+            //    endIndex++;
+            //}
+
+            //Pages.RangesChanged(new ItemIndexRange(startIndex, (uint) (endIndex - startIndex)),
+            //    new List<ItemIndexRange>());
+            //PageItemsControl.ItemsSource = Pages.ToList();
         }
 
         public async void UnFreeze()
         {
-            await RenderPdf(ScrollViewer.ActualWidth);
+            //await RenderPdf(ScrollViewer.ActualWidth);
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)

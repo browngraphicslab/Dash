@@ -58,23 +58,28 @@ namespace Dash
                 //                         !(_elements.Last().Contents as string).Equals(textData.GetText())))
 
                 /* semi-functioning code to add line breaks when necessary (math may just be wrong) */
-                //if (_elements.Any() && Math.Abs(_elements.Last().Bounds.Y - textData.GetDescentLine().GetBoundingRectangle().GetY()) >
-                //    _elements.Last().Bounds.Height)
+                //if (_elements.Any())
                 //{
-                //    _elements.Add(new SelectableElement(-1, "\r\n",
-                //        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                //            _pageSize.GetHeight() -
-                //            (start.Get(1) +
-                //             _pageOffset), textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                //    var prevY = _elements.Last().Bounds.Y;
+                //    var prevYEnd = prevY + _elements.Last().Bounds.Height;
+                //    var y1 = start.Get(1);
+                //    var y2 = end.Get(1);
+                //    var inline = (prevY <= y1 && y1 <= prevYEnd) || (prevY <= y2 && y2 <= prevYEnd);
+                //    if (!inline)
+                //    {
+                //        var bounds = new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width, prevY,
+                //            _elements.Last().Bounds.Width, _elements.Last().Bounds.Height);
+                //        _elements.Add(new SelectableElement(-1, "\r\n", bounds));
+                //    }
                 //}
-                
+
                 #endregion
 
                 /* code to insert spaces into the text when there is too much space between elements */
 
                 // if the space between this and the previous element is greater than or equal approximately the width of a single space
                 if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
-                    textData.GetSingleSpaceWidth() * 0.5)
+                    textData.GetSingleSpaceWidth() * 0.3)
                 {
                     var width = start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
                     _elements.Add(new SelectableElement(-1, " ",
@@ -216,7 +221,6 @@ namespace Dash
                             columns.Add(new List<SelectableElement> {selectableElement});
                         }
                     }
-
                     // otherwise, just add it to whatever column we're indexed in
                     else
                     {
@@ -224,6 +228,45 @@ namespace Dash
                     }
 
                     element = selectableElement;
+                }
+            }
+
+            var columnCopy = new List<List<SelectableElement>>(columns);
+            foreach (var column in columnCopy)
+            {
+                var prevElem = column.First();
+                var matchingColumn = columns.First(col => col.Equals(column));
+                var prevLineY = new Vector((float) prevElem.Bounds.Y,
+                    (float) (prevElem.Bounds.Y + prevElem.Bounds.Height), 0);
+                foreach (var selectableElement in column.Skip(1))
+                {
+                    if (selectableElement.Bounds.X - prevElem.Bounds.X <= 1 && selectableElement.Bounds.Y - prevElem.Bounds.Y > selectableElement.Bounds.Height / 2)
+                    {
+                        var index = matchingColumn.IndexOf(selectableElement);
+                        matchingColumn.RemoveAt(index);
+                    }
+                    else
+                    {
+                        var y = selectableElement.Bounds.Y;
+                        if (y - prevLineY.Get(1) > selectableElement.Bounds.Height / 2)
+                        {
+
+                            var index = matchingColumn.IndexOf(selectableElement);
+                            var bounds = new Rect(selectableElement.Bounds.X + selectableElement.Bounds.Width,
+                                selectableElement.Bounds.Y, selectableElement.Bounds.Width,
+                                selectableElement.Bounds.Height);
+                            var lnBr = "\r\n";
+                            for (var i = 0; i < Math.Floor((y - prevLineY.Get(1)) / selectableElement.Bounds.Height); i++)
+                            {
+                                lnBr += "\r\n";
+                                bounds.Height += selectableElement.Bounds.Height;
+                            }
+                            matchingColumn.Insert(index, new SelectableElement(-1, lnBr, bounds));
+                        }
+                    }
+                    prevElem = selectableElement;
+                    prevLineY = new Vector((float)selectableElement.Bounds.Y,
+                        (float)(selectableElement.Bounds.Y + selectableElement.Bounds.Height), 0);
                 }
             }
 
