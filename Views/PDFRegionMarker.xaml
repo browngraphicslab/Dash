@@ -20,6 +20,6 @@
             <ColumnDefinition x:Name="xRegionColumn" Width="*"/>
             <ColumnDefinition x:Name="xRight" Width="*"/>
         </Grid.ColumnDefinitions>
-        <Rectangle x:Name="xRegion" Grid.Row="1" Grid.Column="1" Fill="Gold"/>
+        <Rectangle x:Name="xRegion" Grid.Row="1" Grid.Column="1" Fill="Blue"/>
     </Grid>
 </UserControl>

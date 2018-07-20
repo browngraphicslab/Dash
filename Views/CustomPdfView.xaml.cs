@@ -157,20 +157,20 @@ namespace Dash
 					}
 				}
 
-                var dataAnnotations = DataDocument.GetDataDocument()
-                    .GetField<ListController<DocumentController>>(KeyStore.AnnotationsKey);
+			    var dataAnnotations = DataDocument.GetDataDocument()
+			        .GetField<ListController<DocumentController>>(KeyStore.AnnotationsKey);
                 if (dataAnnotations != null)
                 {
                     // the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
 
-                    foreach (var annotation in dataAnnotations.TypedData)
+                    foreach (var annotation in dataAnnotations)
                     {
 
                         var dmv = new DocumentViewModel(annotation);
                         dmv.DisableDecorations = true;
                         var docview = new DocumentView();
                         docview.ViewModel = dmv;
-                        
+                        docview.hideResizers();
                         Annotations.Add(docview);
                     }
                 }
@@ -791,12 +791,26 @@ namespace Dash
             region.Link(note);
             var docview = new DocumentView()
             {
-                DataContext = new DocumentViewModel(note) {DisableDecorations = true}
+                DataContext = new DocumentViewModel(note) {DisableDecorations = true},
+                Width = xAnnotationBox.ActualWidth
             };
+            docview.hideResizers();
             Annotations.Add(docview);
-            DocControllers.Add(docview.ViewModel.DataDocument);
+            DocControllers.Add(docview.ViewModel.LayoutDocument);
             DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
 
+        }
+
+        private void xAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (xAnnotationBox.Visibility.Equals(Visibility.Visible))
+            {
+                xAnnotationBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                xAnnotationBox.Visibility = Visibility.Visible;
+            }
         }
     }
 }

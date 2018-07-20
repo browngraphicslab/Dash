@@ -12,16 +12,39 @@
     SizeChanged="CustomPdfView_OnSizeChanged"
     KeyDown="CustomPdfView_OnKeyDown">
 
-    <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited">
-      
-        <ScrollViewer  x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
+    <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Orientation="Vertical">
+            <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
+                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
+            </Grid>
+
+            <Grid>
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
+                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
+            </Grid>
+
+            <Grid>
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" Margin="0 0 0 10"/>
+                <!--<TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>-->
+            </Grid>
+        </StackPanel>
+        <ScrollViewer  x:Name="ScrollViewer" Grid.Column="1" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
+                    
                     <!--This Grid will have the width and height of the pdf that is being displayed-->
                     <Grid Grid.Column="0" x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
@@ -39,7 +62,7 @@
                         <!--Canvas for doing text selection-->
                         <Canvas x:Name="TestSelectionCanvas"></Canvas>
                     </Grid>
-                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Red"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
+                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Transparent"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
                         
                         <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
                             <!--<ItemsControl.ItemTemplate>
@@ -66,6 +89,7 @@
                 <Ellipse Fill="#221111" Width="18" Height="18"/>
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>
             </Grid>
+           
         </StackPanel>
        
     </Grid>

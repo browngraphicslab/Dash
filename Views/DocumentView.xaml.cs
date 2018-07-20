@@ -1222,6 +1222,21 @@ namespace Dash
 
         }
 
+        public void hideResizers()
+        {
+            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTopRightResizeControl.Visibility = Visibility.Collapsed;
+            xTopResizeControl.Visibility = Visibility.Collapsed;
+
+            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
+            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
+            xBottomResizeControl.Visibility = Visibility.Collapsed;
+
+            xRightResizeControl.Visibility = Visibility.Collapsed;
+            xLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTargetBorder.Margin = new Thickness(0);
+        }
+
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
