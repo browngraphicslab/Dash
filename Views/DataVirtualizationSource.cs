@@ -25,6 +25,8 @@ namespace Dash
     {
         private ObservableCollection<ImageSource> _images;
         private ObservableCollection<UIElement> _visibleElements;
+        private List<SelectableElement> _selectableElements;
+        private List<SelectableElement> _visibleSelectableElements;
         private ScrollViewer _scrollViewer;
         private int bufferSize = 1;
         private int _startIndex;
@@ -40,6 +42,8 @@ namespace Dash
             _view = view;
             _scrollViewer = view.ScrollViewer;
             _images = new ObservableCollection<ImageSource>();
+            _selectableElements = new List<SelectableElement>();
+            _visibleSelectableElements = new List<SelectableElement>();
             _visibleElements = new ObservableCollection<UIElement>();
             view.PageItemsControl.ItemsSource = _visibleElements;
             view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
@@ -133,30 +137,30 @@ namespace Dash
 
             startIndex = Math.Max(startIndex - bufferSize, 0);
             endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
+            _selectableElements = _view.Strategy.GetSelectableElements(startIndex, endIndex);
+            //var startOffset = Math.Abs(_startIndex - startIndex);
+            //var startStart = Math.Min(_startIndex, startIndex);
+            //if (_startIndex > startIndex)
+            //{
+            //    _view.SelectableElements.InsertRange(0, _view.Strategy.GetSelectableElements(startStart, startStart + startOffset));
+            //}
+            //else if (_startIndex < startIndex)
+            //{
+            //    var removeFromStart = _view.Strategy.GetSelectableElements(startStart, startOffset);
+            //    _view.SelectableElements = _view.SelectableElements.Skip(removeFromStart.Count).ToList();
+            //}
 
-            var startOffset = Math.Abs(_startIndex - startIndex);
-            var startStart = Math.Min(_startIndex, startIndex);
-            if (_startIndex > startIndex)
-            {
-                _view.SelectableElements.InsertRange(0, _view.Strategy.GetSelectableElements(startStart, startStart + startOffset));
-            }
-            else if (_startIndex < startIndex)
-            {
-                var removeFromStart = _view.Strategy.GetSelectableElements(startStart, startOffset);
-                _view.SelectableElements = _view.SelectableElements.Skip(removeFromStart.Count).ToList();
-            }
-
-            var endOffset = Math.Abs(_endIndex - endIndex);
-            var endStart = Math.Min(_startIndex, startIndex);
-            if (_endIndex < endIndex)
-            {
-                _view.SelectableElements.AddRange(_view.Strategy.GetSelectableElements(endStart, endStart + endOffset));
-            }
-            else if (_endIndex > endIndex)
-            {
-                var removeFromEnd = _view.Strategy.GetSelectableElements(endStart, endOffset);
-                _view.SelectableElements = _view.SelectableElements.SkipLast(removeFromEnd.Count).ToList();
-            }
+            //var endOffset = Math.Abs(_endIndex - endIndex);
+            //var endStart = Math.Min(_startIndex, startIndex);
+            //if (_endIndex < endIndex)
+            //{
+            //    _view.SelectableElements.AddRange(_view.Strategy.GetSelectableElements(endStart, endStart + endOffset));
+            //}
+            //else if (_endIndex > endIndex)
+            //{
+            //    var removeFromEnd = _view.Strategy.GetSelectableElements(endStart, endOffset);
+            //    _view.SelectableElements = _view.SelectableElements.SkipLast(removeFromEnd.Count).ToList();
+            //}
 
             for (var i = startIndex; i < endIndex; i++)
             {
