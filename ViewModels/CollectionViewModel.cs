@@ -653,11 +653,6 @@ namespace Dash
                                 if (matches.Count != 0)
                                 {
                                     urlSource = matches[0].Value.Replace("SourceURL:", "");
-                                    var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
-                                    var reg2 = new Regex(".*/([^/]*)");
-                                    var something = reg.Match(urlSource)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                                    var other = reg2.Match(urlSource)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                                    text += "\r-" + RichTextView.HyperlinkMarker + " " + something + ":"+other;
                                     break;
                                 }
                             }

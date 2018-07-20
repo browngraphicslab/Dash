@@ -483,8 +483,17 @@ namespace Dash
             if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
             {
                 var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                this.xRichEditBox.Document.Selection.Text = "";
-                this.xRichEditBox.Document.Selection.EndPosition = this.getRtfText().Length;
+
+                var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
+                var reg2 = new Regex(".*/([^/]*)");
+                var something = reg.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var other = reg2.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var reg3 = new Regex(".*/([^/]*)/");
+                if (string.IsNullOrEmpty(other.ToString()))
+                    other = reg3.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var link = "\r- " + something + ":" + other;
+
+                this.xRichEditBox.Document.Selection.Text = link;
                 this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
                 this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
                 this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
