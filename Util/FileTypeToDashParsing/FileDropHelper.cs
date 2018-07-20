@@ -87,6 +87,8 @@ namespace Dash
                 if (documentController != null)
                 {
                     documentController.GetPositionField().Data = where;
+                    documentController.GetDataDocument()
+                        .SetField<TextController>(KeyStore.WebContextKey, fileType.FileUri.AbsoluteUri, true);
                     return documentController;
                 }
             }

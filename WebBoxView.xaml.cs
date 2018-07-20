@@ -11,6 +11,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
@@ -36,6 +37,25 @@ namespace Dash
         public WebView GetView()
         {
             return xWebView;
+        }
+
+        public void SetText(string url)
+        {
+            if (!String.IsNullOrEmpty(url))
+            {
+                var headline = CollectionViewModel.GetTitlesUrl(url);
+                Run run = new Run() { Text = " " +  headline };
+
+                Hyperlink hyperlink = new Hyperlink()
+                {
+                    NavigateUri = new System.Uri(url)
+                };
+                hyperlink.Inlines.Add(run);
+               
+               TextBlock.Visibility = Visibility.Visible;
+               TextBlock.Inlines.Add(hyperlink);
+
+            }
         }
     }
 }

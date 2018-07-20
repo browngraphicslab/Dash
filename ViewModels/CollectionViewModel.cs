@@ -713,8 +713,8 @@ namespace Dash
                 googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
             //check if pageTitle is some id
             pageTitle = (uriParts.Count > 1 &&
-                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' ) > pageTitle.Length / 3
-                                                || pageTitle[0] == '#' || pageTitle == "index.html")) ?
+                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' || x == '#' ) > pageTitle.Length / 3
+                                                || pageTitle == "index.html")) ?
                 uriParts[uriParts.Count - 2] : pageTitle;
             pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
             pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
