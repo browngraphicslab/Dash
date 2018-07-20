@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
@@ -22,6 +23,7 @@ using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Dash.Views;
+using iText.StyledXmlParser.Jsoup.Nodes;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -181,57 +183,60 @@ namespace Dash
 
 			}
 
-			void sizeChangedHandler(object sender, SizeChangedEventArgs e)
-			{
-				ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-				PositionContextPreview();
-			}
+            void sizeChangedHandler(object sender, SizeChangedEventArgs e)
+            {
+                //var cview = this.GetFirstAncestorOfType<CollectionView>();
+                //var container = cview?.CurrentView as CollectionFreeformView;
+                //if (container != null && container.ViewModel.FitToParent)
+                //    container.ViewModel.FitContents(cview);
+                ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                PositionContextPreview();
+            }
+            Loaded += (sender, e) =>
+            {
+                updateBindings(null, null);
+                DataContextChanged += (s, a) => updateBindings(null, null);
 
-			Loaded += (sender, e) =>
-			{
-				updateBindings(null, null);
-				DataContextChanged += (s, a) => updateBindings(null, null);
-
-				SizeChanged += sizeChangedHandler;
-				ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-				Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
-				SetZLayer();
+                SizeChanged += sizeChangedHandler;
+                ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                SetZLayer();
 
 				var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
 				//if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
 
+                
 
-				switch (type)
-				{
-					case TypeInfo.Image:
-						xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
-						break;
-					case TypeInfo.Audio:
-						xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
-						break;
-					case TypeInfo.Video:
-						xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
-						break;
-					case TypeInfo.RichText:
-					case TypeInfo.Text:
-						xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
-						break;
-					case TypeInfo.Document:
-						xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
-						break;
-					case TypeInfo.Template:
-						xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-						break;
-					default:
-						xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
-						break;
+                switch (type)
+                {
+                    case DashShared.TypeInfo.Image:
+                        xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
+                        break;
+                    case DashShared.TypeInfo.Audio:
+                        xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
+                        break;
+                    case DashShared.TypeInfo.Video:
+                        xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
+                        break;
+                    case DashShared.TypeInfo.RichText:
+                    case DashShared.TypeInfo.Text:
+                        xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
+                        break;
+                    case DashShared.TypeInfo.Document:
+                        xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
+                        break;
+                    case DashShared.TypeInfo.Template:
+                        xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+                        break;
+                    default:
+                        xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
+                        break;
 
 				}
 
-				if (type.Equals(TypeInfo.Template))
-				{
-					xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-				}
+                if (type.Equals(DashShared.TypeInfo.Template))
+                {
+                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+                }
 
 				if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0))
 				{
@@ -964,17 +969,32 @@ namespace Dash
 		/// <param name="e"></param>
 
 
-		public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft,
-			bool maintainAspectRatio)
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
+        {
+       
+           
 
-		{
-			if (this.IsRightBtnPressed() || PreventManipulation)
-				return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
+           
+            if (this.IsRightBtnPressed() || PreventManipulation)
+                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-			var isTextBox = ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-			e.Handled = true;
-			var extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
-			double extraOffsetY = 0;
+            var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
+                ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
+            e.Handled = true;
+
+            double extraOffsetX = 0;
+            if (!Double.IsNaN((ViewModel.Width)))
+            {
+                extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+            }
+            else
+            {
+                extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
+            }
+            
+
+            double extraOffsetY = 0;
 
 			if (!Double.IsNaN(ViewModel.Height))
 			{
@@ -986,8 +1006,9 @@ namespace Dash
 			}
 
 
-			var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-			var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            //problem is that cumulativeDelta.Y is 0
+            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
 
 			//if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
 			//{
@@ -1039,30 +1060,40 @@ namespace Dash
 				useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
 			}
 
-			var proportional = (!isTextBox && maintainAspectRatio)
-				? this.IsShiftPressed()
-				: (this.IsShiftPressed() ^ maintainAspectRatio);
-			if (useX)
-			{
-				aspect = 1 / aspect;
-				diffX = cursorXDirection * delta.X;
-				diffY = proportional
-					? aspect * diffX
-					: cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
-			}
-			else
-			{
-				diffY = cursorYDirection * delta.Y;
-				diffX = proportional
-					? aspect * diffY
-					: cursorXDirection * delta.X;
-			}
+            var proportional = (!isImage && maintainAspectRatio)
+                ? this.IsShiftPressed()
+                : (this.IsShiftPressed() ^ maintainAspectRatio);
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = proportional
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            }
+            else
+            {
+                diffY = cursorYDirection * delta.Y;
+                diffX = proportional
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
+            }
 
-			var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
-			// set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
-			var newPos = new Point(
-				ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
-				ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+
+           
+
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+
+            if (ViewModel.DocumentController.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                MinWidth = 200;
+                newSize.Height = oldSize.Height;
+                newPos.Y = ViewModel.YPos;
+            }
 
 
 			// re-clamp the position to keep it in bounds
@@ -1085,12 +1116,14 @@ namespace Dash
 				newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
 			}
 
-			ViewModel.Position = newPos;
-			ViewModel.Width = newSize.Width;
+           
 
-			if (delta.Y != 0 || this.IsShiftPressed() || isTextBox)
-				ViewModel.Height = newSize.Height;
-		}
+            ViewModel.Position = newPos;
+            ViewModel.Width = newSize.Width;
+
+            if (delta.Y != 0 || this.IsShiftPressed() || isImage)
+                ViewModel.Height = newSize.Height;
+        }
 
 		private Point Clamp(Point point, Rect rect)
 		{
@@ -1472,86 +1505,61 @@ namespace Dash
 
 		#region Context menu click handlers
 
-		private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
-		{
-			foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-				doc.CopyDocument();
-		}
-
-		private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
-		{
-			foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-				doc.CopyViewDocument();
-		}
-
-		private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
-		{
-			foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-				doc.DeleteDocument();
-		}
-
-		private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
-		{
-			foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-				doc.KeyValueViewDocument();
-		}
-
-		private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
-		{
-			foreach (var docView in SelectionManager.GetSelectedSiblings(this))
-			{
-				docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
-				SetZLayer();
-			}
-		}
-
-		public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
-		{
-			var collectionView = this.GetFirstDescendantOfType<CollectionView>();
-			if (collectionView != null)
-			{
-				collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-				if (collectionView.ViewModel.FitToParent)
-					collectionView.ViewModel.FitContents();
-			}
-		}
-
-		public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e)
-		{
-			ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(
-				new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth,
-					ViewModel.LayoutDocument.GetPositionField().Data.Y)));
-		}
-
-		private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
-		{
-			ShowContext();
-		}
-
-		private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
-		{
-			Util.ExportAsImage(LayoutRoot);
-		}
-
-		private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
-		{
-			MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
-		}
-
-		private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
-		{
-			var data = new DataPackage() { };
-			data.SetText(string.Join("\n",
-				(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(
-					c => c.Title + "  :  " + c.Url)));
-			Clipboard.SetContent(data);
-		}
-
-		private void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
-		{
-			var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
-			if (text != null)
-				Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                doc.CopyDocument();
+        }
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                doc.CopyViewDocument();
+        }
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                doc.DeleteDocument();
+        }
+        private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                doc.KeyValueViewDocument();
+        }
+        private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+            {
+                docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                SetZLayer();
+            }
+        }
+        public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
+        {
+            var collectionView = this.GetFirstDescendantOfType<CollectionView>();
+            if (collectionView != null)
+            {
+                collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
+                if (collectionView.ViewModel.FitToParent)
+                    collectionView.ViewModel.FitContents(collectionView);
+            }
+        }
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
+        private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var data = new DataPackage() { };
+            data.SetText(string.Join("\n",
+                (ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(
+                    c => c.Title + "  :  " + c.Url)));
+            Clipboard.SetContent(data);
+        }
+        private void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
+        {
+            var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
+            if (text != null)
+                Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
 
 			//var storageFile = item as StorageFile;
 			//var fields = new Dictionary<KeyController, FieldControllerBase>

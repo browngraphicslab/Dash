@@ -134,6 +134,7 @@ namespace Dash
                         rect.RenderTransform = new MatrixTransform { Matrix = mat };
                         Canvas.SetZIndex(rect, 500);
                         rect.Fill = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0));
+
                         c.Children.Add(rect);
                     }
                 }

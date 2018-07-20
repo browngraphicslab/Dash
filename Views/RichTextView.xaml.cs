@@ -100,8 +100,9 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) =>
+            xRichEditBox.KeyUp += async (s, e) =>
             {
+               
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
                 {
                     var docView = getDocView();
@@ -227,7 +228,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
             {
                 var s1 = this.xRichEditBox.Document.Selection.StartPosition;
                 var s2 = this.xRichEditBox.Document.Selection.EndPosition;
@@ -462,20 +463,49 @@ namespace Dash
         {
             MatchQuery(getSelected());
         }
+        public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            IsLoaded = false;
             ClearSearchHighlights(true);
             setSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
         }
 
+        public const string HyperlinkMarker = "<hyperlink marker>";
+
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            IsLoaded = true;
+
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+            _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
+            this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+            if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
+            {
+                var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+
+                var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
+                var reg2 = new Regex(".*/([^/]*)");
+                var something = reg.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var other = reg2.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var reg3 = new Regex(".*/([^/]*)/");
+                if (string.IsNullOrEmpty(other.ToString()))
+                    other = reg3.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
+                var link = "\r- " + something + ":" + other;
+
+                this.xRichEditBox.Document.Selection.Text = link;
+                this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
+                this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
+            }
         }
 
         #endregion

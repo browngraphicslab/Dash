@@ -120,6 +120,8 @@ namespace Dash
         {
             return LayoutDocument.GetHashCode();
         }
+
+        
         
         public FrameworkElement Content
         {

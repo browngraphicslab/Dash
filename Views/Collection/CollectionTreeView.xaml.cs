@@ -74,9 +74,6 @@ namespace Dash
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
             MainPage.Instance.TogglePresentationMode();
-            var presView = MainPage.Instance.xPresentationView;
-            presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
-            presView.RemoveLines();
         }
 
         public void TogglePresentationMode(bool on)
