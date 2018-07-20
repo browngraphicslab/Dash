@@ -22,6 +22,7 @@ namespace Dash
         //INSTANCE VARIABLES
         private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
+	    private DocumentView _groupView;
 
         //ORIENTATION property registration and declaration
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
@@ -76,19 +77,6 @@ namespace Dash
         }
 
         /*
-         * Ensures current color reflects desired opacity and then updates the appropriate bindings for...
-         */
-        private void UpdateColor()
-        {
-           // _currentColor = GetColorWithUpdatedOpacity();
-            //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
-            //...shape's background color
-            _currentDocController?.GetDataDocument().SetBackgroundColor(_currentColor);
-            //...indirectly, the shape's opacity
-            //_currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
-        }
-
-        /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
          
         private Windows.UI.Color GetColorWithUpdatedOpacity()
@@ -104,7 +92,11 @@ namespace Dash
         /*
         * Whenever a group is clicked, it receives the document view associated with the click for editing, etc, stored in this mutator. 
         */
-        public void SetGroupBinding(DocumentView selection) => _currentDocController = selection.ViewModel.DocumentController;
+        public void SetGroupBinding(DocumentView selection)
+        {
+	        _currentDocController = selection.ViewModel.DocumentController;
+	        _groupView = selection;
+        } 
 
         /*
          * Determines whether or not to hide or display the combo box: in context, this applies only to toggling rotation which is not currently supported
@@ -183,20 +175,7 @@ namespace Dash
             }
         }
 
-        /*
-         * Resets opacity of the group to 0.5 opacity on right click
-         */
-        private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-           // xOpacitySlider.Value = 128;
-            UpdateColor();
-        }
-
-        /*
-         * Edits the alpha prefix of the current color string based on the new opacity slider value
-         */
-        private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e) => UpdateColor();
-
+   
         /*
          * Create a new group with the current selections
          */
@@ -296,7 +275,7 @@ namespace Dash
 	    {
 			_currentColor = xGroupForegroundColorPicker.SelectedColor;
 		    UpdateToolbarAccentColors();
-		    UpdateColor();
+		    _groupView?.SetBackgroundColor(e);
 		}
     }
 }

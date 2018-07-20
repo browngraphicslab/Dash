@@ -55,6 +55,7 @@ namespace Dash
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
+	        var color = xOuterGrid.Background;
         }
 
         /// <summary>
@@ -81,6 +82,7 @@ namespace Dash
                     if (parentParentFreeform != null)
                         CurrentView.ManipulationMode = ManipulationModes.None;
             }
+
         }
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)

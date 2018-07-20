@@ -30,11 +30,9 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
-
         <!-- border to highlight search results-->
         <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" Grid.Row="0" Grid.Column="0">
             <Border x:Name="xTargetBorder">
-
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="xLeftColumn" Width="10" />
@@ -46,8 +44,12 @@
                         <RowDefinition Height="*" />
                         <RowDefinition x:Name="xBottomRow" Height="10" />
                     </Grid.RowDefinitions>
-                     <!--Main document view 
 
+                    
+
+                    <!--Main document view 
+
+                    
                      Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                     <Grid.ContextFlyout>
                         <MenuFlyout x:Name = "xMenuFlyout">
@@ -152,14 +154,6 @@
                     </Grid>
             </Border>
         </Border>
-
-
-
-
-
- 
-
-
 
 
                     <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32, 0, 0, 0" VerticalAlignment="Top" >

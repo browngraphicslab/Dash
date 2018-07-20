@@ -177,6 +177,7 @@ namespace Dash
 
 				_templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 				
+				this.BindBackgroundColor();
 
 			}
 
@@ -197,7 +198,7 @@ namespace Dash
 				SetZLayer();
 
 				var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
-				if (ViewModel?.DataDocument != null) BindBackgroundColor();
+				//if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
 
 
 				switch (type)
@@ -244,7 +245,9 @@ namespace Dash
 					UpdateEllipses(_newpoint);
 				}
 
-
+				//var converter = new StringToBrushConverter();
+				//var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
+				//if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
 			};
 			Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
@@ -480,7 +483,7 @@ namespace Dash
 					MenuFlyout.Hide();
 			};
 
-			//BindBackgroundColor();
+			
 		}
 
 		public void RemoveResizeHandlers()
@@ -924,7 +927,10 @@ namespace Dash
 		public void StyleCollection(CollectionView view)
 		{
 			xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-			xDocumentBackground.Fill = ((SolidColorBrush) Application.Current.Resources["DocumentBackground"]);
+			//alter opacity to be visible (overrides default transparent)
+			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
+			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
+
 			if (this != MainPage.Instance.MainDocView) return;
 			view.xOuterGrid.BorderThickness = new Thickness(0);
 			foreach (var handle in new Rectangle[]
@@ -947,11 +953,7 @@ namespace Dash
 		}
 
 		#endregion
-
-
-
-
-
+		
 		/// <summary>
 		/// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
 		/// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
@@ -1876,11 +1878,13 @@ namespace Dash
 			}
 		}
 
+		//sets background color of doc
 		public void SetBackgroundColor(Color color)
 		{
-			ViewModel.LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController(color.ToString()), true);
+			ViewModel?.LayoutDocument?.SetField(KeyStore.BackgroundColorKey, new TextController(color.ToString()), true);
 		}
 
+		//gets current background color of doc
 		public Color? GetBackgroundColor()
 		{
 			var colorString = ViewModel.LayoutDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data;
@@ -1888,18 +1892,22 @@ namespace Dash
 			return (new StringToBrushConverter().ConvertDataToXaml(colorString) as SolidColorBrush)?.Color;
 		}
 
+		//binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
 		void BindBackgroundColor()
 		{
-			var backgroundBinding = new FieldBinding<TextController>()
+			if (ViewModel?.LayoutDocument != null)
 			{
-				Key = KeyStore.BackgroundColorKey,
-				Document = ViewModel.LayoutDocument,
-				Converter = new StringToBrushConverter(),
-				Mode = BindingMode.TwoWay,
-				Context = new Context(),
-				FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
-			};
-			LayoutRoot.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
+				var backgroundBinding = new FieldBinding<TextController>()
+				{
+					Key = KeyStore.BackgroundColorKey,
+					Document = ViewModel.LayoutDocument,
+					Converter = new StringToBrushConverter(),
+					Mode = BindingMode.TwoWay,
+					Context = new Context(),
+					FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
+				};
+				xDocumentBackground.AddFieldBinding(Rectangle.FillProperty, backgroundBinding);
+			}
 		}
 
 	}

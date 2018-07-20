@@ -63,7 +63,7 @@ namespace Dash
                 xViewModesDropdown.ItemsSource = Enum.GetValues(typeof(CollectionView.CollectionViewType));
             };
 
-			xBackgroundColorPicker.SetOpacity(75);
+			xBackgroundColorPicker.SetOpacity(200);
 	        xBackgroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
@@ -134,10 +134,7 @@ namespace Dash
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-		    //_docController?.GetDataDocument().SetField(KeyStore.BackgroundColorKey, new TextController(e.ToString()), false);
 		    _collection?.GetFirstAncestorOfType<DocumentView>().SetBackgroundColor(e);
-		    //if (_collection?.CurrentView is CollectionFreeformView) (_collection.CurrentView as CollectionFreeformView).xOuterGrid.Background = new SolidColorBrush(e);
-		    //_docController?.SetField(KeyStore.BackgroundColorKey, new TextController(e.ToString()), false);
 	    }
     }
 }
