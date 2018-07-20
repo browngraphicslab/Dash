@@ -450,5 +450,10 @@ namespace Dash
 	    {
 	        return xImage;
 	    }
+
+		public DocumentView GetDocView()
+		{
+			return _docview;
+		}
 	}
 }
