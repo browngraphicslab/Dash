@@ -91,6 +91,8 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
                 getDocView().CacheMode = null;
