@@ -30,13 +30,17 @@ namespace Dash
             return new RichTextBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
 
-        public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size()) :
+        public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size(), string urlSource=null) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
+            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text + (urlSource != null ? RichTextView.HyperlinkMarker : ""))));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             Document.Tag = "Rich Text Note Layout " + rcount;
             dataDocument.Tag = "Rich Text Note Data" + rcount++;
+            if (urlSource != null)
+            {
+                dataDocument.SetField<TextController>(KeyStore.SourceUriKey, urlSource, true);
+            }
         }
     }
 }

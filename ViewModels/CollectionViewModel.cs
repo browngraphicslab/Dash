@@ -647,8 +647,20 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            string urlSource = null;
+                            var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                            foreach (var str in html.Split(new char[] { '\r' }))
+                            {
+                                var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                if (matches.Count != 0)
+                                {
+                                    urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                    break;
+                                }
+                            }
+                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+
                         }
                     }
                 }
@@ -926,7 +938,7 @@ namespace Dash
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
                         {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
                                 matches[0].Value.Replace("SourceURL:", ""), true);
                             break;
                         }
