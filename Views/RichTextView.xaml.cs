@@ -480,7 +480,7 @@ namespace Dash
             //set RichTextView property to this view
             dataPackage.Properties[nameof(RichTextView)] = this;
             Clipboard.SetContent(dataPackage);
-            //Clipboard.ContentChanged += Clipboard_ContentChanged;
+            Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
 
 
