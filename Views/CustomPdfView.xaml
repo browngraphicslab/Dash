@@ -20,22 +20,22 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Width="Auto">
-    
-                <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
-                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
-                </Grid>
 
-                <Grid>
-                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74A;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
-                </Grid>
+            <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>
 
-                <Grid>
-                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74B;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 10, 0" Foreground="White"/>
-                </Grid>
-            
+            <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74B;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>
+
+            <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74A;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>
+
         </StackPanel>
         <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
            
@@ -67,6 +67,11 @@
                     <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Transparent"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
                         
                         <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <!--<ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:DocumentView">
                                   

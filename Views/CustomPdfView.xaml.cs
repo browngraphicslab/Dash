@@ -31,6 +31,7 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 using Syncfusion.UI.Xaml.Controls;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -202,7 +203,9 @@ namespace Dash
 		    xAnnotationMarkers.Visibility = Visibility.Visible;
 	    }
 
-		private void OnRegionRemoved(object sender, RegionEventArgs e)
+        
+
+        private void OnRegionRemoved(object sender, RegionEventArgs e)
 	    {
 		    foreach (var child in xAnnotationMarkers.Children.ToList())
 		    {
@@ -781,20 +784,24 @@ namespace Dash
 			linkFlyout.ShowAt(this);
 		}
 
+       
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var where = new Point(0,0);
+           
             var region = GetRegionDocument();
             // note is the new annotation textbox that is created
-            var note = new RichTextNote("<annotation>", where).Document;
+            var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
 
             region.Link(note);
             var docview = new DocumentView()
             {
                 DataContext = new DocumentViewModel(note) {DisableDecorations = true},
-                Width = xAnnotationBox.ActualWidth
+                Width = xAnnotationBox.ActualWidth,
             };
             docview.hideResizers();
+            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+            Canvas.SetTop(docview, region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data.Y * xAnnotations.ActualHeight);
+            //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
             Annotations.Add(docview);
             DocControllers.Add(docview.ViewModel.LayoutDocument);
             DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
@@ -811,6 +818,16 @@ namespace Dash
             {
                 xAnnotationBox.Visibility = Visibility.Visible;
             }
+        }
+
+        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
