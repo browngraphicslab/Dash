@@ -343,7 +343,7 @@ namespace Dash
             {
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
-                    res.DataDocument.SetField(CollectionDBView.SelectedKey, searchTerms, true);
+                    res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;

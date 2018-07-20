@@ -239,7 +239,7 @@ namespace Dash
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                     _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
                 }
-                if (getSelected()?.First()?.Data is string selected)
+                if (getSelected()?.FirstOrDefault() != null && getSelected().First().Data is string selected)
                 {
                     _prevQueryLength = selected.Length;
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
