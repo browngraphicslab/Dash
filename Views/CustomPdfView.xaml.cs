@@ -31,6 +31,7 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using Syncfusion.UI.Xaml.Controls;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -87,6 +88,32 @@ namespace Dash
             }
         }
 
+        private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
+
+        public ObservableCollection<DocumentView> Annotations
+        {
+            get => _annotationList;
+            set
+            {
+                _annotationList = value;
+                OnPropertyChanged();
+            }
+        }
+
+
+        private List<DocumentController> _docControllers = new List<DocumentController>();
+
+        public List<DocumentController> DocControllers
+        {
+            get => _docControllers;
+            set
+            {
+                _docControllers = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         private List<SelectableElement> _selectableElements;
 
         public VisualAnnotationManager AnnotationManager { get; }
@@ -95,14 +122,20 @@ namespace Dash
         public DocumentController DataDocument { get; }
 
         private WPdf.PdfDocument _wPdfDocument;
+        private PDFRegionMarker _currentMarker;
 
         public CustomPdfView()
         {
             this.InitializeComponent();
+
         }
+
+       
 
         public CustomPdfView(DocumentController document)
         {
+
+
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
@@ -124,12 +157,33 @@ namespace Dash
 					}
 				}
 
-			};
+                var dataAnnotations = DataDocument.GetDataDocument()
+                    .GetField<ListController<DocumentController>>(KeyStore.AnnotationsKey);
+                if (dataAnnotations != null)
+                {
+                    // the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
+
+                    foreach (var annotation in dataAnnotations.TypedData)
+                    {
+                        var docview = new DocumentView()
+                        {
+                            DataContext = new DocumentViewModel(annotation) { DisableDecorations = true }
+                        };
+                        Annotations.Add(docview);
+                    }
+                }
+
+            };
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
-		}
+        }
 		private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
 		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
+	        //var docview = new DocumentView();
+            //var dvm = new DocumentViewModel(e.Link);
+	        //docview.ViewModel = dvm;
+	        //Annotations.Add(docview);
+
 	    }
 	    
 	    // adds to the side of the PDFView
@@ -142,6 +196,7 @@ namespace Dash
 		    newMarker.PointerPressed += xMarker_OnPointerPressed;
 		    xAnnotationMarkers.Children.Add(newMarker);
 		    _markers.Add(newMarker);
+	        
 		    xAnnotationMarkers.Visibility = Visibility.Visible;
 	    }
 
@@ -167,7 +222,10 @@ namespace Dash
 
 		public DocumentController GetRegionDocument()
         {
-            return AnnotationManager?.GetRegionDocument();
+
+            var region = AnnotationManager?.GetRegionDocument();
+            ClearSelection();
+            return region;
         }
 
         private async Task OnPdfUriChanged()
@@ -720,7 +778,24 @@ namespace Dash
 		{
 			linkFlyout.ShowAt(this);
 		}
-		
-	}
+
+        private void XAnnotationBox_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var where = new Point(0,0);
+            var region = GetRegionDocument();
+            // note is the new annotation textbox that is created
+            var note = new RichTextNote("<annotation>", where).Document;
+
+            region.Link(note);
+            var docview = new DocumentView()
+            {
+                DataContext = new DocumentViewModel(note) {DisableDecorations = true}
+            };
+            Annotations.Add(docview);
+            DocControllers.Add(docview.ViewModel.DataDocument);
+            DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+
+        }
+    }
 }
 

@@ -23,23 +23,34 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <!--This Grid will have the width and height of the pdf that is being displayed-->
-                <Grid Grid.Column="0" x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
+                    <Grid Grid.Column="0" x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                       PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
-                    <!-- ItemsControl that stores the page images -->
-                    <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="ImageSource">
-                                <Image Source="{x:Bind}" Margin="0,0,0,10" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <!--Annotation overlay for block annotations-->
-                    <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
-                    <!--Canvas for doing text selection-->
-                    <Canvas x:Name="TestSelectionCanvas"></Canvas>
+                        <!-- ItemsControl that stores the page images -->
+                        <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="ImageSource">
+                                    <Image Source="{x:Bind}" Margin="0,0,0,10" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <!--Annotation overlay for block annotations-->
+                        <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
+                        <!--Canvas for doing text selection-->
+                        <Canvas x:Name="TestSelectionCanvas"></Canvas>
+                    </Grid>
+                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Red"  HorizontalAlignment="Right" VerticalAlignment="Stretch" PointerPressed="XAnnotationBox_OnPointerPressed">
+                        
+                        <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                            <!--<ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DocumentView">
+                                  
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>-->
+                        </ItemsControl>
+                    
+                    </Grid>
                 </Grid>
-                    <Grid x:Name="xAnnotationBox" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Stretch"></Grid>
 
             </Viewbox>
            
