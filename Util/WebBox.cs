@@ -68,10 +68,10 @@ namespace Dash
             var web = webView.GetView();
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
 
-            webView.SetText(html);
-
             if (html.StartsWith("http"))
             {
+                webView.SetText(html);
+
                 // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
                 web.Navigate(new Uri(html));
             }
