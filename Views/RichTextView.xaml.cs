@@ -98,12 +98,14 @@ namespace Dash
                 _everFocused = true;
                 getDocView().CacheMode = null;
                 Clipboard.ContentChanged += Clipboard_ContentChanged;
+                Debug.WriteLine("GOT FOCUS");
             };
 
             xRichEditBox.LostFocus += delegate
             {
                 if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                Debug.WriteLine("LOST FOCUS");
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();

@@ -661,6 +661,7 @@ namespace Dash
                                     }
                                 }
                             }
+                            RichTextView sourceDoc = Clipboard.GetContent().Properties[nameof(RichTextView)] as RichTextView;
 
                             var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
