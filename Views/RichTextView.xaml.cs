@@ -27,6 +27,8 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl, IAnnotatable
     {
+        #region Intilization 
+
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
@@ -66,6 +68,7 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
+       
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -94,9 +97,14 @@ namespace Dash
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
                 getDocView().CacheMode = null;
+                Clipboard.ContentChanged += Clipboard_ContentChanged;
             };
 
-            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
+            xRichEditBox.LostFocus += delegate
+            {
+                if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
+            };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -218,6 +226,8 @@ namespace Dash
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
         }
+
+        #endregion
 
         #region eventhandlers
         string _lastXamlRTFText = "";
@@ -461,6 +471,19 @@ namespace Dash
             }
         }
 
+        private async void Clipboard_ContentChanged(object sender, object e)
+        {
+            Clipboard.ContentChanged -= Clipboard_ContentChanged;
+            var dataPackage = new DataPackage();
+            DataPackageView clipboardContent = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            dataPackage.SetText(await clipboardContent.GetTextAsync());
+            //set RichTextView property to this view
+            dataPackage.Properties[nameof(RichTextView)] = this;
+            Clipboard.SetContent(dataPackage);
+            //Clipboard.ContentChanged += Clipboard_ContentChanged;
+        }
+
+
         #endregion
 
         #region load/unload
@@ -505,6 +528,8 @@ namespace Dash
                 this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
                 this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
             }
+
+            
         }
 
         #endregion

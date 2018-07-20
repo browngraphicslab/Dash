@@ -648,16 +648,20 @@ namespace Dash
                         else
                         {
                             string urlSource = null;
-                            var html = await Clipboard.GetContent().GetHtmlFormatAsync();
-                            foreach (var str in html.Split(new char[] { '\r' }))
+                            if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
                             {
-                                var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
-                                if (matches.Count != 0)
+                                var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                                foreach (var str in html.Split(new char[] {'\r'}))
                                 {
-                                    urlSource = matches[0].Value.Replace("SourceURL:", "");
-                                    break;
+                                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                    if (matches.Count != 0)
+                                    {
+                                        urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                        break;
+                                    }
                                 }
                             }
+
                             var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
 
