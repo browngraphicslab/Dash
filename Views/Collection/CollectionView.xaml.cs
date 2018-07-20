@@ -211,20 +211,20 @@ namespace Dash
             contextMenu.Items.Add(viewCollectionAs);
             elementsToBeRemoved.Add(viewCollectionAs);
 
-            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            foreach (CollectionViewType n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
             {
                 var vtype = new MenuFlyoutItem() {Text = n.ToString()};
 
-                void VType_OnClick(object sender, RoutedEventArgs e)
+                void VTypeOnClick(object sender, RoutedEventArgs e)
                 {
                     UndoManager.StartBatch();
                     SetView(n);
                     UndoManager.EndBatch();
                 }
 
-                vtype.Click += VType_OnClick;
-                vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
-                viewCollectionAs.Items.Add(vtype);
+                vtype.Click += VTypeOnClick;
+                //vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
+                viewCollectionAs.Items?.Add(vtype);
             }
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 

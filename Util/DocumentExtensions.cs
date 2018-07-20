@@ -348,12 +348,10 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField<DateTimeController>(KeyStore.ModifiedTimestampKey, DateTime.Now, true);
-            if (MainPage.Instance.WebContext == null)
-            {
-                return;
-            }
+            DocumentController dataDocument = doc.GetDataDocument();
+            dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
+
+            if (MainPage.Instance.WebContext == null) return;
 
             //var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 

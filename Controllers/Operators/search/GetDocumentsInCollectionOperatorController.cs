@@ -44,10 +44,11 @@ namespace Dash
             var searchTerm = inputs[TextKey] as TextController;
             if (searchTerm == null || searchTerm.Data == null) return;
 
-            var term = searchTerm.Data.ToLower();
+            var term = searchTerm.Data;
             var tree = DocumentTree.MainPageTree;
 
-            var final = tree.Where(doc => doc.DataDocument.Title?.ToLower().Contains(term) == true);
+            var reg = new System.Text.RegularExpressions.Regex("^" + term + "$");
+            var final = tree.Where(doc => reg.IsMatch(doc.DataDocument.Title));
             var docs = final.SelectMany(node => node.Children, (colNode, documentNode) => documentNode.ViewDocument);
             outputs[ResultsKey] = new ListController<DocumentController>(docs.Distinct());
         }

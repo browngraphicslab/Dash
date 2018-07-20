@@ -317,6 +317,7 @@
     <Compile Include="Util\DSL\Error Models\TextErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionSuggestion.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
     <Compile Include="Util\DSL\OuterReplScope.cs" />
     <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
@@ -329,6 +330,7 @@
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
+    <Compile Include="Util\DSL\ReplPopupSuggestion.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\ReturnScope.cs" />
@@ -336,6 +338,7 @@
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableSuggestion.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>

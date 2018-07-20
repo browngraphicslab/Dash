@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -21,9 +23,11 @@ namespace Dash
     public class ViewManipulationControls : IDisposable
     {
         private bool _processManipulation;
-        private CollectionFreeformBase _freeformView;
+        private readonly CollectionFreeformBase _freeformView;
         public double MinScale { get; set; } = .2;
         public double MaxScale { get; set; } = 5.0;
+
+        private List<PointerPoint> _deltas = new List<PointerPoint>();
 
         public bool IsScaleDiscrete = false;
         private double _elementScale = 1.0;
@@ -67,8 +71,6 @@ namespace Dash
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-          
-
             e.Handled = true;
 
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
@@ -80,11 +82,11 @@ namespace Dash
             }
             else //scale
             {
-                var point = e.GetCurrentPoint(_freeformView);
+                PointerPoint point = e.GetCurrentPoint(_freeformView);
 
                 // get the scale amount from the mousepoint in canvas space
-                float scaleAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
-
+                float scaleAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta >= 0 ? 1.07f : 1 / 1.07f;
+                
                 if (!IsScaleDiscrete)
                     //Clamp the scale factor 
                     ElementScale *= scaleAmount;
@@ -99,10 +101,8 @@ namespace Dash
                     view.UpdateResizers();
                 }
             }
-
-           
-
         }
+
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))

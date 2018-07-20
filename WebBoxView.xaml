@@ -11,6 +11,7 @@
 
     <StackPanel>
     <Grid x:Name="xGrid">
+        <StackPanel x:Name="xPanel"/>
     </Grid>
         <TextBlock x:Name="TextBlock"  Visibility="Collapsed">Website from  
     </TextBlock>

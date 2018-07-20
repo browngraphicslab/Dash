@@ -58,8 +58,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            if (sourceBinding != null)
-                element.SetBinding(WebView.SourceProperty, sourceBinding);
+            if (sourceBinding != null) element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
