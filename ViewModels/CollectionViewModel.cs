@@ -695,7 +695,7 @@ namespace Dash
             }
         }
 
-        public static string getTitlesUrl(string uri)
+        public static string GetTitlesUrl(string uri)
         {
             //try to get website title
             var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -703,20 +703,23 @@ namespace Dash
             var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
             webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
                 webName.Replace('_', ' ').Replace('-', ' '));
+
             var pageTitle = uriParts[uriParts.Count - 1];
+            //convert symbols back to correct chars
+            pageTitle = Uri.UnescapeDataString(pageTitle);
             //handle complicated google search url
             var googleSearchRes = pageTitle.Split("q=");
             pageTitle = googleSearchRes.Length > 1 ?
                 googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
             //check if pageTitle is some id
             pageTitle = (uriParts.Count > 1 &&
-                         (pageTitle.Count(x => Char.IsDigit(x) || x == '&' || x == '=' || x == '.') > pageTitle.Length / 3
+                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' ) > pageTitle.Length / 3
                                                 || pageTitle[0] == '#' || pageTitle == "index.html")) ?
                 uriParts[uriParts.Count - 2] : pageTitle;
-            pageTitle = pageTitle.Contains(".html") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
-            pageTitle = pageTitle.Contains(".htm") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+            pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
+            pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
             //dashes are used in urls as spaces
-            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ');
+            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
             //if first word is basically all numbers, its id, so delete
             var firstTitleWord = pageTitle.Split(' ').First();
             pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
@@ -789,7 +792,7 @@ namespace Dash
                     var uri = introParts.Last().Substring(10);
 
                     //try to get website and article title
-                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + getTitlesUrl(uri) + " </a> </div>";
+                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + GetTitlesUrl(uri) + " </a> </div>";
                    
 
                     //update html length in intro - the way that word reads HTML is kinda funny
