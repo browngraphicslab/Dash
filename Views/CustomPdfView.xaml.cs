@@ -779,7 +779,7 @@ namespace Dash
 			linkFlyout.ShowAt(this);
 		}
 
-        private void XAnnotationBox_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var where = new Point(0,0);
             var region = GetRegionDocument();

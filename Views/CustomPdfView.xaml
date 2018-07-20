@@ -39,7 +39,7 @@
                         <!--Canvas for doing text selection-->
                         <Canvas x:Name="TestSelectionCanvas"></Canvas>
                     </Grid>
-                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Red"  HorizontalAlignment="Right" VerticalAlignment="Stretch" PointerPressed="XAnnotationBox_OnPointerPressed">
+                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Red"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
                         
                         <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
                             <!--<ItemsControl.ItemTemplate>
