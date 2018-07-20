@@ -27,6 +27,8 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl, IAnnotatable
     {
+        #region Intilization 
+
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
@@ -66,6 +68,7 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
+       
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -96,9 +99,16 @@ namespace Dash
                 FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                 _everFocused = true;
                 getDocView().CacheMode = null;
+                Clipboard.ContentChanged += Clipboard_ContentChanged;
+                Debug.WriteLine("GOT FOCUS");
             };
 
-            xRichEditBox.LostFocus += delegate { if (getDocView() != null) getDocView().CacheMode = new BitmapCache(); };
+            xRichEditBox.LostFocus += delegate
+            {
+                if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                Debug.WriteLine("LOST FOCUS");
+            };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
@@ -220,6 +230,8 @@ namespace Dash
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
         }
+
+        #endregion
 
         #region eventhandlers
         string _lastXamlRTFText = "";
@@ -463,6 +475,19 @@ namespace Dash
             }
         }
 
+        private async void Clipboard_ContentChanged(object sender, object e)
+        {
+            Clipboard.ContentChanged -= Clipboard_ContentChanged;
+            var dataPackage = new DataPackage();
+            DataPackageView clipboardContent = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            dataPackage.SetText(await clipboardContent.GetTextAsync());
+            //set RichTextView property to this view
+            dataPackage.Properties[nameof(RichTextView)] = this;
+            Clipboard.SetContent(dataPackage);
+            Clipboard.ContentChanged += Clipboard_ContentChanged;
+        }
+
+
         #endregion
 
         #region load/unload
@@ -498,14 +523,8 @@ namespace Dash
             {
                 var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
 
-                var reg = new Regex("http[s]*://[a-z0-9]+.([a-z]+).[a-z]+/");
-                var reg2 = new Regex(".*/([^/]*)");
-                var something = reg.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var other = reg2.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var reg3 = new Regex(".*/([^/]*)/");
-                if (string.IsNullOrEmpty(other.ToString()))
-                    other = reg3.Match(url)?.Groups.LastOrDefault().Captures.FirstOrDefault();
-                var link = "\r- " + something + ":" + other;
+                //this does better formatting/ parsing than the regex stuff can
+                var link =  CollectionViewModel.GetTitlesUrl(url);
 
                 this.xRichEditBox.Document.Selection.Text = link;
                 this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
@@ -513,6 +532,8 @@ namespace Dash
                 this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
                 this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
             }
+
+            
         }
 
         #endregion

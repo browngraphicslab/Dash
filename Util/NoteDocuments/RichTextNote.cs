@@ -33,13 +33,14 @@ namespace Dash
         public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size(), string urlSource=null) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text + (urlSource != null ? RichTextView.HyperlinkMarker : ""))));
+            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text + (urlSource != null ? "\r Text from " + RichTextView.HyperlinkMarker : ""))));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             Document.Tag = "Rich Text Note Layout " + rcount;
             dataDocument.Tag = "Rich Text Note Data" + rcount++;
             if (urlSource != null)
             {
                 dataDocument.SetField<TextController>(KeyStore.SourceUriKey, urlSource, true);
+                dataDocument.SetField<TextController>(KeyStore.WebContextKey, urlSource, true);
             }
         }
     }

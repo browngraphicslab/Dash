@@ -70,15 +70,27 @@ namespace Dash
 
             if (html.StartsWith("http"))
             {
+                webView.SetText(html);
+
                 // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
                 web.Navigate(new Uri(html));
             }
             else
             {
-                var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-                var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                string correctedHtml;
+                if (html.Contains("<html"))
+                {
+                    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+                    correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                }
+                else
+                {
+                    correctedHtml = html;
+                }
                 web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
             };
+            
+
             web.LoadCompleted += Web_LoadCompleted;
 
             SetupBindings(web, docController, context);
