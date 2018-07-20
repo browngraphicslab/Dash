@@ -424,6 +424,11 @@ namespace Dash
                 xRichEditBox.Document.Selection.TypeText("\t");
                 e.Handled = true;
             }
+            else if (e.Key == VirtualKey.Space)
+            {
+                xRichEditBox.Document.Selection.TypeText(Convert.ToChar(160).ToString());
+                e.Handled = true;
+            }
             else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
             {
                 switch (e.Key)
