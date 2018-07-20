@@ -98,7 +98,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents();   // pan/zoom collection so all of its contents are visible
+                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
 
         public void Loaded(bool isLoaded)
@@ -191,11 +191,13 @@ namespace Dash
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
-        public void FitContents()
+        public void FitContents(CollectionView cview)
         {
             if (FitToParent && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                var parSize = ContainerDocument.GetActualSize() ?? new Point();
+                 var realPar = cview?.CurrentView;
+                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -643,8 +645,20 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            string urlSource = null;
+                            var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                            foreach (var str in html.Split(new char[] { '\r' }))
+                            {
+                                var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                if (matches.Count != 0)
+                                {
+                                    urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                    break;
+                                }
+                            }
+                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+
                         }
                     }
                 }
@@ -852,7 +866,7 @@ namespace Dash
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
                         {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
                                 matches[0].Value.Replace("SourceURL:", ""), true);
                             break;
                         }
