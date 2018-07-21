@@ -95,6 +95,7 @@ namespace Dash
         public DocumentController DataDocument { get; }
 
         private WPdf.PdfDocument _wPdfDocument;
+        public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
         public CustomPdfView()
         {
@@ -181,7 +182,6 @@ namespace Dash
             {
                 return;
             }
-            Pages.Clear();
 
             StorageFile file;
             try
@@ -260,7 +260,7 @@ namespace Dash
             if (add)
             {
                 _currentPageCount = (int)_wPdfDocument.PageCount;
-                Pages.Clear();
+                //Pages.Clear();
             }
 
             for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
@@ -281,10 +281,6 @@ namespace Dash
                 {
                     return;
                 }
-
-                _pages.Width = options.DestinationWidth;
-                _pages.Height = options.DestinationHeight;
-                _pages[(int) i] = source;
             }
         }
 
@@ -627,8 +623,7 @@ namespace Dash
         private double _height;
         private double _width;
         private double _verticalOffset;
-
-        private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
         }
@@ -641,7 +636,8 @@ namespace Dash
 
         public async void UnFreeze()
         {
-            await RenderPdf(ScrollViewer.ActualWidth);
+            //await RenderPdf(ScrollViewer.ActualWidth);
+            Pages.View_SizeChanged(null, null);
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)

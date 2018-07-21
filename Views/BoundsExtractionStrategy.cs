@@ -107,8 +107,12 @@ namespace Dash
 
         public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
         {
+            if (_pages.Count <= endPage)
+            {
+                return new List<SelectableElement>();
+            }
             var pageElements = new List<List<SelectableElement>>();
-            var requestedPages = _pages.GetRange(startPage, endPage - startPage);
+            var requestedPages = endPage == startPage ? new List<Rectangle>{_pages[startPage]} : _pages.GetRange(startPage, endPage - startPage);
             foreach (var page in requestedPages)
             {
                 foreach (var selectableElement in _elements)

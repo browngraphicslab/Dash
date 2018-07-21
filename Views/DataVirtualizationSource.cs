@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -17,16 +20,20 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
 using Org.BouncyCastle.Security;
 
 namespace Dash
 {
     public class DataVirtualizationSource<T>
     {
-        private ObservableCollection<ImageSource> _images;
+        private List<ImageSource> _images;
         private ObservableCollection<UIElement> _visibleElements;
         private List<SelectableElement> _selectableElements;
         private List<SelectableElement> _visibleSelectableElements;
+        private Dictionary<int, List<SelectableElement>> _selectableElementDictionary;
+        private KeyValuePair<int, int> _startEndIndices;
         private ScrollViewer _scrollViewer;
         private int bufferSize = 1;
         private int _startIndex;
@@ -41,17 +48,17 @@ namespace Dash
         {
             _view = view;
             _scrollViewer = view.ScrollViewer;
-            _images = new ObservableCollection<ImageSource>();
             _selectableElements = new List<SelectableElement>();
             _visibleSelectableElements = new List<SelectableElement>();
+            _images = new List<ImageSource>();
             _visibleElements = new ObservableCollection<UIElement>();
+            _selectableElementDictionary = new Dictionary<int, List<SelectableElement>>();
             view.PageItemsControl.ItemsSource = _visibleElements;
             view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
-            view.SizeChanged += View_SizeChanged;
             view.Loaded += View_Loaded;
         }
 
-        private void View_Loaded(object sender, RoutedEventArgs e)
+        private async void View_Loaded(object sender, RoutedEventArgs e)
         {
             var startIndex = 0;
             var endIndex = 1;
@@ -73,32 +80,49 @@ namespace Dash
 
             _startIndex = startIndex;
             _endIndex = endIndex;
-        }
-
-        private void View_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            var startIndex = 0;
-            var endIndex = 1;
-            var scale = e.NewSize.Width / Width;
-            var height = Height * scale;
-            var temp = _verticalOffset;
-            while (temp - height > 0)
-            {
-                temp -= height;
-                startIndex++;
-            }
-
-            var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
-            while (endHeight - height > 0)
-            {
-                endHeight -= height;
-                endIndex++;
-            }
 
             RenderIndices(startIndex, endIndex);
+        }
 
-            _startIndex = startIndex;
-            _endIndex = endIndex;
+        public async void View_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            //var startIndex = 0;
+            //var endIndex = 1;
+            //var scale = e.NewSize.Width / Width;
+            //var height = Height * scale;
+            //var temp = _verticalOffset;
+            //while (temp - height > 0)
+            //{
+            //    temp -= height;
+            //    startIndex++;
+            //}
+
+            //var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
+            //while (endHeight - height > 0)
+            //{
+            //    endHeight -= height;
+            //    endIndex++;
+            //}
+
+            for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
+            {
+                if (_images.Count == _view.PDFdoc?.PageCount)
+                {
+                    _images[i] = await RenderPage((uint) i);
+                }
+                else
+                {
+                    Add(await RenderPage((uint)i));
+                }
+                Debug.WriteLine(i);
+            }
+
+            _view.CustomPdfView_OnSizeChanged(null, null);
+
+            RenderIndices(_startIndex, _endIndex, true);
+
+            //_startIndex = startIndex;
+            //_endIndex = endIndex;
         }
 
         private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -128,7 +152,7 @@ namespace Dash
             _endIndex = endIndex;
         }
 
-        private void RenderIndices(int startIndex, int endIndex)
+        private async void RenderIndices(int startIndex, int endIndex, bool forceRender = false)
         {
             if (!_visibleElements.Any())
             {
@@ -137,12 +161,13 @@ namespace Dash
 
             startIndex = Math.Max(startIndex - bufferSize, 0);
             endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
-            _selectableElements = _view.Strategy.GetSelectableElements(startIndex, endIndex);
+            
+            //_startEndIndices = new KeyValuePair<int, int>(startIndex, endIndex);
             //var startOffset = Math.Abs(_startIndex - startIndex);
             //var startStart = Math.Min(_startIndex, startIndex);
             //if (_startIndex > startIndex)
             //{
-            //    _view.SelectableElements.InsertRange(0, _view.Strategy.GetSelectableElements(startStart, startStart + startOffset));
+            //    _view.SelectableElements.InsertRange(0, _view.Strategy.GetSelectableElements(startStart, _startIndex));
             //}
             //else if (_startIndex < startIndex)
             //{
@@ -154,7 +179,7 @@ namespace Dash
             //var endStart = Math.Min(_startIndex, startIndex);
             //if (_endIndex < endIndex)
             //{
-            //    _view.SelectableElements.AddRange(_view.Strategy.GetSelectableElements(endStart, endStart + endOffset));
+            //    _view.SelectableElements.AddRange(_view.Strategy.GetSelectableElements(endStart, _endIndex));
             //}
             //else if (_endIndex > endIndex)
             //{
@@ -162,6 +187,7 @@ namespace Dash
             //    _view.SelectableElements = _view.SelectableElements.SkipLast(removeFromEnd.Count).ToList();
             //}
 
+            var elements = new List<SelectableElement>();
             for (var i = startIndex; i < endIndex; i++)
             {
                 if (_visibleElements[i] is Image img)
@@ -179,7 +205,11 @@ namespace Dash
                         Margin = new Thickness(0, 0, 0, 10)
                     };
                 }
+
+                elements.AddRange(_selectableElementDictionary[i]);
             }
+
+            _view.SelectableElements = elements;
 
             for (var i = 0; i < _images.Count; i++)
             {
@@ -198,6 +228,55 @@ namespace Dash
             }
         }
 
+        private async Task<ImageSource> RenderPage(uint page)
+        {
+            if (_view.PdfUri == null)
+            {
+                return null;
+            }
+
+            StorageFile file;
+            try
+            {
+                file = await StorageFile.GetFileFromApplicationUriAsync(_view.PdfUri);
+            }
+            catch (ArgumentException)
+            {
+                try
+                {
+                    file = await StorageFile.GetFileFromPathAsync(_view.PdfUri.LocalPath);
+                }
+                catch (ArgumentException)
+                {
+                    return null;
+                }
+            }
+
+            var reader = new PdfReader(await file.OpenStreamForReadAsync());
+            var pdfDocument = new PdfDocument(reader);
+            var strategy = new BoundsExtractionStrategy();
+            var processor = new PdfCanvasProcessor(strategy);
+
+            var options = new Windows.Data.Pdf.PdfPageRenderOptions();
+            var stream = new InMemoryRandomAccessStream();
+            var widthRatio = _view.ActualWidth == 0 ? 1 : _view.ActualWidth / _view.PdfMaxWidth;
+            options.DestinationWidth = (uint)(widthRatio * _view.PDFdoc.GetPage(page).Dimensions.MediaBox.Width);
+            options.DestinationHeight = (uint)(widthRatio * _view.PDFdoc.GetPage(page).Dimensions.MediaBox.Height);
+            await _view.PDFdoc.GetPage(page).RenderToStreamAsync(stream, options);
+            var source = new BitmapImage();
+            await source.SetSourceAsync(stream);
+
+            if (_selectableElementDictionary.ContainsKey((int) page))
+            {
+                _selectableElementDictionary[(int) page] = strategy.GetSelectableElements((int) page, (int) page);
+            }
+            else
+            {
+                _selectableElementDictionary.Add((int) page, strategy.GetSelectableElements((int) page, (int) page));
+            }
+            return source;
+        }
+
         public void Add(ImageSource newImage)
         {
             if (!_images.Contains(newImage))
@@ -206,6 +285,10 @@ namespace Dash
                 var i = _images.IndexOf(newImage);
                 if (_visibleElements.Count <= i)
                 {
+                    if (!_selectableElementDictionary.ContainsKey(i))
+                    {
+                        _selectableElementDictionary.Add(i, _view.Strategy.GetSelectableElements(i, i));
+                    }
                     _visibleElements.Add(new Image
                     {
                         Source = newImage,
@@ -219,21 +302,29 @@ namespace Dash
                         img.Source = newImage;
                     }
                 }
+                else
+                {
+                    _visibleElements[i] = (new Rectangle
+                    {
+                        Width = Width,
+                        Height = Height,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    });
+                }
             }
         }
 
         public void Clear()
         {
-            _images.Clear();
         }
 
-        public BitmapImage this[int i]
+        public ImageSource this[int i]
         {
             get
             {
                 if (_images.Count <= i)
                 {
-                    return _images[i] as BitmapImage;
+                    return _images[i];
                 }
                 else
                 {
@@ -262,12 +353,6 @@ namespace Dash
                     }
                     else
                     {
-                        _visibleElements.Add(new Rectangle
-                        {
-                            Width = Width,
-                            Height = Height,
-                            Margin = new Thickness(0, 0, 0, 10)
-                        });
                     }
                 }
                 else

@@ -9,8 +9,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged"
-    KeyDown="CustomPdfView_OnKeyDown">
+    KeyDown="CustomPdfView_OnKeyDown"
+    SizeChanged="CustomPdfView_OnSizeChanged">
 
     <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited">
         <Grid.ColumnDefinitions>
