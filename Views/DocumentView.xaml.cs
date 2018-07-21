@@ -24,6 +24,9 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Dash.Views;
 using iText.StyledXmlParser.Jsoup.Nodes;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -270,6 +273,8 @@ namespace Dash
 						: ManipulationModes.None;
 				MainPage.Instance.Focus(FocusState.Programmatic);
 				e.Handled = ManipulationMode != ManipulationModes.None;
+                if (false)  // bcz: set to 'true' for drag/Drop interactions
+                    SetupDragDropDragging(e);
 			};
 
 			PointerEntered += DocumentView_PointerEntered;
@@ -333,16 +338,25 @@ namespace Dash
 				xLeftResizeControl, xRightResizeControl,
 				xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
 			})
-			{
-				handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+            {
+                handle.Tag = handle.ManipulationMode;
+                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
 				handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
 				handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
 				handle.PointerPressed += (s, e) =>
 				{
-					CapturePointer(e.Pointer);
 					ManipulationMode = ManipulationModes.None;
 					e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-				};
+                    if (e.Handled)
+                    {
+                        CapturePointer(e.Pointer);
+                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
+                    }
+                    else if (false) // bcz: set to true for drag/drop interactions
+                        handle.ManipulationMode = ManipulationModes.None;
+                    else
+                        handle.ManipulationMode = ManipulationModes.All;
+                };
 			}
 
 			// setup OperatorEllipse 
@@ -488,10 +502,56 @@ namespace Dash
 					MenuFlyout.Hide();
 			};
 
-			
-		}
 
-		public void RemoveResizeHandlers()
+        }
+
+        public uint PointerId;
+        public async void SetupDragDropDragging(PointerRoutedEventArgs e)
+        {
+            if (e != null)
+            {
+                if (!e.IsRightPressed() || ViewModel.DataDocument.GetField<TextController>(KeyStore.CollectionViewTypeKey) != null)
+                    return;
+                if ((e.OriginalSource as FrameworkElement).Tag == e)
+                    return;
+                ManipulationMode = ManipulationModes.None;
+                (e.OriginalSource as FrameworkElement).Tag = e;
+                (e.OriginalSource as FrameworkElement).CanDrag = true;
+            }
+            Matrix mat = ((MatrixTransform)TransformToVisual(Window.Current.Content)).Matrix;
+            mat.OffsetX = 0;
+            mat.OffsetY = 0;
+
+            Debug.WriteLine(new Point(ActualWidth, ActualHeight));
+
+            var trans = new MatrixTransform { Matrix = mat };
+            Point p = trans.TransformPoint(new Point(ActualWidth - xTitleBorder.Margin.Left, ActualHeight));
+
+            var cdo = new CoreDragOperation();
+            var rtb = new RenderTargetBitmap();
+
+            await rtb.RenderAsync(this, (int)p.X, (int)p.Y);
+
+            IBuffer buf = await rtb.GetPixelsAsync();
+            SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+
+            Point pos = e?.GetCurrentPoint(this).Position ?? new Point();
+
+            pos.X -= xTitleBorder.Margin.Left;
+            pos = trans.TransformPoint(pos);
+            pos.X = Math.Max(0, pos.X);
+            pos.Y = Math.Max(0, pos.Y);
+            pos.X = Math.Min(pos.X, ActualWidth);
+            pos.Y = Math.Min(pos.Y, ActualHeight);
+
+            cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
+            cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
+            cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
+
+            await cdo.StartAsync();
+        }
+
+        public void RemoveResizeHandlers()
 		{
 			foreach (var handle in new Rectangle[]
 			{
