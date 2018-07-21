@@ -799,11 +799,11 @@ namespace Dash
                 Width = xAnnotationBox.ActualWidth,
             };
             docview.hideResizers();
-            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+
             Canvas.SetTop(docview, region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data.Y * xAnnotations.ActualHeight);
             //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
             Annotations.Add(docview);
-            DocControllers.Add(docview.ViewModel.LayoutDocument);
+            DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
             DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
 
         }
