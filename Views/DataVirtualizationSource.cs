@@ -194,16 +194,14 @@ namespace Dash
                 {
                     if (img.Source != _images[i])
                     {
-                        img.Source = _images[i];
+                        Debug.WriteLine($"Page {i} is being loaded");
+                        img.Source = await RenderPage((uint)i);
                     }
                 }
                 else
                 {
-                    _visibleElements[i] = new Image
-                    {
-                        Source = _images[i],
-                        Margin = new Thickness(0, 0, 0, 10)
-                    };
+                    Debug.WriteLine($"Page {i} is being loaded");
+                    _visibleElements[i] = new Image {Source = await RenderPage((uint) i)};
                 }
 
                 elements.AddRange(_selectableElementDictionary[i]);
