@@ -28,7 +28,6 @@ namespace Dash
 {
     public class DataVirtualizationSource<T>
     {
-        private List<ImageSource> _images;
         private ObservableCollection<UIElement> _visibleElements;
         private List<SelectableElement> _selectableElements;
         private List<SelectableElement> _visibleSelectableElements;
@@ -50,7 +49,6 @@ namespace Dash
             _scrollViewer = view.ScrollViewer;
             _selectableElements = new List<SelectableElement>();
             _visibleSelectableElements = new List<SelectableElement>();
-            _images = new List<ImageSource>();
             _visibleElements = new ObservableCollection<UIElement>();
             _selectableElementDictionary = new Dictionary<int, List<SelectableElement>>();
             view.PageItemsControl.ItemsSource = _visibleElements;
@@ -58,8 +56,26 @@ namespace Dash
             view.Loaded += View_Loaded;
         }
 
-        private async void View_Loaded(object sender, RoutedEventArgs e)
+        private void View_Loaded(object sender, RoutedEventArgs e)
         {
+            for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
+            {
+                _visibleElements.Add(new Rectangle
+                {
+                    Width = Width,
+                    Height = Height,
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+                _view.PdfTotalHeight += Height + 10;
+            }
+
+            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
+            if (scrollRatio != null)
+            {
+                _view.ScrollViewer.UpdateLayout();
+                _view.ScrollViewer.ChangeView(null, scrollRatio.Data * _view.ScrollViewer.ExtentHeight, null, true);
+            }
+
             var startIndex = 0;
             var endIndex = 1;
             var scale = _scrollViewer.ViewportWidth / Width;
@@ -81,48 +97,36 @@ namespace Dash
             _startIndex = startIndex;
             _endIndex = endIndex;
 
-            RenderIndices(startIndex, endIndex);
+            RenderIndices(startIndex, endIndex, true);
         }
 
-        public async void View_SizeChanged(object sender, SizeChangedEventArgs e)
+        public void View_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            //var startIndex = 0;
-            //var endIndex = 1;
-            //var scale = e.NewSize.Width / Width;
-            //var height = Height * scale;
-            //var temp = _verticalOffset;
-            //while (temp - height > 0)
-            //{
-            //    temp -= height;
-            //    startIndex++;
-            //}
-
-            //var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
-            //while (endHeight - height > 0)
-            //{
-            //    endHeight -= height;
-            //    endIndex++;
-            //}
-
-            for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
+            var startIndex = 0;
+            var endIndex = 1;
+            var scale = e?.NewSize.Width / Width ?? _view.ScrollViewer.ActualWidth / Width;
+            var height = Height * scale;
+            var temp = _verticalOffset;
+            while (temp - height > 0)
             {
-                if (_images.Count == _view.PDFdoc?.PageCount)
-                {
-                    _images[i] = await RenderPage((uint) i);
-                }
-                else
-                {
-                    Add(await RenderPage((uint)i));
-                }
-                Debug.WriteLine(i);
+                temp -= height;
+                startIndex++;
             }
 
-            _view.CustomPdfView_OnSizeChanged(null, null);
+            var endHeight = _scrollViewer.ViewportHeight + _verticalOffset;
+            while (endHeight - height > 0)
+            {
+                endHeight -= height;
+                endIndex++;
+            }
+
+            startIndex = Math.Max(startIndex - bufferSize, 0);
+            endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
 
             RenderIndices(_startIndex, _endIndex, true);
 
-            //_startIndex = startIndex;
-            //_endIndex = endIndex;
+            _startIndex = startIndex;
+            _endIndex = endIndex;
         }
 
         private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -146,6 +150,9 @@ namespace Dash
                 endIndex++;
             }
 
+            startIndex = Math.Max(startIndex - bufferSize, 0);
+            endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
+
             RenderIndices(startIndex, endIndex);
 
             _startIndex = startIndex;
@@ -156,12 +163,34 @@ namespace Dash
         {
             if (!_visibleElements.Any())
             {
+                for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
+                {
+                    if (startIndex <= i && i <= endIndex)
+                    {
+                        _visibleElements.Add(new Image
+                        {
+                            Source = await RenderPage((uint) i),
+                            Margin = new Thickness(0, 0, 0, 10)
+                        });
+                    }
+                    else
+                    {
+                        _visibleElements.Add(new Rectangle
+                        {
+                            Width = Width,
+                            Height = Height,
+                            Margin = new Thickness(0, 0, 0, 10)
+                        });
+                    }
+                }
                 return;
             }
 
-            startIndex = Math.Max(startIndex - bufferSize, 0);
-            endIndex = Math.Min(endIndex + bufferSize, _visibleElements.Count);
-            
+            if (startIndex == _startIndex && endIndex == _endIndex && !forceRender)
+            {
+                return;
+            }
+
             //_startEndIndices = new KeyValuePair<int, int>(startIndex, endIndex);
             //var startOffset = Math.Abs(_startIndex - startIndex);
             //var startStart = Math.Min(_startIndex, startIndex);
@@ -190,26 +219,27 @@ namespace Dash
             var elements = new List<SelectableElement>();
             for (var i = startIndex; i < endIndex; i++)
             {
-                if (_visibleElements[i] is Image img)
+                if (_visibleElements[i] is Image img && forceRender)
                 {
-                    if (img.Source != _images[i])
-                    {
-                        Debug.WriteLine($"Page {i} is being loaded");
-                        img.Source = await RenderPage((uint)i);
-                    }
+                    Debug.WriteLine($"Page {i} is being loaded");
+                    img.Source = await RenderPage((uint)i);
                 }
                 else
                 {
                     Debug.WriteLine($"Page {i} is being loaded");
-                    _visibleElements[i] = new Image {Source = await RenderPage((uint) i)};
+                    _visibleElements[i] = new Image
+                    {
+                        Source = await RenderPage((uint) i),
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
                 }
 
-                elements.AddRange(_selectableElementDictionary[i]);
+                //elements.AddRange(_selectableElementDictionary[i]);
             }
 
-            _view.SelectableElements = elements;
+            //_view.SelectableElements = elements;
 
-            for (var i = 0; i < _images.Count; i++)
+            for (var i = 0; i < _visibleElements.Count; i++)
             {
                 if (i < startIndex || i > endIndex)
                 {
@@ -236,13 +266,13 @@ namespace Dash
             StorageFile file;
             try
             {
-                file = await StorageFile.GetFileFromApplicationUriAsync(_view.PdfUri);
+                file = await StorageFile.GetFileFromPathAsync(_view.PdfUri.LocalPath);
             }
             catch (ArgumentException)
             {
                 try
                 {
-                    file = await StorageFile.GetFileFromPathAsync(_view.PdfUri.LocalPath);
+                    file = await StorageFile.GetFileFromApplicationUriAsync(_view.PdfUri);
                 }
                 catch (ArgumentException)
                 {
@@ -275,89 +305,9 @@ namespace Dash
             return source;
         }
 
-        public void Add(ImageSource newImage)
-        {
-            if (!_images.Contains(newImage))
-            {
-                _images.Add(newImage);
-                var i = _images.IndexOf(newImage);
-                if (_visibleElements.Count <= i)
-                {
-                    if (!_selectableElementDictionary.ContainsKey(i))
-                    {
-                        _selectableElementDictionary.Add(i, _view.Strategy.GetSelectableElements(i, i));
-                    }
-                    _visibleElements.Add(new Image
-                    {
-                        Source = newImage,
-                        Margin = new Thickness(0, 0, 0, 10)
-                    });
-                }
-                else if (_visibleElements[i] is Image img)
-                {
-                    if (img.Source != newImage)
-                    {
-                        img.Source = newImage;
-                    }
-                }
-                else
-                {
-                    _visibleElements[i] = (new Rectangle
-                    {
-                        Width = Width,
-                        Height = Height,
-                        Margin = new Thickness(0, 0, 0, 10)
-                    });
-                }
-            }
-        }
-
         public void Clear()
         {
-        }
 
-        public ImageSource this[int i]
-        {
-            get
-            {
-                if (_images.Count <= i)
-                {
-                    return _images[i];
-                }
-                else
-                {
-                    throw new IndexOutOfRangeException();
-                }
-            }
-            set
-            {
-                if (_images.Count > i)
-                {
-                    if (!_images[i].Equals(value))
-                    {
-                        _images[i] = value;
-                        if (_visibleElements[i] is Image img)
-                        {
-                            img.Source = value;
-                        }
-                    }
-                }
-                else if (value != null)
-                {
-                    _images.Add(value);
-                    if ((_startIndex != null && _startIndex <= i) && (_endIndex != null && _endIndex >= i))
-                    {
-                        _visibleElements.Add(new Image {Source = value, Margin = new Thickness(0, 0, 0, 10)});
-                    }
-                    else
-                    {
-                    }
-                }
-                else
-                {
-                    throw new InvalidParameterException();
-                }
-            }
         }
     }
 }

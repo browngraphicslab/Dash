@@ -220,13 +220,6 @@ namespace Dash
             _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
             await RenderPdf(null);
 
-            var scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
-            if (scrollRatio != null)
-            {
-                ScrollViewer.UpdateLayout();
-                ScrollViewer.ChangeView(null, scrollRatio.Data * ScrollViewer.ExtentHeight, null, true);
-			}
-
             await Task.Run(() =>
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
@@ -238,6 +231,8 @@ namespace Dash
                     processor.ProcessPageContent(page);
                 }
             });
+
+            SelectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages() - 1);
 
             reader.Close();
             pdfDocument.Close();
@@ -263,25 +258,25 @@ namespace Dash
                 //Pages.Clear();
             }
 
-            for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
-            {
-                Debug.WriteLine($"{i}/{_wPdfDocument.PageCount}");
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-                var stream = new InMemoryRandomAccessStream();
-                var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
-                options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
-                options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
-                await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
-                var source = new BitmapImage();
-                await source.SetSourceAsync(stream);
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-            }
+            //for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
+            //{
+            //    Debug.WriteLine($"{i}/{_wPdfDocument.PageCount}");
+            //    if (token.IsCancellationRequested)
+            //    {
+            //        return;
+            //    }
+            //    var stream = new InMemoryRandomAccessStream();
+            //    var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
+            //    options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
+            //    options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
+            //    await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
+            //    var source = new BitmapImage();
+            //    await source.SetSourceAsync(stream);
+            //    if (token.IsCancellationRequested)
+            //    {
+            //        return;
+            //    }
+            //}
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
