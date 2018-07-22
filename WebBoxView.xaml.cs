@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
@@ -20,22 +13,38 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class WebBoxView : UserControl
+    public sealed partial class WebBoxView
     {
-        private WebView xWebView;
+        private readonly WebView _xWebView;
+
         public WebBoxView()
         {
-            this.InitializeComponent();
-            //TODO Try out SeparateThread and SeparateProcess
-            xWebView = new WebView(WebViewExecutionMode.SeparateThread);
-            xGrid.Children.Add(xWebView);
-            xWebView.Visibility = Visibility.Collapsed;
-            xWebView.LoadCompleted += delegate { xWebView.Visibility = Visibility.Visible; };
+            InitializeComponent();
+            _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
+            xPanel.Children.Add(_xWebView);
+            _xWebView.Visibility = Visibility.Collapsed;
+            _xWebView.LoadCompleted += delegate { _xWebView.Visibility = Visibility.Visible; };
         }
 
-        public WebView GetView()
+        public WebView GetView() => _xWebView;
+
+        public void SetText(string url)
         {
-            return xWebView;
+            if (!String.IsNullOrEmpty(url))
+            {
+                var headline = CollectionViewModel.GetTitlesUrl(url);
+                Run run = new Run() { Text = " " +  headline };
+
+                Hyperlink hyperlink = new Hyperlink()
+                {
+                    NavigateUri = new System.Uri(url)
+                };
+                hyperlink.Inlines.Add(run);
+               
+               TextBlock.Visibility = Visibility.Visible;
+               TextBlock.Inlines.Add(hyperlink);
+
+            }
         }
     }
 }

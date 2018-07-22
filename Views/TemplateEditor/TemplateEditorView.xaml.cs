@@ -2435,12 +2435,12 @@ namespace Dash
 			DocumentControllers.Add(freeform);
 		}
 
-		//adds a grid collection to the template on click
-		private void AddGrid_OnClick(object sender, RoutedEventArgs e)
-		{
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Schema, 100,
-				100).Document);
-		}
+        //adds a grid collection to the template on click
+        private void AddGrid_OnClick(object sender, RoutedEventArgs e)
+        {
+            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Schema, 200,
+                200).Document);
+        }
 
 		//adds a stackpanel to the template on click
 		private void AddList_OnClick(object sender, RoutedEventArgs e)
@@ -2452,11 +2452,11 @@ namespace Dash
              list.PointerEntered
              DocumentControllers.Add(new DocumentController(new ListModel() as DocumentModel));
             */
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 100,
-				100).Document);
-			//IList<DocumentController> layoutList = new ObservableCollection<DocumentController>();
-			//DocumentControllers.Add(new ListViewLayout(layoutList, new Point(0,0), new Size(100,200)).Document);
-		}
+            DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 200,
+                200).Document);
+            //IList<DocumentController> layoutList = new ObservableCollection<DocumentController>();
+            //DocumentControllers.Add(new ListViewLayout(layoutList, new Point(0,0), new Size(100,200)).Document);
+        }
 
 		private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{

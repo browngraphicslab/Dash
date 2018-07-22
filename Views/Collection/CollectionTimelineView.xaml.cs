@@ -110,7 +110,7 @@ namespace Dash
             };
 
             //Todo: make sortkey work for other keys
-            SortKey = KeyStore.ModifiedTimestampKey;
+            SortKey = KeyStore.DateModifiedKey;
 
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;

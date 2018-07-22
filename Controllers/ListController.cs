@@ -240,8 +240,7 @@ namespace Dash
 
             string suffix = Count > cutoff ? $", ... +{Count - cutoff}" : "";
 
-            const string unindexed = "All available function calls...";
-            return Indexed ? $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]" : $"[{unindexed}]";
+            return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
         public override object GetValue(Context context) => TypedData.ToList();

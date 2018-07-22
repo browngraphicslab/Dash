@@ -147,7 +147,6 @@ namespace Dash
             xInkCanvas.InkPresenter.IsInputEnabled = value;
         }
 
-
 	    public void ShowAnnotations(bool shouldShow)
 	    {
 		    AnnotationsVisible = shouldShow;

@@ -1042,6 +1042,7 @@ namespace Dash
                 if (text == "v" && this.IsCtrlPressed())
                 {
                     ViewModel.Paste(Clipboard.GetContent(), where);
+                    
                     previewTextbox.Visibility = Visibility.Collapsed;
                 }
                 else

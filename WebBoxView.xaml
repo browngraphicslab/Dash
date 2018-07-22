@@ -9,6 +9,11 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
+    <StackPanel>
     <Grid x:Name="xGrid">
+        <StackPanel x:Name="xPanel"/>
     </Grid>
+        <TextBlock x:Name="TextBlock"  Visibility="Collapsed">Website from  
+    </TextBlock>
+    </StackPanel>
 </UserControl>

@@ -88,7 +88,8 @@ document.addEventListener('DOMContentLoaded',
                                                 var data = btoa(pdf);
                                                 var request = {
                                                     "$type": "Dash.GSuiteImportRequest, Dash",
-                                                    "data": data
+                                                    "data": data,
+                                                    "url": tab.url
                                                 }
                                                 console.log(request);
                                                 chrome.runtime.sendMessage({ type: "sendRequest", data: request });
