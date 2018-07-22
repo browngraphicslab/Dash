@@ -16,38 +16,8 @@
                 <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <RichEditBox x:FieldModifier="public" 
-                         AllowDrop="True"
-                         Grid.Row="0"
-                         x:Name="xRichEditBox" 
-                        Foreground="{ThemeResource TextBrush}"  
-                         VerticalAlignment="Stretch" 
-                         HorizontalAlignment="Stretch" 
-                         BorderThickness="0"
-                        TextWrapping="NoWrap"
-                         IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
-                         IsTextPredictionEnabled="True"
-                         Background="Transparent"
-                         >
-
-            <!--FORMAT OPTIONS FLYOUT-->
-            <!--<FlyoutBase.AttachedFlyout>
-                <Flyout>
-                    <Grid x:Name="xAttachedFlyout">
-
-                    </Grid>
-                </Flyout>
-            </FlyoutBase.AttachedFlyout>-->
-            
-            <!--Flyout for attached links-->
-            <FlyoutBase.AttachedFlyout>
-                <MenuFlyout x:Name="xLinkFlyout"/>
-            </FlyoutBase.AttachedFlyout>
-
-        </RichEditBox>
-
-        <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
+        <StackPanel Orientation="Vertical">
+            <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
                         VerticalAlignment="Top" Margin="5" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
@@ -69,6 +39,37 @@
                     </StackPanel.Clip>
                 </StackPanel>
             </StackPanel>
+            <RichEditBox x:FieldModifier="public" 
+                         AllowDrop="True"
+                         Grid.Row="0"
+                         x:Name="xRichEditBox" 
+                         Foreground="{ThemeResource TextBrush}"  
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         BorderThickness="0"
+                         TextWrapping="NoWrap"
+                         IsColorFontEnabled="True" 
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
+                         IsTextPredictionEnabled="True"
+                         Background="Transparent"
+            >
+
+                <!--FORMAT OPTIONS FLYOUT-->
+                <!--<FlyoutBase.AttachedFlyout>
+                <Flyout>
+                    <Grid x:Name="xAttachedFlyout">
+
+                    </Grid>
+                </Flyout>
+            </FlyoutBase.AttachedFlyout>-->
+
+                <!--Flyout for attached links-->
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="xLinkFlyout"/>
+                </FlyoutBase.AttachedFlyout>
+
+            </RichEditBox>
+        </StackPanel>
         <!--</Canvas>-->
     </Grid>
 </UserControl>

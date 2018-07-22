@@ -24,7 +24,7 @@ namespace Dash
         public static KeyController HiddenKey = new KeyController("Hidden", "A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6");
         public static KeyController DataKey = new KeyController("Data", "3B1BD1C3-1BCD-469D-B847-835B565B53EB");
         public static KeyController SnapshotsKey = new KeyController("Snaphshots", "94358B4F-83DD-41A6-8440-BA5973DC9E97");
-        public static KeyController SourecUriKey = new KeyController("SourceUriKeys", "26594498-FF15-438D-A577-2C8506F4ECEF");
+        public static KeyController SourceUriKey = new KeyController("SourceUriKeys", "26594498-FF15-438D-A577-2C8506F4ECEF");
         public static KeyController IsAdornmentKey = new KeyController("Is Adornment", "FF3329BD-AA78-46E4-9A42-47CAB1E62123");
         public static KeyController DocumentTextKey = new KeyController("Document Text", "D5156A8F-9093-420B-96B7-507DD949360D");
         public static KeyController TextWrappingKey = new KeyController("Text Wrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");
@@ -47,7 +47,10 @@ namespace Dash
         public static KeyController InkDataKey = new KeyController("_InkData", "1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6");
         public static KeyController ParsedFieldsKey = new KeyController("_Parsed Fields", "385D06F3-96A7-4ADF-B806-50DAB4488FD6");
         public static KeyController WebContextKey = new KeyController("_WebContext", "EFD56382-F8BA-45D2-86D3-085974EF4D9D");
-        public static KeyController ModifiedTimestampKey = new KeyController("ModifiedTime", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
+        public static KeyController DateModifiedKey = new KeyController("Date Modified", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
+        public static KeyController DateCreatedKey = new KeyController("Date Created", "1F322339-3FB0-4F70-918E-580D70F961EC");
+        public static KeyController AuthorKey = new KeyController("Author", "930E9E5F-06F5-4D61-A56A-8759FC4CC8DC");
+        public static KeyController VisibleTypeKey = new KeyController("Type", "B0150ECC-900E-42C4-9B86-824438647C12");
         public static KeyController LastWorkspaceKey = new KeyController("_Last Workspace", "66F05DB2-2F68-4E37-985D-36303A1AF4E4");
         public static KeyController WorkspaceHistoryKey = new KeyController("_Workspace History", "D0630828-1488-4F7B-B0D7-9E89EF05497F");
         public static KeyController PanPositionKey = new KeyController("_Pan Position", "8778D978-AEA2-470C-8DBD-C684131BA9B4");
@@ -97,10 +100,10 @@ namespace Dash
         public static KeyController ReplCurrentIndentKey = new KeyController("_Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
         public static KeyController ReplScopeKey = new KeyController("_Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");
         public static KeyController ScriptTextKey = new KeyController("_Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
-        public static KeyController ExceptionKey = new KeyController("_Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
-        public static KeyController ReceivedKey = new KeyController("_Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
-        public static KeyController ExpectedKey = new KeyController("_Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
-        public static KeyController FeedbackKey = new KeyController("_Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
+        public static KeyController ExceptionKey = new KeyController("Exception", "34171C23-6A1B-4760-BF71-06758507B26C");
+        public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
+        public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
+        public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
         public static KeyController CollectionFitToParentKey = new KeyController("_CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");

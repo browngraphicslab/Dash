@@ -29,7 +29,6 @@ namespace Dash.Controllers
         public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data))
         {
             SaveOnServer();
-
         }
 
         /*

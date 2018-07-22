@@ -13,7 +13,6 @@ namespace Dash
         public RichTextDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
             SaveOnServer();
-
         }
 
         public RichTextDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

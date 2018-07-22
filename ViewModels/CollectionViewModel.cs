@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -33,6 +34,7 @@ using Windows.Foundation.Metadata;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Core;
+using Page = Microsoft.Office.Interop.Word.Page;
 
 namespace Dash
 {
@@ -645,8 +647,25 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            string urlSource = null;
+                            if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
+                            {
+                                var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                                foreach (var str in html.Split(new char[] {'\r'}))
+                                {
+                                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                    if (matches.Count != 0)
+                                    {
+                                        urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                        break;
+                                    }
+                                }
+                            }
+                            RichTextView sourceDoc = Clipboard.GetContent().Properties[nameof(RichTextView)] as RichTextView;
+
+                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+
                         }
                     }
                 }
@@ -681,6 +700,46 @@ namespace Dash
             }
         }
 
+        public static string GetTitlesUrl(string uri)
+        {
+            //try to get website title
+            var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
+            webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
+                webName.Replace('_', ' ').Replace('-', ' '));
+
+            var pageTitle = uriParts[uriParts.Count - 1];
+            //convert symbols back to correct chars
+            pageTitle = Uri.UnescapeDataString(pageTitle);
+            //handle complicated google search url
+            var googleSearchRes = pageTitle.Split("q=");
+            pageTitle = googleSearchRes.Length > 1 ?
+                googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
+            //check if pageTitle is some id
+            pageTitle = (uriParts.Count > 1 &&
+                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' || x == '#' ) > pageTitle.Length / 3
+                                                || pageTitle == "index.html")) ?
+                uriParts[uriParts.Count - 2] : pageTitle;
+            pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
+            pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+            //dashes are used in urls as spaces
+            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
+            //if first word is basically all numbers, its id, so delete
+            var firstTitleWord = pageTitle.Split(' ').First();
+            pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
+                         pageTitle.Length > firstTitleWord.Length) ?
+                pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
+            //if last word is basically all numbers, its id, so delete
+            var lastTitleWord = pageTitle.Split(' ').Last();
+            pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
+                            pageTitle.Length > lastTitleWord.Length) ?
+                pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
+            pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+
+            return webName + " (" + pageTitle + ")";
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -708,10 +767,7 @@ namespace Dash
                     var lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
-
-
-
-
+                
 
                 // if we drag from the file system
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
@@ -733,6 +789,39 @@ namespace Dash
                 {
                     _pasteWhereHack = where;
                     var html = await e.DataView.GetHtmlFormatAsync();
+
+                    //get url of where this html is coming from
+                    var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
+                    var beforeHtml = html.Substring(0, htmlStartIndex);
+                    var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
+                    var uri = introParts.Last().Substring(10);
+
+                    //try to get website and article title
+                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + GetTitlesUrl(uri) + " </a> </div>";
+                   
+
+                    //update html length in intro - the way that word reads HTML is kinda funny
+                    //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
+                    //we must change these numbers
+                    var endingInfo = introParts.ElementAt(2);
+                    var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[2] = endingInfo.Substring(0, 8) + endingNum;
+                    var endingInfo2 = introParts.ElementAt(4);
+                    var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
+                    var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
+
+
+                    //get parts so additon is before closing
+                    var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
+                    var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
+                    var htmlClose = html.Substring(endPoint);
+                   
+
+                    //combine all parts
+                    html = newHtmlStart + mainHtml + addition + htmlClose;
 
                     //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
                     html = String.Concat(html,
@@ -790,6 +879,9 @@ namespace Dash
                         await DotNetRPC.CallRPCAsync(table);
                         var dataPackageView = Clipboard.GetContent();
                         var richtext = await dataPackageView.GetRtfAsync();
+                        //richtext +=
+                        //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                        //            "\"} {\\fldrslt" + uri + "}}";
                         htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                     }
 
@@ -816,6 +908,9 @@ namespace Dash
                             if (dataPackageView.Contains(StandardDataFormats.Rtf))
                             {
                                 var richtext = await dataPackageView.GetRtfAsync();
+                                //richtext +=
+                                //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                                //    "\"} {\\fldrslt" + uri + "}}";
                                 htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                             }
                             else
@@ -854,7 +949,7 @@ namespace Dash
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
                         {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
                                 matches[0].Value.Replace("SourceURL:", ""), true);
                             break;
                         }
@@ -910,6 +1005,9 @@ namespace Dash
                             }
                         }
                     }
+
+                    //make context navigate back to website
+                    htmlNote.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(uri), true);
 
                     AddDocument(htmlNote);
                 }

@@ -25,6 +25,8 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
+        private void AlertModified() => _currentDocController.CaptureNeighboringContext();
+
         public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
         private DocumentView _currentDocView;
@@ -92,6 +94,7 @@ namespace Dash
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
             _currentImage.Revert();
+            AlertModified();
         }
 
         /// <summary>
@@ -117,11 +120,11 @@ namespace Dash
                 _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
                 await _currentImage.ReplaceImage();
+                AlertModified();
                 UndoManager.EndBatch();
             }
         }
-
-
+        
         /// <summary>
         /// Enables the subtoolbar access to the Document View of the image that was selected on tap.
         /// </summary>
@@ -130,25 +133,28 @@ namespace Dash
             _currentDocView = selection;
             _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
-	        xToggleAnnotations.IsChecked = _currentImage.AnnotationManager.AreAnnotationsVisible();
+	        xToggleAnnotations.IsChecked = _currentImage?.AnnotationManager?.AreAnnotationsVisible();
         }
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.Rotate();
+            AlertModified();
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorVertical();
+            AlertModified();
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
+            AlertModified();
         }
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)

@@ -171,7 +171,7 @@ namespace Dash
             }
         }
 
-        public CollectionViewModel ViewModel { get; set; }
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         // formats and populates the information panel on the right
         private void CollectionGraphView_Loaded(object sender, RoutedEventArgs e)
@@ -191,17 +191,24 @@ namespace Dash
         private void CollectionGraphView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionGraphView_DataContextChanged;
+            if (_oldViewmodel != null)
+            {
+                _oldViewmodel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+            }
         }
 
+        private CollectionViewModel _oldViewmodel;
         private void CollectionGraphView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (DataContext is CollectionViewModel cvm)
+            if (DataContext != _oldViewmodel && DataContext is CollectionViewModel cvm)
             {
-                // if datacontext hasn't actually changed just return
-                if (ViewModel != null && ViewModel.CollectionController.Equals(cvm.CollectionController)) return;
+                _oldViewmodel = ViewModel;
 
                 // add events to new datacontext and set it
-                ViewModel = cvm;
+                if (_oldViewmodel != null)
+                {
+                    _oldViewmodel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                }
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
 
                 // set the parentDocument which is the document holding this collection

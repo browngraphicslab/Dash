@@ -37,26 +37,23 @@ namespace Dash
             [ResultsKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
-
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-
-            //var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data?.ToLower() : null;
-            //var searchCollection = inputs.ContainsKey(InputCollection) ? (inputs[InputCollection] as ListController<DocumentController>)?.TypedData : null;
-            //var searchResultDocs = (MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection)?.Select(srvm => srvm.ViewDocument) ?? new DocumentController[]{}).ToArray();
-            //outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
-
-            var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
             //search all docs for searchText and get results (list of doc controller)
-            var searchResultDocs = Search.SearchByQuery(searchText).Select(res => res.ViewDocument).ToArray();
+            string searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
+            List<SearchResult> searchRes;
+            try
+            {
+                searchRes = Search.Parse(searchText).ToList();
+            }
+            catch (Exception)
+            {
+                searchRes = new List<SearchResult>();
+            }
+            var searchResultDocs = searchRes.Select(res => res.ViewDocument).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new SearchOperatorController();
-        }
+        public override FieldControllerBase GetDefaultController() => new SearchOperatorController();
     }
 }

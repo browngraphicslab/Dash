@@ -104,7 +104,12 @@ namespace Dash
 			box.Fill = new SolidColorBrush(color);
 			xSavedColorsStack.Children.Insert(0, box);
 			//on click should trigger color change to that color
-			box.PointerPressed += (s, e) => xColorPicker.Color = color;
+			box.PointerPressed += (s, e) =>
+			{
+				UndoManager.StartBatch();
+				xColorPicker.Color = color;
+				UndoManager.EndBatch();
+			};
 			//TODO: add white border for hover
 		}
 

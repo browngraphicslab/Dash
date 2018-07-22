@@ -60,7 +60,6 @@ namespace OfficeInterop
 
             while (_client.State == WebSocketState.Open)
             {
-
                 _queueMutex.WaitOne();
                 if (_queue.Count > 0)
                 {

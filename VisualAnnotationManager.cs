@@ -212,7 +212,9 @@ namespace Dash
             e.Handled = false;
 	        DeselectRegions();
 			RegionSelected(sender, e.GetPosition(MainPage.Instance));
-            e.Handled = true;
+			SelectionManager.Select(_element.GetDocView());
+
+	        e.Handled = true;
         }
 
         //shows region when user hovers over it
