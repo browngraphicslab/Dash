@@ -20,7 +20,7 @@ namespace Dash
         private readonly ObservableCollection<UIElement> _visibleElements;
         private readonly ScrollViewer _scrollViewer;
         private readonly CustomPdfView _view;
-        private const int BufferSize = 1;
+        private int _pageBuffer = 1;
         private int _startIndex;
         private int _endIndex;
         private double _verticalOffset;
@@ -80,12 +80,12 @@ namespace Dash
             _verticalOffset = scrollRatio?.Data * _view.ScrollViewer.ExtentHeight ?? 0;
             // get the start index and apply the buffer if possible
             var startIndex = GetIndex(_verticalOffset);
-            startIndex = Math.Max(startIndex - BufferSize, 0);
+            startIndex = Math.Max(startIndex - _pageBuffer, 0);
             _startIndex = startIndex;
 
             // get the end index and apply the buffer if possible
             var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-            endIndex = Math.Min(endIndex + BufferSize, _visibleElements.Count - 1);
+            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
             _endIndex = endIndex;
 
             // render the indices requested
@@ -96,14 +96,18 @@ namespace Dash
         public void View_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (!_visibleElements.Any()) return;
+
             // get the start and end indices with buffers
             var startIndex = GetIndex(_verticalOffset);
-            startIndex = Math.Max(startIndex - BufferSize, 0);
             var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-            endIndex = Math.Min(endIndex + BufferSize, _visibleElements.Count - 1);
+
+            _pageBuffer = endIndex - startIndex;
+
+            startIndex = Math.Max(startIndex - _pageBuffer, 0);
+            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
 
             // render the requested indices, force them to re-render (since the size has changed)
-            RenderIndices(_startIndex, _endIndex, true);
+            RenderIndices(startIndex, endIndex, true);
 
             _startIndex = startIndex;
             _endIndex = endIndex;
@@ -116,8 +120,8 @@ namespace Dash
             var startIndex = GetIndex(e.FinalView.VerticalOffset);
             var endIndex = GetIndex(_scrollViewer.ViewportHeight + e.FinalView.VerticalOffset) + 1;
 
-            startIndex = Math.Max(startIndex - BufferSize, 0);
-            endIndex = Math.Min(endIndex + BufferSize, _visibleElements.Count - 1);
+            startIndex = Math.Max(startIndex - _pageBuffer, 0);
+            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
 
             // render the requested indices
             RenderIndices(startIndex, endIndex);
