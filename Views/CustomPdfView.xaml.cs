@@ -217,7 +217,11 @@ namespace Dash
             PdfMaxWidth = maxWidth;
 
             _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
-            await RenderPdf(null);
+            bool add = _wPdfDocument.PageCount != _currentPageCount;
+            if (add)
+            {
+                _currentPageCount = (int)_wPdfDocument.PageCount;
+            }
 
             await Task.Run(() =>
             {
@@ -243,40 +247,6 @@ namespace Dash
 
         private CancellationTokenSource _renderToken;
         private int _currentPageCount = -1;
-        private async Task RenderPdf(double? targetWidth)
-        {
-            _renderToken?.Cancel();
-            _renderToken = new CancellationTokenSource();
-            CancellationToken token = _renderToken.Token;
-            //targetWidth = 1400;//This makes the PDF readable even if you shrink it down and then zoom in on it
-            var options = new WPdf.PdfPageRenderOptions();
-            bool add = _wPdfDocument.PageCount != _currentPageCount;
-            if (add)
-            {
-                _currentPageCount = (int)_wPdfDocument.PageCount;
-                //Pages.Clear();
-            }
-
-            //for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
-            //{
-            //    Debug.WriteLine($"{i}/{_wPdfDocument.PageCount}");
-            //    if (token.IsCancellationRequested)
-            //    {
-            //        return;
-            //    }
-            //    var stream = new InMemoryRandomAccessStream();
-            //    var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
-            //    options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
-            //    options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
-            //    await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
-            //    var source = new BitmapImage();
-            //    await source.SetSourceAsync(stream);
-            //    if (token.IsCancellationRequested)
-            //    {
-            //        return;
-            //    }
-            //}
-        }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {

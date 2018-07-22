@@ -77,6 +77,7 @@ namespace Dash
                 _view.ScrollViewer.ChangeView(null, scrollRatio.Data * _view.ScrollViewer.ExtentHeight, null, true);
             }
 
+            _verticalOffset = scrollRatio?.Data * _view.ScrollViewer.ExtentHeight ?? 0;
             // get the start index and apply the buffer if possible
             var startIndex = GetIndex(_verticalOffset);
             startIndex = Math.Max(startIndex - BufferSize, 0);
@@ -123,6 +124,11 @@ namespace Dash
 
             _startIndex = startIndex;
             _endIndex = endIndex;
+        }
+
+        public void ForceRender()
+        {
+            RenderIndices(_startIndex, _endIndex, true);
         }
 
         private async void RenderIndices(int startIndex, int endIndex, bool forceRender = false)
