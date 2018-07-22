@@ -661,10 +661,40 @@ namespace Dash
                                     }
                                 }
                             }
-                            RichTextView sourceDoc = Clipboard.GetContent().Properties[nameof(RichTextView)] as RichTextView;
 
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+
+                            DocumentController postitNote;
+                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            {
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text + "\r\rText from " + sourceDoc.DataDocument.Title, size: new Size(300, double.NaN), urlSource: urlSource);
+                                postitNote = postitView.Document;
+
+                                //var dragDoc = sourceDoc.DataDocument;
+                                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](sourceDoc.GetFirstAncestorOfType<DocumentView>());
+
+                                //var dropDoc = postitNote;
+                                //if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                                //    dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](null);
+
+                                //dragDoc.Link(dropDoc);
+
+                                //TODO: maybe try to select the source and then get region doc of that
+
+
+                                postitNote.Link(sourceDoc.GetRegionDocument());
+
+                            }
+                            else
+                            {
+                               postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+                            }
+
+                            
                             Actions.DisplayDocument(this, postitNote, where);
+
+                            
 
                         }
                     }

@@ -83,6 +83,7 @@ namespace Dash
             SelectionCanvas = new Canvas();
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
+            Canvas.SetZIndex(GetInkHostCanvas(), 2);
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
             if (InkController != null)
