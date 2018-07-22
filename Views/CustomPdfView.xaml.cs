@@ -797,6 +797,7 @@ namespace Dash
             {
                 DataContext = new DocumentViewModel(note) {DisableDecorations = true},
                 Width = xAnnotationBox.ActualWidth,
+                BindRenderTransform = false
             };
             docview.hideResizers();
 
@@ -812,11 +813,14 @@ namespace Dash
         {
             if (xAnnotationBox.Visibility.Equals(Visibility.Visible))
             {
+               
                 xAnnotationBox.Visibility = Visibility.Collapsed;
+                xAnnotationBox2.Visibility = Visibility.Collapsed;
             }
             else
             {
                 xAnnotationBox.Visibility = Visibility.Visible;
+                xAnnotationBox2.Visibility = Visibility.Visible;
             }
         }
 
@@ -828,6 +832,24 @@ namespace Dash
         private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             throw new NotImplementedException();
+        }
+
+        private void xSplitScreenButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (ScrollViewer2.Visibility.Equals(Visibility.Collapsed))
+            {
+                ScrollViewer2.Visibility = Visibility.Visible;
+                xDivider.Height = new GridLength(6, GridUnitType.Pixel);
+                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+            }
+            else
+            {
+                ScrollViewer2.Visibility = Visibility.Collapsed;
+                xDivider.Height = new GridLength(0, GridUnitType.Auto);
+                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(0, GridUnitType.Auto);
+            }
         }
     }
 }

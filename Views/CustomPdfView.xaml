@@ -16,11 +16,18 @@
         <Grid.RowDefinitions>
 
             <RowDefinition Height="30"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition x:Name="xFirstPanelRow" Height="*"/>
+            <RowDefinition x:Name="xDivider" Height ="0"/>
+            <RowDefinition x:Name="xSecondPanelRow" Height="0"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Width="Auto">
 
+            <Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>
+            
             <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
@@ -64,7 +71,7 @@
                         <!--Canvas for doing text selection-->
                         <Canvas x:Name="TestSelectionCanvas"></Canvas>
                     </Grid>
-                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="Transparent"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
                         
                         <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>
@@ -86,6 +93,60 @@
            
            
         </ScrollViewer>
+        
+        <Rectangle Grid.Row="2" Fill="{StaticResource AccentGreenLight}" Width="Auto" Height="6" HorizontalAlignment="Stretch" Opacity="0.5"/>
+
+        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch" Visibility="Collapsed">
+
+            <Viewbox  Stretch="UniformToFill">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!--This Grid will have the width and height of the pdf that is being displayed-->
+                    <Grid Grid.Column="0" x:Name="xPdfGrid2" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
+                          PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
+                          PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
+                        <!-- ItemsControl that stores the page images -->
+                        <ItemsControl x:Name="PageItemsControl2" ItemsSource="{x:Bind Pages, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="ImageSource">
+                                    <Image Source="{x:Bind}" Margin="0,0,0,10" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <!--Annotation overlay for block annotations-->
+                        <local:AnnotationOverlay x:Name="xAnnotations2"></local:AnnotationOverlay>
+                        <!--Canvas for doing text selection-->
+                        <Canvas x:Name="TestSelectionCanvas2"></Canvas>
+                    </Grid>
+                    <Grid x:Name="xAnnotationBox2" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+
+                        <ItemsControl x:Name="xAnnotationsItemsControl2" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <!--<ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DocumentView">
+                                  
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>-->
+                        </ItemsControl>
+
+                    </Grid>
+                </Grid>
+
+            </Viewbox>
+
+
+        </ScrollViewer>
+        
+        
         <Grid x:Name="xAnnotationMarkers" Width="10" Grid.Column="0" Margin="-20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
         <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Grid.Column="1">
             <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
