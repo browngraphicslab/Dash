@@ -666,10 +666,16 @@ namespace Dash
                             DocumentController postitNote;
                             if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
                             {
-                                //add link to region of sourceDoc
-                                var postitView = new RichTextNote(text: text + "\r\rText from " + sourceDoc.DataDocument.Title, size: new Size(300, double.NaN), urlSource: urlSource);
-                                postitNote = postitView.Document;
+                                var region = new RichTextNote("Rich text region").Document;
 
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                postitNote = postitView.Document;
+                                postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
+                                    sourceDoc.DataDocument.Title, true);
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+
+                                region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
                                 //var dragDoc = sourceDoc.DataDocument;
                                 //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](sourceDoc.GetFirstAncestorOfType<DocumentView>());
@@ -683,7 +689,7 @@ namespace Dash
                                 //TODO: maybe try to select the source and then get region doc of that
 
 
-                                postitNote.Link(sourceDoc.GetRegionDocument());
+                                region.Link(sourceDoc.LayoutDocument);
 
                             }
                             else

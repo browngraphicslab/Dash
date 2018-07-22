@@ -25,6 +25,7 @@ namespace Dash
         public static KeyController DataKey = new KeyController("Data", "3B1BD1C3-1BCD-469D-B847-835B565B53EB");
         public static KeyController SnapshotsKey = new KeyController("Snaphshots", "94358B4F-83DD-41A6-8440-BA5973DC9E97");
         public static KeyController SourceUriKey = new KeyController("SourceUriKeys", "26594498-FF15-438D-A577-2C8506F4ECEF");
+        public static KeyController SourceTitleKey = new KeyController("Source Title", "E16A6779-2F91-4660-8510-E1FD906A6A5E");
         public static KeyController IsAdornmentKey = new KeyController("Is Adornment", "FF3329BD-AA78-46E4-9A42-47CAB1E62123");
         public static KeyController DocumentTextKey = new KeyController("Document Text", "D5156A8F-9093-420B-96B7-507DD949360D");
         public static KeyController TextWrappingKey = new KeyController("Text Wrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");

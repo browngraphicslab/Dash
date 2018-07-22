@@ -83,7 +83,7 @@ namespace Dash
             SelectionCanvas = new Canvas();
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            Canvas.SetZIndex(GetInkHostCanvas(), 2);
+            //Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
             if (InkController != null)
@@ -733,7 +733,7 @@ namespace Dash
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
             {
-                if (XInkCanvas.IsTopmost() &&
+                if (
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
@@ -976,7 +976,7 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
+            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000, Visibility = Visibility.Collapsed};
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
