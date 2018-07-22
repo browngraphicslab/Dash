@@ -210,8 +210,7 @@ namespace Dash
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                Pages.Height = page.GetPageSize().GetHeight();
-                Pages.Width = page.GetPageSize().GetWidth();
+                Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
