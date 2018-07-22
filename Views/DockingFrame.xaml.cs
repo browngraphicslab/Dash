@@ -96,6 +96,11 @@ namespace Dash
                             DisableDecorations = true
                         }
             };
+            if (toDock.DocumentType.Equals(PdfBox.DocumentType))
+            {
+                copiedView.Loaded += PDFView_Loaded;
+                copiedView.Unloaded -= PDFView_Loaded;
+            }
 
             DockedView dockedView = new DockedView(dir, toDock);
             dockedView.NestedLengthChanged += OnNestedLengthChanged;
@@ -162,6 +167,23 @@ namespace Dash
             }
 
 	        return copiedView;
+        }
+
+        private void PDFView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.DockedLength, DockedLength_OnChanged);
+            
+            void DockedLength_OnChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+            {
+                docView.GetFirstDescendantOfType<CustomPdfView>().UnFreeze();
+            }
+
+            docView.Unloaded += delegate
+            {
+                docView.ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.DockedLength,
+                    DockedLength_OnChanged);
+            };
         }
 
         private void OnNestedLengthChanged(object sender, GridSplitterEventArgs e)
