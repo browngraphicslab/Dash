@@ -32,8 +32,7 @@ namespace Dash
             _visibleElements = new ObservableCollection<UIElement>();
             PageSizes = new List<Size>();
             view.PageItemsControl.ItemsSource = _visibleElements;
-            view.Loaded += View_Loaded;
-            view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
+            view.DocumentLoaded += View_Loaded;
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace Dash
             return index;
         }
 
-        private void View_Loaded(object sender, RoutedEventArgs routedEventArgs)
+        private void View_Loaded(object sender, EventArgs eventArgs)
         {
             // initializes the stackpanel with white rectangles
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
@@ -68,7 +67,6 @@ namespace Dash
                     Margin = new Thickness(0, 0, 0, 10),
                     Fill = new SolidColorBrush(Colors.White)
                 });
-                _view.PdfTotalHeight += PageSizes[i].Height + 10;
             }
 
             // updates the scrollviewer to scroll to the previous scroll position if existent
@@ -91,10 +89,12 @@ namespace Dash
 
             // render the indices requested
             RenderIndices(startIndex, endIndex, true);
+            _view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
         }
 
         public void View_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (!_visibleElements.Any()) return;
             // get the start and end indices with buffers
             var startIndex = GetIndex(_verticalOffset);
             startIndex = Math.Max(startIndex - BufferSize, 0);
