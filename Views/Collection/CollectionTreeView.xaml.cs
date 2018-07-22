@@ -45,7 +45,7 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void AddWorkspace_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             UndoManager.StartBatch();
             Debug.Assert(ViewModel != null, "ViewModel != null");

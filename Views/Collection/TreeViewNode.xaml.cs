@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -44,6 +46,8 @@ namespace Dash
         }
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
+        private ObservableCollection<SnapshotView> Items = new ObservableCollection<SnapshotView>();
+
         public TreeViewNode()
         {
             this.InitializeComponent();
@@ -60,7 +64,7 @@ namespace Dash
                 SnapshotTreeView.DataContext = snapshotCollectionViewModel;
                 SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                 XSnapshotArrowBlock.Visibility = Visibility.Visible;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                //TODO: show/hide snapshot
             }
         }
         private DocumentViewModel oldViewModel = null;
@@ -137,13 +141,19 @@ namespace Dash
                     SnapshotTreeView.SortCriterion = null;
                     SnapshotTreeView.DataContext = snapshotCollectionViewModel;
                     SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                    XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                    //TODO: show/hide snapshot
+                    
+                    Util.ExportAsImage(MainPage.Instance.MainDocView, true);
+                    var newSnapshot = new SnapshotView(dvm.DocumentController.GetDataDocument().Title, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "/pic.png");
+                    Items.Add(newSnapshot);
+                    XSnapshotsPopup.Visibility = Visibility.Visible;
+
                     XSnapshotArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeSnapCol";
                 }
                 else
                 {
-                    XSnapshotArrowBlock.Text = "";
+                    //TODO: show/hide snapshot, turned text to empty string, so maybe delete clock
                     XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
                     SnapshotTreeView.DataContext = null;
                     SnapshotTreeView.Visibility = Visibility.Collapsed;
@@ -200,12 +210,13 @@ namespace Dash
             if (SnapshotTreeView.Visibility == Visibility.Collapsed)
             {
                 SnapshotTreeView.Visibility = Visibility.Visible;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ContractArrowIcon"];
+                //TODO: show/hide snapshot
+                XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
             {
                 SnapshotTreeView.Visibility = Visibility.Collapsed;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                //TODO: show/hide snapshot
             }
         }
 

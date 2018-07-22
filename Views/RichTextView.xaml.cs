@@ -357,7 +357,7 @@ namespace Dash
 
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            e.Handled = false;
             RegionSelected(null, e.GetPosition(MainPage.Instance), null);
         }
 

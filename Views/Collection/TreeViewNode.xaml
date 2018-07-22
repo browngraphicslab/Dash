@@ -38,8 +38,25 @@
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
             <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
-            <TextBlock x:Name="XSnapshotArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="2" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
-        </Grid>
+            <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" />
+
+            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true">
+                <ListView IsItemClickEnabled="True" MaxHeight="200" ItemsSource="{x:Bind Items}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:SnapshotView">
+                            <Grid>
+                                <TextBlock Text="{x:Bind Title}" 
+                                               FontSize="15" Foreground="Black"/>
+                                 <Image Source="{x:Bind Image}" />
+                            </Grid>
+                        </DataTemplate> 
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                </ListView>
+            </Popup>
+            </Grid>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="YPos" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="SnapshotTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
     </StackPanel>

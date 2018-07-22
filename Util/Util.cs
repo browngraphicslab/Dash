@@ -313,16 +313,25 @@ namespace Dash
         /// <summary>
         ///     Saves everything within given UIelement as .png in a specified directory
         /// </summary>
-        public static async void ExportAsImage(UIElement element)
+        public static async void ExportAsImage(UIElement element, bool saveLocal = false)
         {
             var bitmap = new RenderTargetBitmap();
             await bitmap.RenderAsync(element);
 
-            var picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
+            if (saveLocal)
+            {
+                folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            }
+            else
+            {
+                var picker = new FolderPicker();
+                picker.SuggestedStartLocation = PickerLocationId.Desktop;
+                picker.FileTypeFilter.Add("*");
+                folder = await picker.PickSingleFolderAsync();
+            }
+
+          
 
             StorageFile file = null;
             if (folder != null)
