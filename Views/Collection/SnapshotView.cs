@@ -11,7 +11,7 @@ namespace Dash
         public string Title { get; }
         public string Image { get; }
 
-        public int Index { get;  }
+        public int Index { get; set; }
 
         public SnapshotView(string t, string i, int n)
         {

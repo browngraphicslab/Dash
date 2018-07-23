@@ -45,8 +45,11 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
                             <StackPanel>
+                                <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{x:Bind Title}" 
                                                FontSize="15" Foreground="Black"/>
+                                 <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10"  />
+                                </StackPanel>
                                 <Border BorderThickness="2" BorderBrush="Black" Height="100">
                                  <Image Source="{x:Bind Image}" Height="100" />
                                 </Border>

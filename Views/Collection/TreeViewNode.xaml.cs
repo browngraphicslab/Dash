@@ -340,5 +340,28 @@ namespace Dash
 
             XSnapshotsPopup.Visibility = Visibility.Collapsed;
         }
+
+        private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
+        {
+            var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
+            var index = data.Index;
+            _items.RemoveAt(index);
+         
+            (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>).RemoveAt(index);
+            foreach (var snap in _items)
+            {
+                if (snap.Index > index)
+                {
+                    snap.Index = snap.Index - 1;
+                }
+            }
+
+            if (_items.Count == 0)
+            {
+                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+            }
+
+        }
     }
 }
