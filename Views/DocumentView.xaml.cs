@@ -1031,17 +1031,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-       
-           
-
-            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
-           
+            e.Handled = true;
             if (this.IsRightBtnPressed() || PreventManipulation)
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            {
+                return;
+            }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
                 ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
-            e.Handled = true;
 
             double extraOffsetX = 0;
             if (!Double.IsNaN((ViewModel.Width)))

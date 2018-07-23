@@ -75,13 +75,15 @@ namespace Dash
             };
 
             docController.AddFieldUpdatedListener(KeyStore.TemplateStyleKey, OnTemplateStyleUpdatedHandler);
-            docController.GetDataDocument().FieldModelUpdated += TemplateBox_FieldModelUpdated;
+            //docController.GetDataDocument().FieldModelUpdated += TemplateBox_FieldModelUpdated;
 
-            void TemplateBox_FieldModelUpdated(FieldControllerBase fieldControllerBase,
-                FieldUpdatedEventArgs fieldUpdatedEventArgs, Context secondContext)
-            {
-                LayoutDocuments(docController, context, grid);
-            }
+            //void TemplateBox_FieldModelUpdated(FieldControllerBase fieldControllerBase,
+            //    FieldUpdatedEventArgs fieldUpdatedEventArgs, Context secondContext)
+            //{
+            //    var layoutDocuments =
+            //        docController.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+            //    LayoutDocuments(docController, context, grid);
+            //}
 
             // determine if the document controller is set up to utilize a grid view
             if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
@@ -174,9 +176,6 @@ namespace Dash
                     stack.Visibility = Visibility.Collapsed;
                     grid.Visibility = Visibility.Visible;
                 }
-
-
-
             }
 
 

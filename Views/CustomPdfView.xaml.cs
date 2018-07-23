@@ -133,11 +133,6 @@ namespace Dash
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
 		}
 
-        private void ActualSizeChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-        {
-            Pages.ForceRender();
-        }
-
         private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
 		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
