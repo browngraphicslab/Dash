@@ -331,7 +331,7 @@ namespace Dash
             {
                 case CollectionViewType.Freeform:
                     if (CurrentView is CollectionFreeformView) return;
-                    CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
+                    CurrentView = new CollectionFreeformView();
 					break;
                 case CollectionViewType.Grid:
                     if (CurrentView is CollectionGridView) return;
@@ -363,7 +363,7 @@ namespace Dash
                     break;
                 case CollectionViewType.Standard:
                     if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
+                    CurrentView = new CollectionStandardView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

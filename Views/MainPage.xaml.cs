@@ -242,7 +242,7 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceView = workspace.GetViewCopy();
+            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
             workspaceView.SetWidth(double.NaN);
             workspaceView.SetHeight(double.NaN);
             MainDocView.DataContext = new DocumentViewModel(workspaceView);
