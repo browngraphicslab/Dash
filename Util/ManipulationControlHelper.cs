@@ -52,7 +52,7 @@ namespace Dash
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
-            _manipulationDocumentTarget.PointerId = pointer.PointerId;
+            _manipulationDocumentTarget.PointerId = pointer?.PointerId ?? 0;
             if (false) // bcz: set to 'true' for drag/Drop interactions
                 _manipulationDocumentTarget.SetupDragDropDragging(null);
             else

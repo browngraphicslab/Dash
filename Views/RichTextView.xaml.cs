@@ -117,13 +117,13 @@ namespace Dash
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
-                Clipboard.ContentChanged -= Clipboard_ContentChanged;
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();

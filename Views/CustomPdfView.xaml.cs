@@ -378,13 +378,26 @@ namespace Dash
             TestSelectionCanvas.Children.Add(rect);
         }
 
-
-        private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
+        private List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
         private void SelectElements(int startIndex, int endIndex)
         {
-            if (_currentSelectionStart == -1)
+            if (!this.IsCtrlPressed())
             {
-                Debug.Assert(_currentSelectionEnd == -1);
+                if (_currentSelections.Count > 1)
+                {
+                    _currentSelections.Clear();
+                }
+            }
+
+            if (!_currentSelections.Any() || !(_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value)))
+            {
+                _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+            }
+            var currentSelectionStart = _currentSelections.Last().Key;
+            var currentSelectionEnd = _currentSelections.Last().Value;
+
+            if (currentSelectionStart == -1)
+            {
                 for (var i = startIndex; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
@@ -392,27 +405,28 @@ namespace Dash
             }
             else
             {
-                for (var i = startIndex; i < _currentSelectionStart; ++i)
+                for (var i = startIndex; i < currentSelectionStart; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = _currentSelectionStart; i < startIndex; ++i)
+
+                for (var i = currentSelectionStart; i < startIndex; ++i)
                 {
                     DeselectIndex(i);
                 }
-                for (var i = _currentSelectionEnd + 1; i <= endIndex; ++i)
+
+                for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = endIndex + 1; i <= _currentSelectionEnd; ++i)
+
+                for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
                 {
                     DeselectIndex(i);
                 }
             }
 
-            _currentSelectionStart = startIndex;
-            _currentSelectionEnd = endIndex;
-
+            _currentSelections[_currentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
         }
 
         private void UpdateSelection(Point mousePos)
@@ -441,8 +455,7 @@ namespace Dash
 
         private void ClearSelection()
         {
-            _currentSelectionStart = -1;
-            _currentSelectionEnd = -1;
+            _currentSelections.Clear();
             _selectionStartPoint = null;
             foreach (var rect in _selectedRectangles.Values)
             {
@@ -454,9 +467,9 @@ namespace Dash
 
         private void EndSelection()
 		{
-			if (_currentSelectionStart == -1) return;//Not currently selecting anything
+			if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
 			_selectionStartPoint = null;
-            AnnotationManager.SetSelectionRegion(SelectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
+            AnnotationManager.SetSelectionRegion(SelectableElements.Skip(_currentSelections.Last().Key).Take(_currentSelections.Last().Value - _currentSelections.Last().Key + 1));
         }
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -570,7 +583,11 @@ namespace Dash
             {
                 return;
             }
-            ClearSelection();
+
+            if (!this.IsCtrlPressed())
+            {
+                ClearSelection();
+            }
             switch (AnnotationManager.CurrentAnnotationType)
             {
                 case Dash.AnnotationManager.AnnotationType.RegionBox:
@@ -592,6 +609,8 @@ namespace Dash
         private double _height;
         private double _width;
         private double _verticalOffset;
+        private bool _isCtrlPressed;
+
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
@@ -613,19 +632,40 @@ namespace Dash
         {
             if (this.IsCtrlPressed())
             {
-                if (e.Key == VirtualKey.C && _currentSelectionStart != -1)
+                if (e.Key == VirtualKey.C && _currentSelections.Last().Key != -1)
                 {
-                    Debug.Assert(_currentSelectionEnd != -1);
-                    Debug.Assert(_currentSelectionEnd >= _currentSelectionStart);
+                    Debug.Assert(_currentSelections.Last().Value != -1);
+                    Debug.Assert(_currentSelections.Last().Value >= _currentSelections.Last().Key);
                     StringBuilder sb = new StringBuilder();
-                    for (var i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
+                    _currentSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+                    var indices = new List<int>();
+                    foreach (var selection in _currentSelections)
                     {
-                        var selectableElement = SelectableElements[i];
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
+
+                    var prevIndex = indices.First();
+                    foreach (var index in indices.Skip(1))
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = SelectableElements[index];
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);
                         }
+
+                        prevIndex = index;
                     }
+                    
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
                     Clipboard.SetContent(dataPackage);
@@ -639,7 +679,7 @@ namespace Dash
             }
         }
 
-	    public void ScrollToRegion(DocumentController target)
+        public void ScrollToRegion(DocumentController target)
 	    {
 		    var offset = target.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, null);
 		    if (offset == null) return;
@@ -713,6 +753,6 @@ namespace Dash
 	    {
 		    return this.GetFirstAncestorOfType<DocumentView>();
 		}
-	}
+    }
 }
 
