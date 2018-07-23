@@ -469,7 +469,26 @@ namespace Dash
 		{
 			if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
 			_selectionStartPoint = null;
-            AnnotationManager.SetSelectionRegion(SelectableElements.Skip(_currentSelections.Last().Key).Take(_currentSelections.Last().Value - _currentSelections.Last().Key + 1));
+
+		    var indices = new List<int>();
+		    foreach (var selection in _currentSelections)
+		    {
+		        for (var i = selection.Key; i <= selection.Value; i++)
+		        {
+		            if (!indices.Contains(i))
+		            {
+		                indices.Add(i);
+		            }
+		        }
+		    }
+
+		    var selectableElements = new List<SelectableElement>();
+		    foreach (var index in indices)
+		    {
+                selectableElements.Add(SelectableElements[index]);
+		    }
+
+            AnnotationManager.SetSelectionRegion(selectableElements);
         }
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
