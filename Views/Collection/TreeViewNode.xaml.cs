@@ -53,6 +53,7 @@ namespace Dash
         public TreeViewNode()
         {
             this.InitializeComponent();
+            MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
         }
 
         public async void NewSnapshot()
@@ -85,7 +86,7 @@ namespace Dash
 
         }
 
-        private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        public void UpdateSnapshots()
         {
             var dvm = ViewModel;
             var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
@@ -94,10 +95,18 @@ namespace Dash
                 snapStarted = true;
                 XSnapshotArrowBlock.Visibility = Visibility.Visible;
 
-               NewSnapshot();
+                NewSnapshot();
             }
 
-   
+            if (snapshots == null || snapshots.Count == 0)
+            {
+                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        {
+            UpdateSnapshots();
         }
 
         private DocumentViewModel oldViewModel = null;
@@ -276,6 +285,7 @@ namespace Dash
 
         public void DeleteDocument()
         {
+            XSnapshotsPopup.Visibility = Visibility.Collapsed;
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
@@ -291,6 +301,7 @@ namespace Dash
         
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
+            XSnapshotsPopup.Visibility = Visibility.Collapsed;
             UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;

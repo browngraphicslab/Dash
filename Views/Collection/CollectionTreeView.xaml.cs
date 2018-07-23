@@ -17,6 +17,8 @@ namespace Dash
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
+        public List<TreeViewNode> TreeViewNodes = new List<TreeViewNode>();
+
         public CollectionTreeView()
         {
             InitializeComponent();
@@ -129,12 +131,11 @@ namespace Dash
                 }
                 else
                     snapshots.Add(snapshot);
-
                 
-
-                // bcz: hack to get the tree view to refresh
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(snapshot);
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Remove(snapshot);
+                foreach (var node in TreeViewNodes)
+                {
+                   node.UpdateSnapshots();
+                }
             }
         }
     }
