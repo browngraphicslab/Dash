@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     x:Name="Control"
     mc:Ignorable="d"
     d:DesignHeight="300"
@@ -12,21 +13,21 @@
     SizeChanged="CustomPdfView_OnSizeChanged"
     KeyDown="CustomPdfView_OnKeyDown">
 
-    <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+    <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
             <RowDefinition Height="30"/>
-            <RowDefinition x:Name="xFirstPanelRow" Height="*"/>
-            <RowDefinition x:Name="xDivider" Height ="0"/>
-            <RowDefinition x:Name="xSecondPanelRow" Height="0"/>
+            <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
+            <RowDefinition x:Name="xDivider" Height ="10"/>
+            <RowDefinition x:Name="xSecondPanelRow" Height="3*"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Width="Auto">
 
-            <Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed">
+            <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>
+            </Grid>-->
             
             <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
@@ -93,10 +94,11 @@
            
            
         </ScrollViewer>
-        
-        <Rectangle Grid.Row="2" Fill="{StaticResource AccentGreenLight}" Width="Auto" Height="6" HorizontalAlignment="Stretch" Opacity="0.5"/>
 
-        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch" Visibility="Collapsed">
+        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="2" Background="{StaticResource AccentGreenLight}" Width="Auto" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Center"  Opacity="0.8" 
+        ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed"/>
+
+        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch" >
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>

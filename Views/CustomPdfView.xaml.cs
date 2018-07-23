@@ -178,6 +178,13 @@ namespace Dash
 
             };
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
+            //xPdfDivider.Tapped += (s, e) =>
+            //{
+            //    ScrollViewer2.Visibility = Visibility.Visible;
+            //    xFirstPanelRow.Height = Math.Abs(xFirstPanelRow.ActualHeight) < .0001
+            //        ? new GridLength(300)
+            //        : new GridLength(0);
+            //};
         }
 		private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
@@ -834,22 +841,69 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void xSplitScreenButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void xSplitScreenButton_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (ScrollViewer2.Visibility.Equals(Visibility.Collapsed))
+            //if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+            //{
+            //    if (xDivider.Height.Equals(new GridLength(0, GridUnitType.Pixel)))
+            //    {
+            //        ScrollViewer2.Visibility = Visibility.Visible;
+            //        xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+
+            //        ScrollViewer.Visibility = Visibility.Collapsed;
+            //        xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+                   
+            //        xDivider.Height = new GridLength(6, GridUnitType.Pixel);
+            //    }
+            //}
+            //e.Handled = true;
+        }
+
+
+        //private void xSplitScreenButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+        //    {
+        //        if (xPdfDivider.Visibility.Equals(Visibility.Collapsed))
+        //        {
+        //            xPdfDivider.Visibility = Visibility.Visible;
+
+        //        }
+
+        //        else
+        //        {
+        //            xPdfDivider.Visibility = Visibility.Collapsed;
+        //        }
+        //    }
+           
+        //    e.Handled = true;
+        //}
+
+        private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            
+            e.Handled = true;
+        }
+
+
+        private void XPdfDivider_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (this.IsRightBtnPressed())
             {
-                ScrollViewer2.Visibility = Visibility.Visible;
-                xDivider.Height = new GridLength(6, GridUnitType.Pixel);
-                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                e.Complete();
             }
-            else
-            {
-                ScrollViewer2.Visibility = Visibility.Collapsed;
-                xDivider.Height = new GridLength(0, GridUnitType.Auto);
-                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                xSecondPanelRow.Height = new GridLength(0, GridUnitType.Auto);
-            }
+
+            e.Handled = true;
+        }
+
+        private void XPdfDivider_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void XPdfDivider_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
