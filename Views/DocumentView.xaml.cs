@@ -1427,7 +1427,8 @@ namespace Dash
 				if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
 				     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
 				{
-					ViewModel.DecorationState = ViewModel?.Undecorated == false;
+				    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
 				}
 
 				MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);

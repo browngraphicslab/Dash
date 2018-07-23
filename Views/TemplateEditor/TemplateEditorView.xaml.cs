@@ -282,7 +282,6 @@ namespace Dash
 
             //hide resize and ellipse controls for template editor
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.ViewModel.DisableDecorations = true;
             docView.hideControls();
             docView.RemoveResizeHandlers();
 

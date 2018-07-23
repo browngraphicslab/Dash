@@ -90,6 +90,7 @@ namespace Dash
 
             // render the indices requested
             RenderIndices(startIndex, endIndex, true);
+            
             _view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
         }
 

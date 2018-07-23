@@ -236,7 +236,7 @@ namespace Dash
                     processor.ProcessPageContent(page);
                 }
             });
-
+            
             SelectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages() - 1);
 
             reader.Close();

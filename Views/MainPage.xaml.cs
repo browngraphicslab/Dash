@@ -151,7 +151,7 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DisableDecorations = true };
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
                 MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
