@@ -886,13 +886,13 @@ namespace Dash
                 var imgWidth = image.ActualWidth;
                 var annoWidth = xAnnotationBox2.Visibility == Visibility.Visible ? xAnnotationBox2.ActualWidth : 0;
                 var scale = (ScrollViewer2.ViewportWidth - annoWidth) / imgWidth;
-                currOffset += (image.ActualHeight * scale) + 5;
+                currOffset += (image.ActualHeight * scale);
                 if (currOffset > ScrollViewer2.VerticalOffset + 5)
                 {
                     break;
                 }
             }
-
+            ScrollViewer.ChangeView(null, currOffset, 1);
             ScrollViewer2.ChangeView(null, currOffset, 1);
         }
 
@@ -908,10 +908,10 @@ namespace Dash
                 {
                     break;
                 }
-                currOffset += (image.ActualHeight * scale) + 5;
+                currOffset += (image.ActualHeight * scale);
                 
             }
-
+            ScrollViewer.ChangeView(null, currOffset, 1);
             ScrollViewer2.ChangeView(null, currOffset, 1);
         }
     }
