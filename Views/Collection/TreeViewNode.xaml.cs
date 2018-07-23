@@ -177,7 +177,7 @@ namespace Dash
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
-                if (snapshots != null)
+                if (snapshots != null && snapshots.Count != 0)
                 {
                     XSnapshotArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeSnapCol";
@@ -224,7 +224,7 @@ namespace Dash
             {
                 CollectionTreeView.Visibility = Visibility.Visible;
                 XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
-                XSnapshotsPopup.Visibility = Visibility.Collapsed;
+                ClosePopups();
             }
             else
             {
@@ -239,6 +239,7 @@ namespace Dash
             //Toggle visibility
             if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
+                ClosePopups();
                 XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
@@ -285,7 +286,7 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            ClosePopups();
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
@@ -301,7 +302,7 @@ namespace Dash
         
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
-            XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            ClosePopups();
             UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
@@ -349,7 +350,7 @@ namespace Dash
             if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
                 MainPage.Instance.SetCurrentWorkspace(docToFocus);
 
-            XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            ClosePopups();
         }
 
         private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
@@ -373,6 +374,14 @@ namespace Dash
                 XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
             }
 
+        }
+
+        private void ClosePopups()
+        {
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                node.XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }
