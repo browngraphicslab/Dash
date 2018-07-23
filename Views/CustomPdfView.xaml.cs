@@ -89,6 +89,8 @@ namespace Dash
 
         public List<SelectableElement> SelectableElements = new List<SelectableElement>();
 
+        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
+        private readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
         public VisualAnnotationManager AnnotationManager { get; }
 
         public DocumentController LayoutDocument { get; }
@@ -378,9 +380,9 @@ namespace Dash
             TestSelectionCanvas.Children.Add(rect);
         }
 
-        private List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
         private void SelectElements(int startIndex, int endIndex)
         {
+            // if control isn't pressed, reset the selection
             if (!this.IsCtrlPressed())
             {
                 if (_currentSelections.Count > 1)
@@ -389,8 +391,10 @@ namespace Dash
                 }
             }
 
-            if (!_currentSelections.Any() || !(_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value)))
+            // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
+            if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
             {
+                // create a new selection
                 _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
             }
             var currentSelectionStart = _currentSelections.Last().Key;
@@ -426,6 +430,7 @@ namespace Dash
                 }
             }
 
+            // you can't set kvp keys and values, so we have to just create a new one?
             _currentSelections[_currentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
         }
 
@@ -470,11 +475,13 @@ namespace Dash
 			if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
 			_selectionStartPoint = null;
 
+            // loop through each selection and add the indices in each selection set
 		    var indices = new List<int>();
 		    foreach (var selection in _currentSelections)
 		    {
 		        for (var i = selection.Key; i <= selection.Value; i++)
 		        {
+                    // this will avoid double selecting any items
 		            if (!indices.Contains(i))
 		            {
 		                indices.Add(i);
@@ -482,6 +489,7 @@ namespace Dash
 		        }
 		    }
 
+            // get every matching selectable element and set the selection region to that
 		    var selectableElements = new List<SelectableElement>();
 		    foreach (var index in indices)
 		    {
@@ -501,7 +509,7 @@ namespace Dash
 
                 //space, tab, enter
 
-                if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && (Math.Abs(closest.Bounds.Y - mouse.Y) < 10))
+                if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && Math.Abs(closest.Bounds.Y - mouse.Y) < 10)
                 {
                     SelectIndex(closest.Index);
                 }
@@ -657,6 +665,8 @@ namespace Dash
                     Debug.Assert(_currentSelections.Last().Value >= _currentSelections.Last().Key);
                     StringBuilder sb = new StringBuilder();
                     _currentSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+
+                    // get the indices from our selections and ignore any duplicate selections
                     var indices = new List<int>();
                     foreach (var selection in _currentSelections)
                     {
@@ -669,6 +679,7 @@ namespace Dash
                         }
                     }
 
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
                     var prevIndex = indices.First();
                     foreach (var index in indices.Skip(1))
                     {

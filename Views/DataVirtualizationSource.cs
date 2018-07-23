@@ -101,6 +101,7 @@ namespace Dash
             var startIndex = GetIndex(_verticalOffset);
             var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
 
+            // set the page buffer to the amount of pages visible at any given moment
             _pageBuffer = endIndex - startIndex;
 
             startIndex = Math.Max(startIndex - _pageBuffer, 0);
