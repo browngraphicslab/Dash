@@ -137,8 +137,7 @@ namespace Dash
             get => _decorationState;
             set
             {
-                if (!DisableDecorations) SetProperty(ref _decorationState, value);
-                else SetProperty(ref _decorationState, false);
+                SetProperty(ref _decorationState, value);
             }
         }
 
@@ -154,7 +153,6 @@ namespace Dash
             get => _standardViewLevel;
             set => SetProperty(ref _standardViewLevel, value);
         }
-        public bool DisableDecorations { get; set; } = false;
 
 
         // == FIELD UPDATED EVENT HANDLERS == 
