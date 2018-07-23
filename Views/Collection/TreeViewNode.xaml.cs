@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -56,10 +57,29 @@ namespace Dash
 
         public async void NewSnapshot()
         {
-            var dvm = ViewModel;
-            var imgName = "snap.png";
-            imgName = await Util.ExportAsImage(MainPage.Instance.MainDocView, imgName, true);
-            var newSnapshot = new SnapshotView(dvm.DocumentController.GetDataDocument().Title, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + imgName);
+            var snapshots =
+                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                    ListController<DocumentController>);
+            var index = _items.Count;
+            var doc = snapshots?[index];
+
+            string image = null;
+            string time = null;
+            if (snapshots != null)
+            {
+                image = doc.GetField<TextController>(KeyStore.SnapshotImage, true)?.Data;
+                time = doc.GetField<TextController>(KeyStore.DateModifiedKey, true)?.Data;
+            }
+
+            if (image == null)
+            {
+                image = await Util.ExportAsImage(MainPage.Instance.MainDocView, "snapshot.png", true);
+                doc?.SetField<TextController>(KeyStore.SnapshotImage, image, true);
+                time = DateTime.Now.ToString(new CultureInfo("en-US"));
+                doc?.SetField<TextController>(KeyStore.DateModifiedKey, time, true);
+            }
+
+            var newSnapshot = new SnapshotView(time, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + image, index);
             _items.Add(newSnapshot);
             snapStarted = false;
 
@@ -72,12 +92,7 @@ namespace Dash
             if (snapshots != null && snapshots.Count > _items.Count && !snapStarted)
             {
                 snapStarted = true;
-                var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
-                SnapshotTreeView.SortCriterion = null;
-                SnapshotTreeView.DataContext = snapshotCollectionViewModel;
-                SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                 XSnapshotArrowBlock.Visibility = Visibility.Visible;
-                //TODO: show/hide snapshot
 
                NewSnapshot();
             }
@@ -155,22 +170,12 @@ namespace Dash
                 }
                 if (snapshots != null)
                 {
-                    var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
-                    SnapshotTreeView.SortCriterion = null;
-                    SnapshotTreeView.DataContext = snapshotCollectionViewModel;
-                    SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                    //TODO: show/hide snapshot
-
                     XSnapshotArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeSnapCol";
                 }
                 else
                 {
-                    //TODO: show/hide snapshot, turned text to empty string, so maybe delete clock
                     XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-                    SnapshotTreeView.DataContext = null;
-                    SnapshotTreeView.Visibility = Visibility.Collapsed;
-
                     XSnapshotsPopup.Visibility = Visibility.Collapsed;
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
@@ -323,9 +328,16 @@ namespace Dash
                 args.Cancel = true;
         }
 
-        private void XSnapshotsPopup_OnLostFocus(object sender, RoutedEventArgs e)
+        private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
         {
-            //close popup
+            var itemNum = (e.ClickedItem as SnapshotView).Index;
+            MainPage.Instance.ToggleSettingsVisibility(false);
+            var docToFocus =
+                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                    ListController<DocumentController>)?[itemNum];
+            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                MainPage.Instance.SetCurrentWorkspace(docToFocus);
+
             XSnapshotsPopup.Visibility = Visibility.Collapsed;
         }
     }

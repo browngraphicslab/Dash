@@ -11,10 +11,13 @@ namespace Dash
         public string Title { get; }
         public string Image { get; }
 
-        public SnapshotView(string t, string i)
+        public int Index { get;  }
+
+        public SnapshotView(string t, string i, int n)
         {
             Title = t;
             Image = i;
+            Index = n;
         }
     }
 }
