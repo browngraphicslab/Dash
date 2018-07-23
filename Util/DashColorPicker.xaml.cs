@@ -75,6 +75,14 @@ namespace Dash
         {
             xColorPicker.ColorChanged += OnXColorPickerOnColorChanged;
             SavedColors.CollectionChanged += OnSavedColorsChanged;
+
+            // lol this isn't working!!!!
+            foreach (var textBox in xColorPicker.GetDescendantsOfType<TextBox>().ToList())
+            {
+                textBox.IsEnabled = true;
+                textBox.IsHitTestVisible = true;
+                textBox.IsReadOnly = false;
+            }
         }
 
         private void OnXColorPickerOnColorChanged(ColorPicker sender, ColorChangedEventArgs args)
