@@ -1808,9 +1808,7 @@ namespace Dash
 
 		private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 		{
-
-
-			if (ViewModel.Content is IAnnotatable element)
+            if (ViewModel.Content is IAnnotatable element)
 			{
 				element.RegionSelected(element, new Point(0, 0));
 			}
