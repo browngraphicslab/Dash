@@ -44,10 +44,7 @@ namespace Dash
             {
                 //var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
                 //Debug.Assert(collectionController != null);
-                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
-                {
-                    InkController = docController.GetField(KeyStore.InkDataKey) as InkController
-                };
+                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey);
 
                 var view = new CollectionView(collectionViewModel);
 
