@@ -36,12 +36,17 @@
 
             <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74B;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
             </Grid>
 
             <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74A;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+            </Grid>
+
+            <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
             </Grid>
 
         </StackPanel>

@@ -905,6 +905,12 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            ScrollViewer.ChangeView(null, 0, null);
+            ScrollViewer2.ChangeView(null, 0, null);
+        }
     }
 }
 

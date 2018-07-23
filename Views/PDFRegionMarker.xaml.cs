@@ -34,15 +34,15 @@ namespace Dash
 
         public void SetScrollPosition(double scrollTarget, double totalOffset)
         {
-            Grid.SetColumn(xRegion, 0);
-            Grid.SetColumnSpan(xRegion, 3);
+            //Grid.SetColumn(xRegion, 0);
+            //Grid.SetColumnSpan(xRegion, 3);
             var upHeight = scrollTarget - 5;
             if (upHeight < 0)
                 upHeight = 0;
             var downHeight = totalOffset - scrollTarget - 5;
             xUp.Height = new GridLength(upHeight / totalOffset, GridUnitType.Star);
             xDown.Height = new GridLength(downHeight / totalOffset, GridUnitType.Star);
-            xRegion.Width = 15;
+            //xRegion.Width = 15;
         }
     }
 }
