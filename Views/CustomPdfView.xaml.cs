@@ -76,6 +76,9 @@ namespace Dash
             }
         }
 
+
+        private double _pageHeight;
+
         public event EventHandler DocumentLoaded;
 
         private ObservableCollection<ImageSource> _pages = new ObservableCollection<ImageSource>();
@@ -113,6 +116,8 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
+
+        private List<Size> Tops;
 
 
         private List<SelectableElement> _selectableElements;
@@ -275,6 +280,7 @@ namespace Dash
             {
                 var page = pdfDocument.GetPage(i);
                 var size = page.GetPageSize();
+                _pageHeight = size.GetHeight();
                 maxWidth = Math.Max(maxWidth, size.GetWidth());
                 strategy.SetPage(i - 1, offset, size);
                 offset += page.GetPageSize().GetHeight() + 10;
@@ -831,15 +837,7 @@ namespace Dash
             }
         }
 
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         private void xSplitScreenButton_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
@@ -911,6 +909,46 @@ namespace Dash
             ScrollViewer.ChangeView(null, 0, null);
             ScrollViewer2.ChangeView(null, 0, null);
         }
+
+        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            
+            var currOffset = 0.0;
+            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
+            {
+                var imgWidth = image.ActualWidth;
+                var annoWidth = xAnnotationBox2.Visibility == Visibility.Visible ? xAnnotationBox2.ActualWidth : 0;
+                var scale = (ScrollViewer2.ViewportWidth - annoWidth) / imgWidth;
+                currOffset += (image.ActualHeight * scale) + 5;
+                if (currOffset > ScrollViewer2.VerticalOffset + 5)
+                {
+                    break;
+                }
+            }
+
+            ScrollViewer2.ChangeView(null, currOffset, 1);
+        }
+
+        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var currOffset = 0.0;
+            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
+            {
+                var imgWidth = image.ActualWidth;
+                var annoWidth = xAnnotationBox2.Visibility == Visibility.Visible ? xAnnotationBox2.ActualWidth : 0;
+                var scale = (ScrollViewer2.ViewportWidth - annoWidth) / imgWidth;
+                if (currOffset + (image.ActualHeight * scale) + 5 > ScrollViewer2.VerticalOffset)
+                {
+                    break;
+                }
+                currOffset += (image.ActualHeight * scale) + 5;
+                
+            }
+
+            ScrollViewer2.ChangeView(null, currOffset, 1);
+        }
+
+        
     }
 }
 

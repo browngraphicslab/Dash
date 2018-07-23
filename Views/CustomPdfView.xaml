@@ -18,7 +18,7 @@
 
             <RowDefinition Height="30"/>
             <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
-            <RowDefinition x:Name="xDivider" Height ="10"/>
+            <RowDefinition x:Name="xDivider" Height ="6"/>
             <RowDefinition x:Name="xSecondPanelRow" Height="3*"/>
         </Grid.RowDefinitions>
 
