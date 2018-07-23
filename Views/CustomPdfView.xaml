@@ -16,13 +16,15 @@
     <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="35"/>
             <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
-            <RowDefinition x:Name="xDivider" Height ="6"/>
-            <RowDefinition x:Name="xSecondPanelRow" Height="3*"/>
+            <RowDefinition x:Name="xDivider" Height ="0"/>
+            <RowDefinition x:Name="xSecondPanelRow"/>
         </Grid.RowDefinitions>
+        
+      
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Width="Auto">
+        <StackPanel  Grid.Row="0" Orientation="Horizontal" Width="Auto" Margin="0 0 0 5">
 
             <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
@@ -50,7 +52,7 @@
             </Grid>
 
         </StackPanel>
-        <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch">
+        <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -100,10 +102,8 @@
            
         </ScrollViewer>
 
-        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="2" Background="{StaticResource AccentGreenLight}" Width="Auto" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Center"  Opacity="0.8" 
-        ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed"/>
 
-        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" Width="Auto" HorizontalAlignment="Stretch" >
+        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging">
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -166,6 +166,20 @@
             </Grid>
            
         </StackPanel>
-       
+
+        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="2" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
+                               ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
+            <controls:GridSplitter.Element>
+                <Canvas>
+                    <StackPanel Orientation="Vertical">
+                   
+                   
+                    <Rectangle Fill="{StaticResource AccentGreenLight}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                       
+                    <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="0"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                    </StackPanel>
+                </Canvas>
+            </controls:GridSplitter.Element>
+        </controls:GridSplitter>
     </Grid>
 </UserControl>

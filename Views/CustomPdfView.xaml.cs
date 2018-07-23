@@ -181,15 +181,20 @@ namespace Dash
                     }
                 }
 
+			    xBar.Width = xPdfContainer.ActualWidth;
+			    
+			    
+
             };
             AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
-            //xPdfDivider.Tapped += (s, e) =>
-            //{
-            //    ScrollViewer2.Visibility = Visibility.Visible;
-            //    xFirstPanelRow.Height = Math.Abs(xFirstPanelRow.ActualHeight) < .0001
-            //        ? new GridLength(300)
-            //        : new GridLength(0);
-            //};
+            ScrollViewer2.SizeChanged += (ss, ee) =>
+            {
+                if (xBar.Width != 0)
+                {
+                    xBar.Width = ScrollViewer2.ExtentWidth;
+                }
+            };
+
         }
 		private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
@@ -839,44 +844,6 @@ namespace Dash
 
        
 
-        private void xSplitScreenButton_OnPointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            //if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
-            //{
-            //    if (xDivider.Height.Equals(new GridLength(0, GridUnitType.Pixel)))
-            //    {
-            //        ScrollViewer2.Visibility = Visibility.Visible;
-            //        xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-
-            //        ScrollViewer.Visibility = Visibility.Collapsed;
-            //        xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
-                   
-            //        xDivider.Height = new GridLength(6, GridUnitType.Pixel);
-            //    }
-            //}
-            //e.Handled = true;
-        }
-
-
-        //private void xSplitScreenButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        //{
-        //    if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
-        //    {
-        //        if (xPdfDivider.Visibility.Equals(Visibility.Collapsed))
-        //        {
-        //            xPdfDivider.Visibility = Visibility.Visible;
-
-        //        }
-
-        //        else
-        //        {
-        //            xPdfDivider.Visibility = Visibility.Collapsed;
-        //        }
-        //    }
-           
-        //    e.Handled = true;
-        //}
-
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             
@@ -947,8 +914,6 @@ namespace Dash
 
             ScrollViewer2.ChangeView(null, currOffset, 1);
         }
-
-        
     }
 }
 
