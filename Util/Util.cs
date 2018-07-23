@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.ApplicationModel.Email;
 using Windows.Foundation;
@@ -313,7 +314,7 @@ namespace Dash
         /// <summary>
         ///     Saves everything within given UIelement as .png in a specified directory
         /// </summary>
-        public static async void ExportAsImage(UIElement element, bool saveLocal = false)
+        public static async Task<string> ExportAsImage(UIElement element, string imgName = "pic.png", bool saveLocal = false)
         {
             var bitmap = new RenderTargetBitmap();
             await bitmap.RenderAsync(element);
@@ -331,12 +332,10 @@ namespace Dash
                 folder = await picker.PickSingleFolderAsync();
             }
 
-          
-
             StorageFile file = null;
             if (folder != null)
             {
-                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+                file = await folder.CreateFileAsync(imgName, CreationCollisionOption.GenerateUniqueName);
 
                 var pixels = await bitmap.GetPixelsAsync();
                 var byteArray = pixels.ToArray();
@@ -358,7 +357,14 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
+
+                if (saveLocal)
+                {
+                    return file.Name;
+                }
             }
+
+            return null;
         }
 
         /// <summary>

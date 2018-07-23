@@ -46,27 +46,45 @@ namespace Dash
         }
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
-        private ObservableCollection<SnapshotView> Items = new ObservableCollection<SnapshotView>();
+        private readonly ObservableCollection<SnapshotView> _items = new ObservableCollection<SnapshotView>();
+        private bool snapStarted;
 
         public TreeViewNode()
         {
             this.InitializeComponent();
         }
 
+        public async void NewSnapshot()
+        {
+            var dvm = ViewModel;
+            var imgName = "snap.png";
+            imgName = await Util.ExportAsImage(MainPage.Instance.MainDocView, imgName, true);
+            var newSnapshot = new SnapshotView(dvm.DocumentController.GetDataDocument().Title, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + imgName);
+            _items.Add(newSnapshot);
+            snapStarted = false;
+
+        }
+
         private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             var dvm = ViewModel;
             var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
-            if (snapshots != null && XSnapshotArrowBlock.Visibility == Visibility.Collapsed)
+            if (snapshots != null && snapshots.Count > _items.Count && !snapStarted)
             {
+                snapStarted = true;
                 var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
                 SnapshotTreeView.SortCriterion = null;
                 SnapshotTreeView.DataContext = snapshotCollectionViewModel;
                 SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                 XSnapshotArrowBlock.Visibility = Visibility.Visible;
                 //TODO: show/hide snapshot
+
+               NewSnapshot();
             }
+
+   
         }
+
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -142,11 +160,6 @@ namespace Dash
                     SnapshotTreeView.DataContext = snapshotCollectionViewModel;
                     SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                     //TODO: show/hide snapshot
-                    
-                    Util.ExportAsImage(MainPage.Instance.MainDocView, true);
-                    var newSnapshot = new SnapshotView(dvm.DocumentController.GetDataDocument().Title, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "/pic.png");
-                    Items.Add(newSnapshot);
-                    XSnapshotsPopup.Visibility = Visibility.Visible;
 
                     XSnapshotArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeSnapCol";
@@ -157,6 +170,8 @@ namespace Dash
                     XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
                     SnapshotTreeView.DataContext = null;
                     SnapshotTreeView.Visibility = Visibility.Collapsed;
+
+                    XSnapshotsPopup.Visibility = Visibility.Collapsed;
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
@@ -195,6 +210,7 @@ namespace Dash
             {
                 CollectionTreeView.Visibility = Visibility.Visible;
                 XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+                XSnapshotsPopup.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -207,16 +223,13 @@ namespace Dash
         {
             e.Handled = true;
             //Toggle visibility
-            if (SnapshotTreeView.Visibility == Visibility.Collapsed)
+            if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
-                SnapshotTreeView.Visibility = Visibility.Visible;
-                //TODO: show/hide snapshot
                 XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
             {
-                SnapshotTreeView.Visibility = Visibility.Collapsed;
-                //TODO: show/hide snapshot
+                XSnapshotsPopup.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -310,5 +323,10 @@ namespace Dash
                 args.Cancel = true;
         }
 
+        private void XSnapshotsPopup_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            //close popup
+            XSnapshotsPopup.Visibility = Visibility.Collapsed;
+        }
     }
 }

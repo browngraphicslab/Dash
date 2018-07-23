@@ -676,18 +676,6 @@ namespace Dash
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
                                 region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
-                                //var dragDoc = sourceDoc.DataDocument;
-                                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](sourceDoc.GetFirstAncestorOfType<DocumentView>());
-
-                                //var dropDoc = postitNote;
-                                //if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                                //    dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](null);
-
-                                //dragDoc.Link(dropDoc);
-
-                                //TODO: maybe try to select the source and then get region doc of that
-
 
                                 region.Link(sourceDoc.LayoutDocument);
 
