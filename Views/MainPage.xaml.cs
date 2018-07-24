@@ -433,7 +433,6 @@ namespace Dash
             foreach (var dm in collection.ViewModel.DocumentViewModels)
             {
                 var dmd = dm.DocumentController.GetDataDocument();
-                var dd = document.GetDataDocument();
                 //if this doc is given document
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
@@ -718,11 +717,29 @@ namespace Dash
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
                     cview?.ViewModel?.FitContents(cview);
                 };
+                xMapDocumentView.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             mapTimer.Start();
         }
+
+        private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.JavaScriptHack.Focus(FocusState.Programmatic);
+            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mapPt = e.GetPosition(mapViewCanvas);
+
+            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+            var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
+            
+            mainFreeform?.SetTransformAnimated(
+                new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y },
+                false);
+         }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
