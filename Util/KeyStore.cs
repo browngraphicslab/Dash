@@ -60,7 +60,7 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController("_DocumentType", "B1DE8ABE-5C04-49C6-913C-A2428ED566F8");
         public static KeyController SelectedKey = new KeyController("_Selected", "86009EF6-7D77-4D67-8C7A-C5EA5704432F");
         public static KeyController OriginalImageKey = new KeyController("_Original Image", "6226CC11-3616-4521-9C9E-731245FA1F4C");
-        public static KeyController SideCountKey = new KeyController("_Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
+        public static KeyController SideCountKey = new KeyController("Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
         public static KeyController SettingsDocKey = new KeyController("_Settings Doc", "EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70");
         public static KeyController SettingsNightModeKey = new KeyController("_Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("_Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");

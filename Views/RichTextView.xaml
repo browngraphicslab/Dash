@@ -9,53 +9,71 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Name="LayoutGrid">
+    <Grid Name="xLayoutGrid">
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}" />
             </Style>
         </Grid.Resources>
-        <StackPanel Orientation="Vertical">
-            <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
-                        VerticalAlignment="Top" Margin="5" Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
-                    <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8" Background="WhiteSmoke"></Button>
-                    <!--SEARCH BOX-->
-                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="WhiteSmoke"></SearchBox>
-                    <!--BUTTON FOR CLOSING SEARCH REGION-->
-                    <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
-                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke">
-                        <TextBlock Text="x" Padding="1"></TextBlock>
-                    </Button>
-                </StackPanel>
-                <!--REPLACE BOX-->
-                <StackPanel x:Name="xReplaceBoxPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
-                    <TextBlock Padding="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10" Foreground="DimGray">Replace:</TextBlock>
-                    <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90" BorderBrush="Transparent" Background="WhiteSmoke" FontSize="10"></TextBox>
-                    <StackPanel.Clip>
-                        <RectangleGeometry Rect="0,0,150,20"></RectangleGeometry>
-                    </StackPanel.Clip>
-                </StackPanel>
-            </StackPanel>
-            <RichEditBox x:FieldModifier="public" 
-                         AllowDrop="True"
-                         Grid.Row="0"
-                         x:Name="xRichEditBox" 
-                         Foreground="{ThemeResource TextBrush}"  
-                         VerticalAlignment="Stretch" 
-                         HorizontalAlignment="Stretch" 
-                         BorderThickness="0"
-                         TextWrapping="NoWrap"
-                         IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
-                         IsTextPredictionEnabled="True"
-                         Background="Transparent"
-            >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-                <!--FORMAT OPTIONS FLYOUT-->
-                <!--<FlyoutBase.AttachedFlyout>
+        <StackPanel
+            x:Name="xSearchBoxPanel"
+            Grid.Row="0"
+            Orientation="Vertical"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Margin="5"
+            Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
+                <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray"
+                        FontSize="8" Background="WhiteSmoke" />
+                <!--SEARCH BOX-->
+                <SearchBox x:Name="xSearchBox" Padding="0" Height="25" Width="100" BorderBrush="Transparent"
+                           Background="WhiteSmoke" />
+                <!--BUTTON FOR CLOSING SEARCH REGION-->
+                <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
+                        Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke">
+                    <TextBlock Text="x" Padding="1" />
+                </Button>
+            </StackPanel>
+            <!--REPLACE BOX-->
+            <StackPanel x:Name="xReplaceBoxPanel" Orientation="Horizontal" HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" Visibility="Collapsed">
+                <TextBlock Padding="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10"
+                           Foreground="DimGray">
+                    Replace:
+                </TextBlock>
+                <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90"
+                         BorderBrush="Transparent" Background="WhiteSmoke" FontSize="10" />
+                <StackPanel.Clip>
+                    <RectangleGeometry Rect="0,0,150,20" />
+                </StackPanel.Clip>
+            </StackPanel>
+        </StackPanel>
+
+        <RichEditBox
+            x:FieldModifier="public"
+            AllowDrop="True"
+            Grid.Row="1"
+            x:Name="xRichEditBox"
+            Foreground="{ThemeResource TextBrush}"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            BorderThickness="0"
+            TextWrapping="NoWrap"
+            IsColorFontEnabled="True"
+            SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
+            IsTextPredictionEnabled="True"
+            Background="Transparent">
+
+            <!--FORMAT OPTIONS FLYOUT-->
+            <!--<FlyoutBase.AttachedFlyout>
                 <Flyout>
                     <Grid x:Name="xAttachedFlyout">
 
@@ -63,13 +81,12 @@
                 </Flyout>
             </FlyoutBase.AttachedFlyout>-->
 
-                <!--Flyout for attached links-->
-                <FlyoutBase.AttachedFlyout>
-                    <MenuFlyout x:Name="xLinkFlyout"/>
-                </FlyoutBase.AttachedFlyout>
+            <!--Flyout for attached links-->
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout x:Name="xLinkFlyout" />
+            </FlyoutBase.AttachedFlyout>
 
-            </RichEditBox>
-        </StackPanel>
+        </RichEditBox>
         <!--</Canvas>-->
     </Grid>
 </UserControl>

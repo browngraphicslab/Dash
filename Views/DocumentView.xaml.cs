@@ -193,6 +193,7 @@ namespace Dash
                 //if (container != null && container.ViewModel.FitToParent)
                 //    container.ViewModel.FitContents(cview);
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+
                 PositionContextPreview();
             }
             Loaded += (sender, e) =>
@@ -221,6 +222,7 @@ namespace Dash
                         xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
                         break;
                     case DashShared.TypeInfo.RichText:
+                        break;
                     case DashShared.TypeInfo.Text:
                         xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
                         break;
