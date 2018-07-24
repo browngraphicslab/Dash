@@ -130,6 +130,11 @@ namespace Dash
         private WPdf.PdfDocument _wPdfDocument;
         private PDFRegionMarker _currentMarker;
 
+        private Stack<double> _backStack;
+
+        private DispatcherTimer _timer;
+
+
         public CustomPdfView()
         {
             this.InitializeComponent();
@@ -194,9 +199,17 @@ namespace Dash
                     xBar.Width = ScrollViewer2.ExtentWidth;
                 }
             };
+            _backStack = new Stack<double>();
+            _backStack.Push(0);
+            _timer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 1000)
+            };
+            _timer.Tick += TimerOnTick;
 
         }
-		private void OnNewRegionMade(object sender, RegionEventArgs e)
+
+        private void OnNewRegionMade(object sender, RegionEventArgs e)
 	    {
 		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
 	        //var docview = new DocumentView();
@@ -914,6 +927,35 @@ namespace Dash
             ScrollViewer.ChangeView(null, currOffset, 1);
             ScrollViewer2.ChangeView(null, currOffset, 1);
         }
+
+        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (_backStack.Count >= 1)
+            {
+                ScrollViewer2.ChangeView(null, _backStack.Peek(), 1);
+                _backStack.Pop();
+            }
+        }
+
+        private void ScrollViewer2_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (_timer.IsEnabled)
+            {
+                _timer.Stop();
+            }
+            _timer.Start();
+        }
+
+        private void TimerOnTick(object o, object o1)
+        {
+            _timer.Stop();
+            if (!_backStack.Peek().Equals(ScrollViewer2.VerticalOffset))
+            {
+                _backStack.Push(ScrollViewer2.VerticalOffset);
+            }
+            
+        }
+
     }
 }
 

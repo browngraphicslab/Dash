@@ -51,6 +51,11 @@
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
             </Grid>
 
+            <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>
+
         </StackPanel>
         <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging">
            
@@ -103,7 +108,7 @@
         </ScrollViewer>
 
 
-        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging">
+        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer2_OnViewChanged">
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
