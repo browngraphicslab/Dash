@@ -16,7 +16,7 @@
     <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
-            
+
             <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
             <RowDefinition x:Name="xDivider" Height ="0"/>
             <RowDefinition x:Name="xSecondPanelRow"/>
@@ -27,14 +27,16 @@
         <Grid Grid.Row="0">
             <StackPanel x:Name="xButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
 
-                <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>-->
+                
+                <Grid x:Name="xControlsToggleButton" PointerPressed="XControlsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                </Grid>
 
+                <StackPanel x:Name="xToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                 <Grid x:Name="xAnnotationsToggleButton" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
                 <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
@@ -47,7 +49,7 @@
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
+                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed" Visibility="Collapsed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
@@ -56,6 +58,17 @@
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
+                </StackPanel>
+
+                <StackPanel.Resources>
+                    <Storyboard x:Name="xFadeAnimation">
+                        <DoubleAnimation
+                            Storyboard.TargetName="xToggleButtonStack"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.0" To="1.0" Duration="0:0:.5"
+                        />
+                    </Storyboard>
+                </StackPanel.Resources>
 
             </StackPanel>
             <ScrollViewer  x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer_OnViewChanged">
@@ -111,15 +124,15 @@
 
         <Grid Grid.Row="2">
             <StackPanel x:Name="xButtonPanel2" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
-
-                <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>-->
-
+            
+                <Grid x:Name="xControlsToggleButton2" PointerPressed="XControlsToggleButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                </Grid>
+                <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                 <Grid x:Name="xAnnotationsToggleButton2" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
                 <Grid x:Name="xNextPageButton2" PointerPressed="XNextPageButton2_OnPointerPressed">
@@ -141,6 +154,17 @@
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
+                </StackPanel>
+
+                <StackPanel.Resources>
+                    <Storyboard x:Name="xFadeAnimation2">
+                        <DoubleAnimation
+                            Storyboard.TargetName="xToggleButtonStack2"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.0" To="1.0" Duration="0:0:.5"
+                        />
+                    </Storyboard>
+                </StackPanel.Resources>
 
             </StackPanel>
         

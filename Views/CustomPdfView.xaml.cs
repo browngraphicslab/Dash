@@ -201,6 +201,12 @@ namespace Dash
                     xBar.Width = ScrollViewer2.ExtentWidth;
                 }
             };
+
+            xPdfContainer.SizeChanged += (ss, ee) =>
+            {
+                xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
+            };
+
             _backStack = new Stack<double>();
             _backStack.Push(0);
             _backStack2 = new Stack<double>();
@@ -1008,6 +1014,35 @@ namespace Dash
                 stack.Pop();
             }
         }
+
+        private void XControlsToggleButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (xToggleButtonStack2.Visibility.Equals(Visibility.Collapsed))
+            {
+                xToggleButtonStack2.Visibility = Visibility.Visible;
+                xFadeAnimation2.Begin();
+            }
+            else
+            {
+                xToggleButtonStack2.Visibility = Visibility.Collapsed;
+            }
+           
+        }
+
+        private void XControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (xToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
+            {
+                xToggleButtonStack.Visibility = Visibility.Visible;
+                xFadeAnimation.Begin();
+            }
+            else
+            {
+                xToggleButtonStack.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        
     }
 }
 
