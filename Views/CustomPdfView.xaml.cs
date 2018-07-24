@@ -709,6 +709,8 @@ namespace Dash
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+
+            e.Handled = true;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (!currentPoint.Properties.IsLeftButtonPressed)
             {
@@ -735,6 +737,8 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+
+            e.Handled = true;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (!currentPoint.Properties.IsLeftButtonPressed)
             {
@@ -1128,6 +1132,8 @@ namespace Dash
 	    {
 		    return this.GetFirstAncestorOfType<DocumentView>();
 		}
+
+       
     }
 }
 
