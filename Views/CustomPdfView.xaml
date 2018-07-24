@@ -16,48 +16,49 @@
     <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
-            <RowDefinition Height="35"/>
+            
             <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
             <RowDefinition x:Name="xDivider" Height ="0"/>
             <RowDefinition x:Name="xSecondPanelRow"/>
         </Grid.RowDefinitions>
-        
-      
 
-        <StackPanel  Grid.Row="0" Orientation="Horizontal" Width="Auto" Margin="0 0 0 5">
 
-            <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
+
+        <Grid Grid.Row="0">
+            <StackPanel x:Name="xButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+
+                <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
                 <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
             </Grid>-->
-            
-            <Grid x:Name="xAnnotationsToggleButton" PointerPressed="xAnnotationsToggleButton_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>
 
-            <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
-            </Grid>
+                <Grid x:Name="xAnnotationsToggleButton" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
 
-            <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
-            </Grid>
+                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                </Grid>
 
-            <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>
+                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                </Grid>
 
-            <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed">
-                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-            </Grid>
+                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
 
-        </StackPanel>
-        <ScrollViewer  x:Name="ScrollViewer" Grid.Row="1" ViewChanging="ScrollViewer_OnViewChanging">
+                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+            </StackPanel>
+            <ScrollViewer  x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer_OnViewChanged">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -106,9 +107,44 @@
            
            
         </ScrollViewer>
+        </Grid>
 
+        <Grid Grid.Row="2">
+            <StackPanel x:Name="xButtonPanel2" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
 
-        <ScrollViewer  x:Name="ScrollViewer2" Grid.Row="3" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer2_OnViewChanged">
+                <!--<Grid x:Name="xSplitScreenButton" PointerPressed="xSplitScreenButton_OnPointerPressed" PointerMoved="xSplitScreenButton_OnPointerMoved">
+                <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+            </Grid>-->
+
+                <Grid x:Name="xAnnotationsToggleButton2" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xNextPageButton2" PointerPressed="XNextPageButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xPreviousPageButton2" PointerPressed="XPreviousPageButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollToTop2" PointerPressed="XScrollToTop2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollBack2" PointerPressed="XScrollBack2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+            </StackPanel>
+        
+        <ScrollViewer  x:Name="ScrollViewer2" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer2_OnViewChanged">
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -157,8 +193,9 @@
 
 
         </ScrollViewer>
-        
-        
+        </Grid>
+
+
         <Grid x:Name="xAnnotationMarkers" Width="10" Grid.Column="0" Margin="-20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
         <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Grid.Column="1">
             <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
@@ -172,7 +209,7 @@
            
         </StackPanel>
 
-        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="2" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
+        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="1" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
             <controls:GridSplitter.Element>
                 <Canvas>

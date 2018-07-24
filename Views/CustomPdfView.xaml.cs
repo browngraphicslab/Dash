@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -131,6 +132,7 @@ namespace Dash
         private PDFRegionMarker _currentMarker;
 
         private Stack<double> _backStack;
+        private Stack<double> _backStack2;
 
         private DispatcherTimer _timer;
 
@@ -201,11 +203,17 @@ namespace Dash
             };
             _backStack = new Stack<double>();
             _backStack.Push(0);
+            _backStack2 = new Stack<double>();
+            _backStack2.Push(0);
+
             _timer = new DispatcherTimer
             {
                 Interval = new TimeSpan(0, 0, 0, 0, 1000)
             };
             _timer.Tick += TimerOnTick;
+
+            Canvas.SetZIndex(xButtonPanel2, 999);
+            Canvas.SetZIndex(xButtonPanel, 999);
 
         }
 
@@ -840,7 +848,7 @@ namespace Dash
 
         }
 
-        private void xAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xAnnotationBox.Visibility.Equals(Visibility.Visible))
             {
@@ -884,57 +892,25 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XScrollToTop2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            ScrollViewer.ChangeView(null, 0, null);
             ScrollViewer2.ChangeView(null, 0, null);
         }
 
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XNextPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            
-            var currOffset = 0.0;
-            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
-            {
-                var imgWidth = image.ActualWidth;
-                var annoWidth = xAnnotationBox2.Visibility == Visibility.Visible ? xAnnotationBox2.ActualWidth : 0;
-                var scale = (ScrollViewer2.ViewportWidth - annoWidth) / imgWidth;
-                currOffset += (image.ActualHeight * scale);
-                if (currOffset > ScrollViewer2.VerticalOffset + 5)
-                {
-                    break;
-                }
-            }
-            ScrollViewer.ChangeView(null, currOffset, 1);
-            ScrollViewer2.ChangeView(null, currOffset, 1);
+            MovePage(ScrollViewer2, xAnnotationBox2, 1);
+
         }
 
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XPreviousPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var currOffset = 0.0;
-            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
-            {
-                var imgWidth = image.ActualWidth;
-                var annoWidth = xAnnotationBox2.Visibility == Visibility.Visible ? xAnnotationBox2.ActualWidth : 0;
-                var scale = (ScrollViewer2.ViewportWidth - annoWidth) / imgWidth;
-                if (currOffset + (image.ActualHeight * scale) + 5 > ScrollViewer2.VerticalOffset)
-                {
-                    break;
-                }
-                currOffset += (image.ActualHeight * scale);
-                
-            }
-            ScrollViewer.ChangeView(null, currOffset, 1);
-            ScrollViewer2.ChangeView(null, currOffset, 1);
+            MovePage(ScrollViewer2, xAnnotationBox2, 0);
         }
 
-        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XScrollBack2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (_backStack.Count >= 1)
-            {
-                ScrollViewer2.ChangeView(null, _backStack.Peek(), 1);
-                _backStack.Pop();
-            }
+            PopStack(_backStack2, ScrollViewer2);
         }
 
         private void ScrollViewer2_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -949,13 +925,89 @@ namespace Dash
         private void TimerOnTick(object o, object o1)
         {
             _timer.Stop();
-            if (!_backStack.Peek().Equals(ScrollViewer2.VerticalOffset))
-            {
-                _backStack.Push(ScrollViewer2.VerticalOffset);
-            }
-            
+            AddToStack(_backStack, ScrollViewer);
+            AddToStack(_backStack2, ScrollViewer2);
+
         }
 
+        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            MovePage(ScrollViewer, xAnnotationBox, 1);
+        }
+
+        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            MovePage(ScrollViewer, xAnnotationBox, 0);
+        }
+
+        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            ScrollViewer.ChangeView(null, 0, null);
+        }
+
+        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopStack(_backStack, ScrollViewer2);
+        }
+
+     
+        private void MovePage(ScrollViewer scroller, Grid grid, int i)
+        {
+            var currOffset = 0.0;
+            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
+            {
+                var imgWidth = image.ActualWidth;
+                var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
+                var scale = (scroller.ViewportWidth - annoWidth) / imgWidth;
+                if (i == 0)
+                {
+                    if (currOffset + (image.ActualHeight * scale) + 5 > scroller.VerticalOffset)
+                    {
+                        break;
+                    }
+                    currOffset += (image.ActualHeight * scale);
+                }
+                else
+                {
+                    currOffset += (image.ActualHeight * scale);
+                    if (currOffset > scroller.VerticalOffset + 5)
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            scroller.ChangeView(null, currOffset, 1);
+        }
+
+        private void ScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (_timer.IsEnabled)
+            {
+                _timer.Stop();
+            }
+            _timer.Start();
+        }
+
+        private void AddToStack(Stack<double> stack, ScrollViewer viewer)
+        {
+            if (!stack.Count().Equals(0))
+            {
+                if (!stack.Peek().Equals(viewer.VerticalOffset))
+                {
+                    stack.Push(viewer.VerticalOffset);
+                }
+            }
+        }
+
+        private void PopStack(Stack<double> stack, ScrollViewer viewer)
+        {
+            if (stack.Count >= 1)
+            {
+                viewer.ChangeView(null, stack.Peek(), 1);
+                stack.Pop();
+            }
+        }
     }
 }
 
