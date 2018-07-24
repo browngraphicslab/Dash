@@ -32,7 +32,8 @@ namespace Dash
 
         public override string ToString()
         {
-            return "@"+Title;
+            string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";
+            return $"{prefix}{Title}";
         }
 
         /// <summary>
@@ -184,6 +185,11 @@ namespace Dash
             }
 
             return null;
+        }
+
+        internal void AddFieldUpdatedListener(KeyController dockedLength, object v)
+        {
+            throw new NotImplementedException();
         }
 
         public FieldControllerBase ParseDocumentReference(string textInput, bool searchAllDocsIfFail)
@@ -1261,16 +1267,16 @@ namespace Dash
             return this;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new DocumentController();
-        }
+        public override FieldControllerBase GetDefaultController() => new DocumentController();
 
         public override StringSearchModel SearchForString(string searchString)
         {
+            //var positiveKeys = EnumDisplayableFields().Where(field => field.Key.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //var positiveVals = EnumDisplayableFields().Where(field => field.Value.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //if (positiveVals.Any()) return new StringSearchModel(positiveVals[0].Value.ToString()); 
             return StringSearchModel.False;
-            //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
+
         #endregion
 
         // == OVERRIDEN FROM OBJECT ==

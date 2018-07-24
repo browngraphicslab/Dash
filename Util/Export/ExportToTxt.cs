@@ -171,6 +171,9 @@ namespace Dash
                         case "Key Value Document Box":
                             newText = KeyValToTxt(doc, minMax);
                             break;
+                        case "Web Box":
+                            newText = HtmlBoxToTxt(doc, minMax);
+                            break;
                         default:
                             newText = "";
                             break;
@@ -436,6 +439,26 @@ namespace Dash
             {
                 return "";
             }
+        }
+
+        private string HtmlBoxToTxt(DocumentController doc, List<double> minMax)
+        {
+            //string version of the image uri
+            var html = doc.GetDereferencedField<TextController>(KeyStore.DataKey, null);
+            if (html != null)
+            {
+                var htmlText = html.Data;
+
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML image formatting
+                return "<div width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax)
+                       + "px\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">" + htmlText + "</div>";
+            }
+            return "";
         }
 
         private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)

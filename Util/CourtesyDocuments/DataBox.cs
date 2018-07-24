@@ -14,7 +14,7 @@ namespace Dash
 
 
         public static TypeInfo Type { get; private set; }
-        public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 100, double h = double.NaN)
+        public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN)
 
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
@@ -82,6 +82,7 @@ namespace Dash
 			{
                 return RichTextBox.MakeView(documentController, context);
             }
+
             return new Grid();
         }
     }

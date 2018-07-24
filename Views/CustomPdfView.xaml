@@ -10,8 +10,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged"
-    KeyDown="CustomPdfView_OnKeyDown">
+    KeyDown="CustomPdfView_OnKeyDown"
+    SizeChanged="CustomPdfView_OnSizeChanged">
 
     <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
@@ -86,13 +86,8 @@
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                       PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="ImageSource">
-                                    <Image Source="{x:Bind}" Margin="0,0,0,10" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <ItemsControl x:Name="PageItemsControl" x:FieldModified="public">
+                            </ItemsControl>
                         <!--Annotation overlay for block annotations-->
                         <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
                         <!--Canvas for doing text selection-->
@@ -183,12 +178,7 @@
                           PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                           PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl2" ItemsSource="{x:Bind Pages, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="ImageSource">
-                                    <Image Source="{x:Bind}" Margin="0,0,0,10" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
+                        <ItemsControl x:Name="PageItemsControl2" x:FieldModified="public">
                         </ItemsControl>
                         <!--Annotation overlay for block annotations-->
                         <local:AnnotationOverlay x:Name="xAnnotations2"></local:AnnotationOverlay>

@@ -18,6 +18,15 @@
             </ComboBox>
             <AppBarSeparator></AppBarSeparator>
             <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
+            <AppBarSeparator></AppBarSeparator>
+            <AppBarButton x:Name="xBackgroundColor" Label="Background">
+                <Button.Flyout>
+                    <Flyout x:Name="xColorFlyout">
+                        <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"/>
+                    </Flyout>
+                </Button.Flyout>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+            </AppBarButton>
         </StackPanel>
 <!--
             <CommandBar Background="LightGray" x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">

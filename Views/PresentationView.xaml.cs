@@ -39,7 +39,6 @@ namespace Dash
             DataContext = new PresentationViewModel();
 
             ShowLinesButton.Background = new SolidColorBrush(Colors.White);
-
      
             //remove all paths
             DrawLines();
@@ -58,6 +57,7 @@ namespace Dash
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Play);
                     PlayStopButton.Label = "Play";
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
+                    //TODO: zoom out to initial view
                 }
                 else
                 {
@@ -74,6 +74,13 @@ namespace Dash
 
             // back/next/reset buttons change appearance depending on state of presentation
             ResetBackNextButtons();
+
+            if (!_repeat && IsPresentationPlaying)
+            {
+                //disable back button
+                BackButton.IsEnabled = false;
+                BackButton.Opacity = 0.3;
+            }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -82,9 +89,22 @@ namespace Dash
 
             // only move back if there is a step to go back to
             if (selectedIndex != 0)
+            {
+                NextButton.IsEnabled = true;
+                NextButton.Opacity = 1;
                 PinnedNodesListView.SelectedIndex = selectedIndex - 1;
+            }
             else if (_repeat)
+            {
                 PinnedNodesListView.SelectedIndex = PinnedNodesListView.Items.Count - 1;
+            }
+            if(selectedIndex == 1 && !_repeat)
+            {
+                //disable back button
+                BackButton.IsEnabled = false;
+                BackButton.Opacity = 0.3;
+            }
+
 
             NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
@@ -95,9 +115,20 @@ namespace Dash
 
             // can only move forward if there's a node to move forward to
             if (selectedIndex != PinnedNodesListView.Items.Count - 1)
+            {
+                BackButton.Opacity = 1;
+                BackButton.IsEnabled = true;
                 PinnedNodesListView.SelectedIndex = selectedIndex + 1;
-            else if (_repeat)
+            }else if (_repeat)
+            {
                 PinnedNodesListView.SelectedIndex = 0;
+            }
+            if (selectedIndex == PinnedNodesListView.Items.Count - 2 && !_repeat)
+            {
+                //end presentation
+                NextButton.IsEnabled = false;
+                NextButton.Opacity = 0.3;
+            }
 
             NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
         }
@@ -108,6 +139,20 @@ namespace Dash
             ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
 
             DrawLinesWithNewDocs();
+
+            int selectedIndex = PinnedNodesListView.SelectedIndex;
+            if (selectedIndex == PinnedNodesListView.Items.Count - 1 && !_repeat)
+            {
+                //end presentation
+                NextButton.IsEnabled = false;
+                NextButton.Opacity = 0.3;
+            }
+            if (selectedIndex == 0 && !_repeat)
+            {
+                //disable back button
+                BackButton.IsEnabled = false;
+                BackButton.Opacity = 0.3;
+            }
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
@@ -370,17 +415,14 @@ namespace Dash
                 //create nest of elements to show segment
                 var segment =
                     new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
-
                 var segments = new PathSegmentCollection {segment};
                 var pathFig = new PathFigure
                 {
                     StartPoint = startPoint,
                     Segments = segments
                 };
-
                 var figures = new PathFigureCollection {pathFig};
                 var pathGeo = new PathGeometry {Figures = figures};
-
                 var path = new Windows.UI.Xaml.Shapes.Path
                 {
                     Data = pathGeo,
@@ -388,7 +430,7 @@ namespace Dash
                     StrokeThickness = 2
 
                 };
-
+                Canvas.SetZIndex(path, -1);
                 _paths.Add(path);
                 canvas.Children.Add(path);
 
@@ -423,6 +465,7 @@ namespace Dash
                     },
                     Fill = new SolidColorBrush(Colors.Black)
                 };
+                Canvas.SetZIndex(arrow, -1);
 
                 _paths.Add(arrow);
                 canvas.Children.Add(arrow);
@@ -519,11 +562,37 @@ namespace Dash
         private void RepeatButton_OnChecked(object sender, RoutedEventArgs e)
         {
             _repeat = true;
+
+            NextButton.IsEnabled = true;
+            NextButton.Opacity = 1;
+            BackButton.IsEnabled = true;
+            BackButton.Opacity = 1;
         }
 
         private void RepeatButton_OnUnchecked(object sender, RoutedEventArgs e)
         {
             _repeat = false;
+
+            int selectedIndex = PinnedNodesListView.SelectedIndex;
+            if (selectedIndex == PinnedNodesListView.Items.Count - 1 && !_repeat)
+            {
+                //end presentation
+                NextButton.IsEnabled = false;
+                NextButton.Opacity = 0.3;
+            }
+            if (selectedIndex == 0 && !_repeat)
+            {
+                //disable back button
+                BackButton.IsEnabled = false;
+                BackButton.Opacity = 0.3;
+            }
+
+        }
+
+        private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
+        {
+            //close presentation
+            MainPage.Instance.TogglePresentationMode();
         }
     }
 }

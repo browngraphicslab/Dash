@@ -78,12 +78,11 @@ namespace Dash
         }
 
 
-        private double _pageHeight;
 
         public event EventHandler DocumentLoaded;
 
-        private ObservableCollection<ImageSource> _pages = new ObservableCollection<ImageSource>();
-        public ObservableCollection<ImageSource> Pages
+        private DataVirtualizationSource<ImageSource> _pages;
+        public DataVirtualizationSource<ImageSource> Pages
         {
             get => _pages;
             set
@@ -92,6 +91,7 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
+
 
         private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
 
@@ -123,6 +123,11 @@ namespace Dash
 
         private List<SelectableElement> _selectableElements;
 
+        public List<SelectableElement> SelectableElements = new List<SelectableElement>();
+
+
+        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
+        private readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
         public VisualAnnotationManager AnnotationManager { get; }
 
         public DocumentController LayoutDocument { get; }
@@ -136,6 +141,7 @@ namespace Dash
 
         private DispatcherTimer _timer;
 
+        public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
         public CustomPdfView()
         {
@@ -152,6 +158,7 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
+            _pages = new DataVirtualizationSource<ImageSource>(this);
 			DocumentLoaded += (sender, e) =>
 			{
 				AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -180,7 +187,7 @@ namespace Dash
                     {
 
                         var dmv = new DocumentViewModel(annotation);
-                        dmv.DisableDecorations = true;
+                        dmv.DecorationState = false;
                         var docview = new DocumentView();
                         docview.ViewModel = dmv;
                         docview.hideResizers();
@@ -277,13 +284,14 @@ namespace Dash
             return region;
         }
 
+        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
+        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private async Task OnPdfUriChanged()
         {
             if (PdfUri == null)
             {
                 return;
             }
-            Pages.Clear();
 
             StorageFile file;
             try
@@ -302,85 +310,53 @@ namespace Dash
                 }
             }
 
-            PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
+            var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
+            Strategy = strategy;
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
             double maxWidth = 0;
-            for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+            for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                var size = page.GetPageSize();
-                _pageHeight = size.GetHeight();
-                maxWidth = Math.Max(maxWidth, size.GetWidth());
-                strategy.SetPage(i - 1, offset, size);
-                offset += page.GetPageSize().GetHeight() + 10;
-                processor.ProcessPageContent(page);
+                Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
             PdfMaxWidth = maxWidth;
-            PdfTotalHeight = offset - 10;
-            
-            _selectableElements = strategy.GetSelectableElements();
-            reader.Close();
-            pdfDocument.Close();
 
             _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
-            await RenderPdf(null);
-
-            var scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
-            if (scrollRatio != null)
-            {
-                ScrollViewer.UpdateLayout();
-                ScrollViewer.ChangeView(null, scrollRatio.Data * ScrollViewer.ExtentHeight, null, true);
-			}
-			DocumentLoaded?.Invoke(this, new EventArgs());
-		}
-
-        private CancellationTokenSource _renderToken;
-        private int _currentPageCount = -1;
-        private async Task RenderPdf(double? targetWidth)
-        {
-            _renderToken?.Cancel();
-            _renderToken = new CancellationTokenSource();
-            CancellationToken token = _renderToken.Token;
-            //targetWidth = 1400;//This makes the PDF readable even if you shrink it down and then zoom in on it
-            var options = new WPdf.PdfPageRenderOptions();
             bool add = _wPdfDocument.PageCount != _currentPageCount;
             if (add)
             {
                 _currentPageCount = (int)_wPdfDocument.PageCount;
-                Pages.Clear();
             }
-            for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-                var stream = new InMemoryRandomAccessStream();
-                var widthRatio = targetWidth == null ? (ActualWidth == 0 ? 1 : (ActualWidth / PdfMaxWidth)) : (targetWidth / PdfMaxWidth);
-                options.DestinationWidth = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width);
-                options.DestinationHeight = (uint)(widthRatio * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height);
-                await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
-                var source = new BitmapImage();
-                await source.SetSourceAsync(stream);
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
 
-                if ((int)i < Pages.Count)
+            await Task.Run(() =>
+            {
+                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
-                    Pages[(int)i] = source;
+                    var page = pdfDocument.GetPage(i);
+                    var size = page.GetPageSize();
+                    strategy.SetPage(i - 1, offset, size);
+                    offset += page.GetPageSize().GetHeight() + 10;
+                    processor.ProcessPageContent(page);
                 }
-                else
-                {
-                    Pages.Add(source);
-                }
-            }
-        }
+            });
+            
+            SelectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages() - 1);
+
+            reader.Close();
+            pdfDocument.Close();
+            PdfTotalHeight = offset - 10;
+            DocumentLoaded?.Invoke(this, new EventArgs());
+		}
+
+        public BoundsExtractionStrategy Strategy { get; set; }
+
+        private CancellationTokenSource _renderToken;
+        private int _currentPageCount = -1;
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
@@ -450,7 +426,7 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in _selectableElements)
+            foreach (var selectableElement in SelectableElements)
             {
                 var b = selectableElement.Bounds;
                 if (b.Contains(p))
@@ -474,9 +450,8 @@ namespace Dash
             {
                 return;
             }
-
-            TestSelectionCanvas.Children.Remove(_selectedRectangles[index]);
-            _selectedRectangles.Remove(index);
+            
+            _selectedRectangles[index].Visibility = Visibility.Collapsed;
         }
 
         private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
@@ -485,33 +460,51 @@ namespace Dash
         {
             if (_selectedRectangles.ContainsKey(index))
             {
+                _selectedRectangles[index].Visibility = Visibility.Visible;
+                if (!TestSelectionCanvas.Children.Contains(_selectedRectangles[index]))
+                {
+                    TestSelectionCanvas.Children.Add(_selectedRectangles[index]);
+                }
+
                 return;
             }
 
-            var ele = _selectableElements[index];
+            var elem = SelectableElements[index];
             var rect = new Rectangle
             {
-                Width = ele.Bounds.Width,
-                Height = ele.Bounds.Height
+                Width = elem.Bounds.Width,
+                Height = elem.Bounds.Height
             };
-            Canvas.SetLeft(rect, ele.Bounds.Left);
-            Canvas.SetTop(rect, ele.Bounds.Top);
+            Canvas.SetLeft(rect, elem.Bounds.X);
+            Canvas.SetTop(rect, elem.Bounds.Y);
             rect.Fill = _selectionBrush;
 
+            _selectedRectangles.Add(index, rect);
             TestSelectionCanvas.Children.Add(rect);
-
-            _selectedRectangles[index] = rect;
         }
 
-
-        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
-        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
-        private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
         private void SelectElements(int startIndex, int endIndex)
         {
-            if (_currentSelectionStart == -1)
+            // if control isn't pressed, reset the selection
+            if (!this.IsCtrlPressed())
             {
-                Debug.Assert(_currentSelectionEnd == -1);
+                if (_currentSelections.Count > 1)
+                {
+                    _currentSelections.Clear();
+                }
+            }
+
+            // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
+            if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
+            {
+                // create a new selection
+                _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+            }
+            var currentSelectionStart = _currentSelections.Last().Key;
+            var currentSelectionEnd = _currentSelections.Last().Value;
+
+            if (currentSelectionStart == -1)
+            {
                 for (var i = startIndex; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
@@ -519,27 +512,29 @@ namespace Dash
             }
             else
             {
-                for (var i = startIndex; i < _currentSelectionStart; ++i)
+                for (var i = startIndex; i < currentSelectionStart; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = _currentSelectionStart; i < startIndex; ++i)
+
+                for (var i = currentSelectionStart; i < startIndex; ++i)
                 {
                     DeselectIndex(i);
                 }
-                for (var i = _currentSelectionEnd + 1; i <= endIndex; ++i)
+
+                for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = endIndex + 1; i <= _currentSelectionEnd; ++i)
+
+                for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
                 {
                     DeselectIndex(i);
                 }
             }
 
-            _currentSelectionStart = startIndex;
-            _currentSelectionEnd = endIndex;
-
+            // you can't set kvp keys and values, so we have to just create a new one?
+            _currentSelections[_currentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
         }
 
         private void UpdateSelection(Point mousePos)
@@ -568,19 +563,43 @@ namespace Dash
 
         private void ClearSelection()
         {
-            _currentSelectionStart = -1;
-            _currentSelectionEnd = -1;
+            _currentSelections.Clear();
             _selectionStartPoint = null;
-            _selectedRectangles.Clear();
+            foreach (var rect in _selectedRectangles.Values)
+            {
+                rect.Visibility = Visibility.Collapsed;
+            }
             TestSelectionCanvas.Children.Clear();
 			AnnotationManager.SetSelectionRegion(null);
         }
 
         private void EndSelection()
 		{
-			if (_currentSelectionStart == -1) return;//Not currently selecting anything
+			if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
 			_selectionStartPoint = null;
-            AnnotationManager.SetSelectionRegion(_selectableElements.Skip(_currentSelectionStart).Take(_currentSelectionEnd - _currentSelectionStart + 1));
+
+            // loop through each selection and add the indices in each selection set
+		    var indices = new List<int>();
+		    foreach (var selection in _currentSelections)
+		    {
+		        for (var i = selection.Key; i <= selection.Value; i++)
+		        {
+                    // this will avoid double selecting any items
+		            if (!indices.Contains(i))
+		            {
+		                indices.Add(i);
+		            }
+		        }
+		    }
+
+            // get every matching selectable element and set the selection region to that
+		    var selectableElements = new List<SelectableElement>();
+		    foreach (var index in indices)
+		    {
+                selectableElements.Add(SelectableElements[index]);
+		    }
+
+            AnnotationManager.SetSelectionRegion(selectableElements);
         }
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -593,7 +612,7 @@ namespace Dash
 
                 //space, tab, enter
 
-                if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && (Math.Abs(closest.Bounds.Y - mouse.Y) < 10))
+                if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && Math.Abs(closest.Bounds.Y - mouse.Y) < 10)
                 {
                     SelectIndex(closest.Index);
                 }
@@ -602,7 +621,7 @@ namespace Dash
 
                 for (var i = closest.Index; i >= 0; --i)
                 {
-                    var selectableElement = _selectableElements[i];
+                    var selectableElement = SelectableElements[i];
                     if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
                     {
                         SelectIndex(selectableElement.Index);
@@ -615,7 +634,7 @@ namespace Dash
 
                 for (var i = closest.Index; i >= 0; ++i)
                 {
-                    var selectableElement = _selectableElements[i];
+                    var selectableElement = SelectableElements[i];
                     if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
                     {
                         SelectIndex(selectableElement.Index);
@@ -694,7 +713,11 @@ namespace Dash
             {
                 return;
             }
-            ClearSelection();
+
+            if (!this.IsCtrlPressed())
+            {
+                ClearSelection();
+            }
             switch (AnnotationManager.CurrentAnnotationType)
             {
                 case Dash.AnnotationManager.AnnotationType.RegionBox:
@@ -713,7 +736,12 @@ namespace Dash
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private double _scrollRatio;
-        private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private double _height;
+        private double _width;
+        private double _verticalOffset;
+        private bool _isCtrlPressed;
+
+        public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
         }
@@ -726,26 +754,51 @@ namespace Dash
 
         public async void UnFreeze()
         {
-            await RenderPdf(ScrollViewer.ActualWidth);
+            //await RenderPdf(ScrollViewer.ActualWidth);
+            Pages.View_SizeChanged(null, null);
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (this.IsCtrlPressed())
             {
-                if (e.Key == VirtualKey.C && _currentSelectionStart != -1)
+                if (e.Key == VirtualKey.C && _currentSelections.Last().Key != -1)
                 {
-                    Debug.Assert(_currentSelectionEnd != -1);
-                    Debug.Assert(_currentSelectionEnd >= _currentSelectionStart);
+                    Debug.Assert(_currentSelections.Last().Value != -1);
+                    Debug.Assert(_currentSelections.Last().Value >= _currentSelections.Last().Key);
                     StringBuilder sb = new StringBuilder();
-                    for (var i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
+                    _currentSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+
+                    // get the indices from our selections and ignore any duplicate selections
+                    var indices = new List<int>();
+                    foreach (var selection in _currentSelections)
                     {
-                        var selectableElement = _selectableElements[i];
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
+
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
+                    var prevIndex = indices.First();
+                    foreach (var index in indices.Skip(1))
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = SelectableElements[index];
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);
                         }
+
+                        prevIndex = index;
                     }
+                    
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
                     Clipboard.SetContent(dataPackage);
@@ -753,13 +806,13 @@ namespace Dash
                 }
                 else if (e.Key == VirtualKey.A)
                 {
-                    SelectElements(0, _selectableElements.Count - 1);
+                    SelectElements(0, SelectableElements.Count - 1);
                     e.Handled = true;
                 }
             }
         }
 
-	    public void ScrollToRegion(DocumentController target)
+        public void ScrollToRegion(DocumentController target)
 	    {
 		    var offset = target.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, null);
 		    if (offset == null) return;
@@ -838,9 +891,9 @@ namespace Dash
             var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
 
             region.Link(note);
-            var docview = new DocumentView()
+            var docview = new DocumentView
             {
-                DataContext = new DocumentViewModel(note) {DisableDecorations = true},
+                DataContext = new DocumentViewModel(note) {DecorationState = false},
                 Width = xAnnotationBox.ActualWidth,
                 BindRenderTransform = false
             };
@@ -1043,6 +1096,10 @@ namespace Dash
         }
 
         
+	    public DocumentView GetDocView()
+	    {
+		    return this.GetFirstAncestorOfType<DocumentView>();
+		}
     }
 }
 

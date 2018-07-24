@@ -39,7 +39,7 @@ namespace Dash
 	        PointerExited += OnPointerExited;
         }
 
-	    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void OnPointerExited(object sender, PointerRoutedEventArgs e)
 	    {
 		    IsPointerOver = false;
 	    }

@@ -147,7 +147,6 @@ namespace Dash
             xInkCanvas.InkPresenter.IsInputEnabled = value;
         }
 
-
 	    public void ShowAnnotations(bool shouldShow)
 	    {
 		    AnnotationsVisible = shouldShow;
@@ -160,7 +159,7 @@ namespace Dash
 
 			    if (regionDoc != null)
 			    {
-				    var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				    var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData ?? new List<DocumentController>();
 				    foreach (var dc in newToLinks)
 				    {
 					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
@@ -177,7 +176,7 @@ namespace Dash
 
 				if (regionDoc != null)
 				{
-					var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+					var newToLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData ?? new List<DocumentController>();
 					foreach (var dc in newToLinks)
 					{
 						var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();

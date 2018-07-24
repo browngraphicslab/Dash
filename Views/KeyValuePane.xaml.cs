@@ -1,16 +1,14 @@
-﻿using Dash.Models.DragModels;
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -75,11 +73,11 @@ namespace Dash
             docView?.StyleKeyValuePane();
 
 
-            var currPageBinding = new FieldBinding<TextController>()
+            var currPageBinding = new FieldBinding<TextController>
             {
                 Mode = BindingMode.TwoWay,
                 Document = docView.ViewModel.DataDocument,
-                Key = KeyStore.TitleKey,
+                Key = KeyStore.TitleKey
             };
             xTitleBlock.AddFieldBinding(TextBlock.TextProperty, currPageBinding);
         }
@@ -198,7 +196,6 @@ namespace Dash
             xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
 
             UndoManager.EndBatch();
-            return;
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -335,15 +332,31 @@ namespace Dash
         private void SwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _showDataDoc = !_showDataDoc;
-            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
-            this.SetListItemSourceToCurrentDataContext();
+            xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+
+            OffsetMarginOnToggle();
+
+            SetListItemSourceToCurrentDataContext();
         }
 
         private void xDocBlock_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _showDataDoc = !_showDataDoc;
-            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
-            this.SetListItemSourceToCurrentDataContext();
+            xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+
+            OffsetMarginOnToggle();
+
+            SetListItemSourceToCurrentDataContext();
+        }
+
+        private void OffsetMarginOnToggle()
+        {
+            var margin = new Thickness
+            {
+                Top = -4,
+                Left = xDocBlock.Text.Equals("Data") ? -12 : -30
+            };
+            xDocBlock.Margin = margin;
         }
     }
 }

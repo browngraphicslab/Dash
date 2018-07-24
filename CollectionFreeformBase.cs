@@ -33,6 +33,7 @@ using Windows.Storage.Streams;
 using Windows.Storage;
 using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
+using Windows.UI.Input.Inking;
 
 namespace Dash
 {
@@ -85,10 +86,9 @@ namespace Dash
             Canvas.SetTop(SelectionCanvas, -30000);
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
-            if (InkController != null)
-            {
-                MakeInkCanvas();
-            }
+            if (ViewModel.InkController == null)
+                ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
+            MakeInkCanvas();
             UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
@@ -261,7 +261,6 @@ namespace Dash
             var scaleMatrix = scale.GetMatrix();
             if (zoom)
             {
-
                 //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
                 //the higher number, the more it xooms, but doesn't actually change final view 
                 var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
@@ -968,7 +967,6 @@ namespace Dash
         #region TextInputBox
 
         string previewTextBuffer = "";
-        public InkController InkController;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
@@ -1043,6 +1041,7 @@ namespace Dash
                 if (text == "v" && this.IsCtrlPressed())
                 {
                     ViewModel.Paste(Clipboard.GetContent(), where);
+                    
                     previewTextbox.Visibility = Visibility.Collapsed;
                 }
                 else

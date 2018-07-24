@@ -54,26 +54,50 @@ namespace Dash
 		{
 			this.InitializeComponent();
 			SelectedColor = xColorPicker.Color;
-			xColorPicker.ColorChanged += (sender, args) => SelectedColor = xColorPicker.Color;
-			
-			//add any saved colors to the Recent Colors panel
-			if (SavedColors == null)
-			{
-				SavedColors = new ObservableCollection<Color>();
-			}
-			else
-			{
-				foreach (Color color in SavedColors)
-				{
-					this.AddPreviewColorBox(color);
-				}
-			}
 
-			SavedColors.CollectionChanged += OnSavedColorsChanged;
+		    //add any saved colors to the Recent Colors panel
+		    if (SavedColors == null)
+		    {
+		        SavedColors = new ObservableCollection<Color>();
+		    }
+		    else
+		    {
+		        foreach (var color in SavedColors)
+		        {
+		            this.AddPreviewColorBox(color);
+		        }
+		    }
+            Loaded += DashColorPicker_Loaded;
+            Unloaded += DashColorPicker_Unloaded;
 		}
 
+        private void DashColorPicker_Loaded(object sender, RoutedEventArgs e)
+        {
+            xColorPicker.ColorChanged += OnXColorPickerOnColorChanged;
+            SavedColors.CollectionChanged += OnSavedColorsChanged;
 
-		private void XApplyColorButton_OnClick(object sender, RoutedEventArgs e)
+            // lol this isn't working!!!!
+            foreach (var textBox in xColorPicker.GetDescendantsOfType<TextBox>().ToList())
+            {
+                textBox.IsEnabled = true;
+                textBox.IsHitTestVisible = true;
+                textBox.IsReadOnly = false;
+            }
+        }
+
+        private void OnXColorPickerOnColorChanged(ColorPicker sender, ColorChangedEventArgs args)
+	    {
+	        SelectedColor = xColorPicker.Color;
+	    }
+
+	    private void DashColorPicker_Unloaded(object sender, RoutedEventArgs e)
+        {
+            AddSavedColor(xColorPicker.Color);
+            SavedColors.CollectionChanged -= OnSavedColorsChanged;
+            xColorPicker.ColorChanged -= OnXColorPickerOnColorChanged;
+        }
+
+        private void XApplyColorButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//add chosen color to saved colors
 			this.AddSavedColor(xColorPicker.Color);
@@ -104,7 +128,12 @@ namespace Dash
 			box.Fill = new SolidColorBrush(color);
 			xSavedColorsStack.Children.Insert(0, box);
 			//on click should trigger color change to that color
-			box.PointerPressed += (s, e) => xColorPicker.Color = color;
+			box.PointerPressed += (s, e) =>
+			{
+				UndoManager.StartBatch();
+				xColorPicker.Color = color;
+				UndoManager.EndBatch();
+			};
 			//TODO: add white border for hover
 		}
 
@@ -116,7 +145,6 @@ namespace Dash
 				Color color = (Color) item;
 				if (color != null) AddPreviewColorBox(color);
 			}
-			return;
 		}
 
 		//enables other classes to set the opacity of the currently selected color

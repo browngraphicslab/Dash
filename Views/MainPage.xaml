@@ -21,7 +21,7 @@
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="7"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="0" x:Name="xUtilTabColumn"/>
+            <ColumnDefinition Width="0" x:Name="xUtilTabColumn" />
         </Grid.ColumnDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
@@ -55,7 +55,7 @@
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
-        <Canvas x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+        <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
             <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
@@ -63,8 +63,9 @@
              
             
             </Grid>
-        </Canvas>
+        </Grid>
 
+        <!--drag in html popup-->
         <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
             <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened" Closed="Popup_OnClosed">
                 <Border x:Name="xBorder"
@@ -79,7 +80,14 @@
                                 <ComboBoxItem>HTML</ComboBoxItem>
                                 <ComboBoxItem>RTF</ComboBoxItem>
                             </ComboBox>
+                            <CheckBox x:Name="xSaveHtmlType" Margin="0,30,0,0" IsChecked="False"
+                                      Content="Remember my choice." FontSize="18" RenderTransformOrigin="0.5,0.5" >
+                                <CheckBox.RenderTransform>
+                                    <CompositeTransform ScaleX="0.7" ScaleY="0.7"/>
+                                </CheckBox.RenderTransform>
+                              </CheckBox>
                         </StackPanel>
+
 
                         <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
                             <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
@@ -117,7 +125,7 @@
 
         </Grid>
 
-        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public"/>
+        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
         <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
         

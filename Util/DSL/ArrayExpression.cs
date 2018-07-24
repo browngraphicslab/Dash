@@ -39,6 +39,8 @@ namespace Dash
                 }
             }
 
+            typeInfo = typeInfo == TypeInfo.None ? TypeInfo.Any : typeInfo;
+
             var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
             foreach (var item in outputList)
             {

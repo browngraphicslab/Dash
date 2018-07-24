@@ -16,7 +16,7 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     x:Name="Control"
     >
-    <Grid x:Name="xOuterGrid" Background="{ThemeResource CollectionBackgroundBrush}" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Background="Transparent" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>

@@ -16,9 +16,8 @@ namespace Dash
         private Rectangle _pageSize;
         private double _pageOffset;
         private int _pageNumber;
-        private double _largestSpaceWidth;
-        private List<SelectableElement> _elements = new List<SelectableElement>();
-        private List<Rectangle> _pages = new List<Rectangle>();
+        private readonly List<SelectableElement> _elements = new List<SelectableElement>();
+        private readonly List<Rectangle> _pages = new List<Rectangle>();
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {
@@ -36,80 +35,135 @@ namespace Dash
             {
                 return;
             }
+            
+            var mainData = (TextRenderInfo)data;
 
-            var mainTextData = (TextRenderInfo)data;
-            foreach (var textData in mainTextData.GetCharacterRenderInfos())
+            foreach (var textData in mainData.GetCharacterRenderInfos())
             {
+                // top left corner of the bounding box
                 var start = textData.GetAscentLine().GetStartPoint();
+                // bottom right corner of the bounding box
                 var end = textData.GetDescentLine().GetEndPoint();
-                //if (_elements.Any() &&
-                //    Math.Abs(Math.Abs(start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width)) -
-                //             textData.GetSingleSpaceWidth()) <=
-                //    0.1)
+
+                #region Commented Out Code
+
+                /* functioning code to prevent double text from appearing, seems to be a bit too aggressive */
+                //if (!_elements.Any() || 
+                //    ((!_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
+                //                          !_elements.Last().Bounds.Contains(new Point(
+                //                              textData.GetAscentLine().GetEndPoint().Get(0),
+                //                              textData.GetAscentLine().GetEndPoint().Get(1)))) &&
+                //                         !(_elements.Last().Contents as string).Equals(textData.GetText())))
+
+                /* semi-functioning code to add line breaks when necessary (math may just be wrong) */
+                //if (_elements.Any())
                 //{
-                //    _elements.Add(new SelectableElement(-1, " ",
-                //        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                //            _pageSize.GetHeight() - start.Get(1) - (_elements.Last().Bounds.Width + _pageOffset),
-                //            textData.GetSingleSpaceWidth(),
-                //            Math.Abs(end.Get(1) - start.Get(1)))));
+                //    var prevY = _elements.Last().Bounds.Y;
+                //    var prevYEnd = prevY + _elements.Last().Bounds.Height;
+                //    var y1 = start.Get(1);
+                //    var y2 = end.Get(1);
+                //    var inline = (prevY <= y1 && y1 <= prevYEnd) || (prevY <= y2 && y2 <= prevYEnd);
+                //    if (!inline)
+                //    {
+                //        var bounds = new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width, prevY,
+                //            _elements.Last().Bounds.Width, _elements.Last().Bounds.Height);
+                //        _elements.Add(new SelectableElement(-1, "\r\n", bounds));
+                //    }
                 //}
 
-                if (!_elements.Any() || !_elements.Last().Bounds.Contains(new Point(start.Get(0), start.Get(1))) ||
-                    _elements.Last().Bounds.Contains(new Point(textData.GetAscentLine().GetEndPoint().Get(0), textData.GetAscentLine().GetEndPoint().Get(1))))
+                #endregion
+
+                /* code to insert spaces into the text when there is too much space between elements */
+
+                // if the space between this and the previous element is greater than or equal to some arbitrary constant space
+                if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
+                    textData.GetSingleSpaceWidth() * 0.3)
                 {
-                    _elements.Add(new SelectableElement(-1, textData.GetText(),
-                        new Rect(start.Get(0),
-                            _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                            Math.Abs(end.Get(0) - start.Get(0)),
-                            Math.Abs(end.Get(1) - start.Get(1)))));
+                    // insert a space into that index
+                    var width = start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
+                    _elements.Add(new SelectableElement(-1, " ",
+                        new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
+                            _pageSize.GetHeight() - (start.Get(1) + _pageOffset),
+                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                }
+
+                var newBounds = new Rect(start.Get(0),
+                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
+                    Math.Abs(end.Get(0) - start.Get(0)),
+                    Math.Abs(end.Get(1) - start.Get(1)));
+                if (!_elements.Any() || _elements.Last().Bounds != newBounds)
+                {
+                    _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
                 }
             }
         }
 
-        public List<SelectableElement> GetSelectableElements()
+        /// <summary>
+        ///     Given a start and an end page, this method will return all of the selectable elements
+        ///     in that range. If the end page is the same as the start page, it will return all of
+        ///     the selectable elements in that one page.
+        /// </summary>
+        public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
         {
-            var pageElements = new List<List<SelectableElement>>();
-            foreach (var page in _pages)
+            // if any of the page requested are invalid, return an empty list
+            if (_pages.Count <= endPage || endPage < startPage)
             {
+                return new List<SelectableElement>();
+            }
+            
+            var pageElements = new List<List<SelectableElement>>();
+            // if the end and start page are the same, use just that one page, otherwise use the range between the two indices
+            var requestedPages = endPage == startPage ? new List<Rectangle>{_pages[startPage]} : _pages.GetRange(startPage, endPage - startPage);
+            // loop through each requested page (pages are stored as rectangles)
+            foreach (var page in requestedPages)
+            {
+                // loop through each element in the list of total elements
                 foreach (var selectableElement in _elements)
                 {
+                    // if the boundaries of the element is in the page rectangle
                     if (page.Contains(new Rectangle((float) selectableElement.Bounds.X,
                         (float) selectableElement.Bounds.Y,
                         (float) selectableElement.Bounds.Width, (float) selectableElement.Bounds.Height)))
                     {
+                        // add the element to the page if the page (of selectable elements) already exists
                         if (pageElements.Count > _pages.IndexOf(page))
                         {
                             pageElements[_pages.IndexOf(page)].Add(selectableElement);
                         }
+                        // otherwise create a new page of selectable elements and initialize it with this element
                         else
                         {
                             pageElements.Add(new List<SelectableElement> {selectableElement});
                         }
                     }
-                    else
-                    {
-                        continue;
-                    }
                 }
             }
 
             var elements = new List<SelectableElement>(_elements.Count);
+            // sort and add the elements in each page to a list of elements
             foreach (var page in pageElements)
             {
-                elements.AddRange(GetSelectableElements(page, elements.Count));
+                var newElements = GetSortedSelectableElements(page, elements.Count);
+                elements.AddRange(newElements);
             }
 
             return elements;
         }
 
-        private List<SelectableElement> GetSelectableElements(List<SelectableElement> page, int elementCount)
+        /// <summary>
+        ///     Given a list of selectable elements (usually a page), returns a list of lists of selectable elements,
+        ///     sorted into lines by their y-position.
+        /// </summary>
+        private List<List<SelectableElement>> SortIntoLines(IReadOnlyCollection<SelectableElement> page)
         {
-            page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
-            List<List<SelectableElement>> lines = new List<List<SelectableElement>>();
-            lines.Add(new List<SelectableElement> { page.First() });
-            SelectableElement element = page.First();
+            // initialize lines with the first item in the page
+            var lines = new List<List<SelectableElement>> { new List<SelectableElement> { page.First() } };
+            var element = page.First();
+
+            // loop through every element
             foreach (var selectableElement in page.Skip(1))
             {
+                // if the element is deemed to be on a new line, create a new one and add it
                 if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
                 {
@@ -118,54 +172,79 @@ namespace Dash
                 }
                 else
                 {
+                    // otherwise, just add it to the most recently added line
                     lines.Last().Add(selectableElement);
                 }
             }
 
-            List<List<SelectableElement>> columns = new List<List<SelectableElement>>();
-            columns.Add(new List<SelectableElement>());
-            var prevLine = new List<SelectableElement>();
+            return lines;
+        }
+
+        /// <summary>
+        ///     Given a list of lists of selectable elements, resturns a list of lists of selectable elements
+        ///     representing each column in the page.
+        /// </summary>
+        private List<List<SelectableElement>> SortIntoColumns(List<List<SelectableElement>> lines)
+        {
+            var columns = new List<List<SelectableElement>> {new List<SelectableElement>()};
+            // loop through every line
             foreach (var line in lines)
             {
+                // sort each line horizontally
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
-                element = line.First();
+                var element = line.First();
+                // assume that each line starts at column 0
                 var col = 0;
-                List<SelectableElement> newColumn = null;
-                foreach (var column in columns)
+                // find the width of the previous line
+                var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
+
+                if (columns.Any() && line.Any())
                 {
-                    if (column.Any())
+                    var temp = line.First().Bounds.X;
+                    // while there's space to move the content to another column, based on what the previous line width is
+                    while (columns[col].Any() && temp - lineWidth > columns[col].Min(i => i.Bounds.X) &&
+                           lineWidth != 0.0)
                     {
-                        var colWidth = Math.Abs(column.First().Bounds.X - column.Last().Bounds.X);
-                        var lineWidth = Math.Abs(line.First().Bounds.X - line.Last().Bounds.X);
-                        if (colWidth / lineWidth > 1.2 && Math.Abs(column.First().Bounds.X - line.First().Bounds.X) > lineWidth / 2)
+                        // do the math that would end up doing it
+                        temp -= lineWidth;
+                        // tell the line that we are now one column over
+                        col++;
+                        // add a new column if need be
+                        if (columns.Count - 1 < col)
                         {
-                            // TODO: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                            //col = (int) Math.Floor(Math.Abs(colWidth - lineWidth) / line.First().Bounds.X);
-                            
-                            //if (columns.Count - 1 < col)
-                            //{
-                            //    newColumn = new List<SelectableElement>();
-                            //}
+                            columns.Add(new List<SelectableElement>());
                         }
                     }
                 }
-                
+
                 columns[col].Add(element);
+
+                /*
+                 * this method of "column-izing" each line relies on the fact that we loop through each
+                 * line left to right. if we ever want to stop doing so, or if we find a better way of looping
+                 * through templates, this will break.
+                 */
+
+                // find the average font size of the line's elements
                 var currFontWidth = AverageFontSize(line);
-                foreach (var selectableElement in line)
+                foreach (var selectableElement in line.Skip(1))
                 {
-                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 3.5 * currFontWidth)
+                    // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
+                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 2.75 * currFontWidth)
                     {
+                        // establish that we are moving over one column
                         col++;
+                        // build a new column if need be, otherwise, just add it
                         if (columns.Count > col)
                         {
                             columns[col].Add(selectableElement);
                         }
                         else
                         {
-                            columns.Add(new List<SelectableElement> {selectableElement});
+                            columns.Add(new List<SelectableElement> { selectableElement });
                         }
                     }
+                    // otherwise, just add it to whatever column we're indexed in
                     else
                     {
                         columns[col].Add(selectableElement);
@@ -173,106 +252,122 @@ namespace Dash
 
                     element = selectableElement;
                 }
-
-                prevLine = line;
             }
 
-            List<SelectableElement> elements = new List<SelectableElement>();
+            return columns;
+        }
+
+        /// <summary>
+        ///     Given a list of selectable elements, removes any duplicates in the list. This method doesn't
+        ///     return a list, it only modifies the list passed in.
+        /// </summary>
+        private void RemoveDuplicates(IReadOnlyCollection<List<SelectableElement>> columns)
+        {
+            // create a copy of the columns so we can loop through it and make changes in the original
+            var columnCopy = new List<List<SelectableElement>>(columns);
+            // loop through every column in the copy of columns
+            foreach (var column in columnCopy)
+            {
+                var prevElem = column.First();
+                var matchingColumn = columns.First(col => col.Equals(column));
+                // this commented code is only necessary if we want to uncomment out the line break code
+                //var prevLineY = new Vector((float)prevElem.Bounds.Y,
+                //    (float)(prevElem.Bounds.Y + prevElem.Bounds.Height), 0);
+                foreach (var selectableElement in column.Skip(1))
+                {
+                    // if the current and previous element are extremely close in x and positions, and
+                    // they also have the same contents, then they are probably duplicates
+                    if (selectableElement.Bounds.X - prevElem.Bounds.X <= 1 && Math.Abs(
+                            selectableElement.Bounds.Y - prevElem.Bounds.Y) < selectableElement.Bounds.Height / 2 &&
+                        prevElem.Contents as string == selectableElement.Contents as string)
+                    {
+                        // remove the duplicate, and don't change the previous element
+                        var index = matchingColumn.IndexOf(selectableElement);
+                        matchingColumn.RemoveAt(index);
+                    }
+                    else
+                    {
+                        #region Semi-Functional Code for Inserting Line Breaks
+
+                        //var y = selectableElement.Bounds.Y;
+                        //// determine if there is enough space to quantify the difference in y-positions as a new line
+                        //if (y - prevLineY.Get(1) > selectableElement.Bounds.Height / 2)
+                        //{
+                        //    // find the index to insert the line break at
+                        //    var index = matchingColumn.IndexOf(selectableElement);
+                        //    var bounds = new Rect(selectableElement.Bounds.X + selectableElement.Bounds.Width,
+                        //        selectableElement.Bounds.Y, selectableElement.Bounds.Width,
+                        //        selectableElement.Bounds.Height);
+                        //    // \r\n creates a line break
+                        //    var lnBr = "\r\n";
+                        //    // create more than one line break if deemed necessary
+                        //    for (var i = 0; i < Math.Floor((y - prevLineY.Get(1)) / (selectableElement.Bounds.Height / 2)); i++)
+                        //    {
+                        //        lnBr += "\r\n";
+                        //        bounds.Height += selectableElement.Bounds.Height;
+                        //    }
+                        //    matchingColumn.Insert(index, new SelectableElement(-1, lnBr, bounds));
+                        //}
+                        //prevLineY = new Vector((float)selectableElement.Bounds.Y,
+                        //    (float)(selectableElement.Bounds.Y + selectableElement.Bounds.Height), 0);
+
+                        #endregion
+
+                        // set the previous element to the current element only if we didn't delete it
+                        prevElem = selectableElement;
+                    }
+                }
+            }
+        }
+
+        private List<SelectableElement> GetSortedSelectableElements(List<SelectableElement> page, int elementCount)
+        {
+            // sort the elements in a page vertically
+            page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
+            var lines = SortIntoLines(page);
+            var columns = SortIntoColumns(lines);
+            RemoveDuplicates(columns);
+
+            var elements = new List<SelectableElement>();
+            // loop through each column in increasing order
             foreach (var column in columns)
             {
+                // loop through each element
                 foreach (var selectableElement in column)
                 {
+                    // add it
                     selectableElement.Index = elements.Count + elementCount;
                     elements.Add(selectableElement);
                 }
             }
-
-            //var columnThreshold = _pageSize.GetWidth() / columns.Count;
-            //foreach (var column in columns)
-            //{
-            //    foreach (var line in lines)
-            //    {
-            //        var lineWidthBefore = LineWidth(lines[lines.IndexOf(line) > 0 ? lines.IndexOf(line) - 1 : 0],
-            //            column);
-            //        var lineWidth = LineWidth(line, column);
-            //        var lineWidthAfter =
-            //            LineWidth(
-            //                lines[lines.IndexOf(line) < lines.Count - 1 ? lines.IndexOf(line) + 1 : lines.Count - 1],
-            //                column);
-            //        var averageWidth = lineWidthBefore + lineWidthAfter / 2;
-            //        if (averageWidth - lineWidth > columnThreshold)
-            //        {
-            //            var nextColumn = columns.IndexOf(column) < columns.Count
-            //                ? columns.IndexOf(column) + 1
-            //                : columns.Count - 1;
-            //            if (columns[nextColumn] != column)
-            //            {
-            //                var nextColumnLine = lines.First(ln => ln.Any(i => columns[nextColumn].Contains(i)));
-            //                var range = elements.GetRange(nextColumnLine.First().Index,
-            //                    nextColumnLine.Last().Index - nextColumnLine.First().Index);
-            //                var insertIndex = line.Last(i => column.Contains(i)).Index;
-            //                elements.RemoveRange(range.First().Index, range.Count);
-            //                elements.InsertRange(insertIndex, range);
-            //            }
-            //        }
-            //    }
-            //}
-
+            
             return elements;
         }
 
+        /// <summary>
+        ///     Given a list of selectable elements (usually a line), find the average font size of the elements.
+        ///     This method takes into account offset elements, and ignores missing spaces
+        /// </summary>
         private double AverageFontSize(List<SelectableElement> line)
         {
             var cumulativeWidth = 0.0;
             var numberOfSpaces = 0;
-            for (var i = 1; i < line.Count - 1; i++)
+            // skip the first and last items for simplicity
+            for (var i = 0; i < line.Count - 1; i++)
             {
-                if (Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width)) >  line[i].Bounds.Width)
+                // if the distance between the left and the right element is greater than the width of the ith element
+                if (Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width)) > 1 &&
+                    Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width)) <
+                    1.5 * line[i].Bounds.Width)
                 {
-                    cumulativeWidth += Math.Abs(line[i + 1].Bounds.X - (line[i - 1].Bounds.X + line[i - 1].Bounds.Width));
+                    // add that distance to the cumulative width
+                    cumulativeWidth += Math.Abs(line[i + 1].Bounds.X - (line[i].Bounds.X + line[i].Bounds.Width));
                     numberOfSpaces++;
                 }
             }
-
-            return cumulativeWidth / numberOfSpaces;
-        }
-
-        private double LineWidth(List<SelectableElement> line, List<SelectableElement> column = null)
-        {
-            var start = line.First(i => column?.Contains(i) ?? true);
-            var end = line.Last(i => column?.Contains(i) ?? true);
-            return end.Bounds.X + end.Bounds.Width - start.Bounds.X;
-        }
-
-        private void FindColumns()
-        {
-            List<List<SelectableElement>> lines = new List<List<SelectableElement>>();
-            lines.Add(new List<SelectableElement> {_elements.First()});
-            SelectableElement element = _elements.First();
-            foreach (var selectableElement in _elements.Skip(1))
-            {
-                if (selectableElement.Bounds.X - element.Bounds.X > 3 * _largestSpaceWidth)
-                {
-                    element = selectableElement;
-                    lines.Add(new List<SelectableElement> {element});
-                }
-                else
-                {
-                    lines.Last().Add(selectableElement);
-                }
-            }
-
-            List<SelectableElement> elements = new List<SelectableElement>(_elements.Count);
-            foreach (var line in lines)
-            {
-                foreach (var selectableElement in line)
-                {
-                    elements.Add(selectableElement);
-                }
-            }
-
-            _elements = elements;
+            
+            // return the average of each space width
+            return numberOfSpaces == 0 ? 2 :  cumulativeWidth / numberOfSpaces;
         }
     }
-
 }

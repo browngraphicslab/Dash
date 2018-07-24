@@ -181,8 +181,7 @@ namespace Dash
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-		    _currentDocController?.SetBackgroundColor(e);
-		   // _currBox.Background = new SolidColorBrush(e);
+		    _docs?.SetBackgroundColor(e);
 	    }
 
 		#region Old Opacity/Color Code No Longer In Use

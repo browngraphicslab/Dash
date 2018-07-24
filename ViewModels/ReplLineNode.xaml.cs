@@ -141,7 +141,7 @@ namespace Dash
             xChildren.Visibility = _arrowState == ArrowState.Open ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController) && !(value is ReferenceController);
+        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController list && !list.ToString().Equals("[<empty>]")) && !(value is ReferenceController);
 
         private void XSnapshotArrowBlock_OnRightTapped(object sender, RightTappedRoutedEventArgs e) => CollapseAllChildren();
 
