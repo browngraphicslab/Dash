@@ -953,7 +953,7 @@ namespace Dash
 
         private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_backStack, ScrollViewer2);
+            PopStack(_backStack, ScrollViewer);
         }
 
      
