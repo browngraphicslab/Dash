@@ -181,6 +181,7 @@ namespace Dash
 
         #endregion
 
+        #region Helper Function
         public static string StringDiff(string a, string b)
         {
             //a is the longer string
@@ -196,6 +197,20 @@ namespace Dash
 
             return a;
         }
+
+        private void resetLineNums()
+        {
+            var text = xTextBox.Text.Split('\r');
+            var textNums = "";
+            for(int i =0; i < text.Length; i++)
+            {
+                textNums += (i + 1) + "\r";
+            }
+
+            xTextLines.Text = textNums;
+        }
+
+        #endregion
 
         #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -273,6 +288,7 @@ namespace Dash
                     _oneStar = false;
                     break;
             }
+            resetLineNums();
 
             _currentText = xTextBox.Text;
 

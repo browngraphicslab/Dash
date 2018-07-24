@@ -975,14 +975,7 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            try
-            {
-                XInkCanvas = new InkCanvas() {Width = 60000, Height = 60000, Visibility = Visibility.Collapsed};
-            }
-            catch (System.OutOfMemoryException)
-            {
-                Debug.WriteLine("Out of memory!");
-            }
+            XInkCanvas = new InkCanvas() {Width = 60000, Height = 60000, Visibility = Visibility.Collapsed};
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);

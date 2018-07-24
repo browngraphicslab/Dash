@@ -28,9 +28,16 @@
             <ScrollViewer Name="xScrollViewer" Grid.Row="1" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                           HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
                           Margin="5" Background="White">
-                <TextBox Name="xTextBox" FontSize="15" FontFamily="Consolas"
-                         PlaceholderText="Type code here..." AcceptsReturn="true" IsSpellCheckEnabled="False" TextChanged="XTextBox_OnTextChanged">
-                </TextBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Name="xTextLines" FontSize="15" FontFamily="Consolas" Text="1" Grid.Column="0" Margin="-8,0,0,0" TextAlignment="Right" Foreground="DarkGray"/>
+                    <TextBox Name="xTextBox" FontSize="15" FontFamily="Consolas" Grid.Column="1"
+                             PlaceholderText="Type code here..." AcceptsReturn="true" IsSpellCheckEnabled="False" TextChanged="XTextBox_OnTextChanged">
+                    </TextBox>
+                </Grid>
             </ScrollViewer>
             <Border Background="White" Grid.Row="2" >
                 <TextBlock x:Name="xResult" Margin="5" FontFamily="Consolas">Output:</TextBlock>
