@@ -1009,9 +1009,12 @@ namespace Dash
 
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
-            RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            if (previewTextHandler != null)
+            {
+                RemoveHandler(KeyDownEvent, previewTextHandler);
+                previewTextbox.Visibility = Visibility.Collapsed;
+                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            }
         }
 
         protected void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
