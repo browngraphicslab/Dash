@@ -19,6 +19,7 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -257,14 +258,10 @@ namespace Dash
         }
 
         private void OnNewRegionMade(object sender, RegionEventArgs e)
-	    {
-		    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
-	        //var docview = new DocumentView();
-            //var dvm = new DocumentViewModel(e.Link);
-	        //docview.ViewModel = dvm;
-	        //Annotations.Add(docview);
+        {
+            MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
 
-	    }
+        }
 	    
 	    // adds to the side of the PDFView
 	    private void MakeRegionMarker(double offset, DocumentController dc)
@@ -681,6 +678,10 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (e.GetCurrentPoint(null).Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
+            {
+                return;
+            }
             switch (AnnotationManager.CurrentAnnotationType)
             {
                 case Dash.AnnotationManager.AnnotationType.TextSelection:
@@ -710,7 +711,7 @@ namespace Dash
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
 
-            e.Handled = true;
+            //e.Handled = true;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (!currentPoint.Properties.IsLeftButtonPressed)
             {
@@ -731,6 +732,8 @@ namespace Dash
 	            default:
 		            throw new ArgumentOutOfRangeException();
             }
+
+            //e.Handled = true;
         }
 
         private Point? _selectionStartPoint;
@@ -1046,33 +1049,52 @@ namespace Dash
         }
 
      
-        private void MovePage(ScrollViewer scroller, Grid grid, int i)
-        {
-            var currOffset = 0.0;
-            foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
-            {
-                var imgWidth = image.ActualWidth;
-                var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
-                var scale = (scroller.ViewportWidth - annoWidth) / imgWidth;
-                if (i == 0)
-                {
-                    if (currOffset + (image.ActualHeight * scale) + 5 > scroller.VerticalOffset)
-                    {
-                        break;
-                    }
-                    currOffset += (image.ActualHeight * scale);
-                }
-                else
-                {
-                    currOffset += (image.ActualHeight * scale);
-                    if (currOffset > scroller.VerticalOffset + 5)
-                    {
-                        break;
-                    }
-                }
+        //private void MovePage(ScrollViewer scroller, Grid grid, int i)
+        //{
+        //    var currOffset = 0.0;
+        //    foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
+        //    {
+        //        var imgWidth = image.ActualWidth;
+        //        var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
+        //        var scale = (scroller.ViewportWidth - annoWidth) / imgWidth;
+        //        if (i == 0)
+        //        {
+        //            if (currOffset + (image.ActualHeight * scale) + 5 > scroller.VerticalOffset)
+        //            {
+        //                break;
+        //            }
+        //            currOffset += (image.ActualHeight * scale);
+        //        }
+        //        else
+        //        {
+        //            currOffset += (image.ActualHeight * scale);
+        //            if (currOffset > scroller.VerticalOffset + 5)
+        //            {
+        //                break;
+        //            }
+        //        }
                 
+        //    }
+        //    scroller.ChangeView(null, currOffset, 1);
+        //}
+
+        private void MovePageNew(ScrollViewer scroller)
+        {
+            DataVirtualizationSource<ImageSource> pages;
+            if (scroller.Equals(ScrollViewer))
+            {
+                pages = _pages1;
             }
-            scroller.ChangeView(null, currOffset, 1);
+
+            else
+            {
+                pages = _pages2;
+            }
+
+            var sizes = pages.PageSizes;
+
+
+
         }
 
         private void ScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)

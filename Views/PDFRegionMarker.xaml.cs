@@ -34,8 +34,8 @@ namespace Dash
 
         public void SetScrollPosition(double scrollTarget, double totalOffset)
         {
-            //Grid.SetColumn(xRegion, 0);
-            //Grid.SetColumnSpan(xRegion, 3);
+            ////Grid.SetColumn(xRegion, 0);
+            ////Grid.SetColumnSpan(xRegion, 3);
             var upHeight = scrollTarget - 5;
             if (upHeight < 0)
                 upHeight = 0;
