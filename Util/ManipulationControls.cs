@@ -657,7 +657,7 @@ namespace Dash
                 docRoot.MoveToContainingCollection(overlappedViews);
             });
 
-            OnManipulatorCompleted?.Invoke();
+			OnManipulatorCompleted?.Invoke();
             Dock(false);
 
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
