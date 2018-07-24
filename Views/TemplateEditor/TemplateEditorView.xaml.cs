@@ -1091,11 +1091,11 @@ namespace Dash
             }
 
 			//manually resize video/audio to a standard size to counteract strange MediaPlayer ActualSize innaccuracies
-	        if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo == TypeInfo.Video)
+	        if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo == TypeInfo.Video)
 	        {
 				docView.ViewModel.DocumentController.SetWidth(250);
 				docView.ViewModel.DocumentController.SetHeight(150);
-	        } else if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo ==
+	        } else if (docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo ==
 	                   TypeInfo.Audio)
 	        {
 		        docView.ViewModel.DocumentController.SetWidth(250);

@@ -47,11 +47,15 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
                             <StackPanel DoubleTapped="UIElement_OnDoubleTapped">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind Title}" 
-                                               FontSize="15" Foreground="Black"/>
-                                    <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0"  />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                        <ColumnDefinition Width="20"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{x:Bind Title}" PlaceholderText="{x:Bind Title}" Grid.Column="0"
+                                               FontSize="15" Foreground="Black" KeyDown="TextBox_OnKeyDown"/>
+                                    <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0" Grid.Column="1" />
+                                </Grid>
                                 <Border BorderThickness="2" BorderBrush="Black" Height="100">
                                     <Image Source="{x:Bind Image}" Height="100" />
                                 </Border>

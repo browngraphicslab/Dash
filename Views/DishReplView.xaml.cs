@@ -30,7 +30,6 @@ namespace Dash
         private static List<ReplPopupSuggestion> _dataset;
 
         private int _currentTab = 3;
-        private int _tabLevel = 0;
 
         private readonly ListController<TextController> _lineTextList;
         private readonly ListController<FieldControllerBase> _valueList;

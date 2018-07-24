@@ -192,6 +192,8 @@ namespace Dash
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
                 XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
+
+                UpdateSnapshots();
             }
         }
 
@@ -423,6 +425,24 @@ namespace Dash
                     node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
                 }
             }
+        }
+
+        private void TextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            //snapshot title changed
+            var newKey = e.Key.ToString().ToLower();
+            newKey = newKey == "enter" ? "" : newKey;
+            var text = (sender as TextBox).Text;
+            var newTitle = text + newKey;
+            newTitle = newKey == "back" ? text.Substring(0, text.Length ) : newTitle;
+
+            SelectedTitle.Text = newTitle;
+
+            var item = (sender as TextBox)?.DataContext as SnapshotView;
+            item.Title = newTitle;
+
+            (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>)?[item.Index]?.SetField<TextController>(KeyStore.DateModifiedKey, newTitle, true);
         }
     }
 }
