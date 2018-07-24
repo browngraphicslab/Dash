@@ -43,10 +43,10 @@
             <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" Margin="5,0,0,0" />
 
             <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed" Margin="30,0,0,0" >
-                <ListView IsItemClickEnabled="True" MaxHeight="200" ItemsSource="{x:Bind _items}" Background="White" ItemClick="ListViewBase_OnItemClick">
+                <ListView IsItemClickEnabled="True" MaxHeight="200" ItemsSource="{x:Bind _items}" Background="White">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
-                            <StackPanel>
+                            <StackPanel DoubleTapped="UIElement_OnDoubleTapped">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{x:Bind Title}" 
                                                FontSize="15" Foreground="Black"/>

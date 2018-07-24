@@ -55,6 +55,7 @@ namespace Dash
         {
             this.InitializeComponent();
             MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
+          focusOnSelected();
         }
 
         public async void NewSnapshot()
@@ -347,25 +348,6 @@ namespace Dash
                 args.Cancel = true;
         }
 
-        private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
-        {
-            var item = (e.ClickedItem as SnapshotView);
-            var itemNum = item.Index;
-            MainPage.Instance.ToggleSettingsVisibility(false);
-            var docToFocus =
-                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
-                    ListController<DocumentController>)?[itemNum];
-            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace(docToFocus);
-
-            ClosePopups();
-            UnfocusText(); 
-
-            SelectedTitle.Text = item.Title;
-            SelectedImage.Source = new BitmapImage(new Uri(item.Image));
-            XSnapshotSelected.Visibility = Visibility.Visible;
-        }
-
         private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
         {
             var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
@@ -405,6 +387,38 @@ namespace Dash
                 node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
 
                 node.XSnapshotSelected.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var item = (sender as StackPanel)?.DataContext as SnapshotView;
+            var itemNum = item.Index;
+            MainPage.Instance.ToggleSettingsVisibility(false);
+            var docToFocus =
+                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                    ListController<DocumentController>)?[itemNum];
+            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                MainPage.Instance.SetCurrentWorkspace(docToFocus);
+
+            ClosePopups();
+            UnfocusText();
+
+            SelectedTitle.Text = item.Title;
+            SelectedImage.Source = new BitmapImage(new Uri(item.Image));
+            XSnapshotSelected.Visibility = Visibility.Visible;
+        }
+
+        private void focusOnSelected()
+        {
+            var workspace = MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey, true) as DocumentController;
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                if (node.ViewModel?.DocumentController == workspace)
+                {
+                    node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
+                }
             }
         }
     }

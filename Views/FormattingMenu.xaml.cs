@@ -111,7 +111,6 @@ namespace Dash
                 };
 
                 FontFamilyNames.Add(newBlock);
-
             }
 
             var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
