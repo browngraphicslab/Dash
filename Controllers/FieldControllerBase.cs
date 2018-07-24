@@ -26,8 +26,8 @@ namespace Dash
         public virtual TypeInfo RootTypeInfo => TypeInfo;
         public event FieldUpdatedHandler FieldModelUpdated;
         public object Tag = null;
-            
-        public FieldControllerBase(FieldModel model) : base(model)
+
+        protected FieldControllerBase(FieldModel model) : base(model)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Dash
         /// </summary>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
+        public void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
             //UpdateOnServer();
 
