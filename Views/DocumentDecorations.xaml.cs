@@ -27,6 +27,7 @@ namespace Dash
     {
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
+        private bool _isMoving;
 
         public Visibility VisibilityState
         {
@@ -36,6 +37,7 @@ namespace Dash
                 if (value != _visibilityState && !_visibilityLock)
                 {
                     _visibilityState = value;
+                    SetPositionAndSize();
                     OnPropertyChanged(nameof(VisibilityState));
                 }
             }
@@ -60,20 +62,18 @@ namespace Dash
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted -=
                             ManipulatorCompleted;
                     }
-                    else
-                    {
-                        doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
-                        doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
-                    }
-                    doc.DocumentDeleted -= DocView_OnDeleted;
+                    doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
+                    doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
                 _visibilityLock = false;
                 foreach (var doc in value)
                 {
-                    if (!doc.ViewModel.DecorationState)
+                    if (doc.ViewModel.Undecorated)
                     {
                         _visibilityLock = true;
+                        VisibilityState = Visibility.Collapsed;
                     }
 
                     doc.PointerEntered += SelectedDocView_PointerEntered;
@@ -83,32 +83,35 @@ namespace Dash
                     if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
                     {
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
-                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted +=
-                            ManipulatorCompleted;
+                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted += OnManipulatorHelperCompleted;
                     }
-                    else
-                    {
-                        doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
-                        doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
-                    }
-                    doc.DocumentDeleted += DocView_OnDeleted;
+                    doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
+                    doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
+                    doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    doc.FadeOutBegin += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
             }
         }
 
-        private void DocumentDecorations_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void OnManipulatorHelperCompleted()
         {
-            VisibilityState = Visibility.Visible;
+            if (!_isMoving)
+            {
+                VisibilityState = Visibility.Visible;
+            }
         }
 
-        private void RichTextView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ManipulatorMoving(TransformGroupData transformationDelta)
         {
-            VisibilityState = Visibility.Collapsed;
+            if (!_isMoving)
+            {
+                _isMoving = true;
+            }
         }
 
-        private void DocView_OnDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+        private void DocView_OnDeleted()
         {
             VisibilityState = Visibility.Collapsed;
         }
@@ -116,11 +119,13 @@ namespace Dash
         private void ManipulatorCompleted()
         {
             VisibilityState = Visibility.Visible;
+            _isMoving = false;
         }
 
         private void ManipulatorStarted()
         {
             VisibilityState = Visibility.Collapsed;
+            _isMoving = true;
         }
 
         private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -157,7 +162,14 @@ namespace Dash
             SelectedDocs = SelectionManager.SelectedDocs.ToList();
             SetPositionAndSize();
             SetTitleIcon();
-            VisibilityState = Visibility.Visible;
+            if (SelectedDocs.Any() && !this.IsRightBtnPressed())
+            {
+                VisibilityState = Visibility.Visible;
+            }
+            else
+            {
+                VisibilityState = Visibility.Collapsed;
+            }
         }
 
         private void SetTitleIcon()
