@@ -1979,6 +1979,5 @@ namespace Dash
 				xDocumentBackground.AddFieldBinding(Rectangle.FillProperty, backgroundBinding);
 			}
 		}
-
 	}
 }

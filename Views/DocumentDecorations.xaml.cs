@@ -54,8 +54,17 @@ namespace Dash
                     doc.PointerExited -= SelectedDocView_PointerExited;
                     doc.ViewModel?.DocumentController.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged -= DocView_OnSizeChanged;
-                    doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
-                    doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    if (doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) ?? false)
+                    {
+                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted -= ManipulatorStarted;
+                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted -=
+                            ManipulatorCompleted;
+                    }
+                    else
+                    {
+                        doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
+                        doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    }
                     doc.DocumentDeleted -= DocView_OnDeleted;
                 }
 
@@ -71,13 +80,32 @@ namespace Dash
                     doc.PointerExited += SelectedDocView_PointerExited;
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
-                    doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
-                    doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+                    {
+                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
+                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted +=
+                            ManipulatorCompleted;
+                    }
+                    else
+                    {
+                        doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
+                        doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    }
                     doc.DocumentDeleted += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
             }
+        }
+
+        private void DocumentDecorations_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            VisibilityState = Visibility.Visible;
+        }
+
+        private void RichTextView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            VisibilityState = Visibility.Collapsed;
         }
 
         private void DocView_OnDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)

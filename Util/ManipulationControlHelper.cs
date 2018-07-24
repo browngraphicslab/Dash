@@ -132,6 +132,11 @@ namespace Dash
             if (_useCache) _eventElement.CacheMode = new BitmapCache();
             if (e != null)
                 e.Handled = true;
+
+            if (_eventElement is RichTextView rtv)
+            {
+                rtv.CompletedManipulation();
+            }
         }
     }
 }

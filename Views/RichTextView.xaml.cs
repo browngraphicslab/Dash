@@ -43,6 +43,8 @@ namespace Dash
         private bool _everFocused;
         private AnnotationManager _annotationManager;
         private string _target;
+        public Action OnManipulatorHelperStarted;
+        public Action OnManipulatorHelperCompleted;
 
         /// <summary>
         /// Constructor
@@ -56,7 +58,10 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
+                {
+                    OnManipulatorHelperStarted?.Invoke();
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                }
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
 
@@ -991,6 +996,11 @@ namespace Dash
         //    }
         //}
         #endregion
+
+        public void CompletedManipulation()
+        {
+            OnManipulatorHelperCompleted?.Invoke();
+        }
     }
 }
 
