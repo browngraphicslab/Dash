@@ -752,12 +752,14 @@ namespace Dash
             switch (AnnotationManager.CurrentAnnotationType)
             {
                 case Dash.AnnotationManager.AnnotationType.RegionBox:
+                    e.Handled = true;
                     NewRegionStarted?.Invoke(sender, e);
                     break;
                 case Dash.AnnotationManager.AnnotationType.TextSelection:
                     e.Handled = true;
                     var pos = currentPoint.Position;
                     _selectionStartPoint = pos;
+                   
                     break;
             }
         }
