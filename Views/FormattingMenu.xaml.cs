@@ -39,7 +39,7 @@ namespace Dash
         /// </summary>
         public WordCount WC;
 
-        ObservableCollection<FontFamily> FontFamilyNames = new ObservableCollection<FontFamily>();
+        ObservableCollection<TextBlock> FontFamilyNames = new ObservableCollection<TextBlock>();
 
         #endregion
 
@@ -80,48 +80,37 @@ namespace Dash
                 "Arial",
                 "Calibri",
                 "Cambria",
-                "Cambria Math",
                 "Comic Sans MS",
                 "Courier New",
-                "Ebrima",
-                "Gadugi",
                 "Georgia",
-                "Javanese Text Regular Fallback font for Javanese script",
-                "Leelawadee UI",
                 "Lucida Console",
                 "Malgun Gothic",
                 "Microsoft Himalaya",
                 "Microsoft JhengHei",
-                "Microsoft JhengHei UI",
-                "Microsoft New Tai Lue",
-                "Microsoft PhagsPa",
-                "Microsoft Tai Le",
                 "Microsoft YaHei",
-                "Microsoft YaHei UI",
                 "Microsoft Yi Baiti",
                 "Mongolian Baiti",
                 "MV Boli",
-                "Myanmar Text",
-                "Nirmala UI",
-                "Segoe MDL2 Assets",
                 "Segoe Print",
                 "Segoe UI",
-                "Segoe UI Emoji",
-                "Segoe UI Historic",
-                "Segoe UI Symbol",
                 "SimSun",
                 "Times New Roman",
                 "Trebuchet MS",
                 "Verdana",
                 "Webdings",
                 "Wingdings",
-                "Yu Gothic",
-                "Yu Gothic UI"
+                "Yu Gothic"
             };
 
             foreach (var font in _fontNames)
             {
-                FontFamilyNames.Add(new FontFamily(font));
+                var newBlock = new TextBlock
+                {
+                    Text = font,
+                    FontFamily = new FontFamily(font)
+                };
+
+                FontFamilyNames.Add(newBlock);
 
             }
 
@@ -269,7 +258,7 @@ namespace Dash
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 			var comboBox = sender as ComboBox;
-            var selectedFontFamily = comboBox.SelectedValue as FontFamily;
+            var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
 	        
 	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
 	        {
