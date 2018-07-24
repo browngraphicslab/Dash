@@ -134,6 +134,12 @@ namespace Dash
             xRichEditBox.LostFocus += (s, e) =>
             {
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                if (string.IsNullOrEmpty(getReadableText()))
+                {
+                    var docView = getDocView();
+                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView.ViewModel?.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                        docView.DeleteDocument();
+                }
             };
 
             xRichEditBox.ContextMenuOpening += (s, e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
@@ -167,7 +173,7 @@ namespace Dash
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
+            if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
                 if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)

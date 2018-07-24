@@ -74,12 +74,14 @@ namespace Dash
                 {
                     thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
                     thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument(), KeyStore.TitleKey), true);
+                    thumbnailImageViewDoc.SetField<NumberController>(TextingBox.TextAlignmentKey,
+                        (double) TextAlignment.Left, true);
                 }
                 else
                 {
                     thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 }
-                thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
                 thumbnailImageViewDoc.SetBackgroundColor(Colors.Transparent);
                 ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
             }

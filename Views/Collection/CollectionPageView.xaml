@@ -81,6 +81,7 @@
                     ItemsSource="{Binding ThumbDocumentViewModels}"
                     ScrollViewer.VerticalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      HorizontalContentAlignment="Stretch"
                     ScrollViewer.IsVerticalRailEnabled="True"
                       Tapped="xThumbs_Tapped"
                       CanDragItems="True"
