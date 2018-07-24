@@ -53,6 +53,8 @@ namespace Dash
             //intialize lists to save data
             _currentText = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
             xTextBox.Text = _currentText ?? "";
+
+            ResetLineNums();
         }
         #endregion
 
@@ -198,7 +200,7 @@ namespace Dash
             return a;
         }
 
-        private void resetLineNums()
+        private void ResetLineNums()
         {
             var text = xTextBox.Text.Split('\r');
             var textNums = "";
@@ -288,7 +290,7 @@ namespace Dash
                     _oneStar = false;
                     break;
             }
-            resetLineNums();
+            ResetLineNums();
 
             _currentText = xTextBox.Text;
 

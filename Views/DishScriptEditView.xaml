@@ -33,7 +33,7 @@
                         <ColumnDefinition Width="20"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Name="xTextLines" FontSize="15" FontFamily="Consolas" Text="1" Grid.Column="0" Margin="-8,0,0,0" TextAlignment="Right" Foreground="DarkGray"/>
+                    <TextBlock Name="xTextLines" FontSize="15" FontFamily="Consolas" Text="1" Grid.Column="0" Margin="-8,0,0,0" TextAlignment="Right" Foreground="Gray"/>
                     <TextBox Name="xTextBox" FontSize="15" FontFamily="Consolas" Grid.Column="1"
                              PlaceholderText="Type code here..." AcceptsReturn="true" IsSpellCheckEnabled="False" TextChanged="XTextBox_OnTextChanged">
                     </TextBox>

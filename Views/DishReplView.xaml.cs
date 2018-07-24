@@ -30,6 +30,7 @@ namespace Dash
         private static List<ReplPopupSuggestion> _dataset;
 
         private int _currentTab = 3;
+        private int _tabLevel = 0;
 
         private readonly ListController<TextController> _lineTextList;
         private readonly ListController<FieldControllerBase> _valueList;
@@ -661,7 +662,7 @@ namespace Dash
                     xTextBox.Text = "";
             }
 
-            void AutoPair(string pairStart, string pairEnd)
+            void AutoPair(string pairStart, string pairEnd, bool enter = false)
             {
                 if (pairStart == pairEnd && AutoPairClose(pairEnd))
                 {
@@ -674,8 +675,17 @@ namespace Dash
 
                 while (index + offset < text.Length && IsProperLetter(text[index + offset])) { offset++; }
 
-                xTextBox.Text = text.Insert(index + offset, pairEnd);
-                xTextBox.SelectionStart = index + pairStart.Length;
+                if (enter)
+                {
+                    pairEnd = "\r  \r" + pairEnd;
+                    xTextBox.Text = text.Insert(index + offset, pairEnd);
+                    xTextBox.SelectionStart = index + pairStart.Length + pairEnd.Length - 2;
+                }
+                else
+                {
+                    xTextBox.Text = text.Insert(index + offset, pairEnd);
+                    xTextBox.SelectionStart = index + pairStart.Length;
+                }
             }
 
             bool AutoPairClose(string pairEnd)
@@ -713,7 +723,7 @@ namespace Dash
             {
                 if (MainPage.Instance.IsShiftPressed())//{
                 {
-                    AutoPair("{", "}");
+                    AutoPair("{", "}", true);
                 }
                 else//[
                 {

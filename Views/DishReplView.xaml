@@ -39,11 +39,11 @@
                                             <ColumnDefinition Width="30"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" FontFamily="Consolas"/>
+                                        <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
-                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped" FontFamily="Consolas"/>
+                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Consolas"/>
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
-                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp" FontFamily="Consolas" />
+                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Consolas" />
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
@@ -57,9 +57,9 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="20" Height="35"
-                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"
-                TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False" FontFamily="Consolas">
+                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="18"
+                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Consolas"
+                TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
                 </local:ActionTextBox>
                 <Popup x:Name="xSuggestionsPopup" Grid.Row="3" Canvas.ZIndex="-1">
                     <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
