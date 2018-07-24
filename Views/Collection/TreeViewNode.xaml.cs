@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -89,7 +90,7 @@ namespace Dash
         public void UpdateSnapshots()
         {
             var dvm = ViewModel;
-            var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
+            var snapshots = dvm?.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
             if (snapshots != null && snapshots.Count > _items.Count && !snapStarted)
             {
                 snapStarted = true;
@@ -276,6 +277,12 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+
+            UnfocusText();
+            ClosePopups();
+
+            XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+            XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
         }
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -342,7 +349,8 @@ namespace Dash
 
         private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
         {
-            var itemNum = (e.ClickedItem as SnapshotView).Index;
+            var item = (e.ClickedItem as SnapshotView);
+            var itemNum = item.Index;
             MainPage.Instance.ToggleSettingsVisibility(false);
             var docToFocus =
                 (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
@@ -351,6 +359,11 @@ namespace Dash
                 MainPage.Instance.SetCurrentWorkspace(docToFocus);
 
             ClosePopups();
+            UnfocusText(); 
+
+            SelectedTitle.Text = item.Title;
+            SelectedImage.Source = new BitmapImage(new Uri(item.Image));
+            XSnapshotSelected.Visibility = Visibility.Visible;
         }
 
         private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
@@ -360,7 +373,7 @@ namespace Dash
             _items.RemoveAt(index);
          
             (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
-                ListController<DocumentController>).RemoveAt(index);
+                ListController<DocumentController>)?.RemoveAt(index);
             foreach (var snap in _items)
             {
                 if (snap.Index > index)
@@ -381,6 +394,17 @@ namespace Dash
             foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
             {
                 node.XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UnfocusText()
+        {
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
+                node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
+
+                node.XSnapshotSelected.Visibility = Visibility.Collapsed;
             }
         }
     }

@@ -30,10 +30,12 @@
             </Grid.ColumnDefinitions>
 
             <Grid Background="LightGray" Grid.Column="1" Opacity="0.3" Visibility="{Binding DecorationState}" IsHitTestVisible="False"/>
-            <TextBlock x:Name="XTextBlock" Grid.Column="1" FontSize="{StaticResource DataSizing}" 
+            <Border x:Name="XBlockBorder"  Grid.Column="1">
+            <TextBlock x:Name="XTextBlock" FontSize="{StaticResource DataSizing}" 
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
                     CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="{x:Bind Foreground, Mode=OneWay}" />
+            </Border>
             <Border x:Name="xBorder" Grid.Column="2" Visibility="Collapsed">
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
@@ -46,22 +48,28 @@
                         <DataTemplate x:DataType="local:SnapshotView">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind Title}" 
+                                    <TextBlock Text="{x:Bind Title}" 
                                                FontSize="15" Foreground="Black"/>
-                                 <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0"  />
+                                    <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0"  />
                                 </StackPanel>
                                 <Border BorderThickness="2" BorderBrush="Black" Height="100">
-                                 <Image Source="{x:Bind Image}" Height="100" />
+                                    <Image Source="{x:Bind Image}" Height="100" />
                                 </Border>
                             </StackPanel>
-                        </DataTemplate> 
+                        </DataTemplate>
                     </ListView.ItemTemplate>
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
                 </ListView>
             </Popup>
-            </Grid>
+        </Grid>
+        <StackPanel x:Name="XSnapshotSelected" Visibility="Collapsed" Background="Gray" >
+            <TextBlock x:Name="SelectedTitle" FontSize="15" Foreground="Black"/>
+            <Border BorderThickness="2" BorderBrush="Black" Width="100">
+                <Image x:Name="SelectedImage" Width="100" />
+            </Border>
+        </StackPanel>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="YPos" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
     </StackPanel>
 </UserControl>
