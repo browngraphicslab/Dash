@@ -738,7 +738,7 @@ namespace Dash
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
 
-            e.Handled = true;
+           
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (!currentPoint.Properties.IsLeftButtonPressed)
             {
@@ -901,6 +901,7 @@ namespace Dash
 
 		private void Scrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
+
 			if (_markers.Count > 0) xAnnotationNavigation.Opacity = 0.8;
 		}
 

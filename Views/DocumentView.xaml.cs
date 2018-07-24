@@ -345,7 +345,7 @@ namespace Dash
 				handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
 				handle.PointerPressed += (s, e) =>
 				{
-					ManipulationMode = ManipulationModes.None;
+					//ManipulationMode = ManipulationModes.None;
 					e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                     if (e.Handled)
                     {

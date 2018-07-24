@@ -10,21 +10,23 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
+   
+    SizeChanged="CustomPdfView_OnSizeChanged"
+    PreviewKeyDown="CustomPdfView_OnKeyDown"
     KeyDown="CustomPdfView_OnKeyDown"
-    SizeChanged="CustomPdfView_OnSizeChanged">
-
+    >
     <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
 
-            <RowDefinition x:Name="xFirstPanelRow" Height="0"/>
+            <RowDefinition x:Name="xFirstPanelRow" Height="0*"/>
             <RowDefinition x:Name="xDivider" Height ="0"/>
-            <RowDefinition x:Name="xSecondPanelRow"/>
+            <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
         </Grid.RowDefinitions>
 
 
 
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" >
             <StackPanel x:Name="xButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
 
                 
