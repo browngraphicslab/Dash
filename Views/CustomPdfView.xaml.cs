@@ -755,6 +755,7 @@ namespace Dash
                     NewRegionStarted?.Invoke(sender, e);
                     break;
                 case Dash.AnnotationManager.AnnotationType.TextSelection:
+                    e.Handled = true;
                     var pos = currentPoint.Position;
                     _selectionStartPoint = pos;
                     break;
