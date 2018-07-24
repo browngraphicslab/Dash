@@ -93,7 +93,7 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            //PointerWheelChanged += (s, e) => e.Handled = true;
+            PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
                 var docView = getDocView();
@@ -121,17 +121,17 @@ namespace Dash
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
-                Clipboard.ContentChanged -= Clipboard_ContentChanged;
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();
-                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null && !SelectionManager.SelectedDocs.Contains(docView))
                         docView.DeleteDocument();
                 }
             };
@@ -157,6 +157,7 @@ namespace Dash
                 // Height = double.NaN;
                 // if we're inside of a RelativePanel that was resized, we need to 
                 // reset it to have NaN height so that it can grow as we type.
+                //xRichEditBox.Height = e.NewSize.Height;
                 if (Parent is RelativePanel relative)
                 {
                     relative.Height = double.NaN;

@@ -32,20 +32,20 @@
         </Grid.ColumnDefinitions>
         <!-- border to highlight search results-->
         <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" Grid.Row="0" Grid.Column="0">
-            <Border x:Name="xTargetBorder">
+            <Border x:Name="xTargetBorder" x:FieldModifier="public">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="xLeftColumn" Width="10" />
+                        <ColumnDefinition x:Name="xLeftColumn" x:FieldModifier="public" Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition x:Name="xRightColumn" Width="10" />
+                        <ColumnDefinition x:Name="xRightColumn" x:FieldModifier="public" Width="10" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xTopRow" Height="10" />
+                        <RowDefinition x:Name="xTopRow" x:FieldModifier="public" Height="10" />
                         <RowDefinition Height="*" />
-                        <RowDefinition x:Name="xBottomRow" Height="10" />
+                        <RowDefinition x:Name="xBottomRow" x:FieldModifier="public" Height="10" />
                     </Grid.RowDefinitions>
 
-                    
+
 
                     <!--Main document view 
 
@@ -53,9 +53,9 @@
                      Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                     <Grid.ContextFlyout>
                         <MenuFlyout x:Name = "xMenuFlyout">
-                            
-                     <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-                    
+
+                            <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+
                             <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
                             <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
                             <MenuFlyoutSeparator/>
@@ -73,12 +73,12 @@
                             <MenuFlyoutItem Text="Launch App" Icon="Go"  Click="MenuFlyoutLaunch_Click"/>
                             <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click"/>
 
-                  
+
                         </MenuFlyout>
                     </Grid.ContextFlyout>
 
-                     <!--New resize handler controls--> 
-                    
+                    <!--New resize handler controls-->
+
                     <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
                    Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX" PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
                     <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
@@ -97,19 +97,19 @@
                    Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX" PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
 
                     <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid">
-                        
-                    <!--Used to render the drop shadow and provide a background to the document-->
-                    
+
+                        <!--Used to render the drop shadow and provide a background to the document-->
+
                         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                         <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
-                        
-                    <!--TODO this relative panel no longer needs to exist its original reason for existing is gone
+
+                        <!--TODO this relative panel no longer needs to exist its original reason for existing is gone
 
 
                      border to allow document to be highlighted when selected
-                     Container for document fields view--> 
-                    
+                     Container for document fields view-->
+
                         <Grid x:Name="MainContent">
                             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
                             <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -137,7 +137,7 @@
 
 
 
-                    <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
                             <HyperlinkButton   
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
@@ -150,13 +150,13 @@
                         </Canvas>
                     </Grid>
 
-                    </Grid>
+                </Grid>
             </Border>
         </Border>
 
 
-                    <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32, 0, 0, 0" VerticalAlignment="Top" >
-                        <TextBlock x:Name="xTitleIcon" 
+        <!--<Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32, 0, 0, 0" VerticalAlignment="Top" >
+            <TextBlock x:Name="xTitleIcon" 
                        FontSize="16"
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}"           
@@ -164,54 +164,49 @@
                        HorizontalAlignment="Stretch"
                        Padding="0, 0, 10, 0"
                         />
-                    </Border>
+        </Border>
 
 
-        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="2" Grid.Row="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
-                        <Grid  >
+        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="2" Grid.Row="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
+            <Grid  >
                 <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}" Width="25" Height="25"/>
 
                 <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}" Width="25" Height="25"
                          Visibility="Collapsed"/>
-                            <TextBlock x:Name="xOperatorEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
-
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                <TextBlock x:Name="xOperatorEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
                         />
-                            </ToolTipService.ToolTip>
-
-
-                        </Grid>
-                    </Border>
-        <Border x:Name="xAnnotateEllipseBorder" Grid.Column="2" Grid.Row="1" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
-                        <Grid  >
+                </ToolTipService.ToolTip>
+            </Grid>
+        </Border>
+        <Border x:Name="xAnnotateEllipseBorder" Grid.Column="2" Grid.Row="1" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
+            <Grid  >
                 <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}" Width="25" Height="25"/>
                 <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" Visibility="Collapsed" Width="25" Height="25"/>
-                            <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
                     />
-                            </ToolTipService.ToolTip>
-                        </Grid>
-                    </Border>
-        <Border x:Name="xTemplateEditorEllipseBorder" Grid.Column ="2"  Grid.Row="2" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"  HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
-                        <Grid HorizontalAlignment="Left">
-                            <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldTemplateHandle}" Width="25" Height="25"/>
+                </ToolTipService.ToolTip>
+            </Grid>
+        </Border>
+        <Border x:Name="xTemplateEditorEllipseBorder" Grid.Column ="2"  Grid.Row="2" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
+            <Grid HorizontalAlignment="Left">
+                <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldTemplateHandle}" Width="25" Height="25"/>
                 <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"  Style="{StaticResource xFieldTemplateHandleHighlighted}" Width="25" Height="25"
                      Visibility="Collapsed"/>
-                            <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+                <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
 
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
                        />
-                            </ToolTipService.ToolTip>
+                </ToolTipService.ToolTip>
 
-                        </Grid>
-                    </Border>
-
-
-                </Grid>
-          
-
-
+            </Grid>
+        </Border>-->
+    </Grid>
 </UserControl>

@@ -147,6 +147,7 @@ namespace Dash
 		}
 
 		// == CONSTRUCTORs ==
+        
 
 		public DocumentView()
 		{
@@ -204,54 +205,54 @@ namespace Dash
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 SetZLayer();
 
-				var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
+				//var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
 				//if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
 
                 
 
-                switch (type)
-                {
-                    case DashShared.TypeInfo.Image:
-                        xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
-                        break;
-                    case DashShared.TypeInfo.Audio:
-                        xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
-                        break;
-                    case DashShared.TypeInfo.Video:
-                        xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
-                        break;
-                    case DashShared.TypeInfo.RichText:
-                    case DashShared.TypeInfo.Text:
-                        xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
-                        break;
-                    case DashShared.TypeInfo.Document:
-                        xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
-                        break;
-                    case DashShared.TypeInfo.Template:
-                        xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-                        break;
-                    default:
-                        xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
-                        break;
+    //            switch (type)
+    //            {
+    //                case DashShared.TypeInfo.Image:
+    //                    xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
+    //                    break;
+    //                case DashShared.TypeInfo.Audio:
+    //                    xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
+    //                    break;
+    //                case DashShared.TypeInfo.Video:
+    //                    xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
+    //                    break;
+    //                case DashShared.TypeInfo.RichText:
+    //                case DashShared.TypeInfo.Text:
+    //                    xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
+    //                    break;
+    //                case DashShared.TypeInfo.Document:
+    //                    xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
+    //                    break;
+    //                case DashShared.TypeInfo.Template:
+    //                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+    //                    break;
+    //                default:
+    //                    xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
+    //                    break;
 
-				}
+				//}
 
-                if (type.Equals(DashShared.TypeInfo.Template))
-                {
-                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-                }
+    //            if (type.Equals(DashShared.TypeInfo.Template))
+    //            {
+    //                xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+    //            }
 
-				if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0))
-				{
-					xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-					xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
-					xTemplateEditorEllipseBorder.Margin =
-						new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
-				}
-				else
-				{
-					UpdateEllipses(_newpoint);
-				}
+				//if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0)) 
+				//{
+				//	xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
+				//	xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
+				//	xTemplateEditorEllipseBorder.Margin =
+				//		new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
+				//}
+				//else
+				//{
+				//	UpdateEllipses(_newpoint);
+				//}
 
 				//var converter = new StringToBrushConverter();
 				//var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
@@ -362,76 +363,76 @@ namespace Dash
 			// setup OperatorEllipse 
 			//OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
 			//OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
-			xOperatorEllipseBorder.PointerPressed += (sender, e) =>
-			{
-				this.ManipulationMode = ManipulationModes.None;
-				e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			};
-			xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			xOperatorEllipseBorder.DragStarting += (sender, args) =>
-			{
-				//var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-				//if (selected?.Count() > 0)
-				//{
-				//    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-				//            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-				//}
-				//else
-				args.Data.Properties[nameof(DragDocumentModel)] =
-					new DragDocumentModel(ViewModel.DocumentController, false);
-				args.AllowedOperations =
-					DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-				args.Data.RequestedOperation =
-					DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-				ViewModel.DecorationState = false;
-			};
+			//xOperatorEllipseBorder.PointerPressed += (sender, e) =>
+			//{
+			//	this.ManipulationMode = ManipulationModes.None;
+			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+			//};
+			//xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+			//xOperatorEllipseBorder.DragStarting += (sender, args) =>
+			//{
+			//	//var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+			//	//if (selected?.Count() > 0)
+			//	//{
+			//	//    args.Data.Properties[nameof(List<DragDocumentModel>)] =
+			//	//            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
+			//	//}
+			//	//else
+			//	args.Data.Properties[nameof(DragDocumentModel)] =
+			//		new DragDocumentModel(ViewModel.DocumentController, false);
+			//	args.AllowedOperations =
+			//		DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+			//	args.Data.RequestedOperation =
+			//		DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+			//	ViewModel.DecorationState = false;
+			//};
 
 			// setup LinkEllipse
 			//AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
 			//AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
-			xAnnotateEllipseBorder.PointerPressed += (sender, e) =>
-			{
-				this.ManipulationMode = ManipulationModes.None;
-				e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			};
-			xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			xAnnotateEllipseBorder.DragStarting += (sender, args) =>
-			{
-				args.Data.Properties[nameof(DragDocumentModel)] =
-					new DragDocumentModel(ViewModel.DocumentController, false, this);
-				args.AllowedOperations =
-					DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-				args.Data.RequestedOperation =
-					DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-				ViewModel.DecorationState = false;
-			};
+			//xAnnotateEllipseBorder.PointerPressed += (sender, e) =>
+			//{
+			//	this.ManipulationMode = ManipulationModes.None;
+			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+			//};
+			//xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+			//xAnnotateEllipseBorder.DragStarting += (sender, args) =>
+			//{
+			//	args.Data.Properties[nameof(DragDocumentModel)] =
+			//		new DragDocumentModel(ViewModel.DocumentController, false, this);
+			//	args.AllowedOperations =
+			//		DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+			//	args.Data.RequestedOperation =
+			//		DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+			//	ViewModel.DecorationState = false;
+			//};
 
 			// setup EditorEllipse
 			//TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
 			//TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Visible;
-			xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
-			{
-				this.ManipulationMode = ManipulationModes.None;
-				ToggleTemplateEditor();
-				e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			};
-			xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			xTemplateEditorEllipseBorder.DragStarting += (sender, args) => { };
+			//xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
+			//{
+			//	this.ManipulationMode = ManipulationModes.None;
+			//	ToggleTemplateEditor();
+			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+			//};
+			//xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+			//xTemplateEditorEllipseBorder.DragStarting += (sender, args) => { };
 
 			// setup Title Icon
-			xTitleIcon.PointerPressed += (sender, e) =>
-			{
-				CapturePointer(e.Pointer);
-				ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed
-					? ManipulationModes.None
-					: ManipulationModes.All;
-				e.Handled = ManipulationMode == ManipulationModes.All;
-			};
-			xTitleIcon.Tapped += (s, args) =>
-			{
-				ShowContext();
-				args.Handled = true;
-			};
+			//xTitleIcon.PointerPressed += (sender, e) =>
+			//{
+			//	CapturePointer(e.Pointer);
+			//	ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed
+			//		? ManipulationModes.None
+			//		: ManipulationModes.All;
+			//	e.Handled = ManipulationMode == ManipulationModes.All;
+			//};
+			//xTitleIcon.Tapped += (s, args) =>
+			//{
+			//	ShowContext();
+			//	args.Handled = true;
+			//};
 			// setup Context Title
 			xContextTitle.Tapped += (sender, e) => ShowContext();
 			xContextTitle.SizeChanged += (sender, e) => Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
@@ -525,7 +526,7 @@ namespace Dash
             Debug.WriteLine(new Point(ActualWidth, ActualHeight));
 
             var trans = new MatrixTransform { Matrix = mat };
-            Point p = trans.TransformPoint(new Point(ActualWidth - xTitleBorder.Margin.Left, ActualHeight));
+            Point p = trans.TransformPoint(new Point(ActualWidth/* - xTitleBorder.Margin.Left*/, ActualHeight));
 
             var cdo = new CoreDragOperation();
             var rtb = new RenderTargetBitmap();
@@ -537,7 +538,7 @@ namespace Dash
 
             Point pos = e?.GetCurrentPoint(this).Position ?? new Point();
 
-            pos.X -= xTitleBorder.Margin.Left;
+            //pos.X -= xTitleBorder.Margin.Left;
             pos = trans.TransformPoint(pos);
             pos.X = Math.Max(0, pos.X);
             pos.Y = Math.Max(0, pos.Y);
@@ -569,9 +570,9 @@ namespace Dash
 			xBottomRow.Height = new GridLength(0);
 			ViewModel.DecorationState = false;
 
-			xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-			xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-			xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
+			//xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+			//xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+			//xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
 		}
 
 		public void ToggleTemplateEditor()
@@ -978,7 +979,7 @@ namespace Dash
 		/// </summary>
 		public void StyleOperator(double width, string title)
 		{
-			xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+			//xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
 			if (ParentCollection != null)
 			{
 				ViewModel.DocumentController.GetDataDocument().SetTitle(title);
@@ -991,7 +992,7 @@ namespace Dash
 		/// </summary>
 		public void StyleCollection(CollectionView view)
 		{
-			xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+			//xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
 			//alter opacity to be visible (overrides default transparent)
 			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
 			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
@@ -1397,25 +1398,25 @@ namespace Dash
 
 		public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-			    StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-			{
-				if (e == null ||
-				    (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed &&
-				     !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) && ViewModel != null)
-					ViewModel.DecorationState = false;
-			}
+			//if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+			//    StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//{
+			//	if (e == null ||
+			//	    (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed &&
+			//	     !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) && ViewModel != null)
+			//		ViewModel.DecorationState = false;
+			//}
 
-			MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
-			if (MainPage.Instance.MainDocView != this)
-			{
-				var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
-				if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-				    viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
-					Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-				else if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-					Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
-			}
+			//MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
+			//if (MainPage.Instance.MainDocView != this)
+			//{
+			//	var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
+			//	if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
+			//	    viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
+			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+			//	else if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+			//}
 		}
 
 		public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -1425,28 +1426,28 @@ namespace Dash
 
 		public void DocumentView_PointerEntered()
 		{
-			if (ViewModel != null)
-			{
-				if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-				     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
-				{
-				    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
-                    ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
-				}
+			//if (ViewModel != null)
+			//{
+			//	if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+			//	     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
+			//	{
+			//	    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
+   //                 ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
+			//	}
 
-				MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
-			}
+			//	MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
+			//}
 
-			Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-			if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
-			{
-				var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
-				if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-				    level.Equals(CollectionViewModel.StandardViewLevel.Region))
-					Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-				else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
-					Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
-			}
+			//Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+			//if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
+			//{
+			//	var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
+			//	if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
+			//	    level.Equals(CollectionViewModel.StandardViewLevel.Region))
+			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+			//	else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+			//}
 		}
 
 		/// <summary>
@@ -1788,9 +1789,9 @@ namespace Dash
 
 		public void hideEllipses()
 		{
-			xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-			xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-			xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
+			//xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+			//xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+			//xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
 		}
 
 		public void showControls()
@@ -1867,55 +1868,55 @@ namespace Dash
 
 		private void UpdateEllipses(Point newpoint)
 		{
-			AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25 * (newpoint.Y));
-			AdjustEllipseSize(AnnotateEllipseUnhighlight, 25 * (newpoint.Y));
-			AdjustEllipseSize(OperatorEllipseUnhighlight, 25 * (newpoint.Y));
+			//AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25 * (newpoint.Y));
+			//AdjustEllipseSize(AnnotateEllipseUnhighlight, 25 * (newpoint.Y));
+			//AdjustEllipseSize(OperatorEllipseUnhighlight, 25 * (newpoint.Y));
 
-			AdjustEllipseFontSize(12 * newpoint.Y);
+			//AdjustEllipseFontSize(12 * newpoint.Y);
 
 
-			xTitleIcon.FontSize = 16 * (newpoint.Y);
+			//xTitleIcon.FontSize = 16 * (newpoint.Y);
 
-			if (TemplateEditorEllipseBorderUnhighlight.Width < 25)
-			{
-				AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25);
-				AdjustEllipseSize(AnnotateEllipseUnhighlight, 25);
-				AdjustEllipseSize(OperatorEllipseUnhighlight, 25);
-			}
+			//if (TemplateEditorEllipseBorderUnhighlight.Width < 25)
+			//{
+			//	AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25);
+			//	AdjustEllipseSize(AnnotateEllipseUnhighlight, 25);
+			//	AdjustEllipseSize(OperatorEllipseUnhighlight, 25);
+			//}
 
-			if (TemplateEditorEllipseBorderUnhighlight.Width > 150)
-			{
-				AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 150);
-				AdjustEllipseSize(AnnotateEllipseUnhighlight, 150);
-				AdjustEllipseSize(OperatorEllipseUnhighlight, 150);
-			}
+			//if (TemplateEditorEllipseBorderUnhighlight.Width > 150)
+			//{
+			//	AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 150);
+			//	AdjustEllipseSize(AnnotateEllipseUnhighlight, 150);
+			//	AdjustEllipseSize(OperatorEllipseUnhighlight, 150);
+			//}
 
-			if (xTitleIcon.FontSize < 16)
-			{
-				xTitleIcon.FontSize = 16;
-			}
+			//if (xTitleIcon.FontSize < 16)
+			//{
+			//	xTitleIcon.FontSize = 16;
+			//}
 
-			if (xTitleIcon.FontSize > 100)
-			{
-				xTitleIcon.FontSize = 100;
-			}
+			//if (xTitleIcon.FontSize > 100)
+			//{
+			//	xTitleIcon.FontSize = 100;
+			//}
 
-			if (xTemplateEllipseText.FontSize < 12)
-			{
-				AdjustEllipseFontSize(12);
-			}
+			//if (xTemplateEllipseText.FontSize < 12)
+			//{
+			//	AdjustEllipseFontSize(12);
+			//}
 
-			if (xTemplateEllipseText.FontSize > 60)
-			{
-				AdjustEllipseFontSize(60);
-			}
+			//if (xTemplateEllipseText.FontSize > 60)
+			//{
+			//	AdjustEllipseFontSize(60);
+			//}
 
-			xTitleBorder.Margin = new Thickness(-1.2 * xTitleIcon.FontSize - 10, 0, 0, 0);
-			xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-			xAnnotateEllipseBorder.Margin =
-				new Thickness(10, AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y), 0, 0);
-			xTemplateEditorEllipseBorder.Margin =
-				new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y)), 0, 0);
+			//xTitleBorder.Margin = new Thickness(-1.2 * xTitleIcon.FontSize - 10, 0, 0, 0);
+			//xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
+			//xAnnotateEllipseBorder.Margin =
+			//	new Thickness(10, AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y), 0, 0);
+			//xTemplateEditorEllipseBorder.Margin =
+			//	new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y)), 0, 0);
 
 		}
 
@@ -1927,9 +1928,9 @@ namespace Dash
 
 		private void AdjustEllipseFontSize(double size)
 		{
-			xTemplateEllipseText.FontSize = size;
-			xAnnotateEllipseText.FontSize = size;
-			xOperatorEllipseText.FontSize = size;
+			//xTemplateEllipseText.FontSize = size;
+			//xAnnotateEllipseText.FontSize = size;
+			//xOperatorEllipseText.FontSize = size;
 		}
 
 		private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
