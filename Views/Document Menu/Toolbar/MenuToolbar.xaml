@@ -33,7 +33,7 @@
                 <AppBarSeparator x:Name="xSepOne"/>
 
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
+                <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="True" Opacity="1" Label="Add Group" Click="Add_Group_On_Click"/>
                 <AppBarButton x:Name="xAddImage" Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
                 <AppBarButton x:Name="xAddVideo" Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarButton x:Name="xAddAudio" Icon="Audio" Label="Add Audio" Click="Add_Audio_On_Click"/>
