@@ -395,11 +395,14 @@ namespace Dash
             var item = (sender as StackPanel)?.DataContext as SnapshotView;
             var itemNum = item.Index;
             MainPage.Instance.ToggleSettingsVisibility(false);
-            var docToFocus =
-                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
-                    ListController<DocumentController>)?[itemNum];
-            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            var snaps = (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>);
+            if (snaps != null && snaps.Count > itemNum)
+            {
+                var docToFocus = snaps[itemNum];
+                if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            }
 
             ClosePopups();
             UnfocusText();
