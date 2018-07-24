@@ -448,14 +448,17 @@ namespace Dash
                     
                    //get less zoom, so x and y are zoomed by same amt
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
+                    if (!zoom)
+                    {
+                        minZoom = (root.RenderTransform as MatrixTransform).Matrix.M11;
+                    }
 
                     if (animated)
                     {
                         //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.SetTransformAnimated(
                             new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
-                            zoom ? new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } : new ScaleTransform { CenterX = shift.X, CenterY = shift.Y },
-                            zoom
+                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } 
                         );
                     }
                     else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
@@ -737,8 +740,7 @@ namespace Dash
             
             mainFreeform?.SetTransformAnimated(
                 new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y },
-                false);
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y });
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
