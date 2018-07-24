@@ -64,7 +64,8 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
-       
+
+            LostFocus += (sender, args) => { xRichEditBox.IsEnabled = true; };
 
             Application.Current.Suspending += (sender, args) =>
             {
@@ -78,8 +79,6 @@ namespace Dash
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
-
-            xRichEditBox.SizeChanged += (sender, args) => { Debug.WriteLine($"W/H = {xRichEditBox.ActualWidth}, {xRichEditBox.ActualHeight}"); };
 
             xSearchBox.KeyUp += (s, e) => e.Handled = true;
 
@@ -102,8 +101,11 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(docView);
+                    if (!MainPage.Instance.IsShiftPressed())
+                    {
+                        SelectionManager.DeselectAll();
+                        SelectionManager.Select(docView);
+                    }
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
@@ -111,6 +113,7 @@ namespace Dash
                     SetSelected("");
                     xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
+                    CursorToEnd();
                 }
             };
 
@@ -367,6 +370,12 @@ namespace Dash
         {
             e.Handled = false;
             RegionSelected(null, e.GetPosition(MainPage.Instance));
+        }
+
+        private void CursorToEnd()
+        {
+            xRichEditBox.Document.GetText(TextGetOptions.None, out string text);
+            xRichEditBox.Document.Selection.StartPosition = text.Length;
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)

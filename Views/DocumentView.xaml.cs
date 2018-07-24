@@ -277,6 +277,7 @@ namespace Dash
 				e.Handled = ManipulationMode != ManipulationModes.None;
                 if (false)  // bcz: set to 'true' for drag/Drop interactions
                     SetupDragDropDragging(e);
+			    e.Handled = true;
 			};
 
 			PointerEntered += DocumentView_PointerEntered;
@@ -1375,18 +1376,21 @@ namespace Dash
 				var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
 				if (this.IsShiftPressed())
 				{
-					SelectionManager.ToggleSelection(this);
+				    if (SelectionManager.SelectedDocs.Count() > 1)
+				    {
+				        // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                        cfview?.Focus(FocusState.Programmatic);
+				        SelectionManager.Select(this);
+                    }
+				    else
+				    {
+				        SelectionManager.ToggleSelection(this);
+                    }
 				}
 				else
 				{
 					SelectionManager.DeselectAll();
 					SelectionManager.Select(this);
-				}
-
-				if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
-				{
-					cfview?.Focus(FocusState
-						.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
 				}
 
 				//TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
