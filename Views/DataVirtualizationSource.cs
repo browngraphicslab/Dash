@@ -39,7 +39,7 @@ namespace Dash
         ///     Given a vertical offset, returns an integer that represents in 0-index the page that
         ///     that offset correlates with.
         /// </summary>
-        private int GetIndex(double verticalOffset)
+        public int GetIndex(double verticalOffset)
         {
             var index = 0;
             var scale = _scrollViewer.ActualWidth / _view.PdfMaxWidth;

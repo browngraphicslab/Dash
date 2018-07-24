@@ -997,13 +997,13 @@ namespace Dash
 
         private void XNextPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            MovePage(ScrollViewer2, xAnnotationBox2, 1);
+            PageNext(ScrollViewer2);
 
         }
 
         private void XPreviousPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            MovePage(ScrollViewer2, xAnnotationBox2, 0);
+            PagePrev(ScrollViewer2);
         }
 
         private void XScrollBack2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1030,12 +1030,12 @@ namespace Dash
 
         private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            MovePage(ScrollViewer, xAnnotationBox, 1);
+            PageNext(ScrollViewer);
         }
 
         private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            MovePage(ScrollViewer, xAnnotationBox, 0);
+            PagePrev(ScrollViewer);
         }
 
         private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1078,23 +1078,70 @@ namespace Dash
         //    scroller.ChangeView(null, currOffset, 1);
         //}
 
-        private void MovePageNew(ScrollViewer scroller)
+        private void PagePrev(ScrollViewer scroller)
         {
             DataVirtualizationSource<ImageSource> pages;
+            double annoWidth;
             if (scroller.Equals(ScrollViewer))
             {
                 pages = _pages1;
+                annoWidth = xAnnotationBox.ActualWidth;
             }
 
             else
             {
                 pages = _pages2;
+                annoWidth = xAnnotationBox2.ActualWidth;
             }
 
             var sizes = pages.PageSizes;
+            var currOffset = 0.0;
+            foreach (var size in sizes)
+            {
+                var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
+                if (currOffset + size.Height * scale - scroller.VerticalOffset > 1)
+                {
+                    break;
+                }
 
+                currOffset += (size.Height * scale) + 15;
+               
 
+            }
 
+            scroller.ChangeView(null, currOffset, 1);
+        }
+
+        private void PageNext(ScrollViewer scroller)
+        {
+            DataVirtualizationSource<ImageSource> pages;
+            double annoWidth;
+            if (scroller.Equals(ScrollViewer))
+            {
+                pages = _pages1;
+                annoWidth = xAnnotationBox.ActualWidth;
+            }
+
+            else
+            {
+                pages = _pages2;
+                annoWidth = xAnnotationBox2.ActualWidth;
+            }
+
+            var sizes = pages.PageSizes;
+            var currOffset = 0.0;
+            foreach (var size in sizes)
+            {
+                var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
+                currOffset += (size.Height * scale) + 15;
+                if (currOffset - scroller.VerticalOffset > 1)
+                {
+                    break;
+                }
+
+            }
+
+            scroller.ChangeView(null, currOffset, 1);
         }
 
         private void ScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
