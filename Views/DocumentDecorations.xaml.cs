@@ -160,6 +160,15 @@ namespace Dash
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             SelectedDocs = SelectionManager.SelectedDocs.ToList();
+            if (SelectedDocs.Count > 1)
+            {
+                xMultiSelectBorder.BorderThickness = new Thickness(2);
+            }
+            else
+            {
+                xMultiSelectBorder.BorderThickness = new Thickness(0);
+            }
+
             SetPositionAndSize();
             SetTitleIcon();
             if (SelectedDocs.Any() && !this.IsRightBtnPressed())
@@ -235,11 +244,11 @@ namespace Dash
             {
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
-                topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
-                topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTopRow.ActualHeight, topLeft.Y);
+                topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
+                topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTargetBorder.BorderThickness.Top, topLeft.Y);
 
-                botRight.X = Math.Max(viewModelBounds.Right /*+ doc.xRightColumn.ActualWidth*/, botRight.X);
-                botRight.Y = Math.Max(viewModelBounds.Bottom /*+ doc.xBottomRow.ActualHeight*/, botRight.Y);
+                botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
+                botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
             }
 
             if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) || double.IsNegativeInfinity(botRight.X) || double.IsNegativeInfinity(botRight.Y))
@@ -254,6 +263,7 @@ namespace Dash
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
         }
 
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)

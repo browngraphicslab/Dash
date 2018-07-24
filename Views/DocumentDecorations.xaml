@@ -17,8 +17,11 @@
             <ColumnDefinition x:Name="ContentColumn" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition MinHeight="80" x:Name="xRow" />
+        </Grid.RowDefinitions>
 
-        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Grid.Column="0" Visibility="{x:Bind VisibilityState, Mode=OneWay}" Tapped="XTitleBorder_OnTapped"
+        <Border Grid.Row="0" x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Grid.Column="0" Visibility="{x:Bind VisibilityState, Mode=OneWay}" Tapped="XTitleBorder_OnTapped"
                 Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" PointerPressed="XTitleBorder_OnPointerPressed">
             <TextBlock x:Name="xTitleIcon" 
                        FontSize="16"
@@ -29,7 +32,10 @@
             />
         </Border>
 
-        <StackPanel Grid.Column="2" Background="Transparent">
+        <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+                HorizontalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" />
+
+        <StackPanel Grid.Row="0" Grid.Column="2" Background="Transparent">
             <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" PointerReleased="AllEllipses_OnPointerReleased"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" PointerPressed="XOperatorEllipseBorder_OnPointerPressed" DragStarting="XOperatorEllipseBorder_OnDragStarting">
                 <Grid  >

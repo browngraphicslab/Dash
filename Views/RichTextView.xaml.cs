@@ -130,15 +130,10 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
+
             xRichEditBox.LostFocus += (s, e) =>
             {
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
-                if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
-                {
-                    var docView = getDocView();
-                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null && !SelectionManager.SelectedDocs.Contains(docView))
-                        docView.DeleteDocument();
-                }
             };
 
             xRichEditBox.ContextMenuOpening += (s, e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
@@ -168,6 +163,16 @@ namespace Dash
                     relative.Height = double.NaN;
                 }
             };
+        }
+
+        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
+            {
+                var docView = getDocView();
+                if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    docView.DeleteDocument();
+            }
         }
 
         public void UpdateDocumentFromXaml()
@@ -524,6 +529,7 @@ namespace Dash
             ClearSearchHighlights(true);
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
@@ -537,6 +543,7 @@ namespace Dash
 
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
+            SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
