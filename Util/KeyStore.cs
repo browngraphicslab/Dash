@@ -34,6 +34,8 @@ namespace Dash
         public static KeyController PositionFieldKey = new KeyController("Position", "E2AB7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController LinkFromKey = new KeyController("Link From", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
         public static KeyController LinkToKey = new KeyController("Link To", "649A7F35-C428-49EC-B914-5746E2590DAC");
+        public static KeyController ListDestinationKey = new KeyController("Link Destination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
+        public static KeyController ListSourceKey = new KeyController("Link Source", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
         public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
         public static KeyController ScaleAmountFieldKey = new KeyController("_Scale Amount", "AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE");
         public static KeyController IconTypeFieldKey = new KeyController("_IconType", "ICON7D27-FA81-4D88-B2FA-42B7888525AF");
@@ -94,6 +96,8 @@ namespace Dash
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController("_Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("_Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("_Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
+        public static KeyController SelectionRegionTopLeftKey = new KeyController("_Selection Top Left", "B42844C8-B80A-4DE9-BFC3-AF3F94A83D2E");
+        public static KeyController SelectionRegionSizeKey = new KeyController("_Selection Size", "34E957C1-A0FC-41B0-8862-174224FBE90B");
 	    public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");

@@ -355,28 +355,38 @@ namespace Dash
         {
             return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
         }
-        public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent, AnnotationManager.AnnotationType annotationType)
+        public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent)
         {
             document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+        }
+
+        public static void SetAnnotationType(this DocumentController document, AnnotationType annotationType)
+        {
             document.SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static AnnotationManager.AnnotationType GetAnnotationType(this DocumentController document)
+        public static AnnotationType GetAnnotationType(this DocumentController document)
         {
             var t = document.GetField<TextController>(KeyStore.RegionTypeKey);
             return t == null
-                ? AnnotationManager.AnnotationType.None
-                : Enum.Parse<AnnotationManager.AnnotationType>(t.Data);
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
+        }
+
+        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction)
+        {
+            var key = direction == LinkDirection.ToDestination ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
+            return document.GetDereferencedField<DocumentController>(key, null);
         }
 
         public static bool GetTransient(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.TransientKey, null)?.Data;
+            return data ?? false;
         }
         public static void SetTransient(this DocumentController document, bool hidden)
         {
-            document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
+            document.SetField<BoolController>(KeyStore.TransientKey, hidden, true);
         }
 
         public static int? GetSideCount(this DocumentController document)
@@ -393,9 +403,19 @@ namespace Dash
             document.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
         }
 
+        public static double GetWidth(this DocumentController document)
+        {
+            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 0;
+        }
+
         public static void SetHeight(this DocumentController document, double height)
         {
             document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
+        }
+
+        public static double GetHeight(this DocumentController document)
+        {
+            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
         }
         
     }

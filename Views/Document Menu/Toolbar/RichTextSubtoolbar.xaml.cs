@@ -51,7 +51,7 @@ namespace Dash
             _buttons = new Dictionary<string, Button>();
 
             _currBox = null;
-	        xBackgroundColorPicker.ParentFlyout = xColorPickerFlyout;
+	        //xBackgroundColorPicker.ParentFlyout = xColorPickerFlyout;
 
             //add an additional sub-toolbar for further operations
 			/*

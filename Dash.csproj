@@ -209,6 +209,12 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="NewAnnotationOverlay.xaml.cs">
+      <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RegionAnnotation.xaml.cs">
+      <DependentUpon>RegionAnnotation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
       <DependentUpon>DashColorPicker.xaml</DependentUpon>
@@ -979,6 +985,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="AnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NewAnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RegionAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

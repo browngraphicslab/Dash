@@ -572,7 +572,7 @@ namespace Dash
                 if (target != null && theDoc == null)
                 {
                     dc = new HtmlNote(target, selection.Text).Document;
-                    dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+                    dc.SetRegionDefinition(LayoutDocument);
                 }
                 if (dc != null)
                 {
@@ -726,7 +726,7 @@ namespace Dash
         private string getTargetLink(string selectedText, out DocumentController theDoc)
         {
             theDoc = new RichTextNote(selectedText).Document;
-            theDoc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+            theDoc.SetRegionDefinition(LayoutDocument);
             var link = "\"" + theDoc.Id + "\"";
             if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {

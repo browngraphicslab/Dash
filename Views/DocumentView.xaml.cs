@@ -287,7 +287,7 @@ namespace Dash
 				MainPage.Instance.Focus(FocusState.Programmatic);
 				if (!this.IsRightBtnPressed()) // ignore right button drags
 				{
-					this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
+					//this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
 					PointerExited -=
 						DocumentView_PointerExited; // ignore any pointer exit events which will change the visibility of the dragger
 					e.Handled = true;

@@ -24,7 +24,7 @@ namespace Dash
         // since this is different for every class, they must implement this part themselves
 
         VisualAnnotationManager GetAnnotationManager();
-        DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType);
+        DocumentController GetDocControllerFromSelectedRegion(AnnotationType annotationType);
 
 	    event PointerEventHandler NewRegionStarted;
 

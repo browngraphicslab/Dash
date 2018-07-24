@@ -21,22 +21,77 @@ namespace Dash
 	public class AnnotationManager
 	{
 		private FrameworkElement    _element;
-		private MenuFlyout   _linkFlyout;
+		private readonly MenuFlyout   _linkFlyout = new MenuFlyout();
 		private List<DocumentController> _lastHighlighted = new List<DocumentController>();
-
-		public enum AnnotationType
-		{
-			None,
-			RegionBox,
-			TextSelection,
-			Ink
-		}
 
 		public AnnotationManager(FrameworkElement uiElement)
 		{
 			_element = uiElement;
-			FormatLinkMenu();
+			_linkFlyout.Closed += (s, e) => _linkFlyout.Items?.Clear();
 		}
+
+	    public void FollowRegion(DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition)
+	    {
+	        var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
+	        var linkToCount = linksTo?.Count ?? 0;
+	        var linkFromCount = linksFrom?.Count ?? 0;
+	        var linkCount = linkToCount + linkFromCount;
+	        if (linkCount == 0)
+	        {
+	            return;
+	        }
+
+	        if(linkCount == 1)
+	        {
+	            FollowLink(linkToCount == 0 ? linksFrom?[0] : linksTo?[0], linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
+	        }
+	        else // There are multiple links, so we need to show a flyout to determine which link to follow
+	        {
+	            if (linksTo != null)
+                {
+                    foreach (var linkTo in linksTo)
+	                {
+	                    MenuFlyoutItem item = new MenuFlyoutItem {Text = linkTo.Title};
+	                    item.Tapped += (sender, args) =>
+	                    {
+	                        FollowLink((DocumentController) ((FrameworkElement) sender).DataContext, LinkDirection.ToDestination,
+	                            linkHandlers);
+	                    };
+	                    _linkFlyout.Items?.Add(item);
+	                }
+                }
+
+                _linkFlyout.Items?.Add(new MenuFlyoutSeparator());
+
+	            if (linksFrom != null)
+                {
+                    foreach (var linkFrom in linksFrom)
+	                {
+	                    MenuFlyoutItem item = new MenuFlyoutItem {Text = linkFrom.Title};
+	                    item.Tapped += (sender, args) =>
+	                    {
+	                        FollowLink((DocumentController) ((FrameworkElement) sender).DataContext, LinkDirection.ToSource,
+	                            linkHandlers);
+	                    };
+	                    _linkFlyout.Items?.Add(item);
+	                }
+                }
+
+                _linkFlyout.ShowAt(_element, flyoutPosition);
+            }
+	    }
+
+	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
+	    {
+	        foreach (var linkHandler in linkHandlers)
+	        {
+	            if (linkHandler.HandleLink(link, direction))
+	            {
+	                break;
+	            }
+	        }
+	    }
 
         //navigation and toggling of linked annotations to the pressed region
         public void RegionPressed(DocumentController theDoc, Point pos, DocumentController chosenDC = null)
@@ -149,10 +204,10 @@ namespace Dash
 			
 		    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
 		    va?.GetAnnotationManager().SelectRegion(target);
-		    if (va is CustomPdfView pdf)
-		    {
-			    pdf.ScrollToRegion(target);
-		    }
+		    //if (va is CustomPdfView pdf)
+		    //{
+			   // pdf.ScrollToRegion(target);
+		    //}
 
 		    UpdateHighlight(new List<DocumentController> {toFollow.ViewModel.DocumentController});
 		}
@@ -268,15 +323,6 @@ namespace Dash
 				if (isVisible == null) return;
 				docCtrl.ToggleAnnotationPin(!isVisible.Data, true);
 			}
-		}
-
-        //creates & adds handlers to the link menu
-        private void FormatLinkMenu()
-		{
-			_linkFlyout = new MenuFlyout();
-
-			_linkFlyout.Closed += (s, e) => _linkFlyout.Items?.Clear();
-			
 		}
 
 		//opens a flyout menu of all the links associated to the region

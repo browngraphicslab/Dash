@@ -90,13 +90,13 @@ namespace Dash
             {
                 var data = region.GetDataDocument();
                 var type = region.GetAnnotationType();
-                if (type == AnnotationType.RegionBox)
+                if (type == AnnotationType.Region)
                 {
                     var topLeft = data.GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
                     var bottomRight = data.GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
                     MakeNewRegionBox(region, topLeft, bottomRight).ToggleSelectionState(RegionSelectionState.None);
                 }
-                else if (type == AnnotationType.TextSelection)
+                else if (type == AnnotationType.Selection)
                 {
                     var topLefts =
                         data.GetField<ListController<PointController>>(KeyStore
@@ -392,12 +392,12 @@ namespace Dash
                 //TODO Use CurrentAnnotationType here
                 if (_selectableElements != null)
                 {
-                    annotationType = AnnotationType.TextSelection;
+                    annotationType = AnnotationType.Selection;
                 }
                 else
                 {
                     Debug.Assert(_overlay.PostVisibility == Visibility.Visible);
-                    annotationType = AnnotationType.RegionBox;
+                    annotationType = AnnotationType.Region;
                 }
                 note = _element.GetDocControllerFromSelectedRegion(annotationType);
 
@@ -423,7 +423,7 @@ namespace Dash
         private void SetupRegionDoc(DocumentController region)
         {
             var type = region.GetAnnotationType();
-            if (type == AnnotationType.RegionBox)
+            if (type == AnnotationType.Region)
             {
                 // use During Preview here because it's the one with actual pixel measurements
                 var box = MakeNewRegionBox(region, _overlay.GetTopLeftPercentile(), _overlay.GetBottomRightPercentile());
@@ -434,7 +434,7 @@ namespace Dash
 
                 _overlay.PostVisibility = Visibility.Collapsed;
             }
-            else if (type == AnnotationType.TextSelection)
+            else if (type == AnnotationType.Selection)
             {
                 List<Rectangle> rects = new List<Rectangle>(_selectableElements.Count());
                 var data = region.GetDataDocument();
