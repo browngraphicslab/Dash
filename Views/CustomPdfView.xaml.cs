@@ -1133,7 +1133,8 @@ namespace Dash
 		    return this.GetFirstAncestorOfType<DocumentView>();
 		}
 
-       
+
+        
     }
 }
 
