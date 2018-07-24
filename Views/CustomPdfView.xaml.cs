@@ -81,17 +81,28 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private DataVirtualizationSource<ImageSource> _pages;
-        public DataVirtualizationSource<ImageSource> Pages
+        private DataVirtualizationSource<ImageSource> _pages1;
+        public DataVirtualizationSource<ImageSource> Pages1
         {
-            get => _pages;
+            get => _pages1;
             set
             {
-                _pages = value;
+                _pages1 = value;
                 OnPropertyChanged();
             }
         }
 
+        private DataVirtualizationSource<ImageSource> _pages2;
+
+        public DataVirtualizationSource<ImageSource> Pages2
+        {
+            get => _pages2;
+            set
+            {
+                _pages2 = value;
+                OnPropertyChanged();
+            }
+        }
 
         private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
 
@@ -158,7 +169,8 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _pages = new DataVirtualizationSource<ImageSource>(this);
+            _pages1 = new DataVirtualizationSource<ImageSource>(this, ScrollViewer, PageItemsControl);
+            _pages2 = new DataVirtualizationSource<ImageSource>(this, ScrollViewer2, PageItemsControl2);
 			DocumentLoaded += (sender, e) =>
 			{
 				AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -211,7 +223,21 @@ namespace Dash
 
             xPdfContainer.SizeChanged += (ss, ee) =>
             {
-                xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
+
+                if (xFirstPanelRow.ActualHeight > xPdfContainer.ActualHeight - 5)
+                {
+                    if (xPdfContainer.ActualHeight - 5 > 0)
+                    {
+                        xFirstPanelRow.Height = new GridLength(xPdfContainer.ActualHeight - 4, GridUnitType.Pixel);
+                    }
+                   
+                    xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
+
+                }
+                else
+                {
+                    xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
+                }
             };
 
             _backStack = new Stack<double>();
@@ -320,7 +346,8 @@ namespace Dash
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                Pages1.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                Pages2.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
@@ -755,7 +782,8 @@ namespace Dash
         public async void UnFreeze()
         {
             //await RenderPdf(ScrollViewer.ActualWidth);
-            Pages.View_SizeChanged(null, null);
+            Pages1.View_SizeChanged(null, null);
+            Pages2.View_SizeChanged(null, null);
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)

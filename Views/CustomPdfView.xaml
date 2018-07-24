@@ -49,7 +49,7 @@
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed" Visibility="Collapsed">
+                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
@@ -71,7 +71,7 @@
                 </StackPanel.Resources>
 
             </StackPanel>
-            <ScrollViewer  x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer_OnViewChanged">
+            <ScrollViewer  x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer_OnViewChanged">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -86,7 +86,7 @@
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                       PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" x:FieldModified="public">
+                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public">
                             </ItemsControl>
                         <!--Annotation overlay for block annotations-->
                         <local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>
@@ -178,7 +178,7 @@
                           PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                           PointerCanceled="XPdfGrid_OnPointerCanceled" PointerExited="XPdfGrid_OnPointerExited" PointerCaptureLost="XPdfGrid_OnPointerCaptureLost">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl2" x:FieldModified="public">
+                        <ItemsControl x:Name="PageItemsControl2" x:FieldModifier="public">
                         </ItemsControl>
                         <!--Annotation overlay for block annotations-->
                         <local:AnnotationOverlay x:Name="xAnnotations2"></local:AnnotationOverlay>

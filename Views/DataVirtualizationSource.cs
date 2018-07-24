@@ -25,13 +25,13 @@ namespace Dash
         private int _endIndex;
         private double _verticalOffset;
 
-        public DataVirtualizationSource(CustomPdfView view)
+        public DataVirtualizationSource(CustomPdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
             _view = view;
-            _scrollViewer = view.ScrollViewer;
+            _scrollViewer = scrollviewer;
             _visibleElements = new ObservableCollection<UIElement>();
             PageSizes = new List<Size>();
-            view.PageItemsControl.ItemsSource = _visibleElements;
+            pageItemsControl.ItemsSource = _visibleElements;
             view.DocumentLoaded += View_Loaded;
         }
 
@@ -42,7 +42,7 @@ namespace Dash
         private int GetIndex(double verticalOffset)
         {
             var index = 0;
-            var scale = _view.ScrollViewer.ActualWidth / _view.PdfMaxWidth;
+            var scale = _scrollViewer.ActualWidth / _view.PdfMaxWidth;
             var height = PageSizes[index].Height * scale;
             var currOffset = verticalOffset;
             while (currOffset - height > 0)
@@ -73,11 +73,11 @@ namespace Dash
             var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
             if (scrollRatio != null)
             {
-                _view.ScrollViewer.UpdateLayout();
-                _view.ScrollViewer.ChangeView(null, scrollRatio.Data * _view.ScrollViewer.ExtentHeight, null, true);
+                _scrollViewer.UpdateLayout();
+                _scrollViewer.ChangeView(null, scrollRatio.Data * _scrollViewer.ExtentHeight, null, true);
             }
 
-            _verticalOffset = scrollRatio?.Data * _view.ScrollViewer.ExtentHeight ?? 0;
+            _verticalOffset = scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0;
             // get the start index and apply the buffer if possible
             var startIndex = GetIndex(_verticalOffset);
             startIndex = Math.Max(startIndex - _pageBuffer, 0);
@@ -91,7 +91,7 @@ namespace Dash
             // render the indices requested
             RenderIndices(startIndex, endIndex, true);
             
-            _view.ScrollViewer.ViewChanging += ScrollViewer_ViewChanging;
+            _scrollViewer.ViewChanging += ScrollViewer_ViewChanging;
         }
 
         public void View_SizeChanged(object sender, SizeChangedEventArgs e)
