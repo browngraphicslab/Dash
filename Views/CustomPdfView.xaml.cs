@@ -686,6 +686,8 @@ namespace Dash
                 region.SetPosition(new Point(0, yPos));
                 region.SetWidth(50);
                 region.SetHeight(20);
+                region.SetField(KeyStore.LinkContextKey,
+                    new TextController(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()), true);
                 (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
                 // note is the new annotation textbox that is created
@@ -962,7 +964,12 @@ namespace Dash
 
         public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            return false;
+            //if (linkDoc.GetField<TextController>(KeyStore.LinkContextKey).Data
+            //    .Equals(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()))
+            //{
+                    
+            //}
+            //return false;
         }
 
         private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
