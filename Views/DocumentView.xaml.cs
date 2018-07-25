@@ -555,9 +555,9 @@ namespace Dash
 
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
         {
-            if (!_clearByClose && e.NewText.Length < xKeyBox.Text.Length)
+            if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
             {
-                if (xKeyBox.Text.Length <= 2)
+                if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
                 {
                     e.Cancel = true;
                 }
@@ -570,6 +570,10 @@ namespace Dash
                         xKeyBox.Focus(FocusState.Keyboard);
                     }
                 }
+            }
+            else
+            {
+                if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
             }
             _clearByClose = false;
         }
