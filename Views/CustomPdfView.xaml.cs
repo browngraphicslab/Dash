@@ -700,16 +700,20 @@ namespace Dash
 
         private void XAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xAnnotationBox.Visibility.Equals(Visibility.Visible))
+            if (xAnnotationBox.Width.Equals(0))
             {
-               
-                xAnnotationBox.Visibility = Visibility.Collapsed;
-                xAnnotationBox2.Visibility = Visibility.Collapsed;
+                //xAnnotationBox.Visibility = Visibility.Visible;
+                //xAnnotationBox2.Visibility = Visibility.Visible;
+                xAnnotationBox.Width = 200;
+                xAnnotationBox2.Width = 200;
+            
             }
             else
             {
-                xAnnotationBox.Visibility = Visibility.Visible;
-                xAnnotationBox2.Visibility = Visibility.Visible;
+                //xAnnotationBox.Visibility = Visibility.Collapsed;
+                //xAnnotationBox2.Visibility = Visibility.Collapsed;
+                xAnnotationBox.Width = 0;
+                xAnnotationBox2.Width = 0;
             }
         }
 
@@ -833,17 +837,17 @@ namespace Dash
         private void PagePrev(ScrollViewer scroller)
         {
             DataVirtualizationSource<ImageSource> pages;
-            double annoWidth;
+            double annoWidth = 0;
             if (scroller.Equals(TopScrollViewer))
             {
                 pages = _pages1;
-                annoWidth = xAnnotationBox.ActualWidth;
+                annoWidth = xAnnotationBox.Width;
             }
 
             else
             {
                 pages = _pages2;
-                annoWidth = xAnnotationBox2.ActualWidth;
+                annoWidth = xAnnotationBox2.Width;
             }
 
             var sizes = pages.PageSizes;
@@ -851,7 +855,7 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                if (currOffset + size.Height * scale - scroller.VerticalOffset > 1)
+                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= 0)
                 {
                     break;
                 }
@@ -871,13 +875,13 @@ namespace Dash
             if (scroller.Equals(TopScrollViewer))
             {
                 pages = _pages1;
-                annoWidth = xAnnotationBox.ActualWidth;
+                annoWidth = xAnnotationBox.Width;
             }
 
             else
             {
                 pages = _pages2;
-                annoWidth = xAnnotationBox2.ActualWidth;
+                annoWidth = xAnnotationBox2.Width;
             }
 
             var sizes = pages.PageSizes;
