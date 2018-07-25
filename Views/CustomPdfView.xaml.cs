@@ -549,7 +549,8 @@ namespace Dash
         #endregion
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
-        private double _scrollRatio;
+        private double _topScrollRatio;
+        private double _bottomScrollRatio;
         private double _height;
         private double _width;
         private double _verticalOffset;
@@ -558,13 +559,19 @@ namespace Dash
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            TopScrollViewer.ChangeView(null, _scrollRatio * TopScrollViewer.ExtentHeight, null, true);
+            TopScrollViewer.ChangeView(null, _topScrollRatio * TopScrollViewer.ExtentHeight, null, true);
+            BottomScrollViewer.ChangeView(null, _bottomScrollRatio * BottomScrollViewer.ExtentHeight, null, true);
         }
 
-        private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        private void TopScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _scrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
-            LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
+            _topScrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
+            //LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
+        }
+
+        private void BottomScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        {
+            _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
         }
 
         public void UnFreeze()
@@ -919,15 +926,15 @@ namespace Dash
         {
             if (!stack.Count().Equals(0))
             {
-                if (!stack.Peek().Equals(viewer.VerticalOffset))
+                if (!stack.Peek().Equals(viewer.VerticalOffset / viewer.ExtentHeight))
                 {
-                    stack.Push(viewer.VerticalOffset);
+                    stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
                 }
             }
             else
             {
                 stack.Push(0);
-                stack.Push(viewer.VerticalOffset);
+                stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
             }
         }
 
@@ -936,7 +943,7 @@ namespace Dash
             if (backstack.Any())
             {
                 var pop = backstack.Pop();
-                viewer.ChangeView(null, backstack.Any() ? backstack.Peek() : 0, 1);
+                viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
                 forwardstack.Push(pop);
             }
         }
@@ -1008,7 +1015,7 @@ namespace Dash
             if (forwardstack.Any())
             {
                 var pop = forwardstack.Pop();
-                viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() : 0, 1);
+                viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() * viewer.ExtentHeight : 0, 1);
             }
         }
     }
