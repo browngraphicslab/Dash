@@ -33,7 +33,7 @@
         <!-- border to highlight search results-->
         <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" Grid.Row="0" Grid.Column="0">
             <Border x:Name="xTargetBorder">
-                <Grid x:Name="LayoutRoot" x:FieldModifier="public" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
+                <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="xLeftColumn" Width="10" />
                         <ColumnDefinition Width="*" />

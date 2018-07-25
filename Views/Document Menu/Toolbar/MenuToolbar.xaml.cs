@@ -546,10 +546,11 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
-            {
-                d.DeleteDocument();
-            }
+            using (UndoManager.GetBatchHandle())
+                foreach (DocumentView d in SelectionManager.SelectedDocs)
+                {
+                    d.DeleteDocument();
+                }
         }
 
 

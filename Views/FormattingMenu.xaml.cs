@@ -199,16 +199,14 @@ namespace Dash
 
         private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-			UndoManager.StartBatch();
-            richTextView.Superscript(true);
-			UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+                richTextView.Superscript(true);
         }
 
         private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-	        UndoManager.StartBatch();
-			richTextView.Subscript(true);
-	        UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+                richTextView.Subscript(true);
 		}
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -269,11 +267,12 @@ namespace Dash
 	            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
 		        var end = text.Length;
 		        xRichEditBox.Document.Selection.SetRange(0, end);
-	        }
-			UndoManager.StartBatch();
-			xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-	        richTextView.UpdateDocumentFromXaml();
-			UndoManager.EndBatch();
+            }
+            using (UndoManager.GetBatchHandle())
+            {
+                xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                richTextView.UpdateDocumentFromXaml();
+            }
 		}
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -288,11 +287,12 @@ namespace Dash
 		            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
 			        var end = text.Length;
 					xRichEditBox.Document.Selection.SetRange(0, end);
-		        }
-				UndoManager.StartBatch();
-		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
-		        richTextView.UpdateDocumentFromXaml();
-				UndoManager.EndBatch();
+                }
+                using (UndoManager.GetBatchHandle())
+                {
+                    xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
+                    richTextView.UpdateDocumentFromXaml();
+                }
 
 			}
                

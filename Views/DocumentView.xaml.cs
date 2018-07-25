@@ -1252,7 +1252,7 @@ namespace Dash
 		{
 			if (ParentCollection != null)
 			{
-				UndoManager.StartBatch();
+                UndoManager.StartBatch(); // batch completes with end of FadeOut.
 				FadeOut.Begin();
 				FadeOutBegin?.Invoke();
 
@@ -1262,20 +1262,21 @@ namespace Dash
 				}
 
 				SelectionManager.Deselect(this);
-			}
+            }
 		}
 
 		/// <summary>
 		/// Copies the Document.
 		/// </summary>
 		public void CopyDocument()
-		{
-			UndoManager.StartBatch();
-			// will this screw things up?
-			Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-			var doc = ViewModel.DocumentController.GetCopy(null);
-			ParentCollection?.ViewModel.AddDocument(doc);
-			UndoManager.EndBatch();
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                // will this screw things up?
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+                var doc = ViewModel.DocumentController.GetCopy(null);
+                ParentCollection?.ViewModel.AddDocument(doc);
+            }
 		}
 
 		/// <summary>
@@ -1527,7 +1528,6 @@ namespace Dash
 
 			if (nestedCollection == null)
 			{
-				UndoManager.EndBatch();
 				return false;
 			}
 			
@@ -1544,7 +1544,6 @@ namespace Dash
 				}
 			}
 			
-			UndoManager.EndBatch();
 			return true;
 		}
 
@@ -1593,46 +1592,58 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.CopyDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.CopyDocument();
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.CopyViewDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.CopyViewDocument();
         }
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.DeleteDocument();
+            using (UndoManager.GetBatchHandle()) 
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.DeleteDocument();
         }
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.KeyValueViewDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.KeyValueViewDocument();
         }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var docView in SelectionManager.GetSelectedSiblings(this))
-            {
-                docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
-                SetZLayer();
-            }
+            using (UndoManager.GetBatchHandle())
+                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+                {
+                    docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                    SetZLayer();
+                }
         }
         public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
         {
-            var collectionView = this.GetFirstDescendantOfType<CollectionView>();
-            if (collectionView != null)
+            using (UndoManager.GetBatchHandle())
             {
-                collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-                if (collectionView.ViewModel.FitToParent)
-                    collectionView.ViewModel.FitContents(collectionView);
+                var collectionView = this.GetFirstDescendantOfType<CollectionView>();
+                if (collectionView != null)
+                {
+                    collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
+                    if (collectionView.ViewModel.FitToParent)
+                        collectionView.ViewModel.FitContents(collectionView);
+                }
             }
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
-        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+        }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };

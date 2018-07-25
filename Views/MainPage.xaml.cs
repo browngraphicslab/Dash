@@ -550,10 +550,11 @@ namespace Dash
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
-                    foreach (var doc in SelectionManager.SelectedDocs)
-                    {
-                        doc.DeleteDocument();
-                    }
+                    using (UndoManager.GetBatchHandle())
+                        foreach (var doc in SelectionManager.SelectedDocs)
+                        {
+                            doc.DeleteDocument();
+                        }
                     //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
                     //    .OfType<CollectionView>().ToList();
                     //foreach (var c in topCollection.Select(c => c.CurrentView).OfType<CollectionFreeformBase>())
