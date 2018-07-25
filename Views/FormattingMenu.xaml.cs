@@ -78,31 +78,43 @@ namespace Dash
         /// </summary>
         private void SetUpFontFamilyComboBox()
         {
+            //people like lots of fancy and pretty fonts
             _fontNames = new List<string>()
             {
                 "Arial",
+                "Bahnschrift",
+                "Bauhaus 93",
+                "Bodoni MT",
+                "Broadway",
+                "Brush Script MT",
                 "Calibri",
                 "Cambria",
+                "Castellar",
+                "Century Gothic",
                 "Comic Sans MS",
                 "Courier New",
+                "Elephant",
+                "French Script MT",
+                "Futura",
+                "Garamond",
                 "Georgia",
+                "Impact",
+                "Ink Free",
                 "Lucida Console",
-                "Malgun Gothic",
-                "Microsoft Himalaya",
-                "Microsoft JhengHei",
-                "Microsoft YaHei",
-                "Microsoft Yi Baiti",
-                "Mongolian Baiti",
+                "Monotype Corsiva",
                 "MV Boli",
+                "Old English Text MT",
+                "Papyrus",
+                "Rockwell",
                 "Segoe Print",
                 "Segoe UI",
                 "SimSun",
+                "Stencil",
                 "Times New Roman",
                 "Trebuchet MS",
                 "Verdana",
-                "Webdings",
-                "Wingdings",
-                "Yu Gothic"
+                "Yu Gothic UI",
+                "Webdings"
             };
 
             foreach (var font in _fontNames)
