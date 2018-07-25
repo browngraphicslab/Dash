@@ -36,7 +36,7 @@ namespace Dash
         /// </summary>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        public void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
+        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
             //UpdateOnServer();
 
