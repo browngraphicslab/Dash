@@ -313,13 +313,19 @@ namespace Dash
 
         public static bool    GetHidden(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.HiddenKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.HiddenKey, null);
+            return data?.Data ?? false;
         }
         public static void    SetHidden(this DocumentController document, bool hidden)
         {
             //TODO This should use a BoolController
-            document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
+            document.SetField<BoolController>(KeyStore.HiddenKey, hidden, true);
+        }
+
+        public static void ToggleHidden(this DocumentController document)
+        {
+            var hiddenField = document.GetFieldOrCreateDefault<BoolController>(KeyStore.HiddenKey);
+            hiddenField.Data = !hiddenField.Data;
         }
 
         public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
@@ -377,6 +383,20 @@ namespace Dash
         {
             var key = direction == LinkDirection.ToDestination ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
             return document.GetDereferencedField<DocumentController>(key, null);
+        }
+
+        public static void GotoRegion(this DocumentController document, DocumentController region,
+            DocumentController link = null)
+        {
+            if (document.Equals(region))
+            {
+                return;
+            }
+            document.SetFields(new []
+            {
+                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
+                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
+            }, true);
         }
 
         public static bool GetTransient(this DocumentController document)

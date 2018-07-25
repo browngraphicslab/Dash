@@ -20,6 +20,7 @@ using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
+using iText.Layout.Element;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 
 
@@ -30,7 +31,7 @@ namespace Dash
     /// <summary>
     ///     Zoomable pannable canvas. Has an overlay canvas unaffected by pan / zoom.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, ILinkHandler
     {
         public static MainPage Instance { get; private set; }
 
@@ -50,7 +51,7 @@ namespace Dash
 
         public Popup LayoutPopup => xLayoutPopup;
 
-       
+
 
 
         public MainPage()
@@ -445,10 +446,10 @@ namespace Dash
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
 
                     //get zoom changes
-                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
-                    
-                   //get less zoom, so x and y are zoomed by same amt
-                    var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
+                    var shiftZ = new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
+
+                    //get less zoom, so x and y are zoomed by same amt
+                    var minZoom = Math.Max(Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9, 5);
 
                     if (animated)
                     {
@@ -471,23 +472,23 @@ namespace Dash
             return false;
         }
 
-	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
-		{
-			var dvm = MainDocView.DataContext as DocumentViewModel;
-			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+        public Point GetDistanceFromMainDocCenter(DocumentController dc)
+        {
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
-			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
-		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
-			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
-				dcPoint.X + dcSize.X / 2,
-				dcPoint.Y + dcSize.Y / 2
-		    ));
+            var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+            var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+            var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+            var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+                dcPoint.X + dcSize.X / 2,
+                dcPoint.Y + dcSize.Y / 2
+            ));
 
-			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
-		    return new Point(center.X - shift.X, center.Y - shift.Y);
-	    }
+            Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+            return new Point(center.X - shift.X, center.Y - shift.Y);
+        }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
@@ -515,7 +516,7 @@ namespace Dash
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
 
-            if(this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
+            if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
@@ -706,7 +707,7 @@ namespace Dash
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch};
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
                 //xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
@@ -762,7 +763,7 @@ namespace Dash
                 presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
-             
+
         }
 
         public void PinToPresentation(DocumentController dc)
@@ -779,7 +780,7 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Visible;
             xComboBox.SelectedItem = null;
-            
+
         }
 
         private void Popup_OnClosed(object sender, object e)
@@ -837,5 +838,109 @@ namespace Dash
 
             return tcs.Task;
         }
+
+        public void NavigateToDocument(DocumentController doc)//More options
+        {
+            var tree = DocumentTree.MainPageTree;
+            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
+            if (node == null)
+            {
+                return;
+            }
+            SetCurrentWorkspaceAndNavigateToDocument(node.Parent.ViewDocument, node.ViewDocument);
+        }
+
+        public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
+        {
+            var parent = docOrRegion.GetRegionDefinition();
+            NavigateToDocument(parent ?? docOrRegion);
+            if (parent != null)
+            {
+                parent.GotoRegion(docOrRegion, link);
+            }
+        }
+
+        #region Annotation logic
+
+        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            var target = region.GetRegionDefinition() ?? region;
+
+            if (this.IsCtrlPressed())
+            {
+                NavigateToDocumentOrRegion(region, linkDoc);
+            }
+            else
+            {
+                var onScreenView = GetTargetDocumentView(target);
+                if (onScreenView != null)
+                {
+                    if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
+                    {
+                        target.ToggleHidden();
+                    }
+                    else
+                    {
+                        target.SetHidden(false);
+                    }
+                }
+                else
+                {
+                    var docked = DockManager.GetDockedView(target);
+                    if (docked != null)
+                    {
+                        DockManager.Undock(docked);
+                    }
+                    else
+                    {
+                        DockManager.Dock(target, DockDirection.Right);
+                    }
+                }
+
+                target.GotoRegion(region, linkDoc);
+            }
+
+
+            return true;
+        }
+
+        public DocumentView GetTargetDocumentView(DocumentController target)
+        {
+            //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
+            var docViews = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            if (!docViews.Any())
+            {
+                return null;
+            }
+
+            if (docViews.Count > 1)
+            {
+                //Should this happen?
+                Debug.Fail("I don't think there should be more than 2 found doc views");
+            }
+
+            DocumentView view = docViews.First();
+            DocumentView checkedView = view;
+
+            foreach (var parentView in checkedView.GetAncestorsOfType<DocumentView>())
+            {
+                var transformedBounds = checkedView.TransformToVisual(parentView)
+                    .TransformBounds(new Rect(0, 0, checkedView.ActualWidth, checkedView.ActualHeight));
+                var parentBounds = parentView.ViewModel.Bounds;
+                bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
+                bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
+                if (!(containsTL && containsBR))
+                {
+                    return null;
+                }
+
+                checkedView = parentView;
+            }
+
+            return view;
+        }
+
+        #endregion
     }
 }

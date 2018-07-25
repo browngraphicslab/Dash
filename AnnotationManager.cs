@@ -321,7 +321,7 @@ namespace Dash
 				if (docCtrl == null) return;
 				var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
 				if (isVisible == null) return;
-				docCtrl.ToggleAnnotationPin(!isVisible.Data, true);
+				docCtrl.ToggleHidden();
 			}
 		}
 

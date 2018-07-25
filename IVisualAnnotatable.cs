@@ -13,6 +13,7 @@ namespace Dash
     public interface IAnnotatable
     {
         void RegionSelected(object region, Point pt, DocumentController chosenDoc = null);
+
     }
 
     public interface IVisualAnnotatable : IAnnotatable
