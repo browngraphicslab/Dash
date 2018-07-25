@@ -843,11 +843,21 @@ namespace Dash
         {
             var tree = DocumentTree.MainPageTree;
             var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
-            if (node == null)
+            if (node?.Parent == null)
             {
+                SetCurrentWorkspace(doc);
                 return;
             }
-            SetCurrentWorkspaceAndNavigateToDocument(node.Parent.ViewDocument, node.ViewDocument);
+
+            var workspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            if (workspace.GetDataDocument().Equals(node.Parent.DataDocument))
+            {
+                NavigateToDocumentInWorkspace(doc, true, false);
+            }
+            else
+            {
+                SetCurrentWorkspaceAndNavigateToDocument(node.Parent.ViewDocument, doc);
+            }
         }
 
         public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
