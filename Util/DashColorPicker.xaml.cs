@@ -1,22 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using System.ComponentModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,8 +14,8 @@ namespace Dash
 		//the currently selected color of the color picker
 		public Color SelectedColor
 		{
-			get { return xColorPicker.Color;}
-			set
+			get => xColorPicker.Color;
+		    set
 			{
 				xColorPicker.Color = value;
 				// Call OnPropertyChanged whenever the property is updated
@@ -36,100 +23,116 @@ namespace Dash
 			}
 		}
 
-		//the flyout that contains the color picker
+	    public Color LastDiscreteSelection { get; set; }
+        private DocumentController _dbDoc;
+
+	    public ListController<ColorController> SavedColors
+	    {
+	        get => _dbDoc?.GetField<ListController<ColorController>>(KeyStore.SavedColorsKey);
+            set => _dbDoc?.SetField(KeyStore.SavedColorsKey, value, true);
+	    }
+
+	    //the flyout that contains the color picker
 		//The flyout is created outside this class, but the color picker still needs access to it in order to enable a working "close" button.
 		public Flyout ParentFlyout
 		{
-			get => _flyout;
-			set => _flyout = value;
+			get => Flyout;
+			set => Flyout = value;
 		}
-
-		
+        
 		//a list of colors that the user has saved
-		public static ObservableCollection<Color> SavedColors;
+		//public static ObservableCollection<Color> SavedColors;
 		public event EventHandler<Color> SelectedColorChanged;
-		public Flyout _flyout = null;
+		public Flyout Flyout;
 
 		public DashColorPicker()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 			SelectedColor = xColorPicker.Color;
 			xColorPicker.ColorChanged += (sender, args) => SelectedColor = xColorPicker.Color;
-			
-			//add any saved colors to the Recent Colors panel
-			if (SavedColors == null)
-			{
-				SavedColors = new ObservableCollection<Color>();
-			}
-			else
-			{
-				foreach (Color color in SavedColors)
-				{
-					this.AddPreviewColorBox(color);
-				}
-			}
+		
+		    Loaded += (sender, args) =>
+		    {
+		        _dbDoc = MainPage.Instance?.MainDocument?.GetDataDocument();
+                if (SavedColors == null) SavedColors = new ListController<ColorController>();
 
-			SavedColors.CollectionChanged += OnSavedColorsChanged;
+		        SavedColors.FieldModelUpdated -= SavedColorsOnFieldModelUpdated;
+                SavedColors.FieldModelUpdated += SavedColorsOnFieldModelUpdated;
+		        foreach (ColorController color in SavedColors)
+		        {
+		            AddPreviewColorBox(color.Data);
+		        }
+            };
+
+		    Unloaded += (sender, args) =>
+		    {
+		        SelectedColor = LastDiscreteSelection;
+                xSavedColorsStack.Children.Clear();
+		    };
 		}
 
-
-		private void XApplyColorButton_OnClick(object sender, RoutedEventArgs e)
-		{
-			//add chosen color to saved colors
-			this.AddSavedColor(xColorPicker.Color);
-
+	    private void XApplyColorButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+	        LastDiscreteSelection = SelectedColor;
 			//close the flyout it is contained within
-			_flyout?.Hide();
+			Flyout?.Hide();
 		}
 
 		private void XSaveColorButton_OnClick(object sender, RoutedEventArgs e)
 		{
-			//add chosen color to saved colors
-			this.AddSavedColor(xColorPicker.Color);
+            //add chosen color to saved colors
+		    LastDiscreteSelection = SelectedColor;
+            this.AddSavedColor(xColorPicker.Color);
 		}
 
 		public void AddSavedColor(Color color)
 		{
-			if (SavedColors.Contains(color)) return;
-			
+		    foreach (ColorController c in SavedColors) { if (c.Data.Equals(color)) return; }
+
 			//add to list of saved colors
-			SavedColors.Add(color);
+			SavedColors.Add(new ColorController(color));
 		}
 
 		public void AddPreviewColorBox(Color color)
 		{
-			Rectangle box = new Rectangle();
-			box.Width = 25;
-			box.Height = 25;
-			box.Fill = new SolidColorBrush(color);
-			xSavedColorsStack.Children.Insert(0, box);
+		    UIElementCollection colors = xSavedColorsStack.Children;
+
+            if (colors.Count == 9) colors.RemoveAt(8);
+		    var box = new Rectangle
+            {
+                Width = 25,
+                Height = 25,
+                Fill = new SolidColorBrush(color),
+                Tag = color
+            };
+            colors.Insert(0, box);
 			//on click should trigger color change to that color
 			box.PointerPressed += (s, e) =>
 			{
-                using (UndoManager.GetBatchHandle())
-				    xColorPicker.Color = color;
+                using (UndoManager.GetBatchHandle()) {
+                    xColorPicker.Color = color;
+                    LastDiscreteSelection = color;
+                }
 			};
 			//TODO: add white border for hover
 		}
 
-		//updates Recent Colors panel in all instantiated Dash color pickers
-		private void OnSavedColorsChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			foreach (var item in e.NewItems)
-			{
-				Color color = (Color) item;
-				if (color != null) AddPreviewColorBox(color);
-			}
-			return;
-		}
+	    //updates Recent Colors panel in all instantiated Dash color pickers
+        private void SavedColorsOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs e, Context context)
+        {
+            if (!(e is ListController<ColorController>.ListFieldUpdatedEventArgs args)) return;
 
-		//enables other classes to set the opacity of the currently selected color
-		public void SetOpacity(byte opacity)
+            foreach (ColorController item in args.NewItems)
+            {
+                if (item.Data is Color c) AddPreviewColorBox(c);
+            }
+        }
+
+        //enables other classes to set the opacity of the currently selected color
+        public void SetOpacity(byte opacity)
 		{
 			Color past = xColorPicker.Color;
 			xColorPicker.Color = Color.FromArgb(opacity,past.R,past.B,past.G);
 		}
-	
-
 	}
 }

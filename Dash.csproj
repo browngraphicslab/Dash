@@ -176,6 +176,7 @@
     <Compile Include="CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
+    <Compile Include="Controllers\ColorController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -209,6 +210,7 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Models\ColorModel.cs" />
     <Compile Include="Converters\DataFieldToMakeViewConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
