@@ -25,8 +25,6 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
-            var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
-			
 	        //add field binding for content of content presenter
 	        ContentPresenter contentPresenter = new ContentPresenter();
 			BindContent(contentPresenter, documentController, context);
@@ -46,6 +44,7 @@ namespace Dash
 				Converter = converter,
 				Mode = BindingMode.TwoWay,
 				Context = context,
+                ValueType = BindingValueType.Field
 			};
 			presenter.AddFieldBinding(ContentPresenter.ContentProperty, contentBinding);
 		}
