@@ -17,6 +17,8 @@ namespace Dash
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
+        public List<TreeViewNode> TreeViewNodes = new List<TreeViewNode>();
+
         public CollectionTreeView()
         {
             InitializeComponent();
@@ -45,13 +47,14 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void AddWorkspace_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            UndoManager.StartBatch();
-            Debug.Assert(ViewModel != null, "ViewModel != null");
-            var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
-            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-            UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+            {
+                Debug.Assert(ViewModel != null, "ViewModel != null");
+                var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
+            }
         }
 
         public void Highlight(DocumentController document, bool? flag)
@@ -129,10 +132,11 @@ namespace Dash
                 }
                 else
                     snapshots.Add(snapshot);
-
-                // bcz: hack to get the tree view to refresh
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(snapshot);
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Remove(snapshot);
+                
+                foreach (var node in TreeViewNodes)
+                {
+                   node.UpdateSnapshots();
+                }
             }
         }
     }

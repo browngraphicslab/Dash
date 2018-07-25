@@ -25,11 +25,14 @@ namespace Dash
         public static KeyController DataKey = new KeyController("Data", "3B1BD1C3-1BCD-469D-B847-835B565B53EB");
         public static KeyController SnapshotsKey = new KeyController("Snaphshots", "94358B4F-83DD-41A6-8440-BA5973DC9E97");
         public static KeyController SourceUriKey = new KeyController("SourceUriKeys", "26594498-FF15-438D-A577-2C8506F4ECEF");
+        public static KeyController SourceTitleKey = new KeyController("Source Title", "E16A6779-2F91-4660-8510-E1FD906A6A5E");
         public static KeyController IsAdornmentKey = new KeyController("Is Adornment", "FF3329BD-AA78-46E4-9A42-47CAB1E62123");
         public static KeyController DocumentTextKey = new KeyController("Document Text", "D5156A8F-9093-420B-96B7-507DD949360D");
         public static KeyController TextWrappingKey = new KeyController("Text Wrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");
         public static KeyController BackgroundColorKey = new KeyController("Background Color", "6B597D2A-1A52-446F-901A-B9ED0BBE33E1");
+        public static KeyController SavedColorsKey = new KeyController("_Saved Colors from Picker", "70AB09AE-F88D-45EC-B20E-721635DC20C4");
         public static KeyController OpacitySliderValueKey = new KeyController("Opacity Slider Value", "3FD448B7-8AEE-4FBD-B68C-514E098D8D31");
+	    public static KeyController GroupBackgroundColorKey = new KeyController("Group Background Color", "E1FA9844-6B13-4BE2-BAAA-F06B9D6672A6");
         public static KeyController AdornmentShapeKey = new KeyController("Adornment Shape", "5DEBC829-A68B-4D2E-BC29-549DEB910EC6");
         public static KeyController PositionFieldKey = new KeyController("Position", "E2AB7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController LinkFromKey = new KeyController("Link From", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
@@ -61,7 +64,7 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController("_DocumentType", "B1DE8ABE-5C04-49C6-913C-A2428ED566F8");
         public static KeyController SelectedKey = new KeyController("_Selected", "86009EF6-7D77-4D67-8C7A-C5EA5704432F");
         public static KeyController OriginalImageKey = new KeyController("_Original Image", "6226CC11-3616-4521-9C9E-731245FA1F4C");
-        public static KeyController SideCountKey = new KeyController("_Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
+        public static KeyController SideCountKey = new KeyController("Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
         public static KeyController SettingsDocKey = new KeyController("_Settings Doc", "EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70");
         public static KeyController SettingsNightModeKey = new KeyController("_Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("_Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");
@@ -108,9 +111,10 @@ namespace Dash
         public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
         public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
         public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
-        public static KeyController CollectionFitToParentKey = new KeyController("_CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
+        public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
+        public static readonly KeyController SnapshotImage = new KeyController("Snapshot Image", "1D3D649D-A29D-41DF-8608-3822D8546EEA");
         public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
         public static KeyController AnnotationsKey = new KeyController("TopAnnotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
         public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");

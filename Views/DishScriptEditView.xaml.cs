@@ -53,6 +53,8 @@ namespace Dash
             //intialize lists to save data
             _currentText = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
             xTextBox.Text = _currentText ?? "";
+
+            ResetLineNums();
         }
         #endregion
 
@@ -181,6 +183,7 @@ namespace Dash
 
         #endregion
 
+        #region Helper Function
         public static string StringDiff(string a, string b)
         {
             //a is the longer string
@@ -196,6 +199,20 @@ namespace Dash
 
             return a;
         }
+
+        private void ResetLineNums()
+        {
+            var text = xTextBox.Text.Split('\r');
+            var textNums = "";
+            for(int i =0; i < text.Length; i++)
+            {
+                textNums += (i + 1) + "\r";
+            }
+
+            xTextLines.Text = textNums;
+        }
+
+        #endregion
 
         #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -273,6 +290,7 @@ namespace Dash
                     _oneStar = false;
                     break;
             }
+            ResetLineNums();
 
             _currentText = xTextBox.Text;
 

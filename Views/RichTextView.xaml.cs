@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
@@ -20,7 +21,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : UserControl
+    public sealed partial class RichTextView 
     {
         #region Intilization 
 
@@ -64,7 +65,6 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-
             Application.Current.Suspending += (sender, args) =>
             {
                 ClearSearchHighlights();
@@ -99,8 +99,11 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(docView);
+                    if (!MainPage.Instance.IsShiftPressed())
+                    {
+                        SelectionManager.DeselectAll();
+                        SelectionManager.Select(docView);
+                    }
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
@@ -108,6 +111,7 @@ namespace Dash
                     SetSelected("");
                     xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
+                    //CursorToEnd();
                 }
             };
 
@@ -132,7 +136,8 @@ namespace Dash
                 {
                     var docView = getDocView();
                     if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
-                        docView.DeleteDocument();
+                        using (UndoManager.GetBatchHandle())
+                            docView.DeleteDocument();
                 }
             };
 
@@ -200,9 +205,10 @@ namespace Dash
         }
         public RichTextModel.RTD Text
         {
-            get { return (RichTextModel.RTD)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get => (RichTextModel.RTD)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
+
         public DocumentController DataDocument { get; set; }
         public DocumentController LayoutDocument { get; set; }
         DocumentView getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
@@ -272,7 +278,11 @@ namespace Dash
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     if (!_originalCharFormat.ContainsKey(s))
                         _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
-                    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    if (selectionFound > 0)
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    }
+
                     // Not really sure what this is supposed to be for, but I'll comment it out for now
                     //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
@@ -309,20 +319,21 @@ namespace Dash
                 if (MainPage.Instance.WebContext != null)
                     MainPage.Instance.WebContext.SetUrl(_target);
                 else
-                {
-                    nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
-                    if (nearestOnCollection != null)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        if (this.IsCtrlPressed())
-                            nearestOnCollection.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
+                        if (nearestOnCollection != null)
+                        {
+                            if (this.IsCtrlPressed())
+                                nearestOnCollection.DeleteDocument();
+                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        }
+                        else
+                        {
+                            theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
+                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                        }
                     }
-                    else
-                    {
-                        theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-                    }
-                }
             }
         }
 
@@ -355,7 +366,13 @@ namespace Dash
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            RegionSelected(e.GetPosition(this));
+            RegionSelected(e.GetPosition(MainPage.Instance));
+        }
+
+        private void CursorToEnd()
+        {
+            xRichEditBox.Document.GetText(TextGetOptions.None, out string text);
+            xRichEditBox.Document.Selection.StartPosition = text.Length;
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -488,7 +505,7 @@ namespace Dash
         {
             Clipboard.ContentChanged -= Clipboard_ContentChanged;
             var dataPackage = new DataPackage();
-            DataPackageView clipboardContent = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
             dataPackage.Properties[nameof(RichTextView)] = this;
@@ -531,9 +548,10 @@ namespace Dash
             if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
             {
                 var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
                 //this does better formatting/ parsing than the regex stuff can
-                var link = CollectionViewModel.GetTitlesUrl(url);
+                var link =  title ?? CollectionViewModel.GetTitlesUrl(url);
 
                 this.xRichEditBox.Document.Selection.Text = link;
                 this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";

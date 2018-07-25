@@ -93,8 +93,8 @@ namespace Dash
                         {
                             Width = Double.NaN,
                             Height = Double.NaN,
-                            DecorationState = false
-                        }
+                        },
+				ShowResize = false
             };
             if (toDock.DocumentType.Equals(PdfBox.DocumentType))
             {

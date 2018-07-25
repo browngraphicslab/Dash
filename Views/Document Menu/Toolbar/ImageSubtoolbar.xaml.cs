@@ -116,12 +116,13 @@ namespace Dash
             var replacement = await imagePicker.PickSingleFileAsync();
             if (replacement != null)
             {
-                UndoManager.StartBatch();
-                _currentDocController.SetField<ImageController>(KeyStore.DataKey,
+                using (UndoManager.GetBatchHandle())
+                {
+                    _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
-                await _currentImage.ReplaceImage();
-                AlertModified();
-                UndoManager.EndBatch();
+                    await _currentImage.ReplaceImage();
+                    AlertModified();
+                }
             }
         }
         

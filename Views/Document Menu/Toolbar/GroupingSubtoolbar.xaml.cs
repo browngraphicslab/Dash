@@ -275,7 +275,9 @@ namespace Dash
 	    {
 			_currentColor = xGroupForegroundColorPicker.SelectedColor;
 		    UpdateToolbarAccentColors();
-		    _groupView?.SetBackgroundColor(e);
-		}
+			//have to use a different key so that background color is 
+		    _currentDocController?.SetField(KeyStore.GroupBackgroundColorKey, new TextController(e.ToString()), true);
+		   
+	    }
     }
 }

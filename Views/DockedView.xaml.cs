@@ -52,13 +52,17 @@ namespace Dash
         public void ChangeView(DocumentView view)
         {
             Grid.SetColumn(view, 0);
-            Grid.SetColumnSpan(view, 2);
-            Grid.SetRow(view, 1);
-            view.Margin = new Thickness(5);
+            Grid.SetColumnSpan(view, 1);
+           Grid.SetRow(view, 0);
+            //view.Margin = new Thickness(5);
 	        ContainedDocumentView = view;
+	        //view.HorizontalAlignment = HorizontalAlignment.Stretch;
+	        //view.VerticalAlignment = VerticalAlignment.Stretch;
 
             xMainDockedView.Children.Clear();
-            xMainDockedView.Children.Add(view);
+	        xContentGrid.Children.Clear();
+            xContentGrid.Children.Add(view);
+			//xMainDockedView.Children.Add(view);
             xMainDockedView.Children.Add(xCloseButton);
         }
 
@@ -132,7 +136,7 @@ namespace Dash
             }
             else
             {
-                xContentGrid.Children.Remove(NestedView);
+                xMasterGrid.Children.Remove(NestedView);
             }
 
             switch (view.Direction)
@@ -162,7 +166,7 @@ namespace Dash
             NestedView = view;
             NestedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             NestedView.VerticalAlignment = VerticalAlignment.Stretch;
-            xContentGrid.Children.Add(NestedView);
+            xMasterGrid.Children.Add(NestedView);
         }
 
         public DockedView ClearNestedView()
@@ -189,7 +193,7 @@ namespace Dash
                         break;
                 }
 
-                xContentGrid.Children.Remove(NestedView);
+                xMasterGrid.Children.Remove(NestedView);
             }
 
             var toReturn = NestedView;

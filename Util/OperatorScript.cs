@@ -187,6 +187,7 @@ namespace Dash
         //TODO With overloads we need more info to have this make sense
         public static DashShared.TypeInfo GetOutputType(Op.Name funcName)
         {
+            if (funcName == Op.Name.invalid) return TypeInfo.None;
             return GetOperatorWithName(funcName)?.Outputs?.ElementAt(0).Value ?? DashShared.TypeInfo.None;
         }
 

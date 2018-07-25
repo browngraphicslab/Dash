@@ -641,7 +641,7 @@ namespace Dash
         }
 
         // If you want to add code that runs after ANY document's manipulation is completed, use this method.
-        public void ElementOnManipulationCompleted()
+        public void ElementOnManipulationCompleted(bool aborted=false)
         {
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
@@ -649,17 +649,24 @@ namespace Dash
 
             var docRoot = ParentDocument;
 
-            var pos = docRoot.RootPointerPos();
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-
-            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.Normal, () =>
+            if (!aborted)
             {
-                docRoot.MoveToContainingCollection(overlappedViews);
-            });
+                var pos = docRoot.RootPointerPos();
+                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
-            OnManipulatorCompleted?.Invoke();
-            Dock(false);
+                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    using (UndoManager.GetBatchHandle())
+                        docRoot.MoveToContainingCollection(overlappedViews);
+                });
+            }
 
+			OnManipulatorCompleted?.Invoke();
+
+            if (!aborted)
+                Dock(false);
+
+            UndoManager.EndBatch();
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
         }
 
