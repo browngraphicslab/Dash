@@ -10,8 +10,8 @@
     d:DesignHeight="300"
     d:DesignWidth="944">
 
-        <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
-    <Grid Width="1012" Height="60">
+    <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
+    <Grid Width="1012" Height="60" PointerPressed="FormattingMenu_OnPointerPressed">
         <Grid.Resources>
             <!--Button style set here-->
             <Style x:Key="xButtonStyle" TargetType="Button">

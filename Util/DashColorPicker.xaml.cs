@@ -66,7 +66,7 @@ namespace Dash
 
             Unloaded += (sender, args) =>
             {
-                SelectedColor = LastDiscreteSelection;
+                //SelectedColor = LastDiscreteSelection;
                 xSavedColorsStack.Children.Clear();
             };
         }
