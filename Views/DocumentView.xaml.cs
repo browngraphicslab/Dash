@@ -286,6 +286,8 @@ namespace Dash
                     UpdateEllipses(_newpoint);
                 }
 
+                UpdateResizers();
+
 
                 //var converter = new StringToBrushConverter();
                 //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
