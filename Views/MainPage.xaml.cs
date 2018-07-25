@@ -450,7 +450,7 @@ namespace Dash
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
                     if (!zoom)
                     {
-                        minZoom = (root.RenderTransform as MatrixTransform).Matrix.M11;
+                        minZoom = root.ViewModel.TransformGroup.ScaleAmount.X;
                     }
 
                     if (animated)
