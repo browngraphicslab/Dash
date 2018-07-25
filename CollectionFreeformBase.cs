@@ -33,6 +33,7 @@ using Windows.Storage.Streams;
 using Windows.Storage;
 using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
+using Windows.UI.Input.Inking;
 
 namespace Dash
 {
@@ -85,10 +86,9 @@ namespace Dash
             Canvas.SetTop(SelectionCanvas, -30000);
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
-            if (InkController != null)
-            {
-                MakeInkCanvas();
-            }
+            if (ViewModel.InkController == null)
+                ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
+            MakeInkCanvas();
             UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
@@ -732,7 +732,7 @@ namespace Dash
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
             {
-                if (XInkCanvas.IsTopmost() &&
+                if (
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
@@ -967,7 +967,6 @@ namespace Dash
         #region TextInputBox
 
         string previewTextBuffer = "";
-        public InkController InkController;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;

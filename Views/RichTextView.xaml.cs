@@ -96,15 +96,19 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
-                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
-                _everFocused = true;
-                getDocView().CacheMode = null;
-                ClearSearchHighlights();
-                SetSelected("");
-                xSearchBoxPanel.Visibility = Visibility.Collapsed;
-                Clipboard.ContentChanged += Clipboard_ContentChanged;
+                var docView = getDocView();
+                if (docView != null)
+                {
+                    SelectionManager.DeselectAll();
+                    SelectionManager.Select(docView);
+                    FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+                    _everFocused = true;
+                    docView.CacheMode = null;
+                    ClearSearchHighlights();
+                    SetSelected("");
+                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    Clipboard.ContentChanged += Clipboard_ContentChanged;
+                }
             };
 
             xRichEditBox.LostFocus += delegate
@@ -117,13 +121,13 @@ namespace Dash
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
-                Clipboard.ContentChanged -= Clipboard_ContentChanged;
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();

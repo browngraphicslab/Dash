@@ -186,6 +186,8 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
+            ClearPreviewRegion();
+            ClearTextSelection();
             switch (_currentAnnotationType)
             {
                 case AnnotationType.Region:

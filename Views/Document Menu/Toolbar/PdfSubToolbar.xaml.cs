@@ -55,16 +55,22 @@ namespace Dash
 	        //xToggleAnnotations.IsChecked = _currentPdfView.AnnotationManager.AreAnnotationsVisible();
 
 			//update selected annotation type according to this newly selected PDF
-	        //switch (_currentPdfView.AnnotationManager.CurrentAnnotationType)
+	   //     switch (_currentPdfView.AnnotationManager.CurrentAnnotationType)
 	   //     {
 				//case AnnotationManager.AnnotationType.Ink:
 				//	xInkToggle.IsChecked = true;
-				//	break;
+				//    xTextToggle.IsChecked = false;
+				//    xRegionToggle.IsChecked = false;
+    //                break;
 				//case AnnotationManager.AnnotationType.TextSelection:
-				//	xTextToggle.IsChecked = true;
-				//	break;
+				//    xInkToggle.IsChecked = false;
+    //                xTextToggle.IsChecked = true;
+				//    xRegionToggle.IsChecked = false;
+    //                break;
 				//case AnnotationManager.AnnotationType.RegionBox:
-				//	xRegionToggle.IsChecked = true;
+				//    xInkToggle.IsChecked = false;
+				//    xTextToggle.IsChecked = false;
+    //                xRegionToggle.IsChecked = true;
 				//	break;
 				//default:
 				//	xInkToggle.IsChecked = false;

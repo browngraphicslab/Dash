@@ -111,6 +111,8 @@ namespace Dash
         public static KeyController CollectionFitToParentKey = new KeyController("_CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
+        public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
+        public static KeyController AnnotationsKey = new KeyController("Annotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
         public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");
         public static KeyController GoToRegionLinkKey = new KeyController("Goto Region Link", "150C5291-0830-4095-9C18-FAE1F315599F");
 

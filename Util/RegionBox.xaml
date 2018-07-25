@@ -22,7 +22,7 @@
             <RowDefinition x:Name="Row2" Height="*"/>
             <RowDefinition x:Name="Row3" Height="*"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="xRegionBox" Grid.Row="1" Grid.Column="1" Stroke="SaddleBrown" StrokeDashArray="4" StrokeThickness="1" Opacity="1">
+        <Rectangle x:Name="xRegionBox" Grid.Row="1" Grid.Column="1" Stroke="{StaticResource AccentGreenDark}" StrokeDashArray="4" StrokeThickness="1" Opacity="1">
             <Rectangle.Fill>
                 <SolidColorBrush x:Name="xRegionBoxFill" Color="AntiqueWhite" Opacity=".1"/>
             </Rectangle.Fill>

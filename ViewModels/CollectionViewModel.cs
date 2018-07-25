@@ -134,7 +134,7 @@ namespace Dash
                 _lastDoc = null;
             }
         }
-        public InkController InkController;
+        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
         public TransformGroupData TransformGroup
         {
             get

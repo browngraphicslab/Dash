@@ -24,6 +24,9 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Dash.Views;
 using iText.StyledXmlParser.Jsoup.Nodes;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -289,21 +292,23 @@ namespace Dash
             };
             Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
-            PointerPressed += (sender, e) =>
-            {
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
-                bool right =
-                    (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
-                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode =
-                    right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
-                MainPage.Instance.Focus(FocusState.Programmatic);
-                e.Handled = ManipulationMode != ManipulationModes.None;
-            };
+			PointerPressed += (sender, e) =>
+			{
+				DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
+				bool right =
+					(e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
+					 MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
+				var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+				var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+				ManipulationMode =
+					right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
+						? ManipulationModes.All
+						: ManipulationModes.None;
+				MainPage.Instance.Focus(FocusState.Programmatic);
+				e.Handled = ManipulationMode != ManipulationModes.None;
+                if (false)  // bcz: set to 'true' for drag/Drop interactions
+                    SetupDragDropDragging(e);
+			};
 
             PointerEntered += DocumentView_PointerEntered;
             PointerExited += DocumentView_PointerExited;
@@ -360,23 +365,32 @@ namespace Dash
             xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
             xBottomResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
 
-            foreach (var handle in new Rectangle[]
+			foreach (var handle in new Rectangle[]
+			{
+				xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+				xLeftResizeControl, xRightResizeControl,
+				xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+			})
             {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
+                handle.Tag = handle.ManipulationMode;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-                handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
-                handle.PointerPressed += (s, e) =>
-                {
-                    CapturePointer(e.Pointer);
-                    ManipulationMode = ManipulationModes.None;
-                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+				handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
+				handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
+				handle.PointerPressed += (s, e) =>
+				{
+					//ManipulationMode = ManipulationModes.None;
+					e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                    if (e.Handled)
+                    {
+                        CapturePointer(e.Pointer);
+                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
+                    }
+                    else if (false) // bcz: set to true for drag/drop interactions
+                        handle.ManipulationMode = ManipulationModes.None;
+                    else
+                        handle.ManipulationMode = ManipulationModes.All;
                 };
-            }
+			}
 
             // setup OperatorEllipse 
             //OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
@@ -524,17 +538,63 @@ namespace Dash
 
         }
 
-        public void RemoveResizeHandlers()
+        public uint PointerId;
+        public async void SetupDragDropDragging(PointerRoutedEventArgs e)
         {
-            foreach (var handle in new Rectangle[]
+            if (e != null)
             {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
-                handle.Visibility = Visibility.Collapsed;
+                if (!e.IsRightPressed() || ViewModel.DataDocument.GetField<TextController>(KeyStore.CollectionViewTypeKey) != null)
+                    return;
+                if ((e.OriginalSource as FrameworkElement).Tag == e)
+                    return;
+                ManipulationMode = ManipulationModes.None;
+                (e.OriginalSource as FrameworkElement).Tag = e;
+                (e.OriginalSource as FrameworkElement).CanDrag = true;
             }
+            Matrix mat = ((MatrixTransform)TransformToVisual(Window.Current.Content)).Matrix;
+            mat.OffsetX = 0;
+            mat.OffsetY = 0;
+
+            Debug.WriteLine(new Point(ActualWidth, ActualHeight));
+
+            var trans = new MatrixTransform { Matrix = mat };
+            Point p = trans.TransformPoint(new Point(ActualWidth - xTitleBorder.Margin.Left, ActualHeight));
+
+            var cdo = new CoreDragOperation();
+            var rtb = new RenderTargetBitmap();
+
+            await rtb.RenderAsync(this, (int)p.X, (int)p.Y);
+
+            IBuffer buf = await rtb.GetPixelsAsync();
+            SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+
+            Point pos = e?.GetCurrentPoint(this).Position ?? new Point();
+
+            pos.X -= xTitleBorder.Margin.Left;
+            pos = trans.TransformPoint(pos);
+            pos.X = Math.Max(0, pos.X);
+            pos.Y = Math.Max(0, pos.Y);
+            pos.X = Math.Min(pos.X, ActualWidth);
+            pos.Y = Math.Min(pos.Y, ActualHeight);
+
+            cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
+            cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
+            cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
+
+            await cdo.StartAsync();
+        }
+
+        public void RemoveResizeHandlers()
+		{
+			foreach (var handle in new Rectangle[]
+			{
+				xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+				xLeftResizeControl, xRightResizeControl,
+				xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+			})
+			{
+				handle.Visibility = Visibility.Collapsed;
+			}
 
             xLeftColumn.Width = new GridLength(0);
             xRightColumn.Width = new GridLength(0);
@@ -1004,17 +1064,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-
-
-
-            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
-
+            e.Handled = true;
             if (this.IsRightBtnPressed() || PreventManipulation)
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            {
+                return;
+            }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
                 ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
-            e.Handled = true;
 
             double extraOffsetX = 0;
             if (!Double.IsNaN((ViewModel.Width)))
@@ -1321,6 +1378,21 @@ namespace Dash
             xLeftResizeControl.Fill =
                 selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
 
+		}
+
+        public void hideResizers()
+        {
+            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTopRightResizeControl.Visibility = Visibility.Collapsed;
+            xTopResizeControl.Visibility = Visibility.Collapsed;
+
+            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
+            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
+            xBottomResizeControl.Visibility = Visibility.Collapsed;
+
+            xRightResizeControl.Visibility = Visibility.Collapsed;
+            xLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTargetBorder.Margin = new Thickness(0);
         }
 
         #endregion
@@ -1396,15 +1468,16 @@ namespace Dash
             DocumentView_PointerEntered();
         }
 
-        public void DocumentView_PointerEntered()
-        {
-            if (ViewModel != null)
-            {
-                if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
-                {
-                    ViewModel.DecorationState = ViewModel?.Undecorated == false;
-                }
+		public void DocumentView_PointerEntered()
+		{
+			if (ViewModel != null)
+			{
+				if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+				     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
+				{
+				    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
+				}
 
                 MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
             }

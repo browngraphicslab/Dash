@@ -164,6 +164,7 @@ namespace Dash
         private void Element_OnNewRegionMoved(object sender, PointerRoutedEventArgs e)
         {
             var properties = e.GetCurrentPoint(_element.Self()).Properties;
+            
 
             if (_isDragging && properties.IsRightButtonPressed == false && properties.IsLeftButtonPressed == true)
             {
