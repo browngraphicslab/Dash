@@ -17,13 +17,17 @@
   
             </StackPanel>
 
-            <ColorPicker x:Name="xColorPicker" IsAlphaEnabled="True"
+            <ColorPicker 
+                x:Name="xColorPicker"   
+                IsAlphaEnabled="True"
                      MinHeight="200"
                      MinWidth="200"
                      Height="570"
                      Width="300"
                      VerticalAlignment="Bottom"
                      Margin="0,10,0,0"
+                     IsColorChannelTextInputVisible="True"
+                     IsHexInputVisible="True"
                      />
             
         </StackPanel>

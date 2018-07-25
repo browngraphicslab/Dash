@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
@@ -20,7 +21,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : UserControl, IAnnotatable
+    public sealed partial class RichTextView : IAnnotatable
     {
         #region Intilization 
 
@@ -63,7 +64,8 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
-       
+
+            LostFocus += (sender, args) => { xRichEditBox.IsEnabled = true; };
 
             Application.Current.Suspending += (sender, args) =>
             {
@@ -99,8 +101,11 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(docView);
+                    if (!MainPage.Instance.IsShiftPressed())
+                    {
+                        SelectionManager.DeselectAll();
+                        SelectionManager.Select(docView);
+                    }
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
@@ -108,6 +113,7 @@ namespace Dash
                     SetSelected("");
                     xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
+                    //CursorToEnd();
                 }
             };
 
@@ -200,9 +206,10 @@ namespace Dash
         }
         public RichTextModel.RTD Text
         {
-            get { return (RichTextModel.RTD)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get => (RichTextModel.RTD)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
+
         public DocumentController DataDocument { get; set; }
         public DocumentController LayoutDocument { get; set; }
         DocumentView getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
@@ -362,7 +369,13 @@ namespace Dash
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            RegionSelected(null, e.GetPosition(MainPage.Instance), null);
+            RegionSelected(null, e.GetPosition(MainPage.Instance));
+        }
+
+        private void CursorToEnd()
+        {
+            xRichEditBox.Document.GetText(TextGetOptions.None, out string text);
+            xRichEditBox.Document.Selection.StartPosition = text.Length;
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -495,7 +508,7 @@ namespace Dash
         {
             Clipboard.ContentChanged -= Clipboard_ContentChanged;
             var dataPackage = new DataPackage();
-            DataPackageView clipboardContent = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+            DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
             dataPackage.Properties[nameof(RichTextView)] = this;
