@@ -1441,7 +1441,12 @@ namespace Dash
                 FocusedDocument = this;
             }
 
-            if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
+            if (!(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
+                .Contains(this))
+            {
+                Focus(FocusState.Programmatic);
+            }
+            //if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)

@@ -113,7 +113,7 @@ namespace Dash
                     SetSelected("");
                     xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
-                    CursorToEnd();
+                    //CursorToEnd();
                 }
             };
 
