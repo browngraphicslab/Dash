@@ -100,6 +100,15 @@ namespace Dash
             set => SetValue(BindRenderTransformProperty, value);
         }
 
+        public static readonly DependencyProperty BindVisibilityProperty = DependencyProperty.Register(
+            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+
+        public bool BindVisibility
+        {
+            get { return (bool)GetValue(BindVisibilityProperty); }
+            set { SetValue(BindVisibilityProperty, value); }
+        }
+
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
             "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView),
             new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
@@ -160,9 +169,10 @@ namespace Dash
             _newpoint = new Point(0, 0);
 
 
-            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
+            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
+            RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
 
-            void updateBindings(object sender, DependencyProperty dp)
+            void updateRenderTransformBinding(object sender, DependencyProperty dp)
             {
                 var doc = ViewModel?.LayoutDocument;
 
@@ -177,7 +187,30 @@ namespace Dash
                         Tag = "RenderTransform multi binding in DocumentView"
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
-                ToFront();
+            }
+
+            void updateVisibilityBinding(object sender, DependencyProperty dp)
+            {
+                var doc = ViewModel?.LayoutDocument;
+
+                var binding = !BindVisibility || doc == null
+                    ? null
+                    : new FieldBinding<BoolController>
+                    {
+                        Converter = new InverseBoolToVisibilityConverter(),
+                        Document = doc,
+                        Key = KeyStore.HiddenKey,
+                        Mode = BindingMode.OneWay,
+                        Tag = "Visibility binding in DocumentView"
+                    };
+                this.AddFieldBinding(VisibilityProperty, binding);
+            }
+
+            void updateBindings()
+            {
+                updateRenderTransformBinding(null, null);
+                updateVisibilityBinding(null, null);
+
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
                 this.BindBackgroundColor();
@@ -196,8 +229,8 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
-                updateBindings(null, null);
-                DataContextChanged += (s, a) => updateBindings(null, null);
+                updateBindings();
+                DataContextChanged += (s, a) => updateBindings();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
@@ -293,7 +326,7 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
+                    //this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
                     PointerExited -=
                         DocumentView_PointerExited; // ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
@@ -1107,17 +1140,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-
-
-
-            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
-
+            e.Handled = true;
             if (this.IsRightBtnPressed() || PreventManipulation)
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            {
+                return;
+            }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
                 ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
-            e.Handled = true;
 
             double extraOffsetX = 0;
             if (!Double.IsNaN((ViewModel.Width)))
@@ -1430,6 +1460,21 @@ namespace Dash
             xLeftResizeControl.Fill =
                 selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
 
+		}
+
+        public void hideResizers()
+        {
+            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTopRightResizeControl.Visibility = Visibility.Collapsed;
+            xTopResizeControl.Visibility = Visibility.Collapsed;
+
+            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
+            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
+            xBottomResizeControl.Visibility = Visibility.Collapsed;
+
+            xRightResizeControl.Visibility = Visibility.Collapsed;
+            xLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTargetBorder.Margin = new Thickness(0);
         }
 
         #endregion
@@ -1512,15 +1557,16 @@ namespace Dash
             DocumentView_PointerEntered();
         }
 
-        public void DocumentView_PointerEntered()
-        {
-            if (ViewModel != null)
-            {
-                if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
-                {
-                    ViewModel.DecorationState = ViewModel?.Undecorated == false;
-                }
+		public void DocumentView_PointerEntered()
+		{
+			if (ViewModel != null)
+			{
+				if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+				     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
+				{
+				    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
+				}
 
                 MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
             }
@@ -1932,15 +1978,8 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.Content is IAnnotatable element)
-            {
-                element.RegionSelected(element, new Point(0, 0));
-            }
-            else
-            {
-                var ann = new AnnotationManager(ViewModel.Content);
-                ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-            }
+            var ann = new AnnotationManager(this);
+            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
