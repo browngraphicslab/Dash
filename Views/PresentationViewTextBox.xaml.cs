@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -20,19 +10,19 @@ namespace Dash
 {
     public sealed partial class PresentationViewTextBox : UserControl
     {
-        public bool HasBeenCustomRenamed = false;
+        public bool HasBeenCustomRenamed;
 
         public PresentationViewTextBox()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            KeyDown += (sender, args) => { if (args.Key == VirtualKey.Enter) UpdateName(); };
         }
 
-        private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            TriggerEdit();
-        }
+        private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => TriggerEdit();
 
-        private void Textbox_OnLostFocus(object sender, RoutedEventArgs e)
+        private void Textbox_OnLostFocus(object sender, RoutedEventArgs e) => UpdateName();
+
+        private void UpdateName()
         {
             Textblock.Text = Textbox.Text;
             if (!HasBeenCustomRenamed)
@@ -57,6 +47,9 @@ namespace Dash
         {
             if (args.NewValue is DocumentController dc)
             {
+                string currentTitle = dc.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data;
+                if (string.IsNullOrEmpty(currentTitle))
+                    dc.SetField(KeyStore.TitleKey, new TextController("<untitled>"), true);
                 SetTitleBinding(dc);
             }
         }
