@@ -27,7 +27,7 @@ namespace Dash
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
 
-        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200, RegionBox region = null)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
@@ -46,7 +46,7 @@ namespace Dash
             
 
             // setup bindings on the image
-            SetupBindings(image, docController, context);
+            SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
 
             var border = new Border();
