@@ -359,11 +359,11 @@ namespace Dash
 
         public static DocumentController GetRegionDefinition(this DocumentController document)
         {
-            return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
+            return document.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
         }
         public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent)
         {
-            document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+            document.GetDataDocument().SetField(KeyStore.RegionDefinitionKey, regionParent, true);
         }
 
         public static void SetAnnotationType(this DocumentController document, AnnotationType annotationType)

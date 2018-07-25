@@ -9,6 +9,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -49,6 +51,7 @@ namespace Dash
         private readonly DocumentController _mainDocument;
         private readonly RegionGetter _regionGetter;
         private readonly ListController<DocumentController> _regionList;
+        private readonly InkController _inkController;
 
         public delegate DocumentController RegionGetter(AnnotationType type);
 
@@ -99,7 +102,9 @@ namespace Dash
             _annotationManager = new AnnotationManager(this);
 
             _regionList =
-                _mainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+                _mainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+            _inkController = _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
             foreach (var documentController in _regionList)
             {
@@ -117,6 +122,12 @@ namespace Dash
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            XInkCanvas.InkPresenter.IsInputEnabled = false;
+            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -127,6 +138,7 @@ namespace Dash
                 ClearTextSelection();
             }
             _currentAnnotationType = type;
+            XInkCanvas.InkPresenter.IsInputEnabled = _currentAnnotationType == AnnotationType.Ink;
         }
 
         public DocumentController GetRegionDoc()
@@ -255,6 +267,20 @@ namespace Dash
         public void TappedAnnotation(Point p)
         {
             //TODO Popup annotation
+        }
+
+        #endregion
+
+        #region Ink Annotation
+
+        private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
+        {
+            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+        }
+
+        private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
+        {
+            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         #endregion

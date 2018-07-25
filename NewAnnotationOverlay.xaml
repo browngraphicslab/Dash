@@ -12,5 +12,6 @@
     <Canvas x:Name="XAnnotationCanvas">
         <Canvas x:Name="XSelectionCanvas" />
         <Rectangle x:Name="XPreviewRect"  Fill="#33FFFF00" Visibility="Collapsed"></Rectangle>
+        <InkCanvas x:Name="XInkCanvas"></InkCanvas>
     </Canvas>
 </UserControl>

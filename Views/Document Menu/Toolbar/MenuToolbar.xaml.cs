@@ -460,12 +460,12 @@ namespace Dash
                     }
 
                     //Annnotation controls
-                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
-                    if (annot != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+                    //var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
+                    //if (annot != null)
+                    //{
+                    //    System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
-                    }
+                    //}
 
                     
 

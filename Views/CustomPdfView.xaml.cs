@@ -131,10 +131,10 @@ namespace Dash
             _annotationOverlay.SetAnnotationType(type);
         }
 
-        private void OnNewRegionMade(object sender, RegionEventArgs e)
-        {
-            MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
-        }
+        //private void OnNewRegionMade(object sender, RegionEventArgs e)
+        //{
+        //    MakeRegionMarker(ScrollViewer.VerticalOffset, e.Link);
+        //}
 
         // adds to the side of the PDFView
         private void MakeRegionMarker(double offset, DocumentController dc)
@@ -149,25 +149,25 @@ namespace Dash
             xAnnotationMarkers.Visibility = Visibility.Visible;
         }
 
-        private void OnRegionRemoved(object sender, RegionEventArgs e)
-        {
-            foreach (var child in xAnnotationMarkers.Children.ToList())
-            {
-                if (child is PDFRegionMarker box)
-                {
-                    if (box.LinkTo.Equals(e.Link))
-                    {
-                        xAnnotationMarkers.Children.Remove(child);
-                        _markers.Remove(box);
+        //private void OnRegionRemoved(object sender, RegionEventArgs e)
+        //{
+        //    foreach (var child in xAnnotationMarkers.Children.ToList())
+        //    {
+        //        if (child is PDFRegionMarker box)
+        //        {
+        //            if (box.LinkTo.Equals(e.Link))
+        //            {
+        //                xAnnotationMarkers.Children.Remove(child);
+        //                _markers.Remove(box);
 
-                        if (_markers.Count == 0)
-                        {
-                            xAnnotationMarkers.Visibility = Visibility.Collapsed;
-                        }
-                    }
-                }
-            }
-        }
+        //                if (_markers.Count == 0)
+        //                {
+        //                    xAnnotationMarkers.Visibility = Visibility.Collapsed;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         public DocumentController GetRegionDocument()
         {

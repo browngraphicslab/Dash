@@ -103,7 +103,7 @@ namespace Dash
 
         public bool BindVisibility
         {
-            get { return (bool) GetValue(BindVisibilityProperty); }
+            get { return (bool)GetValue(BindVisibilityProperty); }
             set { SetValue(BindVisibilityProperty, value); }
         }
 
@@ -198,7 +198,7 @@ namespace Dash
                     {
                         Converter = new InverseBoolToVisibilityConverter(),
                         Document = doc,
-                        Key=KeyStore.HiddenKey,
+                        Key = KeyStore.HiddenKey,
                         Mode = BindingMode.OneWay,
                         Tag = "Visibility binding in DocumentView"
                     };
@@ -1781,17 +1781,8 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-
-
-            if (ViewModel.Content is IAnnotatable element)
-            {
-                element.RegionSelected(element, new Point(0, 0));
-            }
-            else
-            {
-                var ann = new AnnotationManager(ViewModel.Content);
-                ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-            }
+            var ann = new AnnotationManager(this);
+            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
