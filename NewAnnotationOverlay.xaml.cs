@@ -62,6 +62,8 @@ namespace Dash
         public event EventHandler<DocumentController> RegionAdded;
         public event EventHandler<DocumentController> RegionRemoved;
 
+        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
+        public readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
         public static readonly DependencyProperty AnnotationVisibilityProperty = DependencyProperty.Register(
             "AnnotationVisibility", typeof(bool), typeof(NewAnnotationOverlay), new PropertyMetadata(true));
 
@@ -237,7 +239,7 @@ namespace Dash
                     ClearPreviewRegion();
                     break;
                 case AnnotationType.Selection:
-                    if (_currentSelectionStart == -1 || _currentSelectionEnd == -1)
+                    if (_currentSelections.Any() || _currentSelections.Last().Key == -1)
                     {
                         goto case AnnotationType.None;
                     }
@@ -246,12 +248,29 @@ namespace Dash
                     var posList = new ListController<PointController>();
                     var sizeList = new ListController<PointController>();
                     double minY = double.PositiveInfinity;
-                    for (int i = _currentSelectionStart; i <= _currentSelectionEnd; ++i)
+
+                    _selectionStartPoint = null;
+
+                    // loop through each selection and add the indices in each selection set
+                    var indices = new List<int>();
+                    foreach (var selection in _currentSelections)
                     {
-                        var se = _textSelectableElements[i];
-                        posList.Add(new PointController(se.Bounds.X, se.Bounds.Y));
-                        sizeList.Add(new PointController(se.Bounds.Width, se.Bounds.Height));
-                        minY = Math.Min(minY, se.Bounds.Y);
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            // this will avoid double selecting any items
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
+                    
+                    foreach (var index in indices)
+                    {
+                        var elem = _textSelectableElements[index];
+                        posList.Add(new PointController(elem.Bounds.X, elem.Bounds.Y));
+                        sizeList.Add(new PointController(elem.Bounds.Width, elem.Bounds.Height));
+                        minY = Math.Min(minY, elem.Bounds.Y);
                     }
 
                     //TODO Add ListController.DeferUpdate
@@ -262,7 +281,7 @@ namespace Dash
                     break;
                 case AnnotationType.Ink:
                 case AnnotationType.None:
-                    return _mainDocument;
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -280,7 +299,7 @@ namespace Dash
         public void StartAnnotation(Point p)
         {
             ClearPreviewRegion();
-            ClearTextSelection();
+            //ClearTextSelection();
             switch (_currentAnnotationType)
             {
                 case AnnotationType.Region:
@@ -426,7 +445,7 @@ namespace Dash
             _annotatingRegion = false;
         }
 
-        private void RenderRegion(DocumentController region)
+        public void RenderRegion(DocumentController region)
         {
             var r = new RegionAnnotation(region);
             r.Tapped += (sender, args) =>
@@ -441,6 +460,27 @@ namespace Dash
                 Converter = new BoolToVisibilityConverter()
             });
             _regions.Add(r);
+            XAnnotationCanvas.Children.Add(r);
+        }
+
+        public void RenderNewRegion(DocumentController region)
+        {
+            var r = new RegionAnnotation(region);
+            r.Tapped += (sender, args) =>
+            {
+                SelectRegion(sender as ISelectable, args.GetPosition(this));
+                args.Handled = true;
+            };
+            r.Visibility = Visibility.Visible;
+            r.Background = new SolidColorBrush(Colors.Goldenrod);
+            Canvas.SetTop(r, region.GetPosition().Value.Y);
+            Canvas.SetZIndex(r, 1000000);
+            //r.SetBinding(VisibilityProperty, new Binding
+            //{
+            //    Source = this,
+            //    Path = new PropertyPath(nameof(AnnotationVisibility)),
+            //    Converter = new BoolToVisibilityConverter()
+            //});
             XAnnotationCanvas.Children.Add(r);
         }
 
@@ -500,7 +540,7 @@ namespace Dash
             }
         }
 
-        private List<SelectableElement> _textSelectableElements;
+        public List<SelectableElement> _textSelectableElements;
 
         public void SetSelectableElements(IEnumerable<SelectableElement> selectableElements)
         {
@@ -509,8 +549,7 @@ namespace Dash
 
         public void ClearTextSelection()
         {
-            _currentSelectionStart = -1;
-            _currentSelectionEnd = -1;
+            _currentSelections.Clear();
             _selectionStartPoint = null;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
@@ -547,7 +586,7 @@ namespace Dash
 
         public void EndTextSelection(Point p)
         {
-            if (_currentSelectionStart == -1) return;//Not currently selecting anything
+            if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
             _selectionStartPoint = null;
         }
 
@@ -667,20 +706,38 @@ namespace Dash
             rect.Fill = _selectionBrush;
 
             XSelectionCanvas.Children.Add(rect);
-
+            
             _selectedRectangles[index] = rect;
         }
 
 
         private Point? _selectionStartPoint;
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
-        private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
 
         private void SelectElements(int startIndex, int endIndex)
-        {
-            if (_currentSelectionStart == -1)
+        {// if control isn't pressed, reset the selection
+            if (!this.IsCtrlPressed())
             {
-                Debug.Assert(_currentSelectionEnd == -1);
+                if (_currentSelections.Count > 1)
+                {
+                    _currentSelections.Clear();
+                    //_selectionStartPoint = null;
+                    _selectedRectangles.Clear();
+                    XSelectionCanvas.Children.Clear();
+                }
+            }
+
+            // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
+            if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
+            {
+                // create a new selection
+                _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+            }
+            var currentSelectionStart = _currentSelections.Last().Key;
+            var currentSelectionEnd = _currentSelections.Last().Value;
+
+            if (currentSelectionStart == -1)
+            {
                 for (var i = startIndex; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
@@ -688,27 +745,29 @@ namespace Dash
             }
             else
             {
-                for (var i = startIndex; i < _currentSelectionStart; ++i)
+                for (var i = startIndex; i < currentSelectionStart; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = _currentSelectionStart; i < startIndex; ++i)
+
+                for (var i = currentSelectionStart; i < startIndex; ++i)
                 {
                     DeselectIndex(i);
                 }
-                for (var i = _currentSelectionEnd + 1; i <= endIndex; ++i)
+
+                for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
                 {
                     SelectIndex(i);
                 }
-                for (var i = endIndex + 1; i <= _currentSelectionEnd; ++i)
+
+                for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
                 {
                     DeselectIndex(i);
                 }
             }
 
-            _currentSelectionStart = startIndex;
-            _currentSelectionEnd = endIndex;
-
+            // you can't set kvp keys and values, so we have to just create a new one?
+            _currentSelections[_currentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
         }
 
         #endregion
