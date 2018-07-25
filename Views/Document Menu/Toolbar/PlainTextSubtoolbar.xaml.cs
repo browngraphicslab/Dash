@@ -151,9 +151,11 @@ namespace Dash
             _currentDocController.SetField(KeyStore.FontWeightKey, new NumberController(fontWeight.Weight), true);
         }
 
+
         private void xFontSizeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (_currBox == null) return;
+
             _currBox.FontSize = (sender as Slider).Value;
             _currentDocController.SetField(KeyStore.FontSizeKey, new NumberController((sender as Slider).Value), true);
         }

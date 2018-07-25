@@ -211,6 +211,7 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Models\ColorModel.cs" />
+    <Compile Include="Converters\DataFieldToMakeViewConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
       <DependentUpon>DashColorPicker.xaml</DependentUpon>
@@ -492,6 +493,7 @@
     <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\SnapshotView.cs" />
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>

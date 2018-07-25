@@ -445,7 +445,7 @@ namespace Dash
 				var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
 				// get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-				var adornmentGroups = this.IsShiftPressed()
+				var adornmentGroups = this.IsAltPressed()
 					? new List<DocumentView>()
 					: SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
 				if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
@@ -455,6 +455,7 @@ namespace Dash
 						SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
 							new Size(dv.ActualWidth, dv.ActualHeight))));
 					});
+
 					SetSelectionBorder(false);
 				}
 
@@ -1584,6 +1585,28 @@ namespace Dash
 		{
 			var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
+			//if it's a group, add all content docs
+			if (ViewModel.IsAdornmentGroup)
+			{
+				var adornmentGroups = SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+				if (ParentCollection?.CurrentView is CollectionFreeformBase cview)
+				{
+					adornmentGroups.ForEach((dv) =>
+					{
+						foreach (var docV in cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
+							new Size(dv.ActualWidth, dv.ActualHeight))))
+						{
+							if (!selectedDocs.Contains(docV))
+							{
+								selectedDocs.Add(docV);
+							}
+						}
+					});
+
+					SetSelectionBorder(false);
+				}
+			}
+			
 			var collection = this.GetFirstAncestorOfType<CollectionView>();
 			CollectionView nestedCollection = GetCollectionToMoveTo(overlappedViews);
 
@@ -1592,17 +1615,20 @@ namespace Dash
 				UndoManager.EndBatch();
 				return false;
 			}
-
+			
 			foreach (DocumentView selDoc in selectedDocs)
 			{
-				Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
-				Point where = nestedCollection.CurrentView is CollectionFreeformBase @base
-					? Util.GetCollectionFreeFormPoint(@base, pos)
-					: new Point();
-				collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-				nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+				if (selDoc != nestedCollection.GetFirstAncestorOfType<DocumentView>())
+				{
+					Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
+					Point where = nestedCollection.CurrentView is CollectionFreeformBase @base
+						? Util.GetCollectionFreeFormPoint(@base, pos)
+						: new Point();
+					collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+					nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+				}
 			}
-
+			
 			UndoManager.EndBatch();
 			return true;
 		}

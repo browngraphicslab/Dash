@@ -127,13 +127,13 @@ namespace Dash
                 ClearSearchHighlights();
                 SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
-                Clipboard.ContentChanged -= Clipboard_ContentChanged;
             };
 
             xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();
@@ -551,9 +551,10 @@ namespace Dash
             if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
             {
                 var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
                 //this does better formatting/ parsing than the regex stuff can
-                var link =  CollectionViewModel.GetTitlesUrl(url);
+                var link =  title ?? CollectionViewModel.GetTitlesUrl(url);
 
                 this.xRichEditBox.Document.Selection.Text = link;
                 this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";

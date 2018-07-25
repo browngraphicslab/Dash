@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
         private readonly List<ScriptExpression> _parameters;
-        private readonly string _funcName;
+        private readonly ScriptExpression _funcName;
         private readonly Op.Name _opName;
 
-        public FunctionExpression(List<ScriptExpression> parameters, string func)
+        public FunctionExpression(List<ScriptExpression> parameters, ScriptExpression func)
         {
             _funcName = func;
             _parameters = parameters;
@@ -18,37 +19,42 @@ namespace Dash
 
         public FunctionExpression(Op.Name op, List<ScriptExpression> parameters)
         {
-            _funcName = op.ToString();
+            _funcName = new VariableExpression(op.ToString());
             _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
             //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
-            var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;         
-            var opName = Op.Parse(_funcName);
+            OperatorController op = null;
+            var opName = Op.Name.invalid;
+            try
+            {
+                op = _funcName.Execute(scope) as FunctionOperatorController;
+            }
+            catch (ScriptExecutionException)
+            {
+                if (!(_funcName is VariableExpression variable))
+                {
+                    throw;
+                }
+
+                var variableName = variable.GetVariableName();
+                opName = Op.Parse(variableName);
+                if (opName == Op.Name.invalid)
+                {
+                    throw;
+                }
+            }
+
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
 
             try
             {
-                //use user defined function
-                if (userFunction != null)
-                {
-                    //functions shouldn't have acess to any variables outside function
-                    scope = new ReturnScope();
+                scope = new ReturnScope();
 
-                    //check if user defiend function
-                    var output = OperatorScript.Run(userFunction, inputs, scope);
-                    return output;
-                }
-
-                if (opName != Op.Name.invalid)
-                {
-                    scope = new ReturnScope(scope);
-
-                    var output = OperatorScript.Run(opName, inputs, scope);
-                    return output;
-                }
+                var output = op != null ? OperatorScript.Run(op, inputs, scope) : OperatorScript.Run(opName, inputs, scope);
+                return output;
             }
             catch (ReturnException)
             {
@@ -66,7 +72,8 @@ namespace Dash
             return new TextController("");
         }
 
-        public Op.Name GetOperatorName() => Op.Parse(_funcName);
+        //TDDO This should be fixed
+        public Op.Name GetOperatorName() => Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? "");
 
 
         public List<ScriptExpression> GetFuncParams() => _parameters;
@@ -80,7 +87,7 @@ namespace Dash
             //        kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.CreateReference(scope))), _opName); //recursive linq
         }
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse(_funcName));
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? ""));
 
         public override string ToString()
         {
