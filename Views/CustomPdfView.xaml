@@ -91,7 +91,9 @@
                         <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public">
                             </ItemsControl>
                     </Grid>
-                    <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+
+                    <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="0" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
+
                         
                         <ItemsControl x:Name="xTopAnnotationsItemsControl" ItemsSource="{x:Bind TopAnnotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>
@@ -178,7 +180,9 @@
                         <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public">
                         </ItemsControl>
                     </Grid>
-                    <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+
+                    <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="0" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
+
 
                         <ItemsControl x:Name="xBottomAnnotationsItemsControl" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>

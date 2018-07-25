@@ -227,7 +227,7 @@ namespace Dash
 
             Canvas.SetZIndex(xBottomButtonPanel, 999);
             Canvas.SetZIndex(xTopButtonPanel, 999);
-
+            
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -734,16 +734,16 @@ namespace Dash
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xTopAnnotationBox.Visibility.Equals(Visibility.Visible))
+            if (xTopAnnotationBox.Width.Equals(0))
             {
-               
-                xTopAnnotationBox.Visibility = Visibility.Collapsed;
-                xBottomAnnotationBox.Visibility = Visibility.Collapsed;
+                xTopAnnotationBox.Width = 200;
+                xBottomAnnotationBox.Width = 200;
+            
             }
             else
             {
-                xTopAnnotationBox.Visibility = Visibility.Visible;
-                xBottomAnnotationBox.Visibility = Visibility.Visible;
+               xTopAnnotationBox.Width = 0;
+               xBottomAnnotationBox.Width = 0;
             }
         }
 
@@ -816,51 +816,25 @@ namespace Dash
         {
             PopStack(_topBackStack, TopScrollViewer);
         }
-
-     
-        //private void MovePage(ScrollViewer scroller, Grid grid, int i)
-        //{
-        //    var currOffset = 0.0;
-        //    foreach (var image in TopPageItemsControl.GetDescendantsOfType<Image>())
-        //    {
-        //        var imgWidth = image.ActualWidth;
-        //        var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
-        //        var scale = (scroller.ViewportWidth - annoWidth) / imgWidth;
-        //        if (i == 0)
-        //        {
-        //            if (currOffset + (image.ActualHeight * scale) + 5 > scroller.VerticalOffset)
-        //            {
-        //                break;
-        //            }
-        //            currOffset += (image.ActualHeight * scale);
-        //        }
-        //        else
-        //        {
-        //            currOffset += (image.ActualHeight * scale);
-        //            if (currOffset > scroller.VerticalOffset + 5)
-        //            {
-        //                break;
-        //            }
-        //        }
-                
-        //    }
-        //    scroller.ChangeView(null, currOffset, 1);
-        //}
+        
 
         private void PagePrev(ScrollViewer scroller)
         {
             DataVirtualizationSource<ImageSource> pages;
-            double annoWidth;
+            double annoWidth = 0;
             if (scroller.Equals(TopScrollViewer))
             {
+
                 pages = _topPages;
-                annoWidth = xTopAnnotationBox.ActualWidth;
+                annoWidth = xTopAnnotationBox.Width;
+
             }
 
             else
             {
                 pages = _bottomPages;
-                annoWidth = xBottomAnnotationBox.ActualWidth;
+                annoWidth = xBottomAnnotationBox.Width;
+
             }
 
             var sizes = pages.PageSizes;
@@ -868,7 +842,9 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                if (currOffset + size.Height * scale + 15 - scroller.VerticalOffset >= 0)
+
+                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= 0)
+
                 {
                     break;
                 }
@@ -885,14 +861,17 @@ namespace Dash
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {
+
                 pages = _topPages;
-                annoWidth = xTopAnnotationBox.ActualWidth;
+                annoWidth = xTopAnnotationBox.Width;
+
             }
 
             else
             {
                 pages = _bottomPages;
-                annoWidth = xBottomAnnotationBox.ActualWidth;
+                annoWidth = xBottomAnnotationBox.Width;
+            
             }
 
             var sizes = pages.PageSizes;
