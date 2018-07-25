@@ -59,6 +59,17 @@ namespace Dash
         public event EventHandler<DocumentController> RegionAdded;
         public event EventHandler<DocumentController> RegionRemoved;
 
+        public static readonly DependencyProperty AnnotationVisibilityProperty = DependencyProperty.Register(
+            "AnnotationVisibility", typeof(bool), typeof(NewAnnotationOverlay), new PropertyMetadata(true));
+
+        public bool AnnotationVisibility
+        {
+            get { return (bool) GetValue(AnnotationVisibilityProperty); }
+            set { SetValue(AnnotationVisibilityProperty, value); }
+        }
+
+        public AnnotationType AnnotationType => _currentAnnotationType;
+
         private void SelectRegion(ISelectable selectable, Point? mousePos)
         {
             if (_selectedRegion == selectable)
@@ -186,6 +197,8 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
+            ClearPreviewRegion();
+            ClearTextSelection();
             switch (_currentAnnotationType)
             {
                 case AnnotationType.Region:
@@ -312,6 +325,12 @@ namespace Dash
                 SelectRegion(sender as ISelectable, args.GetPosition(this));
                 args.Handled = true;
             };
+            r.SetBinding(VisibilityProperty, new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(AnnotationVisibility)),
+                Converter = new BoolToVisibilityConverter()
+            });
             XAnnotationCanvas.Children.Add(r);
         }
 
@@ -456,6 +475,12 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
+            r.SetBinding(VisibilityProperty, new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(AnnotationVisibility)),
+                Converter = new BoolToVisibilityConverter()
+            });
 
             XAnnotationCanvas.Children.Add(r);
         }
@@ -538,6 +563,7 @@ namespace Dash
         private Point? _selectionStartPoint;
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private int _currentSelectionStart = -1, _currentSelectionEnd = -1;
+
         private void SelectElements(int startIndex, int endIndex)
         {
             if (_currentSelectionStart == -1)

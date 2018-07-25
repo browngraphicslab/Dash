@@ -46,7 +46,7 @@ namespace Dash
             
 
             // setup bindings on the image
-            SetupBindings(image, docController, context);
+            SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
 
             var border = new Border();

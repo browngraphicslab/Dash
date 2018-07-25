@@ -31,17 +31,16 @@ namespace Dash
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-		   // xPdfCommandbar.IsOpen = true;
-			//_currentPdfView?.AnnotationManager.ShowRegions();
-		    xToggleAnnotations.Label = "Visible";
-	
+            // xPdfCommandbar.IsOpen = true;
+            _currentPdfView?.ShowRegions();
+            xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-		   // xPdfCommandbar.IsOpen = true;
-			//_currentPdfView?.AnnotationManager.HideRegions();
-		    xToggleAnnotations.Label = "Hidden";
+            // xPdfCommandbar.IsOpen = true;
+            _currentPdfView?.HideRegions();
+            xToggleAnnotations.Label = "Hidden";
 	    }
 
         /// <summary>
@@ -52,26 +51,26 @@ namespace Dash
             _currentDocView = selection;
             _currentPdfView = _currentDocView.GetFirstDescendantOfType<CustomPdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
-	        //xToggleAnnotations.IsChecked = _currentPdfView.AnnotationManager.AreAnnotationsVisible();
+            xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
 
-			//update selected annotation type according to this newly selected PDF
-	        //switch (_currentPdfView.AnnotationManager.CurrentAnnotationType)
-	   //     {
-				//case AnnotationManager.AnnotationType.Ink:
-				//	xInkToggle.IsChecked = true;
-				//	break;
-				//case AnnotationManager.AnnotationType.TextSelection:
-				//	xTextToggle.IsChecked = true;
-				//	break;
-				//case AnnotationManager.AnnotationType.RegionBox:
-				//	xRegionToggle.IsChecked = true;
-				//	break;
-				//default:
-				//	xInkToggle.IsChecked = false;
-				//	xTextToggle.IsChecked = false;
-				//	xRegionToggle.IsChecked = false;
-				//	break;
-	   //     }
+            //update selected annotation type according to this newly selected PDF
+            switch (_currentPdfView.CurrentAnnotationType)
+            {
+                case AnnotationType.Ink:
+                    xInkToggle.IsChecked = true;
+                    break;
+                case AnnotationType.Selection:
+                    xTextToggle.IsChecked = true;
+                    break;
+                case AnnotationType.Region:
+                    xRegionToggle.IsChecked = true;
+                    break;
+                default:
+                    xInkToggle.IsChecked = false;
+                    xTextToggle.IsChecked = false;
+                    xRegionToggle.IsChecked = false;
+                    break;
+            }
         }
 
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
@@ -109,5 +108,12 @@ namespace Dash
         {
         }
 
+        private void Toggle_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false)
+            {
+                _currentPdfView.SetAnnotationType(AnnotationType.None);
+            }
+        }
     }
 }

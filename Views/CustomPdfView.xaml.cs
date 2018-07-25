@@ -90,6 +90,7 @@ namespace Dash
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
+        public AnnotationType CurrentAnnotationType => _annotationOverlay.AnnotationType;
 
         private WPdf.PdfDocument _wPdfDocument;
 
@@ -521,6 +522,21 @@ namespace Dash
         private void Scrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             xAnnotationNavigation.Opacity = 0;
+        }
+
+        public void ShowRegions()
+        {
+            _annotationOverlay.AnnotationVisibility = true;
+        }
+
+        public void HideRegions()
+        {
+            _annotationOverlay.AnnotationVisibility = false;
+        }
+
+        public bool AreAnnotationsVisible()
+        {
+            return _annotationOverlay.AnnotationVisibility;
         }
     }
 }
