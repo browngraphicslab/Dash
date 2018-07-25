@@ -97,7 +97,7 @@
                             </ItemsControl>
                     </Grid>
 
-                    <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="0" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
+                        <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="0" Background="#a66a9383"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
 
                         
                         <ItemsControl x:Name="xTopAnnotationsItemsControl" ItemsSource="{x:Bind TopAnnotations, Mode=TwoWay}">
@@ -191,7 +191,7 @@
                         </ItemsControl>
                     </Grid>
 
-                    <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="0" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
+                        <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="0" Background="#bf6a9383" HorizontalAlignment="Right" VerticalAlignment="Stretch" Tapped="XAnnotationBox_OnTapped">
 
 
                         <ItemsControl x:Name="xBottomAnnotationsItemsControl" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
