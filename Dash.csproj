@@ -209,6 +209,7 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Converters\DataFieldToMakeViewConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
       <DependentUpon>DashColorPicker.xaml</DependentUpon>

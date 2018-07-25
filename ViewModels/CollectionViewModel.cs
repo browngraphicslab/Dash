@@ -791,10 +791,17 @@ namespace Dash
                     var lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
-                
 
-                // if we drag from the file system
-                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+				//adds all docs in the group, if applicable
+	            var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
+				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+	            adornmentGroups.ForEach((dv) =>
+	            {
+		           AddDocument(dv.ViewModel.DataDocument);
+	            });
+
+				// if we drag from the file system
+				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
                     try
                     {

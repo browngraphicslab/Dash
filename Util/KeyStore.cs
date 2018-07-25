@@ -30,7 +30,8 @@ namespace Dash
         public static KeyController DocumentTextKey = new KeyController("Document Text", "D5156A8F-9093-420B-96B7-507DD949360D");
         public static KeyController TextWrappingKey = new KeyController("Text Wrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");
         public static KeyController BackgroundColorKey = new KeyController("Background Color", "6B597D2A-1A52-446F-901A-B9ED0BBE33E1");
-        public static KeyController OpacitySliderValueKey = new KeyController("Opacity Slider Value", "3FD448B7-8AEE-4FBD-B68C-514E098D8D31");
+	    public static KeyController GroupBackgroundColorKey = new KeyController("Group Background Color", "E1FA9844-6B13-4BE2-BAAA-F06B9D6672A6");
+		public static KeyController OpacitySliderValueKey = new KeyController("Opacity Slider Value", "3FD448B7-8AEE-4FBD-B68C-514E098D8D31");
         public static KeyController AdornmentShapeKey = new KeyController("Adornment Shape", "5DEBC829-A68B-4D2E-BC29-549DEB910EC6");
         public static KeyController PositionFieldKey = new KeyController("Position", "E2AB7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController LinkFromKey = new KeyController("Link From", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
@@ -60,7 +61,7 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController("_DocumentType", "B1DE8ABE-5C04-49C6-913C-A2428ED566F8");
         public static KeyController SelectedKey = new KeyController("_Selected", "86009EF6-7D77-4D67-8C7A-C5EA5704432F");
         public static KeyController OriginalImageKey = new KeyController("_Original Image", "6226CC11-3616-4521-9C9E-731245FA1F4C");
-        public static KeyController SideCountKey = new KeyController("_Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
+        public static KeyController SideCountKey = new KeyController("Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
         public static KeyController SettingsDocKey = new KeyController("_Settings Doc", "EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70");
         public static KeyController SettingsNightModeKey = new KeyController("_Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("_Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");
