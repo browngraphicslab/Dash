@@ -41,9 +41,12 @@ namespace Dash
 
         ObservableCollection<TextBlock> FontFamilyNames = new ObservableCollection<TextBlock>();
 
+        private bool _fontSizeChanged = false;
+        private bool _fontFamilyChanged = false;
+
         #endregion
 
-	    private RichTextSubtoolbar _richTextToolbar;
+        private RichTextSubtoolbar _richTextToolbar;
 
         /// <summary>
         /// Constructor
@@ -113,6 +116,8 @@ namespace Dash
                 FontFamilyNames.Add(newBlock);
             }
 
+            _fontFamilyChanged = true;
+
             var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
             xFontFamilyComboBox.SelectedIndex = _fontNames.IndexOf(currentFontStyle);
         }
@@ -155,6 +160,8 @@ namespace Dash
             {
                 xFontSizeComboBox.Items.Add(num);
             }
+
+            _fontSizeChanged = true;
 
             var currentFontSize = xRichEditBox.Document.Selection.CharacterFormat.Size;
             xFontSizeComboBox.SelectedIndex = _sizes.IndexOf(currentFontSize);
@@ -260,42 +267,71 @@ namespace Dash
         #region ComboBox
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-			var comboBox = sender as ComboBox;
-            var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
+            if (!_fontFamilyChanged)
+            {
+                var comboBox = sender as ComboBox;
+                var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
 
-			//select all if nothing is selected
-	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-	        {
-	            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-		        var end = text.Length;
-		        xRichEditBox.Document.Selection.SetRange(0, end);
-	        }
-			UndoManager.StartBatch();
-			xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-	        richTextView.UpdateDocumentFromXaml();
-			UndoManager.EndBatch();
-		}
+                UndoManager.StartBatch();
+                //select all if nothing is selected
+                if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                    xRichEditBox.Document.Selection.EndPosition)
+                {
+                    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                    var end = text.Length;
+                    xRichEditBox.Document.Selection.SetRange(0, end);
+                    xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                    xRichEditBox.Document.Selection.SetRange(end, end);
+                }
+                else
+                {
+                    xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                }
+
+                richTextView.UpdateDocumentFromXaml();
+                UndoManager.EndBatch();
+            }
+            else
+            {
+                _fontFamilyChanged = false;
+            }
+        }
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var comboBox = sender as ComboBox;
-            var selectedFontSize = comboBox?.SelectedValue;
-	        if (selectedFontSize != null)
-	        {
-				//select all if nothing is selected
-		        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-		        {
-		            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-			        var end = text.Length;
-					xRichEditBox.Document.Selection.SetRange(0, end);
-		        }
-				UndoManager.StartBatch();
-		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
-		        richTextView.UpdateDocumentFromXaml();
-				UndoManager.EndBatch();
+            if (!_fontSizeChanged)
+            {
+                var comboBox = sender as ComboBox;
+                var selectedFontSize = comboBox?.SelectedValue;
+                if (selectedFontSize != null)
+                {
+                    //select all if nothing is selected
+                    UndoManager.StartBatch();
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Size =
+                            (float) Convert.ToDouble(selectedFontSize.ToString());
+                        xRichEditBox.Document.Selection.SetRange(end, end);
+                    }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Size =
+                            (float) Convert.ToDouble(selectedFontSize.ToString());
+                    }
 
-			}
-               
+                    richTextView.UpdateDocumentFromXaml();
+                    UndoManager.EndBatch();
+                }
+            }
+            else
+            {
+                _fontSizeChanged = false;
+            }
+
         }
 
         #endregion

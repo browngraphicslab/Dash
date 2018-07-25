@@ -151,6 +151,7 @@ namespace Dash
             if (_menuView != null)
             {
                 xStack.Children.Remove(_menuView);
+                _menuView = null;
                 //create a formatting menu and bind it to the currently selected richEditBox's view
                 _menuView = new FormattingMenuView(this)
                 {
@@ -160,7 +161,6 @@ namespace Dash
                 //add the menu to the stack panel
                 xStack.Children.Insert(0, _menuView);
             }
-
         }
 
         /**
