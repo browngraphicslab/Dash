@@ -39,7 +39,6 @@ namespace Dash
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
         public CollectionFreeformBase FreeformView;
-        public InkController InkController;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetInkCanvas { get; set; }
@@ -51,7 +50,6 @@ namespace Dash
             TargetInkCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
-            InkController = view.InkController;
             LassoHelper = new LassoSelectHelper(FreeformView);
             InkRecognitionHelper = new InkRecognitionHelper(this);
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.Mode =
@@ -74,7 +72,7 @@ namespace Dash
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeContinued += StrokeInputOnStrokeContinued;
             TargetInkCanvas.RightTapped += TargetCanvasOnRightTapped;
-            InkController.FieldModelUpdated += InkControllerOnInkUpdated;
+            FreeformView.ViewModel.InkController.FieldModelUpdated += InkControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
         }
 
@@ -160,7 +158,7 @@ namespace Dash
         /// </summary>
         public void UpdateInkController()
         {
-            InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            FreeformView.ViewModel.InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         /// <summary>
@@ -169,8 +167,8 @@ namespace Dash
         private void UpdateStrokes()
         {
             TargetInkCanvas.InkPresenter.StrokeContainer.Clear();
-            if (InkController?.GetStrokes() != null)
-                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkController.GetStrokes()
+            if (FreeformView.ViewModel.InkController?.GetStrokes() != null)
+                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(FreeformView.ViewModel.InkController.GetStrokes()
                     .Select(stroke => stroke.Clone()));
         }
 

@@ -506,6 +506,7 @@
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
+    <Compile Include="Views\DataVirtualizationSource.cs" />
     <Compile Include="Views\DishScriptEditView.xaml.cs">
       <DependentUpon>DishScriptEditView.xaml</DependentUpon>
     </Compile>

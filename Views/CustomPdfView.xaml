@@ -5,37 +5,204 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     x:Name="Control"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
+   
     SizeChanged="CustomPdfView_OnSizeChanged"
-    KeyDown="CustomPdfView_OnKeyDown">
+    
+    KeyDown="CustomPdfView_OnKeyDown"
+    >
+    <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
 
-    <Grid PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <ScrollViewer Grid.Column="0" x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging">
-            <Viewbox Stretch="UniformToFill">
-                <!--This Grid will have the width and height of the pdf that is being displayed-->
-                <Grid x:Name="xPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
-                      PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased">
-                    <!-- ItemsControl that stores the page images -->
-                    <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="ImageSource">
-                                <Image Source="{x:Bind}" Margin="0,0,0,10" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <!--Annotation overlay for block annotations-->
-                    <!--<local:AnnotationOverlay x:Name="xAnnotations"></local:AnnotationOverlay>-->
-                    <!--Canvas for doing text selection-->
-                    <Canvas x:Name="TestSelectionCanvas"></Canvas>
+
+            <RowDefinition x:Name="xFirstPanelRow" Height="0*"/>
+            <RowDefinition x:Name="xDivider" Height ="0"/>
+            <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
+        </Grid.RowDefinitions>
+
+
+
+        <Grid Grid.Row="0" >
+            <StackPanel x:Name="xButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+
+                
+                <Grid x:Name="xControlsToggleButton" PointerPressed="XControlsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                 </Grid>
+
+                <StackPanel x:Name="xToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
+                <Grid x:Name="xAnnotationsToggleButton" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+                </StackPanel>
+
+                <StackPanel.Resources>
+                    <Storyboard x:Name="xFadeAnimation">
+                        <DoubleAnimation
+                            Storyboard.TargetName="xToggleButtonStack"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.0" To="1.0" Duration="0:0:.5"
+                        />
+                    </Storyboard>
+                </StackPanel.Resources>
+
+            </StackPanel>
+            <ScrollViewer  x:Name="TopScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer_OnViewChanged">
+           
+            <Viewbox  Stretch="UniformToFill">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!--This Grid will have the width and height of the pdf that is being displayed-->
+                    <Grid Grid.Column="0" x:Name="xTopPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
+                      PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
+                      DoubleTapped="XPdfGrid_OnDoubleTapped">
+                        <!-- ItemsControl that stores the page images -->
+                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public">
+                            </ItemsControl>
+                    </Grid>
+                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+                        
+                        <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <!--<ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DocumentView">
+                                  
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>-->
+                        </ItemsControl>
+                    
+                    </Grid>
+                </Grid>
+
             </Viewbox>
+           
+           
         </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <StackPanel x:Name="xButtonPanel2" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+            
+                <Grid x:Name="xControlsToggleButton2" PointerPressed="XControlsToggleButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                </Grid>
+                <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
+                <Grid x:Name="xAnnotationsToggleButton2" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xNextPageButton2" PointerPressed="XNextPageButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xPreviousPageButton2" PointerPressed="XPreviousPageButton2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollToTop2" PointerPressed="XScrollToTop2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+
+                <Grid x:Name="xScrollBack2" PointerPressed="XScrollBack2_OnPointerPressed">
+                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                </Grid>
+                </StackPanel>
+
+                <StackPanel.Resources>
+                    <Storyboard x:Name="xFadeAnimation2">
+                        <DoubleAnimation
+                            Storyboard.TargetName="xToggleButtonStack2"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.0" To="1.0" Duration="0:0:.5"
+                        />
+                    </Storyboard>
+                </StackPanel.Resources>
+
+            </StackPanel>
+        
+        <ScrollViewer  x:Name="BottomScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" ViewChanged="ScrollViewer2_OnViewChanged">
+
+            <Viewbox  Stretch="UniformToFill">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!--This Grid will have the width and height of the pdf that is being displayed-->
+                    <Grid Grid.Column="0" x:Name="xBottomPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
+                          PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased">
+                        <!-- ItemsControl that stores the page images -->
+                        <ItemsControl x:Name="PageItemsControl2" x:FieldModifier="public">
+                        </ItemsControl>
+                    </Grid>
+                    <Grid x:Name="xAnnotationBox2" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+
+                        <ItemsControl x:Name="xAnnotationsItemsControl2" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <!--<ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DocumentView">
+                                  
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>-->
+                        </ItemsControl>
+
+                    </Grid>
+                </Grid>
+
+            </Viewbox>
+
+
+        </ScrollViewer>
+        </Grid>
+
+
         <Grid x:Name="xAnnotationMarkers" Width="10" Grid.Column="0" Margin="-20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
         <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Grid.Column="1">
             <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
@@ -46,6 +213,22 @@
                 <Ellipse Fill="#221111" Width="18" Height="18"/>
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>
             </Grid>
+           
         </StackPanel>
+
+        <controls:GridSplitter x:Name="xPdfDivider" Grid.Row="1" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
+                               ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
+            <controls:GridSplitter.Element>
+                <Canvas>
+                    <StackPanel Orientation="Vertical">
+                   
+                   
+                    <Rectangle Fill="{StaticResource AccentGreenLight}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                       
+                    <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="0"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                    </StackPanel>
+                </Canvas>
+            </controls:GridSplitter.Element>
+        </controls:GridSplitter>
     </Grid>
 </UserControl>

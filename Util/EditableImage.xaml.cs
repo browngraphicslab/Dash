@@ -187,7 +187,6 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
-            _docview.ViewModel.DisableDecorations = true;
             _docview.hideControls();
             IsCropping = true;
         }
@@ -361,7 +360,6 @@ namespace Dash
                         IsCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
-                        _docview.ViewModel.DisableDecorations = false;
                         _docview.hideControls();
 
                         break;
