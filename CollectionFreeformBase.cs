@@ -974,7 +974,7 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() {Width = 60000, Height = 60000, Visibility = Visibility.Collapsed};
+            XInkCanvas = new InkCanvas() {Width = 60000, Height = 60000};
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
