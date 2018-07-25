@@ -165,7 +165,8 @@ namespace Dash
                 48,
                 72,
                 100,
-                150
+                150,
+                300
             };
 
             foreach (var num in _sizes)
