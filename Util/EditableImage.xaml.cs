@@ -49,8 +49,9 @@ namespace Dash
             Image.Loaded += Image_Loaded;
             Image.ImageOpened += (sender, args) =>
             {
-                XAnnotationGrid.Width = Image.ActualWidth;
-                XAnnotationGrid.Height = Image.ActualHeight;
+                var source = Image.Source as BitmapSource;
+                XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
+                XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
             };
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;

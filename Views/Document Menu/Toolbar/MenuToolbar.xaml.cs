@@ -546,10 +546,11 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
-            {
-                d.DeleteDocument();
-            }
+            using (UndoManager.GetBatchHandle())
+                foreach (DocumentView d in SelectionManager.SelectedDocs)
+                {
+                    d.DeleteDocument();
+                }
         }
 
 
@@ -718,10 +719,21 @@ namespace Dash
 	        xToolbar.IsOpen = true;
 		}
 
-        /// <summary>
-        /// Rotates the internal stack panel of the command bar. Currently inactive.
-        /// </summary>
-        private void RotateToolbar()
+	    private void Add_Group_On_Click(object sender, RoutedEventArgs e)
+	    {
+			//create and add group to workspace
+		    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+
+			MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
+		}
+
+
+
+		/// <summary>
+		/// Rotates the internal stack panel of the command bar. Currently inactive.
+		/// </summary>
+		private void RotateToolbar()
         {
             Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation

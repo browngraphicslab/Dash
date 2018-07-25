@@ -368,12 +368,12 @@ namespace Dash
 
         public static void SetAnnotationType(this DocumentController document, AnnotationType annotationType)
         {
-            document.SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
+            document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
         public static AnnotationType GetAnnotationType(this DocumentController document)
         {
-            var t = document.GetField<TextController>(KeyStore.RegionTypeKey);
+            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
             return t == null
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);

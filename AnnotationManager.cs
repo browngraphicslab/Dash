@@ -56,9 +56,13 @@ namespace Dash
 	            if (linksTo != null)
                 {
                     foreach (var linkTo in linksTo)
-	                {
-	                    MenuFlyoutItem item = new MenuFlyoutItem {Text = linkTo.Title};
-	                    item.Tapped += (sender, args) =>
+                    {
+                        MenuFlyoutItem item = new MenuFlyoutItem
+                        {
+                            Text = linkTo.Title,
+                            DataContext = linkTo
+                        };
+	                    item.Click += (sender, args) =>
 	                    {
 	                        FollowLink((DocumentController) ((FrameworkElement) sender).DataContext, LinkDirection.ToDestination,
 	                            linkHandlers);
@@ -73,8 +77,12 @@ namespace Dash
                 {
                     foreach (var linkFrom in linksFrom)
 	                {
-	                    MenuFlyoutItem item = new MenuFlyoutItem {Text = linkFrom.Title};
-	                    item.Tapped += (sender, args) =>
+	                    MenuFlyoutItem item = new MenuFlyoutItem
+	                    {
+	                        Text = linkFrom.Title,
+                            DataContext = linkFrom
+	                    };
+	                    item.Click += (sender, args) =>
 	                    {
 	                        FollowLink((DocumentController) ((FrameworkElement) sender).DataContext, LinkDirection.ToSource,
 	                            linkHandlers);

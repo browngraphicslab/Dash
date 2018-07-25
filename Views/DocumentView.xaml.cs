@@ -27,6 +27,7 @@ using iText.StyledXmlParser.Jsoup.Nodes;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
+using Windows.UI.Xaml.Media.Animation;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -47,8 +48,6 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
-
-
         public DocumentViewModel ViewModel
         {
             get => DataContext as DocumentViewModel;
@@ -65,7 +64,7 @@ namespace Dash
         static DocumentView _focusedDocument;
 
         // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
-        static public DocumentView FocusedDocument
+        public static DocumentView FocusedDocument
         {
             get => _focusedDocument;
             set => _focusedDocument = value;
@@ -90,15 +89,15 @@ namespace Dash
 
         private DocumentController _templateEditor;
         private bool _showResize;
-
+        private bool _isQuickEntryOpen;
 
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
 
         public bool BindRenderTransform
         {
-            get { return (bool)GetValue(BindRenderTransformProperty); }
-            set { SetValue(BindRenderTransformProperty, value); }
+            get => (bool)GetValue(BindRenderTransformProperty);
+            set => SetValue(BindRenderTransformProperty, value);
         }
 
         public static readonly DependencyProperty BindVisibilityProperty = DependencyProperty.Register(
@@ -117,8 +116,8 @@ namespace Dash
 
         public CollectionViewModel.StandardViewLevel StandardViewLevel
         {
-            get { return (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty); }
-            set { SetValue(StandardViewLevelProperty, value); }
+            get => (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty);
+            set => SetValue(StandardViewLevelProperty, value);
         }
 
         public bool ShowResize
@@ -133,7 +132,6 @@ namespace Dash
                 }
             }
         }
-
 
         private Flyout _flyout;
         private double _width;
@@ -226,6 +224,7 @@ namespace Dash
                 //if (container != null && container.ViewModel.FitToParent)
                 //    container.ViewModel.FitContents(cview);
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+
                 PositionContextPreview();
             }
             Loaded += (sender, e) =>
@@ -254,6 +253,7 @@ namespace Dash
                         xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
                         break;
                     case DashShared.TypeInfo.RichText:
+                        break;
                     case DashShared.TypeInfo.Text:
                         xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
                         break;
@@ -292,23 +292,24 @@ namespace Dash
             };
             Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
 
-			PointerPressed += (sender, e) =>
-			{
-				DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
-				bool right =
-					(e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
-					 MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
-				var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-				var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-				ManipulationMode =
-					right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
-						? ManipulationModes.All
-						: ManipulationModes.None;
-				MainPage.Instance.Focus(FocusState.Programmatic);
-				e.Handled = ManipulationMode != ManipulationModes.None;
+            PointerPressed += (sender, e) =>
+            {
+                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
+                bool right =
+                    (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
+                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+                ManipulationMode =
+                    right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
+                        ? ManipulationModes.All
+                        : ManipulationModes.None;
+                MainPage.Instance.Focus(FocusState.Programmatic);
+                e.Handled = ManipulationMode != ManipulationModes.None;
                 if (false)  // bcz: set to 'true' for drag/Drop interactions
                     SetupDragDropDragging(e);
-			};
+                e.Handled = true;
+            };
 
             PointerEntered += DocumentView_PointerEntered;
             PointerExited += DocumentView_PointerExited;
@@ -340,9 +341,7 @@ namespace Dash
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
 
-            }
-
-            ;
+            };
 
             void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
             {
@@ -365,21 +364,21 @@ namespace Dash
             xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
             xBottomResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
 
-			foreach (var handle in new Rectangle[]
-			{
-				xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-				xLeftResizeControl, xRightResizeControl,
-				xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-			})
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+            })
             {
                 handle.Tag = handle.ManipulationMode;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-				handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-				handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
-				handle.PointerPressed += (s, e) =>
-				{
-					//ManipulationMode = ManipulationModes.None;
-					e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
+                handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
+                handle.PointerPressed += (s, e) =>
+                {
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                     if (e.Handled)
                     {
                         CapturePointer(e.Pointer);
@@ -390,7 +389,7 @@ namespace Dash
                     else
                         handle.ManipulationMode = ManipulationModes.All;
                 };
-			}
+            }
 
             // setup OperatorEllipse 
             //OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
@@ -479,7 +478,7 @@ namespace Dash
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = this.IsShiftPressed()
+                var adornmentGroups = this.IsAltPressed()
                     ? new List<DocumentView>()
                     : SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
@@ -489,6 +488,7 @@ namespace Dash
                         SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
                             new Size(dv.ActualWidth, dv.ActualHeight))));
                     });
+
                     SetSelectionBorder(false);
                 }
 
@@ -527,6 +527,56 @@ namespace Dash
                 }
             };
 
+            KeyDown += (sender, args) =>
+            {
+                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+                {
+                    if (!_isQuickEntryOpen)
+                    {
+                        _clearByClose = true;
+                        ClearQuickEntryBoxes();
+                        xKeyBox.Focus(FocusState.Keyboard);
+                    }
+
+                    ToggleQuickEntry();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                {
+                    if (xKeyBox.FocusState != FocusState.Unfocused)
+                    {
+                        _articialChange = true;
+                        int pos = xKeyBox.SelectionStart;
+                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+                        xKeyBox.SelectionStart = pos;
+                    }
+                    args.Handled = true;
+                }
+            };
+
+            xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
+            xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
+
+            _lastValueInput = "";
+
+            xQuickEntryIn.Completed += (sender, o) =>
+            {
+                xKeyBox.Text = "d.";
+                xKeyBox.SelectionStart = 2;
+            };
+
+            xKeyEditSuccess.Completed += SetFocusToKeyBox;
+            xValueErrorFailure.Completed += SetFocusToKeyBox;
+
+            xKeyBox.TextChanged += XKeyBoxOnTextChanged;
+            xKeyBox.BeforeTextChanging += XKeyBoxOnBeforeTextChanging;
+            xValueBox.TextChanged += XValueBoxOnTextChanged;
+
+            //xValueBox.GotFocus += XValueBoxOnGotFocus;
+
+            LostFocus += (sender, args) => { if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry(); };
+
             MenuFlyout = xMenuFlyout;
 
             MenuFlyout.Opened += (s, e) =>
@@ -534,8 +584,34 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+        }
 
+        private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
+        {
+            if (!_clearByClose && e.NewText.Length < xKeyBox.Text.Length)
+            {
+                if (xKeyBox.Text.Length <= 2)
+                {
+                    e.Cancel = true;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(e.NewText))
+                    {
+                        xKeyBox.Text = xKeyBox.Text.Substring(0, 2);
+                        xKeyBox.SelectionStart = 2;
+                        xKeyBox.Focus(FocusState.Keyboard);
+                    }
+                }
+            }
+            _clearByClose = false;
+        }
 
+        private void ClearQuickEntryBoxes()
+        {
+            _lastValueInput = "";
+            xKeyBox.Text = "";
+            xValueBox.Text = "";
         }
 
         public uint PointerId;
@@ -585,16 +661,16 @@ namespace Dash
         }
 
         public void RemoveResizeHandlers()
-		{
-			foreach (var handle in new Rectangle[]
-			{
-				xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-				xLeftResizeControl, xRightResizeControl,
-				xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-			})
-			{
-				handle.Visibility = Visibility.Collapsed;
-			}
+        {
+            foreach (var handle in new Rectangle[]
+            {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
+            })
+            {
+                handle.Visibility = Visibility.Collapsed;
+            }
 
             xLeftColumn.Width = new GridLength(0);
             xRightColumn.Width = new GridLength(0);
@@ -1272,6 +1348,11 @@ namespace Dash
 
         // this action is used to remove template editor in sync with document
         public Action FadeOutBegin;
+        private bool _animationBusy;
+        private string _lastValueInput;
+        private bool _articialChange;
+        private bool _clearByClose;
+        private string _mostRecentPrefix;
 
         /// <summary>
         /// Deletes the document from the view.
@@ -1281,7 +1362,7 @@ namespace Dash
         {
             if (ParentCollection != null)
             {
-                UndoManager.StartBatch();
+                UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
 
@@ -1299,12 +1380,13 @@ namespace Dash
         /// </summary>
         public void CopyDocument()
         {
-            UndoManager.StartBatch();
-            // will this screw things up?
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-            var doc = ViewModel.DocumentController.GetCopy(null);
-            ParentCollection?.ViewModel.AddDocument(doc);
-            UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+            {
+                // will this screw things up?
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+                var doc = ViewModel.DocumentController.GetCopy(null);
+                ParentCollection?.ViewModel.AddDocument(doc);
+            }
         }
 
         /// <summary>
@@ -1405,6 +1487,13 @@ namespace Dash
                 FocusedDocument = this;
             }
 
+            if (!(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
+                .Contains(this))
+            {
+                Focus(FocusState.Programmatic);
+            }
+            //if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
+
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1426,10 +1515,10 @@ namespace Dash
                     SelectionManager.Select(this);
                 }
 
-                if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                if (SelectionManager.SelectedDocs.Count() > 1)
                 {
-                    cfview?.Focus(FocusState
-                        .Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    cfview?.Focus(FocusState.Programmatic);
                 }
 
                 //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
@@ -1545,26 +1634,49 @@ namespace Dash
         {
             var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
+            //if it's a group, add all content docs
+            if (ViewModel.IsAdornmentGroup)
+            {
+                var adornmentGroups = SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                if (ParentCollection?.CurrentView is CollectionFreeformBase cview)
+                {
+                    adornmentGroups.ForEach((dv) =>
+                    {
+                        foreach (var docV in cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
+                            new Size(dv.ActualWidth, dv.ActualHeight))))
+                        {
+                            if (!selectedDocs.Contains(docV))
+                            {
+                                selectedDocs.Add(docV);
+                            }
+                        }
+                    });
+
+                    SetSelectionBorder(false);
+                }
+            }
+
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             CollectionView nestedCollection = GetCollectionToMoveTo(overlappedViews);
 
             if (nestedCollection == null)
             {
-                UndoManager.EndBatch();
                 return false;
             }
 
             foreach (DocumentView selDoc in selectedDocs)
             {
-                Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
-                Point where = nestedCollection.CurrentView is CollectionFreeformBase @base
-                    ? Util.GetCollectionFreeFormPoint(@base, pos)
-                    : new Point();
-                collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+                if (selDoc != nestedCollection.GetFirstAncestorOfType<DocumentView>())
+                {
+                    Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
+                    Point where = nestedCollection.CurrentView is CollectionFreeformBase @base
+                        ? Util.GetCollectionFreeFormPoint(@base, pos)
+                        : new Point();
+                    collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+                    nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+                }
             }
-
-            UndoManager.EndBatch();
+            
             return true;
         }
 
@@ -1613,46 +1725,58 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.CopyDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.CopyDocument();
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.CopyViewDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.CopyViewDocument();
         }
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.DeleteDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.DeleteDocument();
         }
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                doc.KeyValueViewDocument();
+            using (UndoManager.GetBatchHandle())
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                    doc.KeyValueViewDocument();
         }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var docView in SelectionManager.GetSelectedSiblings(this))
-            {
-                docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
-                SetZLayer();
-            }
+            using (UndoManager.GetBatchHandle())
+                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+                {
+                    docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                    SetZLayer();
+                }
         }
         public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
         {
-            var collectionView = this.GetFirstDescendantOfType<CollectionView>();
-            if (collectionView != null)
+            using (UndoManager.GetBatchHandle())
             {
-                collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-                if (collectionView.ViewModel.FitToParent)
-                    collectionView.ViewModel.FitContents(collectionView);
+                var collectionView = this.GetFirstDescendantOfType<CollectionView>();
+                if (collectionView != null)
+                {
+                    collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
+                    if (collectionView.ViewModel.FitToParent)
+                        collectionView.ViewModel.FitContents(collectionView);
+                }
             }
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
-        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+        }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
@@ -2015,5 +2139,148 @@ namespace Dash
             }
         }
 
+        private void XTitleIcon_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ToggleQuickEntry();
+            e.Handled = true;
+        }
+
+        private void ToggleQuickEntry()
+        {
+            if (_animationBusy || Equals(MainPage.Instance.MainDocView)) return;
+
+            _isQuickEntryOpen = !_isQuickEntryOpen;
+            Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
+
+            _animationBusy = true;
+            animation.Begin();
+            animation.Completed += (o, o1) => { _animationBusy = false; };
+        }
+
+        private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
+        {
+            obj.Handled = true;
+            ProcessInput();
+        }
+
+        private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
+        {
+            obj.Handled = true;
+            ProcessInput();
+        }
+
+        private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
+        {
+            if (_articialChange)
+            {
+                _articialChange = false;
+                return;
+            }
+            _lastValueInput = xValueBox.Text.Trim();
+        }
+
+        private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
+        {
+            if (xKeyBox.Text.Length < 2) return;
+
+            var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
+            if (split == null || split.Length != 2) return;
+
+            string docSpec = split[0];
+
+            if (!(docSpec.Equals("d") || docSpec.Equals("v"))) return;
+
+            DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
+            string keyInput = split[1].Replace("_", " ");
+
+            var val = target.GetDereferencedField(new KeyController(keyInput), null);
+            if (val == null)
+            {
+                xValueBox.SelectionLength = 0;
+                xValueBox.Text = _lastValueInput;
+                return;
+            }
+
+
+            _articialChange = true;
+            xValueBox.Text = val.GetValue(null).ToString();
+
+            if (double.TryParse(xValueBox.Text.Trim(), out double res))
+            {
+                xValueBox.Text = "=" + xValueBox.Text;
+                xValueBox.SelectionStart = 1;
+                xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+            }
+            else
+            {
+                xValueBox.SelectAll();
+            }
+        }
+
+        //private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
+        //{
+        //    if (xValueBox.Text.StartsWith("="))
+        //    {
+        //        xValueBox.SelectionStart = 1;
+        //        xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+        //    }
+        //    else
+        //    {
+        //        xValueBox.SelectAll();
+        //    }
+        //   }
+
+        private void ProcessInput()
+        {
+            string rawKeyText = xKeyBox.Text;
+            string rawValueText = xValueBox.Text;
+
+            var emptyKeyFailure = false;
+            var emptyValueFailure = false;
+
+            if (string.IsNullOrEmpty(rawKeyText))
+            {
+                xKeyEditFailure.Begin();
+                emptyKeyFailure = true;
+            }
+            if (string.IsNullOrEmpty(rawValueText))
+            {
+                xValueEditFailure.Begin();
+                emptyValueFailure = true;
+            }
+
+            if (emptyKeyFailure || emptyValueFailure) return;
+
+            var components = rawKeyText.Split(".", StringSplitOptions.RemoveEmptyEntries);
+            string docSpec = components[0].ToLower();
+
+            if (components.Length != 2 || !(docSpec.Equals("v") || docSpec.Equals("d")))
+            {
+                xKeyEditFailure.Begin();
+                return;
+            }
+
+            FieldControllerBase computedValue = DSL.InterpretUserInput(rawValueText, true);
+            DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
+            if (computedValue is DocumentController doc && doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType))
+            {
+                computedValue = new TextController(xValueBox.Text.Trim());
+                xValueErrorFailure.Begin();
+            }
+            target.SetField(new KeyController(components[1].Replace("_", " ")), computedValue, true);
+
+            _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
+            xKeyEditSuccess.Begin();
+            xValueEditSuccess.Begin();
+
+            ClearQuickEntryBoxes();
+        }
+
+        private void SetFocusToKeyBox(object sender1, object o2)
+        {
+            xKeyBox.Text = _mostRecentPrefix;
+            xKeyBox.SelectionStart = 2;
+            xKeyBox.Focus(FocusState.Keyboard);
+        }
     }
 }

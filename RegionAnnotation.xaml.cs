@@ -31,9 +31,9 @@ namespace Dash
 
             RegionDocument = regionDocument;
 
-            Width = regionDocument.GetWidth();
-            Height = regionDocument.GetHeight();
-            var pos = regionDocument.GetPosition();
+            Width = regionDocument.GetDataDocument().GetWidth();
+            Height = regionDocument.GetDataDocument().GetHeight();
+            var pos = regionDocument.GetDataDocument().GetPosition();
             Canvas.SetLeft(this, pos?.X ?? 0);
             Canvas.SetTop(this, pos?.Y ?? 0);
         }

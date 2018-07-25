@@ -434,7 +434,6 @@ namespace Dash
             foreach (var dm in collection.ViewModel.DocumentViewModels)
             {
                 var dmd = dm.DocumentController.GetDataDocument();
-                var dd = document.GetDataDocument();
                 //if this doc is given document
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
@@ -446,18 +445,21 @@ namespace Dash
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
 
                     //get zoom changes
-                    var shiftZ = new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
-
-                    //get less zoom, so x and y are zoomed by same amt
-                    var minZoom = Math.Max(Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9, 5);
+                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
+                    
+                   //get less zoom, so x and y are zoomed by same amt
+                    var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
+                    if (!zoom)
+                    {
+                        minZoom = root.ViewModel.TransformGroup.ScaleAmount.X;
+                    }
 
                     if (animated)
                     {
                         //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.SetTransformAnimated(
                             new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
-                            zoom ? new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } : new ScaleTransform { CenterX = shift.X, CenterY = shift.Y },
-                            zoom
+                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } 
                         );
                     }
                     else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
@@ -549,10 +551,11 @@ namespace Dash
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
-                    foreach (var doc in SelectionManager.SelectedDocs)
-                    {
-                        doc.DeleteDocument();
-                    }
+                    using (UndoManager.GetBatchHandle())
+                        foreach (var doc in SelectionManager.SelectedDocs)
+                        {
+                            doc.DeleteDocument();
+                        }
                     //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
                     //    .OfType<CollectionView>().ToList();
                     //foreach (var c in topCollection.Select(c => c.CurrentView).OfType<CollectionFreeformBase>())
@@ -719,11 +722,28 @@ namespace Dash
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
                     cview?.ViewModel?.FitContents(cview);
                 };
+                xMapDocumentView.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             mapTimer.Start();
         }
+
+        private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.JavaScriptHack.Focus(FocusState.Programmatic);
+            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mapPt = e.GetPosition(mapViewCanvas);
+
+            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+            var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
+            
+            mainFreeform?.SetTransformAnimated(
+                new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y });
+         }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {

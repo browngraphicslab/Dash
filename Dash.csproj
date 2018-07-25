@@ -173,6 +173,7 @@
     <Compile Include="CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
+    <Compile Include="Controllers\ColorController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -212,6 +213,8 @@
     <Compile Include="RegionAnnotation.xaml.cs">
       <DependentUpon>RegionAnnotation.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ColorModel.cs" />
+    <Compile Include="Converters\DataFieldToMakeViewConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
     <Compile Include="Util\DashColorPicker.xaml.cs">
       <DependentUpon>DashColorPicker.xaml</DependentUpon>
@@ -489,6 +492,7 @@
     <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\SnapshotView.cs" />
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>

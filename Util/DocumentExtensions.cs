@@ -340,7 +340,7 @@ namespace Dash
 
             if (url != null)
             {
-                MainPage.Instance.WebContext.SetUrl(url);
+                MainPage.Instance.WebContext?.SetUrl(url);
                 
             }
 
