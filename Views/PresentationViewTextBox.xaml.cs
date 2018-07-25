@@ -47,7 +47,7 @@ namespace Dash
         {
             if (args.NewValue is DocumentController dc)
             {
-                string currentTitle = dc.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data;
+                string currentTitle = dc.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
                 if (string.IsNullOrEmpty(currentTitle))
                     dc.SetField(KeyStore.TitleKey, new TextController("<untitled>"), true);
                 SetTitleBinding(dc);
