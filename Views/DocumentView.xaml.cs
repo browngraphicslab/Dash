@@ -253,6 +253,7 @@ namespace Dash
                     UpdateEllipses(_newpoint);
                 }
 
+
                 //var converter = new StringToBrushConverter();
                 //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
                 //if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
