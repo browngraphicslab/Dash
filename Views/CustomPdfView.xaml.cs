@@ -68,47 +68,47 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private DataVirtualizationSource<ImageSource> _pages1;
-        public DataVirtualizationSource<ImageSource> Pages1
+        private DataVirtualizationSource<ImageSource> _topPages;
+        public DataVirtualizationSource<ImageSource> TopPages
         {
-            get => _pages1;
+            get => _topPages;
             set
             {
-                _pages1 = value;
+                _topPages = value;
                 OnPropertyChanged();
             }
         }
 
-        private DataVirtualizationSource<ImageSource> _pages2;
+        private DataVirtualizationSource<ImageSource> _bottomPages;
 
-        public DataVirtualizationSource<ImageSource> Pages2
+        public DataVirtualizationSource<ImageSource> BottomPages
         {
-            get => _pages2;
+            get => _bottomPages;
             set
             {
-                _pages2 = value;
+                _bottomPages = value;
                 OnPropertyChanged();
             }
         }
 
-        private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
+        private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
-        public ObservableCollection<DocumentView> Annotations
+        public ObservableCollection<DocumentView> TopAnnotations
         {
-            get => _annotationList;
+            get => _topAnnotationList;
             set
             {
-                _annotationList = value;
+                _topAnnotationList = value;
                 OnPropertyChanged();
             }
         }
 
         public ObservableCollection<DocumentView> BottomAnnotations
         {
-            get => _annotationList2;
+            get => _bottomAnnotationList;
             set
             {
-                _annotationList2 = value;
+                _bottomAnnotationList = value;
                 OnPropertyChanged();
             }
         }
@@ -139,8 +139,8 @@ namespace Dash
         private WPdf.PdfDocument _wPdfDocument;
         private PDFRegionMarker _currentMarker;
 
-        private Stack<double> _backStack;
-        private Stack<double> _backStack2;
+        private Stack<double> _topBackStack;
+        private Stack<double> _bottomBackStack;
 
         private DispatcherTimer _timer;
 
@@ -162,8 +162,8 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _pages1 = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, PageItemsControl);
-            _pages2 = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, PageItemsControl2);
+            _topPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
+            _bottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
             //DocumentLoaded += (sender, e) =>
             //{
             //    AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -217,10 +217,10 @@ namespace Dash
                 }
             };
 
-            _backStack = new Stack<double>();
-            _backStack.Push(0);
-            _backStack2 = new Stack<double>();
-            _backStack2.Push(0);
+            _topBackStack = new Stack<double>();
+            _topBackStack.Push(0);
+            _bottomBackStack = new Stack<double>();
+            _bottomBackStack.Push(0);
 
             _timer = new DispatcherTimer
             {
@@ -324,8 +324,8 @@ namespace Dash
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                Pages1.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
-                Pages2.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                TopPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                BottomPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
@@ -474,7 +474,7 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             if(currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
             {
                 return;
@@ -487,7 +487,7 @@ namespace Dash
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
@@ -505,7 +505,7 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed)
             {
@@ -524,7 +524,7 @@ namespace Dash
         private double _width;
         private double _verticalOffset;
         private bool _isCtrlPressed;
-        private ObservableCollection<DocumentView> _annotationList2 = new ObservableCollection<DocumentView>();
+        private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -540,8 +540,8 @@ namespace Dash
         public void UnFreeze()
         {
             //await RenderPdf(ScrollViewer.ActualWidth);
-            Pages1.View_SizeChanged();
-            Pages2.View_SizeChanged();
+            TopPages.View_SizeChanged();
+            BottomPages.View_SizeChanged();
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -673,7 +673,7 @@ namespace Dash
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
            
-            var region = (sender == xAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).GetRegionDoc();
+            var region = (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).GetRegionDoc();
             if (region == null)
             {
                 var yPos = e.GetPosition(sender as UIElement).Y;
@@ -681,16 +681,16 @@ namespace Dash
                 region.SetPosition(new Point(0, yPos));
                 region.SetWidth(50);
                 region.SetHeight(20);
-                (sender == xAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
+                (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
                 // note is the new annotation textbox that is created
-                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xAnnotationBox.Width, double.NaN)).Document;
+                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
 
                 region.Link(note);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { Undecorated = true },
-                    Width = xAnnotationBox.ActualWidth,
+                    Width = xTopAnnotationBox.ActualWidth,
                     BindRenderTransform = false
                 };
                 docview.RenderTransform = new TranslateTransform
@@ -707,13 +707,13 @@ namespace Dash
             else
             {
                 // note is the new annotation textbox that is created
-                var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
+                var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
 
                 region.Link(note);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { DecorationState = false },
-                    Width = xAnnotationBox.ActualWidth,
+                    Width = xTopAnnotationBox.ActualWidth,
                     BindRenderTransform = false
                 };
                 docview.hideResizers();
@@ -729,15 +729,15 @@ namespace Dash
 
         private void XAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xAnnotationBox.Visibility.Equals(Visibility.Visible))
+            if (xTopAnnotationBox.Visibility.Equals(Visibility.Visible))
             {
                
-                xAnnotationBox.Visibility = Visibility.Collapsed;
+                xTopAnnotationBox.Visibility = Visibility.Collapsed;
                 xAnnotationBox2.Visibility = Visibility.Collapsed;
             }
             else
             {
-                xAnnotationBox.Visibility = Visibility.Visible;
+                xTopAnnotationBox.Visibility = Visibility.Visible;
                 xAnnotationBox2.Visibility = Visibility.Visible;
             }
         }
@@ -789,7 +789,7 @@ namespace Dash
 
         private void XScrollBack2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_backStack2, BottomScrollViewer);
+            PopStack(_bottomBackStack, BottomScrollViewer);
         }
 
         private void ScrollViewer2_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -804,8 +804,8 @@ namespace Dash
         private void TimerOnTick(object o, object o1)
         {
             _timer.Stop();
-            AddToStack(_backStack, TopScrollViewer);
-            AddToStack(_backStack2, BottomScrollViewer);
+            AddToStack(_topBackStack, TopScrollViewer);
+            AddToStack(_bottomBackStack, BottomScrollViewer);
 
         }
 
@@ -826,14 +826,14 @@ namespace Dash
 
         private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_backStack, TopScrollViewer);
+            PopStack(_topBackStack, TopScrollViewer);
         }
 
      
         //private void MovePage(ScrollViewer scroller, Grid grid, int i)
         //{
         //    var currOffset = 0.0;
-        //    foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
+        //    foreach (var image in TopPageItemsControl.GetDescendantsOfType<Image>())
         //    {
         //        var imgWidth = image.ActualWidth;
         //        var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
@@ -865,13 +865,13 @@ namespace Dash
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {
-                pages = _pages1;
-                annoWidth = xAnnotationBox.ActualWidth;
+                pages = _topPages;
+                annoWidth = xTopAnnotationBox.ActualWidth;
             }
 
             else
             {
-                pages = _pages2;
+                pages = _bottomPages;
                 annoWidth = xAnnotationBox2.ActualWidth;
             }
 
@@ -880,14 +880,12 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                if (currOffset + size.Height * scale - scroller.VerticalOffset > 1)
+                if (currOffset + size.Height * scale + 15 - scroller.VerticalOffset >= 0)
                 {
                     break;
                 }
 
                 currOffset += (size.Height * scale) + 15;
-               
-
             }
 
             scroller.ChangeView(null, currOffset, 1);
@@ -899,13 +897,13 @@ namespace Dash
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {
-                pages = _pages1;
-                annoWidth = xAnnotationBox.ActualWidth;
+                pages = _topPages;
+                annoWidth = xTopAnnotationBox.ActualWidth;
             }
 
             else
             {
-                pages = _pages2;
+                pages = _bottomPages;
                 annoWidth = xAnnotationBox2.ActualWidth;
             }
 

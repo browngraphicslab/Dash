@@ -27,36 +27,36 @@
 
 
         <Grid Grid.Row="0" >
-            <StackPanel x:Name="xButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+            <StackPanel x:Name="xTopButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
 
                 
-                <Grid x:Name="xControlsToggleButton" PointerPressed="XControlsToggleButton_OnPointerPressed">
+                <Grid x:Name="xTopControlsToggleButton" PointerPressed="XTopControlsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                 </Grid>
 
-                <StackPanel x:Name="xToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
-                <Grid x:Name="xAnnotationsToggleButton" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                <StackPanel x:Name="xTopToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
+                <Grid x:Name="xTopAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed">
+                <Grid x:Name="xTopNextPageButton" PointerPressed="XTopNextPageButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed">
+                <Grid x:Name="xTopPreviousPageButton" PointerPressed="XTopPreviousPageButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollToTop" PointerPressed="XScrollToTop_OnPointerPressed">
+                <Grid x:Name="xTopScrollToTop" PointerPressed="XTopScrollToTop_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed">
+                <Grid x:Name="xTopScrollBack" PointerPressed="XTopScrollBack_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
@@ -65,7 +65,7 @@
                 <StackPanel.Resources>
                     <Storyboard x:Name="xFadeAnimation">
                         <DoubleAnimation
-                            Storyboard.TargetName="xToggleButtonStack"
+                            Storyboard.TargetName="xTopToggleButtonStack"
                             Storyboard.TargetProperty="Opacity"
                             From="0.0" To="1.0" Duration="0:0:.5"
                         />
@@ -88,12 +88,12 @@
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
                       DoubleTapped="XPdfGrid_OnDoubleTapped">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public">
+                        <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public">
                             </ItemsControl>
                     </Grid>
-                    <Grid x:Name="xAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+                    <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
                         
-                        <ItemsControl x:Name="xAnnotationsItemsControl" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                        <ItemsControl x:Name="xTopAnnotationsItemsControl" ItemsSource="{x:Bind TopAnnotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas />
@@ -116,34 +116,34 @@
         </Grid>
 
         <Grid Grid.Row="2">
-            <StackPanel x:Name="xButtonPanel2" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+            <StackPanel x:Name="xBottomButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
             
-                <Grid x:Name="xControlsToggleButton2" PointerPressed="XControlsToggleButton2_OnPointerPressed">
+                <Grid x:Name="xBottomControlsToggleButton" PointerPressed="XBottomControlsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                 </Grid>
                 <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
-                <Grid x:Name="xAnnotationsToggleButton2" PointerPressed="XAnnotationsToggleButton_OnPointerPressed">
+                <Grid x:Name="xBottomAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xNextPageButton2" PointerPressed="XNextPageButton2_OnPointerPressed">
+                <Grid x:Name="xBottomNextPageButton" PointerPressed="XBottomNextPageButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xPreviousPageButton2" PointerPressed="XPreviousPageButton2_OnPointerPressed">
+                <Grid x:Name="xBottomPreviousPageButton" PointerPressed="XBottomPreviousPageButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollToTop2" PointerPressed="XScrollToTop2_OnPointerPressed">
+                <Grid x:Name="xBottomScrollToTop" PointerPressed="XBottomScrollToTop_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
 
-                <Grid x:Name="xScrollBack2" PointerPressed="XScrollBack2_OnPointerPressed">
+                <Grid x:Name="xBottomScrollBack" PointerPressed="XBottomScrollBack_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                 </Grid>
@@ -175,12 +175,12 @@
                     <Grid Grid.Column="0" x:Name="xBottomPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
                           PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased">
                         <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl2" x:FieldModifier="public">
+                        <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public">
                         </ItemsControl>
                     </Grid>
-                    <Grid x:Name="xAnnotationBox2" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
+                    <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
 
-                        <ItemsControl x:Name="xAnnotationsItemsControl2" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
+                        <ItemsControl x:Name="xBottomAnnotationsItemsControl" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas />
