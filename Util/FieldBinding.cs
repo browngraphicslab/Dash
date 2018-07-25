@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -17,6 +18,12 @@ namespace Dash
         DereferenceOneLevel,
         DontDereference
     };
+
+    public enum BindingValueType
+    {
+        Value,
+        Field
+    }
 
     public interface IFieldBinding
     {
@@ -39,6 +46,7 @@ namespace Dash
         public GetConverter<TField> GetConverter;
         public XamlDereferenceLevel XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot;
         public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
+        public BindingValueType ValueType = BindingValueType.Value;
         public Object FallbackValue;
 
         public Context Context { get; set; }
@@ -73,7 +81,7 @@ namespace Dash
                         converter = GetConverter(field);
 						Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
-                    var fieldData = field.GetValue(context);
+                    var fieldData = ValueType == BindingValueType.Value ? field.GetValue(context) : field;
                     var xamlData = converter == null || fieldData == null
                         ? fieldData
                         : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
