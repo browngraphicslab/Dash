@@ -180,7 +180,7 @@
                     </Grid>
                     <Grid x:Name="xAnnotationBox2" Grid.Column="1" Width="200" Background="{StaticResource AccentGreenLight}" Opacity="0.3"  HorizontalAlignment="Right" VerticalAlignment="Stretch" Visibility="Collapsed" Tapped="XAnnotationBox_OnTapped">
 
-                        <ItemsControl x:Name="xAnnotationsItemsControl2" ItemsSource="{x:Bind Annotations, Mode=TwoWay}">
+                        <ItemsControl x:Name="xAnnotationsItemsControl2" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <Canvas />
@@ -225,7 +225,7 @@
                    
                     <Rectangle Fill="{StaticResource AccentGreenLight}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
                        
-                    <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="0"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                    <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>

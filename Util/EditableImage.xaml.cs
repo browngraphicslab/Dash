@@ -430,7 +430,7 @@ namespace Dash
 
         public DocumentController GetRegionDocument()
         {
-            return _annotationOverlay.GetRegionDoc();
+            return _annotationOverlay.GetRegionDoc() ?? _docCtrl;
         }
 
         public void ShowRegions()

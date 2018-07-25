@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using Dash.Annotations;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,34 +9,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.System;
-using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using Dash.Annotations;
-using iText.Kernel.Geom;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using Microsoft.Toolkit.Uwp.UI.Animations;
-using Syncfusion.UI.Xaml.Controls;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -43,7 +29,7 @@ using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
-    public sealed partial class CustomPdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class CustomPdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(CustomPdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
@@ -117,6 +103,16 @@ namespace Dash
             }
         }
 
+        public ObservableCollection<DocumentView> BottomAnnotations
+        {
+            get => _annotationList2;
+            set
+            {
+                _annotationList2 = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         private List<DocumentController> _docControllers = new List<DocumentController>();
 
@@ -133,8 +129,6 @@ namespace Dash
         private List<Size> Tops;
 
 
-        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
-        private readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -286,7 +280,7 @@ namespace Dash
 
         public DocumentController GetRegionDocument()
         {
-            return _bottomAnnotationOverlay.GetRegionDoc();
+            return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
@@ -530,6 +524,7 @@ namespace Dash
         private double _width;
         private double _verticalOffset;
         private bool _isCtrlPressed;
+        private ObservableCollection<DocumentView> _annotationList2 = new ObservableCollection<DocumentView>();
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -551,56 +546,57 @@ namespace Dash
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            //if (this.IsCtrlPressed())
-            //{
-            //    if (e.Key == VirtualKey.C && _currentSelections.Last().Key != -1)
-            //    {
-            //        Debug.Assert(_currentSelections.Last().Value != -1);
-            //        Debug.Assert(_currentSelections.Last().Value >= _currentSelections.Last().Key);
-            //        StringBuilder sb = new StringBuilder();
-            //        _currentSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+            if (this.IsCtrlPressed())
+            {
+                var selections = new List<List<KeyValuePair<int, int>>>
+                {
+                    new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
+                    new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
+                };
+                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
+                if (e.Key == VirtualKey.C && allSelections.Last().Key != -1)
+                {
+                    Debug.Assert(allSelections.Last().Value != -1);
+                    Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
+                    StringBuilder sb = new StringBuilder();
+                    allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
 
-            //        // get the indices from our selections and ignore any duplicate selections
-            //        var indices = new List<int>();
-            //        foreach (var selection in _currentSelections)
-            //        {
-            //            for (var i = selection.Key; i <= selection.Value; i++)
-            //            {
-            //                if (!indices.Contains(i))
-            //                {
-            //                    indices.Add(i);
-            //                }
-            //            }
-            //        }
+                    // get the indices from our selections and ignore any duplicate selections
+                    var indices = new List<int>();
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
 
-            //        // if there's ever a jump in our indices, insert two line breaks before adding the next index
-            //        var prevIndex = indices.First();
-            //        foreach (var index in indices.Skip(1))
-            //        {
-            //            if (prevIndex + 1 != index)
-            //            {
-            //                sb.Append("\r\n\r\n");
-            //            }
-            //            var selectableElement = SelectableElements[index];
-            //            if (selectableElement.Type == SelectableElement.ElementType.Text)
-            //            {
-            //                sb.Append((string)selectableElement.Contents);
-            //            }
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
+                    var prevIndex = indices.First();
+                    foreach (var index in indices.Skip(1))
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        if (selectableElement.Type == SelectableElement.ElementType.Text)
+                        {
+                            sb.Append((string)selectableElement.Contents);
+                        }
 
-            //            prevIndex = index;
-            //        }
-                    
-            //        var dataPackage = new DataPackage();
-            //        dataPackage.SetText(sb.ToString());
-            //        Clipboard.SetContent(dataPackage);
-            //        e.Handled = true;
-            //    }
-            //    else if (e.Key == VirtualKey.A)
-            //    {
-            //        SelectElements(0, SelectableElements.Count - 1);
-            //        e.Handled = true;
-            //    }
-            //}
+                        prevIndex = index;
+                    }
+
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(sb.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    e.Handled = true;
+                }
+            }
         }
 
         public void ScrollToRegion(DocumentController target)
@@ -677,24 +673,57 @@ namespace Dash
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
            
-            var region = GetRegionDocument();
-            // note is the new annotation textbox that is created
-            var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
-
-            region.Link(note);
-            var docview = new DocumentView
+            var region = (sender == xAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).GetRegionDoc();
+            if (region == null)
             {
-                DataContext = new DocumentViewModel(note) {DecorationState = false},
-                Width = xAnnotationBox.ActualWidth,
-                BindRenderTransform = false
-            };
-            docview.hideResizers();
+                var yPos = e.GetPosition(sender as UIElement).Y;
+                region = RegionGetter(AnnotationType.Region);
+                region.SetPosition(new Point(0, yPos));
+                region.SetWidth(50);
+                region.SetHeight(20);
+                (sender == xAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
-            Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
-            //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
-            Annotations.Add(docview);
-            DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
-            DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+                // note is the new annotation textbox that is created
+                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xAnnotationBox.Width, double.NaN)).Document;
+
+                region.Link(note);
+                var docview = new DocumentView
+                {
+                    DataContext = new DocumentViewModel(note) { Undecorated = true },
+                    Width = xAnnotationBox.ActualWidth,
+                    BindRenderTransform = false
+                };
+                docview.RenderTransform = new TranslateTransform
+                {
+                    Y = yPos
+                };
+                docview.hideResizers();
+
+                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                BottomAnnotations.Add(docview);
+                DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+            }
+            else
+            {
+                // note is the new annotation textbox that is created
+                var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
+
+                region.Link(note);
+                var docview = new DocumentView
+                {
+                    DataContext = new DocumentViewModel(note) { DecorationState = false },
+                    Width = xAnnotationBox.ActualWidth,
+                    BindRenderTransform = false
+                };
+                docview.hideResizers();
+
+                Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
+                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                BottomAnnotations.Add(docview);
+                DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+            }
 
         }
 
@@ -968,6 +997,16 @@ namespace Dash
         {
             //This makes the assumption that both overlays are kept in sync
             return _bottomAnnotationOverlay.AnnotationVisibility;
+        }
+
+        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            return false;
+        }
+
+        private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+
         }
     }
 }
