@@ -39,7 +39,7 @@ namespace Dash
         /// </summary>
         public WordCount WC;
 
-        ObservableCollection<FontFamily> FontFamilyNames = new ObservableCollection<FontFamily>();
+        ObservableCollection<TextBlock> FontFamilyNames = new ObservableCollection<TextBlock>();
 
         #endregion
 
@@ -80,49 +80,37 @@ namespace Dash
                 "Arial",
                 "Calibri",
                 "Cambria",
-                "Cambria Math",
                 "Comic Sans MS",
                 "Courier New",
-                "Ebrima",
-                "Gadugi",
                 "Georgia",
-                "Javanese Text Regular Fallback font for Javanese script",
-                "Leelawadee UI",
                 "Lucida Console",
                 "Malgun Gothic",
                 "Microsoft Himalaya",
                 "Microsoft JhengHei",
-                "Microsoft JhengHei UI",
-                "Microsoft New Tai Lue",
-                "Microsoft PhagsPa",
-                "Microsoft Tai Le",
                 "Microsoft YaHei",
-                "Microsoft YaHei UI",
                 "Microsoft Yi Baiti",
                 "Mongolian Baiti",
                 "MV Boli",
-                "Myanmar Text",
-                "Nirmala UI",
-                "Segoe MDL2 Assets",
                 "Segoe Print",
                 "Segoe UI",
-                "Segoe UI Emoji",
-                "Segoe UI Historic",
-                "Segoe UI Symbol",
                 "SimSun",
                 "Times New Roman",
                 "Trebuchet MS",
                 "Verdana",
                 "Webdings",
                 "Wingdings",
-                "Yu Gothic",
-                "Yu Gothic UI"
+                "Yu Gothic"
             };
 
             foreach (var font in _fontNames)
             {
-                FontFamilyNames.Add(new FontFamily(font));
+                var newBlock = new TextBlock
+                {
+                    Text = font,
+                    FontFamily = new FontFamily(font)
+                };
 
+                FontFamilyNames.Add(newBlock);
             }
 
             var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
@@ -278,8 +266,7 @@ namespace Dash
 			//select all if nothing is selected
 	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
 	        {
-		        string text;
-		        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out text);
+	            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
 		        var end = text.Length;
 		        xRichEditBox.Document.Selection.SetRange(0, end);
 	        }
@@ -297,9 +284,8 @@ namespace Dash
 	        {
 				//select all if nothing is selected
 		        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-		        { 
-			        string text;
-			        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out text);
+		        {
+		            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
 			        var end = text.Length;
 					xRichEditBox.Document.Selection.SetRange(0, end);
 		        }
@@ -316,8 +302,7 @@ namespace Dash
 
         private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as DashColorPicker;
-            if(colorPicker != null)
+            if(sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
                 richTextView.Foreground(color, true);
@@ -326,8 +311,7 @@ namespace Dash
 
         private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as DashColorPicker;
-            if (colorPicker != null)
+            if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
 				richTextView.Highlight(color, true);

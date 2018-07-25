@@ -491,6 +491,7 @@
     <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\SnapshotView.cs" />
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>

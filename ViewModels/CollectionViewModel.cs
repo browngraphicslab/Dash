@@ -661,10 +661,34 @@ namespace Dash
                                     }
                                 }
                             }
-                            RichTextView sourceDoc = Clipboard.GetContent().Properties[nameof(RichTextView)] as RichTextView;
 
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+
+                            DocumentController postitNote;
+                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            {
+                                var region = new RichTextNote("Rich text region").Document;
+
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                postitNote = postitView.Document;
+                                postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
+                                    sourceDoc.DataDocument.Title, true);
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+
+                                region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
+
+                                region.Link(sourceDoc.LayoutDocument);
+
+                            }
+                            else
+                            {
+                               postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+                            }
+
+                            
                             Actions.DisplayDocument(this, postitNote, where);
+
+                            
 
                         }
                     }

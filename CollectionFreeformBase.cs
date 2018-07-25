@@ -84,6 +84,7 @@ namespace Dash
             SelectionCanvas = new Canvas();
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
+            //Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
             if (ViewModel.InkController == null)
@@ -232,7 +233,7 @@ namespace Dash
             ViewManipulationControls.ElementScale = matrix.M11;
         }
 
-        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale, bool zoom)
+        public void SetTransformAnimated(TranslateTransform translate, ScaleTransform scale)
         {
             //get rendering postion of _itemsPanelCanvas, 2x3 matrix
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
@@ -259,23 +260,22 @@ namespace Dash
             var startMatrix = _transformBeingAnimated.Matrix;
 
             var scaleMatrix = scale.GetMatrix();
-            if (zoom)
-            {
-                //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-                //the higher number, the more it xooms, but doesn't actually change final view 
-                var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
-                var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
 
-                _storyboard1.Children.Add(zoomAnimationX);
-                _storyboard1.Children.Add(zoomAnimationY);
-            }
-            
+            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+            //the higher number, the more it xooms, but doesn't actually change final view 
+            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
+
+            _storyboard1.Children.Add(zoomAnimationX);
+            _storyboard1.Children.Add(zoomAnimationY);
+
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
             var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
-            
+
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
+
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
@@ -732,7 +732,7 @@ namespace Dash
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
             {
-                if (XInkCanvas.IsTopmost() &&
+                if (
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
@@ -974,7 +974,7 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
+            XInkCanvas = new InkCanvas() {Width = 60000, Height = 60000};
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
@@ -1008,9 +1008,12 @@ namespace Dash
 
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
-            RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            if (previewTextHandler != null)
+            {
+                RemoveHandler(KeyDownEvent, previewTextHandler);
+                previewTextbox.Visibility = Visibility.Collapsed;
+                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            }
         }
 
         protected void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
