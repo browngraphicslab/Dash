@@ -221,16 +221,21 @@ namespace Dash
             _topBackStack.Push(0);
             _bottomBackStack = new Stack<double>();
             _bottomBackStack.Push(0);
+            
+            BottomScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
+            TopScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
-            _timer = new DispatcherTimer
+            Canvas.SetZIndex(xBottomButtonPanel, 999);
+            Canvas.SetZIndex(xTopButtonPanel, 999);
+
+        }
+
+        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (!e.IsIntermediate)
             {
-                Interval = new TimeSpan(0, 0, 0, 0, 1000)
-            };
-            _timer.Tick += TimerOnTick;
-
-            Canvas.SetZIndex(xButtonPanel2, 999);
-            Canvas.SetZIndex(xButtonPanel, 999);
-
+                AddToStack((sender == BottomScrollViewer) ? _bottomBackStack : _topBackStack, (sender as ScrollViewer));
+            }
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -684,7 +689,7 @@ namespace Dash
                 (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
                 // note is the new annotation textbox that is created
-                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
+                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
                 region.Link(note);
                 var docview = new DocumentView
@@ -727,18 +732,18 @@ namespace Dash
 
         }
 
-        private void XAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xTopAnnotationBox.Visibility.Equals(Visibility.Visible))
             {
                
                 xTopAnnotationBox.Visibility = Visibility.Collapsed;
-                xAnnotationBox2.Visibility = Visibility.Collapsed;
+                xBottomAnnotationBox.Visibility = Visibility.Collapsed;
             }
             else
             {
                 xTopAnnotationBox.Visibility = Visibility.Visible;
-                xAnnotationBox2.Visibility = Visibility.Visible;
+                xBottomAnnotationBox.Visibility = Visibility.Visible;
             }
         }
 
@@ -771,60 +776,43 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XScrollToTop2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             BottomScrollViewer.ChangeView(null, 0, null);
         }
 
-        private void XNextPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext(BottomScrollViewer);
 
         }
 
-        private void XPreviousPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev(BottomScrollViewer);
         }
 
-        private void XScrollBack2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PopStack(_bottomBackStack, BottomScrollViewer);
         }
 
-        private void ScrollViewer2_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (_timer.IsEnabled)
-            {
-                _timer.Stop();
-            }
-            _timer.Start();
-        }
-
-        private void TimerOnTick(object o, object o1)
-        {
-            _timer.Stop();
-            AddToStack(_topBackStack, TopScrollViewer);
-            AddToStack(_bottomBackStack, BottomScrollViewer);
-
-        }
-
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext(TopScrollViewer);
         }
 
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev(TopScrollViewer);
         }
 
-        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, 0, null);
         }
 
-        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PopStack(_topBackStack, TopScrollViewer);
         }
@@ -872,7 +860,7 @@ namespace Dash
             else
             {
                 pages = _bottomPages;
-                annoWidth = xAnnotationBox2.ActualWidth;
+                annoWidth = xBottomAnnotationBox.ActualWidth;
             }
 
             var sizes = pages.PageSizes;
@@ -904,7 +892,7 @@ namespace Dash
             else
             {
                 pages = _bottomPages;
-                annoWidth = xAnnotationBox2.ActualWidth;
+                annoWidth = xBottomAnnotationBox.ActualWidth;
             }
 
             var sizes = pages.PageSizes;
@@ -922,16 +910,7 @@ namespace Dash
 
             scroller.ChangeView(null, currOffset, 1);
         }
-
-        private void ScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (_timer.IsEnabled)
-            {
-                _timer.Stop();
-            }
-            _timer.Start();
-        }
-
+        
         private void AddToStack(Stack<double> stack, ScrollViewer viewer)
         {
             if (!stack.Count().Equals(0))
@@ -941,18 +920,23 @@ namespace Dash
                     stack.Push(viewer.VerticalOffset);
                 }
             }
+            else
+            {
+                stack.Push(0);
+                stack.Push(viewer.VerticalOffset);
+            }
         }
 
         private void PopStack(Stack<double> stack, ScrollViewer viewer)
         {
-            if (stack.Count >= 1)
+            if (stack.Any())
             {
-                viewer.ChangeView(null, stack.Peek(), 1);
                 stack.Pop();
+                viewer.ChangeView(null, stack.Any() ? stack.Peek() : 0, 1);
             }
         }
 
-        private void XControlsToggleButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xToggleButtonStack2.Visibility.Equals(Visibility.Collapsed))
             {
@@ -966,16 +950,16 @@ namespace Dash
            
         }
 
-        private void XControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
+            if (xTopToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
             {
-                xToggleButtonStack.Visibility = Visibility.Visible;
+                xTopToggleButtonStack.Visibility = Visibility.Visible;
                 xFadeAnimation.Begin();
             }
             else
             {
-                xToggleButtonStack.Visibility = Visibility.Collapsed;
+                xTopToggleButtonStack.Visibility = Visibility.Collapsed;
             }
         }
 
