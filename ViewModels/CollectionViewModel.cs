@@ -258,12 +258,12 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in args.NewItems)
                     {
-                        var visible = !d.GetHidden();
-                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
-                        if (visible && !shown)
-                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        if (!visible && shown)
-                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //var visible = !d.GetHidden();
+                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                        //if (visible && !shown)
+                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //if (!visible && shown)
+                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
@@ -288,7 +288,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -680,7 +679,8 @@ namespace Dash
                                     sourceDoc.DataDocument.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
-                                region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
+                                region.SetRegionDefinition(postitNote);
+                                region.SetAnnotationType(AnnotationType.Selection);
 
                                 region.Link(sourceDoc.LayoutDocument);
 

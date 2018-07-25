@@ -21,7 +21,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : IAnnotatable
+    public sealed partial class RichTextView 
     {
         #region Intilization 
 
@@ -127,7 +127,7 @@ namespace Dash
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
-            xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
+            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
@@ -171,7 +171,7 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
-            
+
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null)
@@ -278,7 +278,11 @@ namespace Dash
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     if (!_originalCharFormat.ContainsKey(s))
                         _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
-                    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    if (selectionFound > 0)
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    }
+
                     // Not really sure what this is supposed to be for, but I'll comment it out for now
                     //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
@@ -288,29 +292,22 @@ namespace Dash
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
-        public async void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
+        public async void RegionSelected(Point pointPressed)
         {
-            if (region == this)
+            _target = getHyperlinkTargetForSelection();
+            if (_target != null)
             {
-                _annotationManager.RegionPressed(DataDocument, pointPressed);
-            }
-            else
-            {
-                _target = getHyperlinkTargetForSelection();
-                if (_target != null)
+                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
+                if (theDoc != null)
                 {
-                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
-                    if (theDoc != null)
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                     {
-                        if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
-                        {
-                            _annotationManager.RegionPressed(theDoc, pointPressed);
-                        }
+                        _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
-                    else if (_target.StartsWith("http"))
-                    {
-                        await Launcher.LaunchUriAsync(new Uri(_target));
-                    }
+                }
+                else if (_target.StartsWith("http"))
+                {
+                    await Launcher.LaunchUriAsync(new Uri(_target));
                 }
             }
         }
@@ -369,7 +366,7 @@ namespace Dash
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            RegionSelected(null, e.GetPosition(MainPage.Instance));
+            RegionSelected(e.GetPosition(MainPage.Instance));
         }
 
         private void CursorToEnd()
@@ -383,12 +380,12 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var dragDoc   = dragModel.DraggedDocument;
+                var dragDoc = dragModel.DraggedDocument;
                 if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 }
-                    
+
                 linkDocumentToSelection(dragModel.DraggedDocument, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
@@ -563,7 +560,7 @@ namespace Dash
                 this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
             }
 
-            
+
         }
 
         #endregion
@@ -575,13 +572,13 @@ namespace Dash
         {
             var selection = xRichEditBox.Document.Selection;
             if (string.IsNullOrEmpty(selection.Text))
-                return DataDocument;
+                return LayoutDocument;
 
 
             // possibly reuse any existing hyperlink region
             var target = getHyperlinkTargetForSelection();
             var theDoc = target == null ? null : ContentController<FieldModel>.GetController<DocumentController>(target);
-            
+
 
             // get the document controller for the target hyperlink (region) document
             var dc = createRTFHyperlink();
@@ -590,13 +587,14 @@ namespace Dash
                 if (target != null && theDoc == null)
                 {
                     dc = new HtmlNote(target, selection.Text).Document;
-                    dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+                    dc.SetRegionDefinition(LayoutDocument);
                 }
                 if (dc != null)
                 {
                     var link = "\"" + dc.Id + "\"";
                     xRichEditBox.Document.Selection.Link = link;
-                } else
+                }
+                else
                     return theDoc;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
@@ -650,11 +648,11 @@ namespace Dash
         DocumentController createRTFHyperlink()
         {
             var selectedText = xRichEditBox.Document.Selection.Text;
-            var start        = xRichEditBox.Document.Selection.StartPosition;
-            var length       = xRichEditBox.Document.Selection.EndPosition - start;
+            var start = xRichEditBox.Document.Selection.StartPosition;
+            var length = xRichEditBox.Document.Selection.EndPosition - start;
             string link = null;
             DocumentController targetRegionDocument = null;
-            
+
             var origStart = start;
 
             while (true)
@@ -667,12 +665,13 @@ namespace Dash
                     {
                         if (xRichEditBox.Document.Selection.Link.StartsWith("\"http"))
                         {
-                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length + 1;
                             xRichEditBox.Document.Selection.FormattedText.Link = "";
                             replaced = true;
-                        } else if ( xRichEditBox.Document.Selection.Link.StartsWith("\"mailto"))
+                        }
+                        else if (xRichEditBox.Document.Selection.Link.StartsWith("\"mailto"))
                         {
-                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length + 1;
                             xRichEditBox.Document.Selection.FormattedText.Link = "";
                             replaced = true;
                         }
@@ -696,8 +695,8 @@ namespace Dash
                     var newstart = xRichEditBox.Document.Selection.EndPosition;
                     for (int j = 0; j < i; j++)
                     {
-                        xRichEditBox.Document.Selection.SetRange(start, start + i-j);
-                        xRichEditBox.Document.Selection.SetRange(start, start + i-j);
+                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
+                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
                         if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                             break;
                     }
@@ -716,7 +715,7 @@ namespace Dash
                     i = -1;
                 }
             }
-            var endpos = xRichEditBox.Document.Selection.EndPosition-1;
+            var endpos = xRichEditBox.Document.Selection.EndPosition - 1;
             xRichEditBox.Document.Selection.SetRange(start, start + length);
             for (int j = 0; j < length; j++)
             {
@@ -725,15 +724,15 @@ namespace Dash
                 if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                     break;
             }
-            if (length > 0 && !string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text) && !string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text) )
+            if (length > 0 && !string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text) && !string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
             {
                 if (link == null)
                 {
                     link = getTargetLink(selectedText, out targetRegionDocument);
-                }   
+                }
                 xRichEditBox.Document.Selection.SetRange(start, start + length);
                 // set the hyperlink for the matched text
-                xRichEditBox.Document.Selection.Link = link; 
+                xRichEditBox.Document.Selection.Link = link;
                 endpos = xRichEditBox.Document.Selection.EndPosition;
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
             }
@@ -744,7 +743,7 @@ namespace Dash
         private string getTargetLink(string selectedText, out DocumentController theDoc)
         {
             theDoc = new RichTextNote(selectedText).Document;
-            theDoc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+            theDoc.SetRegionDefinition(LayoutDocument);
             var link = "\"" + theDoc.Id + "\"";
             if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
