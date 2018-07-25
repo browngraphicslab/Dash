@@ -283,7 +283,7 @@ namespace Dash
             {
                 Debug.Assert(sender is T);
                 var fieldKey = dargs.Reference.FieldKey;
-                if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey) || fieldKey.Equals(KeyStore.HiddenKey))
+                if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey)/* || fieldKey.Equals(KeyStore.HiddenKey)*/)
                 {
                     OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }, null, 0), context);
                 }
