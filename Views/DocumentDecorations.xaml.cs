@@ -56,7 +56,7 @@ namespace Dash
                     doc.PointerExited -= SelectedDocView_PointerExited;
                     doc.ViewModel?.DocumentController.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged -= DocView_OnSizeChanged;
-                    if (doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) ?? false)
+                    if ((doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) ?? false) && doc.GetFirstDescendantOfType<RichTextView>() != null)
                     {
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted -= ManipulatorStarted;
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted -=
@@ -80,7 +80,7 @@ namespace Dash
                     doc.PointerExited += SelectedDocView_PointerExited;
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
-                    if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+                    if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) && doc.GetFirstDescendantOfType<RichTextView>() != null)
                     {
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted += OnManipulatorHelperCompleted;

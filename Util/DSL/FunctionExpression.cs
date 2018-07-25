@@ -8,7 +8,6 @@ namespace Dash
     {
         private readonly List<ScriptExpression> _parameters;
         private readonly string _funcName;
-        private readonly Op.Name _opName;
 
         public FunctionExpression(List<ScriptExpression> parameters, string func)
         {
@@ -74,10 +73,8 @@ namespace Dash
         public override FieldControllerBase CreateReference(Scope scope)
         {
             //TODO
-            return null;
-            //return OperatorScript.CreateDocumentForOperator(
-            //    _parameters.Select(
-            //        kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.CreateReference(scope))), _opName); //recursive linq
+            return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)),
+                Op.Parse(_funcName)); //recursive linq
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse(_funcName));

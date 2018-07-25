@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using DashShared;
 using TypeInfo = DashShared.TypeInfo;
 
 namespace Dash
@@ -326,19 +327,16 @@ namespace Dash
             throw new ScriptExecutionException(new OverloadErrorModel(ambiguous, funcName.ToString(), args.Select(ct => (ct != null) ? ct.TypeInfo : TypeInfo.None).ToList(), typesToString, allParamCounts));
         }
 
-        public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, Op.Name funcName)
+        public static ReferenceController CreateDocumentForOperator(IEnumerable<FieldControllerBase> parameters, Op.Name funcName)
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
             //TODO With overloading this isn't correct
             var t = _functionMap[funcName].First().OperatorType;
             var op = (OperatorController)Activator.CreateInstance(t);
 
-            var doc = new DocumentController();
-            
-            foreach (var parameter in parameters)
-            {
-                doc.SetField(parameter.Key, parameter.Value, true);
-            }
+
+            var inputs = new Dictionary<KeyController, FieldControllerBase>(parameters.Zip(op.Inputs, (arg, pair) => new KeyValuePair<KeyController, FieldControllerBase>(pair.Key, arg)));
+            var doc = new DocumentController(inputs, DocumentType.DefaultType);
             doc.SetField(KeyStore.OperatorKey, new ListController<OperatorController>(new[] { op }), true);
 
             return new DocumentReferenceController(doc, op.Outputs.FirstOrDefault().Key);

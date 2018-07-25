@@ -90,10 +90,7 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            return OperatorScript.CreateDocumentForOperator(
-                _parameters.Select(
-                    kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key,
-                        kvp.Value.CreateReference(scope))), _opName); //recursive linq
+            throw new NotImplementedException();
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
