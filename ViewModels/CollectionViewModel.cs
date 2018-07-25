@@ -108,6 +108,10 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -160,6 +164,7 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
 
+        static int csize = 0;
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
@@ -167,7 +172,7 @@ namespace Dash
             SetCollectionRef(containerDocument, fieldKey);
 
             CellSize = 250; // TODO figure out where this should be set
-                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         DocumentController _lastDoc = null;
