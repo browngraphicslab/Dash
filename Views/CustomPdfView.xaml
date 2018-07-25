@@ -78,7 +78,7 @@
                 </StackPanel.Resources>
 
             </StackPanel>
-            <ScrollViewer  x:Name="TopScrollViewer" x:FieldModifier="public" ViewChanging="TopScrollViewer_OnViewChanging">
+            <ScrollViewer  x:Name="TopScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
            
             <Viewbox  Stretch="UniformToFill">
                 <Grid>
@@ -173,7 +173,7 @@
 
             </StackPanel>
         
-        <ScrollViewer  x:Name="BottomScrollViewer" ViewChanging="BottomScrollViewer_OnViewChanging">
+        <ScrollViewer  x:Name="BottomScrollViewer" ViewChanging="ScrollViewer_OnViewChanging">
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>

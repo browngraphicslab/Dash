@@ -252,7 +252,18 @@ namespace Dash
 
             Canvas.SetZIndex(xBottomButtonPanel, 999);
             Canvas.SetZIndex(xTopButtonPanel, 999);
-            
+
+            _timer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 250)
+            };
+            _timer.Tick += TickTimer();
+
+        }
+
+        private EventHandler<object> TickTimer()
+        {
+            throw new NotImplementedException();
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -563,15 +574,18 @@ namespace Dash
             BottomScrollViewer.ChangeView(null, _bottomScrollRatio * BottomScrollViewer.ExtentHeight, null, true);
         }
 
-        private void TopScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _topScrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
+            if (sender.Equals(TopScrollViewer))
+            {
+                _topScrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
+            } else if (sender.Equals(BottomScrollViewer))
+            {
+                _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
+            }
+           
+            
             //LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
-        }
-
-        private void BottomScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-        {
-            _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
         }
 
         public void UnFreeze()
