@@ -261,7 +261,7 @@ namespace Dash
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 			var comboBox = sender as ComboBox;
-            var selectedFontFamily = comboBox.SelectedValue as FontFamily;
+            var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
 
 			//select all if nothing is selected
 	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)

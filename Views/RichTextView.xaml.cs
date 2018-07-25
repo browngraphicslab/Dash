@@ -65,8 +65,6 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            LostFocus += (sender, args) => { xRichEditBox.IsEnabled = true; };
-
             Application.Current.Suspending += (sender, args) =>
             {
                 ClearSearchHighlights();
