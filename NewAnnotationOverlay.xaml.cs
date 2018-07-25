@@ -239,7 +239,7 @@ namespace Dash
                     ClearPreviewRegion();
                     break;
                 case AnnotationType.Selection:
-                    if (_currentSelections.Any() || _currentSelections.Last().Key == -1)
+                    if (!_currentSelections.Any() || _currentSelections.Last().Key == -1)
                     {
                         goto case AnnotationType.None;
                     }

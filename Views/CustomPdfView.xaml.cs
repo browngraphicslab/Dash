@@ -986,9 +986,9 @@ namespace Dash
             //if (linkDoc.GetField<TextController>(KeyStore.LinkContextKey).Data
             //    .Equals(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()))
             //{
-                    
+
             //}
-            //return false;
+            return false;
         }
 
         private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
