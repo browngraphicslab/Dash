@@ -72,15 +72,11 @@ namespace Dash
                     xStack.Children.Add(_menuView);
                     //collapse other text menu
                     xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
-<<<<<<< HEAD:Views/Document Menu/Toolbar/RichTextSubtoolbar.xaml.cs
 	                xFontColor.Visibility = Visibility.Collapsed;
 	                xOpacitySlider.Visibility = Visibility.Collapsed;
                     _buttons.TryGetValue("Font", out var fontButton);
-=======
 	                //xBackgroundColorButton.Visibility = Visibility.Collapsed;
-
-					_buttons.TryGetValue("Font", out var fontButton);
->>>>>>> d252c8c1d300efc5320cbd8eeb5250c6fa1e4bbb:Views/Document Menu/Toolbar/TextSubtoolbar.xaml.cs
+                    
                     if (fontButton != null)
                     {
                         //Width meant to be 67 to match actual rendered width of main toolbar collapse button

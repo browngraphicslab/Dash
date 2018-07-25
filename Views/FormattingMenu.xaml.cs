@@ -206,16 +206,14 @@ namespace Dash
 
         private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-			UndoManager.StartBatch();
-            richTextView.Superscript(true);
-			UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+                richTextView.Superscript(true);
         }
 
         private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-	        UndoManager.StartBatch();
-			richTextView.Subscript(true);
-	        UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+                richTextView.Subscript(true);
 		}
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -272,24 +270,25 @@ namespace Dash
                 var comboBox = sender as ComboBox;
                 var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
 
-                UndoManager.StartBatch();
-                //select all if nothing is selected
-                if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
-                    xRichEditBox.Document.Selection.EndPosition)
+                using (UndoManager.GetBatchHandle())
                 {
-                    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-                    var end = text.Length;
-                    xRichEditBox.Document.Selection.SetRange(0, end);
-                    xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-                    xRichEditBox.Document.Selection.SetRange(end, end);
-                }
-                else
-                {
-                    xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-                }
+                    //select all if nothing is selected
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                        xRichEditBox.Document.Selection.SetRange(end, end);
+                    }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                    }
 
-                richTextView.UpdateDocumentFromXaml();
-                UndoManager.EndBatch();
+                    richTextView.UpdateDocumentFromXaml();
+                }
             }
             else
             {
@@ -306,32 +305,32 @@ namespace Dash
                 if (selectedFontSize != null)
                 {
                     //select all if nothing is selected
-                    UndoManager.StartBatch();
-                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
-                        xRichEditBox.Document.Selection.EndPosition)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-                        var end = text.Length;
-                        xRichEditBox.Document.Selection.SetRange(0, end);
-                        xRichEditBox.Document.Selection.CharacterFormat.Size =
-                            (float) Convert.ToDouble(selectedFontSize.ToString());
-                        xRichEditBox.Document.Selection.SetRange(end, end);
-                    }
-                    else
-                    {
-                        xRichEditBox.Document.Selection.CharacterFormat.Size =
-                            (float) Convert.ToDouble(selectedFontSize.ToString());
-                    }
+                        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                            xRichEditBox.Document.Selection.EndPosition)
+                        {
+                            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                            var end = text.Length;
+                            xRichEditBox.Document.Selection.SetRange(0, end);
+                            xRichEditBox.Document.Selection.CharacterFormat.Size =
+                                (float) Convert.ToDouble(selectedFontSize.ToString());
+                            xRichEditBox.Document.Selection.SetRange(end, end);
+                        }
+                        else
+                        {
+                            xRichEditBox.Document.Selection.CharacterFormat.Size =
+                                (float) Convert.ToDouble(selectedFontSize.ToString());
+                        }
 
-                    richTextView.UpdateDocumentFromXaml();
-                    UndoManager.EndBatch();
+                        richTextView.UpdateDocumentFromXaml();
+                    }
                 }
             }
             else
             {
                 _fontSizeChanged = false;
             }
-
         }
 
         #endregion

@@ -42,8 +42,8 @@
             <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
             <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" Margin="5,0,0,0" />
 
-            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed" Margin="30,0,0,0" >
-                <ListView IsItemClickEnabled="True" MaxHeight="200" ItemsSource="{x:Bind _items}" Background="White">
+            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0" >
+                <ListView IsItemClickEnabled="True"  ItemsSource="{x:Bind _items}" Background="White">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
                             <StackPanel DoubleTapped="UIElement_OnDoubleTapped">
@@ -57,7 +57,7 @@
                                     <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0" Grid.Column="1" />
                                 </Grid>
                                 <Border BorderThickness="2" BorderBrush="Black" Height="100">
-                                    <Image Source="{x:Bind Image}" Height="100" />
+                                    <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
                                 </Border>
                             </StackPanel>
                         </DataTemplate>

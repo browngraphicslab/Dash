@@ -217,9 +217,8 @@ namespace Dash
 
                 void VTypeOnClick(object sender, RoutedEventArgs e)
                 {
-                    UndoManager.StartBatch();
-                    SetView(n);
-                    UndoManager.EndBatch();
+                    using (UndoManager.GetBatchHandle())
+                        SetView(n);
                 }
 
                 vtype.Click += VTypeOnClick;

@@ -49,11 +49,12 @@ namespace Dash
 
         private void AddWorkspace_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            UndoManager.StartBatch();
-            Debug.Assert(ViewModel != null, "ViewModel != null");
-            var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-            UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+            {
+                Debug.Assert(ViewModel != null, "ViewModel != null");
+                var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
+            }
         }
 
         public void Highlight(DocumentController document, bool? flag)

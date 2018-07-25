@@ -107,7 +107,7 @@ namespace Dash
         public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
         public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
         public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
-        public static KeyController CollectionFitToParentKey = new KeyController("_CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
+        public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
         public static readonly KeyController SnapshotImage = new KeyController("Snapshot Image", "1D3D649D-A29D-41DF-8608-3822D8546EEA");

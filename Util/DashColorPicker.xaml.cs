@@ -109,10 +109,10 @@ namespace Dash
 			//on click should trigger color change to that color
 			box.PointerPressed += (s, e) =>
 			{
-				UndoManager.StartBatch();
-				xColorPicker.Color = color;
-			    LastDiscreteSelection = color;
-				UndoManager.EndBatch();
+                using (UndoManager.GetBatchHandle()) {
+                    xColorPicker.Color = color;
+                    LastDiscreteSelection = color;
+                }
 			};
 			//TODO: add white border for hover
 		}

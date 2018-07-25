@@ -136,7 +136,8 @@ namespace Dash
                 {
                     var docView = getDocView();
                     if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
-                        docView.DeleteDocument();
+                        using (UndoManager.GetBatchHandle())
+                            docView.DeleteDocument();
                 }
             };
 
@@ -321,20 +322,21 @@ namespace Dash
                 if (MainPage.Instance.WebContext != null)
                     MainPage.Instance.WebContext.SetUrl(_target);
                 else
-                {
-                    nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
-                    if (nearestOnCollection != null)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        if (this.IsCtrlPressed())
-                            nearestOnCollection.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
+                        if (nearestOnCollection != null)
+                        {
+                            if (this.IsCtrlPressed())
+                                nearestOnCollection.DeleteDocument();
+                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        }
+                        else
+                        {
+                            theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
+                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                        }
                     }
-                    else
-                    {
-                        theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-                    }
-                }
             }
         }
 
