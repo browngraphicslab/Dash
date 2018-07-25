@@ -152,12 +152,29 @@ namespace Dash
 
         public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
-        public CustomPdfView()
+        private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            this.InitializeComponent();
-
+            LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
-        
+
+        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        {
+            if (args.NewValue == null)
+            {
+                return;
+            }
+
+            ScrollToRegion(args.NewValue as DocumentController);
+            _bottomAnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
+
+            sender.RemoveField(KeyStore.GoToRegionKey);
+        }
+
+        private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+        }
+
         private readonly NewAnnotationOverlay _topAnnotationOverlay;
         private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
 
@@ -190,6 +207,8 @@ namespace Dash
 
             //};
             //AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
+            Loaded += CustomPdfView_Loaded;
+            Unloaded += CustomPdfView_Unloaded;
 
             _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
             _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
@@ -608,7 +627,7 @@ namespace Dash
             var offset = target.GetDataDocument().GetPosition()?.Y;
             if (offset == null) return;
 
-            TopScrollViewer.ChangeView(null, offset, null);
+            BottomScrollViewer.ChangeView(null, offset.Value + BottomScrollViewer.ViewportHeight, null);
         }
 
         // when the sidebar marker gets pressed

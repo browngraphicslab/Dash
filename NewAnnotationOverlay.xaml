@@ -9,9 +9,11 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Canvas x:Name="XAnnotationCanvas">
+    <Grid>
+        <Canvas x:Name="XAnnotationCanvas">
+            <Rectangle x:Name="XPreviewRect"  Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+        </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
-        <Rectangle x:Name="XPreviewRect"  Fill="#33FFFF00" Visibility="Collapsed"></Rectangle>
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>
-    </Canvas>
+    </Grid>
 </UserControl>

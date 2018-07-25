@@ -187,11 +187,6 @@ namespace Dash
             return null;
         }
 
-        internal void AddFieldUpdatedListener(KeyController dockedLength, object v)
-        {
-            throw new NotImplementedException();
-        }
-
         public FieldControllerBase ParseDocumentReference(string textInput, bool searchAllDocsIfFail)
         {
             var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]

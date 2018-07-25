@@ -73,6 +73,19 @@ namespace Dash
 
         public AnnotationType AnnotationType => _currentAnnotationType;
 
+        public List<ISelectable> _regions = new List<ISelectable>();
+
+        public void SelectRegion(DocumentController region)
+        {
+            if (region.Equals(_selectedRegion?.RegionDocument))
+            {
+                return;
+            }
+            _selectedRegion?.Deselect();
+            _selectedRegion = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
+            _selectedRegion?.Select();
+        }
+
         private void SelectRegion(ISelectable selectable, Point? mousePos)
         {
             if (_selectedRegion == selectable)
@@ -108,6 +121,21 @@ namespace Dash
 
             foreach (var documentController in _regionList)
             {
+                RenderAnnotation(documentController);
+            }
+
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            XInkCanvas.InkPresenter.IsInputEnabled = false;
+            XInkCanvas.IsHitTestVisible = false;
+            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void RenderAnnotation(DocumentController documentController)
+        {
                 switch (documentController.GetAnnotationType())
                 {
                     case AnnotationType.Region:
@@ -121,13 +149,56 @@ namespace Dash
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-            }
+        }
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            XInkCanvas.InkPresenter.IsInputEnabled = false;
-            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+        private void OnUnloaded(object o, RoutedEventArgs routedEventArgs)
+        {
+            _regionList.FieldModelUpdated -= RegionListOnFieldModelUpdated;
+            _inkController.FieldModelUpdated -= _inkController_FieldModelUpdated;
+        }
+
+        private void OnLoaded(object o, RoutedEventArgs routedEventArgs)
+        {
+            _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
+            _regionList.FieldModelUpdated += RegionListOnFieldModelUpdated;
+        }
+
+        private void RegionListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        {
+            var listArgs = fieldUpdatedEventArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+            if (listArgs == null)
+            {
+                return;
+            }
+            switch (listArgs.ListAction)
+            {
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                    foreach (var documentController in listArgs.NewItems)
+                    {
+                        RenderAnnotation(documentController);
+                    }
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private bool _maskInkUpdates = false;
+        private void _inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (!_maskInkUpdates)
+            {
+                XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            }
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -139,6 +210,7 @@ namespace Dash
             }
             _currentAnnotationType = type;
             XInkCanvas.InkPresenter.IsInputEnabled = _currentAnnotationType == AnnotationType.Ink;
+            XInkCanvas.IsHitTestVisible = _currentAnnotationType == AnnotationType.Ink;
         }
 
         public DocumentController GetRegionDoc()
@@ -159,10 +231,9 @@ namespace Dash
                     annotation = _regionGetter(_currentAnnotationType);
                     var pos = new Point(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect));
                     var size = new Size(XPreviewRect.Width, XPreviewRect.Height);
-                    annotation.SetPosition(pos);
-                    annotation.SetWidth(XPreviewRect.Width);
-                    annotation.SetHeight(XPreviewRect.Height);
-                    RenderRegion(annotation);
+                    annotation.GetDataDocument().SetPosition(pos);
+                    annotation.GetDataDocument().SetWidth(XPreviewRect.Width);
+                    annotation.GetDataDocument().SetHeight(XPreviewRect.Height);
                     ClearPreviewRegion();
                     break;
                 case AnnotationType.Selection:
@@ -186,8 +257,7 @@ namespace Dash
                     //TODO Add ListController.DeferUpdate
                     annotation.SetField(KeyStore.SelectionRegionTopLeftKey, posList, true);
                     annotation.SetField(KeyStore.SelectionRegionSizeKey, sizeList, true);
-                    annotation.SetPosition(new Point(0, minY));
-                    RenderTextAnnotation(annotation);
+                    annotation.GetDataDocument().SetPosition(new Point(0, minY));
                     ClearTextSelection();
                     break;
                 case AnnotationType.Ink:
@@ -198,9 +268,9 @@ namespace Dash
             }
             Debug.Assert(annotation != null, "Annotation must be assigned in the switch statement");
             Debug.Assert(!(annotation.Equals(_mainDocument)), "If returning the main document, return it immediately, don't fall through to here");
-            _regionList.Add(annotation);
             annotation.SetRegionDefinition(_mainDocument);
             annotation.SetAnnotationType(_currentAnnotationType);
+            _regionList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             return annotation;
         }
@@ -275,12 +345,16 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
+            _maskInkUpdates = true;
             _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            _maskInkUpdates = false;
         }
 
         private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
         {
+            _maskInkUpdates = true;
             _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            _maskInkUpdates = false;
         }
 
         #endregion
@@ -292,6 +366,7 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Collapsed;
         }
 
+        private bool _annotatingRegion = false;
         private Point _previewStartPoint;
         public void StartRegion(Point p)
         {
@@ -299,6 +374,8 @@ namespace Dash
             {
                 return;
             }
+
+            _annotatingRegion = true;
             _previewStartPoint = p;
             Canvas.SetLeft(XPreviewRect, p.X);
             Canvas.SetTop(XPreviewRect, p.Y);
@@ -310,6 +387,11 @@ namespace Dash
         public void UpdateRegion(Point p)
         {
             if (_currentAnnotationType != AnnotationType.Region)
+            {
+                return;
+            }
+
+            if (!_annotatingRegion)
             {
                 return;
             }
@@ -341,6 +423,7 @@ namespace Dash
             {
                 return;
             }
+            _annotatingRegion = false;
         }
 
         private void RenderRegion(DocumentController region)
@@ -357,6 +440,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(AnnotationVisibility)),
                 Converter = new BoolToVisibilityConverter()
             });
+            _regions.Add(r);
             XAnnotationCanvas.Children.Add(r);
         }
 
@@ -478,6 +562,8 @@ namespace Dash
             {
                 RenderTextRegion(posList[i].Data, sizeList[i].Data, vm);
             }
+
+            _regions.Add(vm);
         }
 
         private void RenderTextRegion(Point pos, Point size, SelectionViewModel vm)

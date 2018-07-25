@@ -283,7 +283,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
