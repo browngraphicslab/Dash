@@ -147,8 +147,21 @@ namespace Dash
         public void SetCurrTextBox(RichEditBox box)
         {
 	        _currBox = box;
-			if (_menuView != null) _menuView.xRichEditBox = _currBox;
-		}
+			//if (_menuView != null) _menuView.xRichEditBox = _currBox;
+            if (_menuView != null)
+            {
+                xStack.Children.Remove(_menuView);
+                //create a formatting menu and bind it to the currently selected richEditBox's view
+                _menuView = new FormattingMenuView(this)
+                {
+                    richTextView = _docs.GetFirstDescendantOfType<RichTextView>(),
+                    xRichEditBox = _currBox
+                };
+                //add the menu to the stack panel
+                xStack.Children.Insert(0, _menuView);
+            }
+
+        }
 
         /**
 		 * Setter for the documnentview of the richedittextbox, used for accessing text edit methods
@@ -245,12 +258,12 @@ namespace Dash
 				//xBackgroundColorButton.Visibility = Visibility.Collapsed;
 				xInitialGrid.Visibility = Visibility.Collapsed;
 
-				_buttons.TryGetValue("Font", out var fontButton);
-				if (fontButton != null)
-				{
-					//Width meant to be 67 to match actual rendered width of main toolbar collapse button
-					fontButton.Width = 67;
-				}
+				//_buttons.TryGetValue("Font", out var fontButton);
+				//if (fontButton != null)
+				//{
+				//	//Width meant to be 67 to match actual rendered width of main toolbar collapse button
+				//	fontButton.Width = 67;
+				//}
 
 			}
 		}

@@ -56,7 +56,7 @@ namespace Dash
         }
 
 
-        private void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
+        public void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
         {  
             WC = new WordCount(xRichEditBox);
 	        xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
