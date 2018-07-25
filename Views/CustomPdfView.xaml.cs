@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using Dash.Annotations;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,34 +9,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.System;
-using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using Dash.Annotations;
-using iText.Kernel.Geom;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using Microsoft.Toolkit.Uwp.UI.Animations;
-using Syncfusion.UI.Xaml.Controls;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -43,7 +29,7 @@ using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
-    public sealed partial class CustomPdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class CustomPdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(CustomPdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
@@ -82,37 +68,47 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private DataVirtualizationSource<ImageSource> _pages1;
-        public DataVirtualizationSource<ImageSource> Pages1
+        private DataVirtualizationSource<ImageSource> _topPages;
+        public DataVirtualizationSource<ImageSource> TopPages
         {
-            get => _pages1;
+            get => _topPages;
             set
             {
-                _pages1 = value;
+                _topPages = value;
                 OnPropertyChanged();
             }
         }
 
-        private DataVirtualizationSource<ImageSource> _pages2;
+        private DataVirtualizationSource<ImageSource> _bottomPages;
 
-        public DataVirtualizationSource<ImageSource> Pages2
+        public DataVirtualizationSource<ImageSource> BottomPages
         {
-            get => _pages2;
+            get => _bottomPages;
             set
             {
-                _pages2 = value;
+                _bottomPages = value;
                 OnPropertyChanged();
             }
         }
 
-        private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
+        private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
-        public ObservableCollection<DocumentView> Annotations
+        public ObservableCollection<DocumentView> TopAnnotations
         {
-            get => _annotationList;
+            get => _topAnnotationList;
             set
             {
-                _annotationList = value;
+                _topAnnotationList = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<DocumentView> BottomAnnotations
+        {
+            get => _bottomAnnotationList;
+            set
+            {
+                _bottomAnnotationList = value;
                 OnPropertyChanged();
             }
         }
@@ -133,8 +129,6 @@ namespace Dash
         private List<Size> Tops;
 
 
-        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
-        private readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -145,8 +139,8 @@ namespace Dash
         private WPdf.PdfDocument _wPdfDocument;
         private PDFRegionMarker _currentMarker;
 
-        private Stack<double> _backStack;
-        private Stack<double> _backStack2;
+        private Stack<double> _topBackStack;
+        private Stack<double> _bottomBackStack;
 
         private DispatcherTimer _timer;
 
@@ -168,8 +162,8 @@ namespace Dash
             this.InitializeComponent();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            _pages1 = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, PageItemsControl);
-            _pages2 = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, PageItemsControl2);
+            _topPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
+            _bottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
             //DocumentLoaded += (sender, e) =>
             //{
             //    AnnotationManager.NewRegionMade += OnNewRegionMade;
@@ -223,10 +217,10 @@ namespace Dash
                 }
             };
 
-            _backStack = new Stack<double>();
-            _backStack.Push(0);
-            _backStack2 = new Stack<double>();
-            _backStack2.Push(0);
+            _topBackStack = new Stack<double>();
+            _topBackStack.Push(0);
+            _bottomBackStack = new Stack<double>();
+            _bottomBackStack.Push(0);
 
             _timer = new DispatcherTimer
             {
@@ -234,8 +228,8 @@ namespace Dash
             };
             _timer.Tick += TimerOnTick;
 
-            Canvas.SetZIndex(xButtonPanel2, 999);
-            Canvas.SetZIndex(xButtonPanel, 999);
+            Canvas.SetZIndex(xTopButtonPanel, 999);
+            Canvas.SetZIndex(xBottomButtonPanel, 999);
 
         }
 
@@ -286,7 +280,7 @@ namespace Dash
 
         public DocumentController GetRegionDocument()
         {
-            return _bottomAnnotationOverlay.GetRegionDoc();
+            return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
@@ -330,8 +324,8 @@ namespace Dash
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                Pages1.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
-                Pages2.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                TopPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                BottomPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
 
@@ -480,7 +474,7 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             if(currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
             {
                 return;
@@ -493,7 +487,7 @@ namespace Dash
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
@@ -511,7 +505,7 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed)
             {
@@ -530,6 +524,7 @@ namespace Dash
         private double _width;
         private double _verticalOffset;
         private bool _isCtrlPressed;
+        private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -545,62 +540,63 @@ namespace Dash
         public void UnFreeze()
         {
             //await RenderPdf(ScrollViewer.ActualWidth);
-            Pages1.View_SizeChanged();
-            Pages2.View_SizeChanged();
+            TopPages.View_SizeChanged();
+            BottomPages.View_SizeChanged();
         }
 
         private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            //if (this.IsCtrlPressed())
-            //{
-            //    if (e.Key == VirtualKey.C && _currentSelections.Last().Key != -1)
-            //    {
-            //        Debug.Assert(_currentSelections.Last().Value != -1);
-            //        Debug.Assert(_currentSelections.Last().Value >= _currentSelections.Last().Key);
-            //        StringBuilder sb = new StringBuilder();
-            //        _currentSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+            if (this.IsCtrlPressed())
+            {
+                var selections = new List<List<KeyValuePair<int, int>>>
+                {
+                    new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
+                    new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
+                };
+                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
+                if (e.Key == VirtualKey.C && allSelections.Last().Key != -1)
+                {
+                    Debug.Assert(allSelections.Last().Value != -1);
+                    Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
+                    StringBuilder sb = new StringBuilder();
+                    allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
 
-            //        // get the indices from our selections and ignore any duplicate selections
-            //        var indices = new List<int>();
-            //        foreach (var selection in _currentSelections)
-            //        {
-            //            for (var i = selection.Key; i <= selection.Value; i++)
-            //            {
-            //                if (!indices.Contains(i))
-            //                {
-            //                    indices.Add(i);
-            //                }
-            //            }
-            //        }
+                    // get the indices from our selections and ignore any duplicate selections
+                    var indices = new List<int>();
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
 
-            //        // if there's ever a jump in our indices, insert two line breaks before adding the next index
-            //        var prevIndex = indices.First();
-            //        foreach (var index in indices.Skip(1))
-            //        {
-            //            if (prevIndex + 1 != index)
-            //            {
-            //                sb.Append("\r\n\r\n");
-            //            }
-            //            var selectableElement = SelectableElements[index];
-            //            if (selectableElement.Type == SelectableElement.ElementType.Text)
-            //            {
-            //                sb.Append((string)selectableElement.Contents);
-            //            }
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
+                    var prevIndex = indices.First();
+                    foreach (var index in indices.Skip(1))
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        if (selectableElement.Type == SelectableElement.ElementType.Text)
+                        {
+                            sb.Append((string)selectableElement.Contents);
+                        }
 
-            //            prevIndex = index;
-            //        }
-                    
-            //        var dataPackage = new DataPackage();
-            //        dataPackage.SetText(sb.ToString());
-            //        Clipboard.SetContent(dataPackage);
-            //        e.Handled = true;
-            //    }
-            //    else if (e.Key == VirtualKey.A)
-            //    {
-            //        SelectElements(0, SelectableElements.Count - 1);
-            //        e.Handled = true;
-            //    }
-            //}
+                        prevIndex = index;
+                    }
+
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(sb.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    e.Handled = true;
+                }
+            }
         }
 
         public void ScrollToRegion(DocumentController target)
@@ -677,43 +673,72 @@ namespace Dash
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
            
-            var region = GetRegionDocument();
-            // note is the new annotation textbox that is created
-            var note = new RichTextNote("<annotation>", new Point(), new Size(xAnnotationBox.Width, double.NaN)).Document;
-
-            region.Link(note);
-            var docview = new DocumentView
+            var region = (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).GetRegionDoc();
+            if (region == null)
             {
-                DataContext = new DocumentViewModel(note) {DecorationState = false},
-                Width = xAnnotationBox.ActualWidth,
-                BindRenderTransform = false
-            };
-            docview.hideResizers();
+                var yPos = e.GetPosition(sender as UIElement).Y;
+                region = RegionGetter(AnnotationType.Region);
+                region.SetPosition(new Point(0, yPos));
+                region.SetWidth(50);
+                region.SetHeight(20);
+                (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
-            Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
-            //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
-            Annotations.Add(docview);
-            DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
-            DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+                // note is the new annotation textbox that is created
+                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
+
+                region.Link(note);
+                var docview = new DocumentView
+                {
+                    DataContext = new DocumentViewModel(note) { Undecorated = true },
+                    Width = xTopAnnotationBox.ActualWidth,
+                    BindRenderTransform = false
+                };
+                docview.RenderTransform = new TranslateTransform
+                {
+                    Y = yPos
+                };
+                docview.hideResizers();
+
+                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                BottomAnnotations.Add(docview);
+                DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+            }
+            else
+            {
+                // note is the new annotation textbox that is created
+                var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
+
+                region.Link(note);
+                var docview = new DocumentView
+                {
+                    DataContext = new DocumentViewModel(note) { DecorationState = false },
+                    Width = xTopAnnotationBox.ActualWidth,
+                    BindRenderTransform = false
+                };
+                docview.hideResizers();
+
+                Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
+                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                BottomAnnotations.Add(docview);
+                DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
+            }
 
         }
 
-        private void XAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xAnnotationBox.Width.Equals(0))
+            if (xTopAnnotationBox.Width.Equals(0))
             {
-                //xAnnotationBox.Visibility = Visibility.Visible;
-                //xAnnotationBox2.Visibility = Visibility.Visible;
-                xAnnotationBox.Width = 200;
-                xAnnotationBox2.Width = 200;
+                xTopAnnotationBox.Width = 200;
+                xBottomAnnotationBox.Width = 200;
             
             }
             else
             {
-                //xAnnotationBox.Visibility = Visibility.Collapsed;
-                //xAnnotationBox2.Visibility = Visibility.Collapsed;
-                xAnnotationBox.Width = 0;
-                xAnnotationBox2.Width = 0;
+               xTopAnnotationBox.Width = 0;
+               xBottomAnnotationBox.Width = 0;
             }
         }
 
@@ -746,25 +771,25 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XScrollToTop2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             BottomScrollViewer.ChangeView(null, 0, null);
         }
 
-        private void XNextPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext(BottomScrollViewer);
 
         }
 
-        private void XPreviousPageButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev(BottomScrollViewer);
         }
 
-        private void XScrollBack2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_backStack2, BottomScrollViewer);
+            PopStack(_bottomBackStack, BottomScrollViewer);
         }
 
         private void ScrollViewer2_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -779,60 +804,31 @@ namespace Dash
         private void TimerOnTick(object o, object o1)
         {
             _timer.Stop();
-            AddToStack(_backStack, TopScrollViewer);
-            AddToStack(_backStack2, BottomScrollViewer);
+            AddToStack(_topBackStack, TopScrollViewer);
+            AddToStack(_bottomBackStack, BottomScrollViewer);
 
         }
 
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext(TopScrollViewer);
         }
 
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev(TopScrollViewer);
         }
 
-        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, 0, null);
         }
 
-        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_backStack, TopScrollViewer);
+            PopStack(_topBackStack, TopScrollViewer);
         }
-
-     
-        //private void MovePage(ScrollViewer scroller, Grid grid, int i)
-        //{
-        //    var currOffset = 0.0;
-        //    foreach (var image in PageItemsControl.GetDescendantsOfType<Image>())
-        //    {
-        //        var imgWidth = image.ActualWidth;
-        //        var annoWidth = grid.Visibility == Visibility.Visible ? grid.ActualWidth : 0;
-        //        var scale = (scroller.ViewportWidth - annoWidth) / imgWidth;
-        //        if (i == 0)
-        //        {
-        //            if (currOffset + (image.ActualHeight * scale) + 5 > scroller.VerticalOffset)
-        //            {
-        //                break;
-        //            }
-        //            currOffset += (image.ActualHeight * scale);
-        //        }
-        //        else
-        //        {
-        //            currOffset += (image.ActualHeight * scale);
-        //            if (currOffset > scroller.VerticalOffset + 5)
-        //            {
-        //                break;
-        //            }
-        //        }
-                
-        //    }
-        //    scroller.ChangeView(null, currOffset, 1);
-        //}
+        
 
         private void PagePrev(ScrollViewer scroller)
         {
@@ -840,14 +836,17 @@ namespace Dash
             double annoWidth = 0;
             if (scroller.Equals(TopScrollViewer))
             {
-                pages = _pages1;
-                annoWidth = xAnnotationBox.Width;
+
+                pages = _topPages;
+                annoWidth = xTopAnnotationBox.Width;
+
             }
 
             else
             {
-                pages = _pages2;
-                annoWidth = xAnnotationBox2.Width;
+                pages = _bottomPages;
+                annoWidth = xBottomAnnotationBox.Width;
+
             }
 
             var sizes = pages.PageSizes;
@@ -855,14 +854,14 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
+
                 if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= 0)
+
                 {
                     break;
                 }
 
                 currOffset += (size.Height * scale) + 15;
-               
-
             }
 
             scroller.ChangeView(null, currOffset, 1);
@@ -874,14 +873,19 @@ namespace Dash
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {
-                pages = _pages1;
-                annoWidth = xAnnotationBox.Width;
+
+                pages = _topPages;
+                annoWidth = xTopAnnotationBox.Width;
+
             }
 
             else
             {
-                pages = _pages2;
-                annoWidth = xAnnotationBox2.Width;
+                pages = _bottomPages;
+                annoWidth = xBottomAnnotationBox.Width;
+
+                
+
             }
 
             var sizes = pages.PageSizes;
@@ -929,7 +933,7 @@ namespace Dash
             }
         }
 
-        private void XControlsToggleButton2_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XBottomControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xToggleButtonStack2.Visibility.Equals(Visibility.Collapsed))
             {
@@ -943,16 +947,16 @@ namespace Dash
            
         }
 
-        private void XControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XTopControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
+            if (xTopToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
             {
-                xToggleButtonStack.Visibility = Visibility.Visible;
+                xTopToggleButtonStack.Visibility = Visibility.Visible;
                 xFadeAnimation.Begin();
             }
             else
             {
-                xToggleButtonStack.Visibility = Visibility.Collapsed;
+                xTopToggleButtonStack.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -972,6 +976,16 @@ namespace Dash
         {
             //This makes the assumption that both overlays are kept in sync
             return _bottomAnnotationOverlay.AnnotationVisibility;
+        }
+
+        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            return false;
+        }
+
+        private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+
         }
     }
 }

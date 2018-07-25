@@ -115,6 +115,7 @@ namespace Dash
         public static KeyController AnnotationsKey = new KeyController("Annotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
         public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");
         public static KeyController GoToRegionLinkKey = new KeyController("Goto Region Link", "150C5291-0830-4095-9C18-FAE1F315599F");
+        public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
