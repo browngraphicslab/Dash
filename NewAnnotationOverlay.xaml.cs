@@ -644,7 +644,8 @@ namespace Dash
                 Width = size.X,
                 Height = size.Y,
                 Fill = new SolidColorBrush(Color.FromArgb(80, 0xFF, 0xFF, 0x00)),
-                DataContext = vm
+                DataContext = vm,
+                IsDoubleTapEnabled = false
             };
             r.SetBinding(Shape.FillProperty, new Binding
             {
@@ -658,6 +659,7 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
+            
             r.SetBinding(VisibilityProperty, new Binding
             {
                 Source = this,
