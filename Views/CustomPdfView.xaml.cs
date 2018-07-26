@@ -591,7 +591,6 @@ namespace Dash
             }
 
             overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
-            e.Handled = true;
         }
 
         #endregion
@@ -845,7 +844,7 @@ namespace Dash
                 DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
                 DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
             }
-
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
