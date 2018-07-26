@@ -49,7 +49,9 @@
             <!--Font family combo box-->
             <ComboBox Name="xFontFamilyComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,9.5,0" Grid.Column="1" BorderBrush="LightGray" ItemsSource="{x:Bind FontFamilyNames}" DisplayMemberPath="Source" SelectionChanged="FontFamilyComboBox_SelectionChanged" VerticalAlignment="Center"/>
             <!--Font size combo box-->
-            <ComboBox Name="xFontSizeComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="2" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center"/>
+            <TextBox Name="xFontSizeTextBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,45,0" Grid.Column="2" BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" TextChanged="XFontSizeTextBox_OnTextChanged"/>
+            <ComboBox Name="xFontSizeComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="2" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center" Canvas.ZIndex="0" 
+                      Foreground="White"/>
             <!--Font color button-->
             <Button x:Name="xFontColor" Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
                 <Button.Flyout>

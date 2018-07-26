@@ -42,6 +42,7 @@ namespace Dash
         ObservableCollection<TextBlock> FontFamilyNames = new ObservableCollection<TextBlock>();
 
         private bool _fontSizeChanged = false;
+        private bool _fontSizeTextChanged = false;
         private bool _fontFamilyChanged = false;
 
         #endregion
@@ -165,8 +166,7 @@ namespace Dash
                 48,
                 72,
                 100,
-                150,
-                300
+                150
             };
 
             foreach (var num in _sizes)
@@ -175,9 +175,11 @@ namespace Dash
             }
 
             _fontSizeChanged = true;
+            _fontSizeTextChanged = true;
 
             var currentFontSize = xRichEditBox.Document.Selection.CharacterFormat.Size;
             xFontSizeComboBox.SelectedIndex = _sizes.IndexOf(currentFontSize);
+            xFontSizeTextBox.Text = currentFontSize.ToString();
         }
 
         #endregion
@@ -311,10 +313,12 @@ namespace Dash
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            var comboBox = sender as ComboBox;
+            var selectedFontSize = comboBox?.SelectedValue;
+            _fontSizeTextChanged = true;
+            xFontSizeTextBox.Text = selectedFontSize.ToString();
             if (!_fontSizeChanged)
             {
-                var comboBox = sender as ComboBox;
-                var selectedFontSize = comboBox?.SelectedValue;
                 if (selectedFontSize != null)
                 {
                     //select all if nothing is selected
@@ -346,6 +350,54 @@ namespace Dash
             }
         }
 
+
+        private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_fontSizeTextChanged)
+            {
+                var selectedFontSize = xFontSizeTextBox.Text;
+
+                double fontSize;
+                try
+                {
+                    fontSize = Convert.ToDouble(selectedFontSize);
+                }
+                catch (FormatException)
+                {
+                    return;
+                }
+                catch (OverflowException)
+                {
+                    return;
+                }
+                if (fontSize > 1600)
+                {
+                    return;
+                }
+                using (UndoManager.GetBatchHandle())
+                {
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+                        xRichEditBox.Document.Selection.SetRange(end, end);
+                    }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+                    }
+
+                    richTextView.UpdateDocumentFromXaml();
+                }
+            }
+            else
+            {
+                _fontSizeTextChanged = false;
+            }
+        }
         #endregion
 
         private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
@@ -390,7 +442,9 @@ namespace Dash
 
 	    }
 		*/
-	}
+
+
+    }
 
 
 }
