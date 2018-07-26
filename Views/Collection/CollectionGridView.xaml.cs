@@ -81,13 +81,20 @@ namespace Dash
                 var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
                 if (ViewModel.CellSize + scaleAmount > 10 && ViewModel.CellSize + scaleAmount < 1000)
                 {
+                    
                     ViewModel.CellSize += scaleAmount;
-                    var style = new Style(typeof(GridViewItem));
-                    style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-                    style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-                    xGridView.ItemContainerStyle = style;
+
+                    ((ItemsWrapGrid) xGridView.ItemsPanelRoot).ItemWidth = ViewModel.CellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = ViewModel.CellSize;
+
+                    //var style = new Style(typeof(GridViewItem));
+                    
+                    //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                    //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                    //xGridView.ItemContainerStyle = style;
+                    e.Handled = true;
                 }
-                e.Handled = true;
+                
             }
         }
 
@@ -98,10 +105,10 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var style = new Style(typeof(GridViewItem));
-            style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-            style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-            xGridView.ItemContainerStyle = style;
+            //var style = new Style(typeof(GridViewItem));
+            //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+            //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+            //xGridView.ItemContainerStyle = style;
         }
 
         #region DragAndDrop
@@ -110,17 +117,7 @@ namespace Dash
             XDropIndicationRectangle.Fill = fill;
         }
         #endregion
-
-        #region Activation
-
-        //private void OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
-        //    e.Handled = true;
-        //}
-
-        #endregion
-
+        
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
