@@ -142,7 +142,7 @@ namespace Dash
                 {
                     case AnnotationType.Region:
                     case AnnotationType.Selection:
-                        RenderTextAnnotation(documentController);
+                        RenderRegion(documentController);
                         break;
                     case AnnotationType.Ink:
                         break;
@@ -206,7 +206,7 @@ namespace Dash
             if (type != _currentAnnotationType)
             {
                 //ClearPreviewRegion();
-                //ClearTextSelection();
+                //ClearSelection();
             }
             _currentAnnotationType = type;
             XInkCanvas.InkPresenter.IsInputEnabled = _currentAnnotationType == AnnotationType.Ink;
@@ -239,19 +239,10 @@ namespace Dash
                     {
                         regionPosList.Add(new PointController(rect.X, rect.Y));
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
-                        subRegionsOffsets.Add(rect.Y);
+                        var scrollRatio = rect.Y / this.GetFirstAncestorOfType<CustomPdfView>().TopScrollViewer.ExtentHeight;
+                        subRegionsOffsets.Add(scrollRatio);
                         minRegionY = Math.Min(rect.Y, minRegionY);
                     }
-                    //annotation.SetField(KeyStore.SelectionRegionTopLeftKey, regionPosList, true);
-                    //annotation.SetField(KeyStore.SelectionRegionSizeKey, regionSizeList, true);
-                    //annotation.SetField(KeyStore.PDFSubregionKey,
-                    //    new ListController<NumberController>(
-                    //        subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                    //annotation.GetDataDocument().SetPosition(new Point(0, minRegionY));
-;
-
-
-                    _selectionStartPoint = null;
 
                     // loop through each selection and add the indices in each selection set
                     var indices = new List<int>();
@@ -267,14 +258,14 @@ namespace Dash
                         }
                     }
 
-                    int prevIndex = 0; 
-                    var subSelectionRegionsOffsets = new List<double>();
+                    int prevIndex = -1; 
                     foreach (var index in indices)
                     {
                         var elem = _textSelectableElements[index];
                         if (prevIndex + 1 != index)
                         {
-                            subSelectionRegionsOffsets.Add(elem.Bounds.Y);
+                            var scrollRatio = elem.Bounds.Y / this.GetFirstAncestorOfType<CustomPdfView>().TopScrollViewer.ExtentHeight;
+                            subRegionsOffsets.Add(scrollRatio);
                         }
                         regionPosList.Add(new PointController(elem.Bounds.X, elem.Bounds.Y));
                         regionSizeList.Add(new PointController(elem.Bounds.Width, elem.Bounds.Height));
@@ -282,14 +273,16 @@ namespace Dash
                         prevIndex = index;
                     }
 
+                    subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
+
                     //TODO Add ListController.DeferUpdate
                     annotation.SetField(KeyStore.SelectionRegionTopLeftKey, regionPosList, true);
                     annotation.SetField(KeyStore.SelectionRegionSizeKey, regionSizeList, true);
                     annotation.SetField(KeyStore.PDFSubregionKey,
                         new ListController<NumberController>(
-                            subSelectionRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                            subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
                     annotation.GetDataDocument().SetPosition(new Point(0, minRegionY));
-                    ClearTextSelection();
+                    ClearSelection(true);
                     break;
                 case AnnotationType.Ink:
                 case AnnotationType.None:
@@ -314,7 +307,7 @@ namespace Dash
         public void StartAnnotation(Point p)
         {
             ClearPreviewRegion();
-            //ClearTextSelection();
+            //ClearSelection();
             switch (_currentAnnotationType)
             {
                 case AnnotationType.Region:
@@ -414,17 +407,7 @@ namespace Dash
             {
                 if (_regionRectangles.Any() || _currentSelections.Any())
                 {
-                    _currentSelections.Clear();
-                    //_selectionStartPoint = null;
-                    _selectedRectangles.Clear();
-                    XSelectionCanvas.Children.Clear();
-                    _regionRectangles.Clear();
-                    var removeItems = XAnnotationCanvas.Children.Where(i => !((i as Rectangle)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
-                    removeItems.Add(XAnnotationCanvas.Children.Last());
-                    foreach (var item in removeItems)
-                    {
-                        XAnnotationCanvas.Children.Remove(item);
-                    }
+                    ClearSelection();
                 }
             }
             _annotatingRegion = true;
@@ -434,6 +417,10 @@ namespace Dash
             XPreviewRect.Width = 0;
             XPreviewRect.Height = 0;
             XPreviewRect.Visibility = Visibility.Visible;
+            if (!XAnnotationCanvas.Children.Contains(XPreviewRect))
+            {
+                XAnnotationCanvas.Children.Add(XPreviewRect);
+            }
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
@@ -485,35 +472,6 @@ namespace Dash
             XAnnotationCanvas.Children.Add(viewRect);
             Canvas.SetLeft(viewRect, Canvas.GetLeft(XPreviewRect));
             Canvas.SetTop(viewRect, Canvas.GetTop(XPreviewRect));
-        }
-
-        public void RenderRegion(DocumentController region)
-        {
-            var posList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            Debug.Assert(posList.Count == sizeList.Count);
-
-            SelectionViewModel vm = new SelectionViewModel(region);
-            for (int i = 0; i < posList.Count; ++i)
-            {
-                RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
-            }
-
-            _regions.Add(vm);
-            //var r = new RegionAnnotation(region);
-            //r.Tapped += (sender, args) =>
-            //{
-            //    SelectRegion(sender as ISelectable, args.GetPosition(this));
-            //    args.Handled = true;
-            //};
-            //r.SetBinding(VisibilityProperty, new Binding
-            //{
-            //    Source = this,
-            //    Path = new PropertyPath(nameof(AnnotationVisibility)),
-            //    Converter = new BoolToVisibilityConverter()
-            //});
-            //_regions.Add(r);
-            //XAnnotationCanvas.Children.Add(r);
         }
 
         public void RenderNewRegion(DocumentController region)
@@ -600,15 +558,22 @@ namespace Dash
             _textSelectableElements = selectableElements.ToList();
         }
 
-        public void ClearTextSelection()
+        public void ClearSelection(bool hardReset = false)
         {
             _currentSelections.Clear();
-            _selectionStartPoint = null;
+            _selectionStartPoint = hardReset ? null : _selectionStartPoint;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
             _regionRectangles.Clear();
             var removeItems = XAnnotationCanvas.Children.Where(i => !((i as Rectangle)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
-            removeItems.Add(XAnnotationCanvas.Children.Last());
+            if (XAnnotationCanvas.Children.Any())
+            {
+                var lastAdded = XAnnotationCanvas.Children.Last();
+                if (!((lastAdded as Rectangle)?.DataContext is SelectionViewModel))
+                {
+                    removeItems.Add(lastAdded);
+                }
+            }
             foreach (var item in removeItems)
             {
                 XAnnotationCanvas.Children.Remove(item);
@@ -650,7 +615,7 @@ namespace Dash
             _selectionStartPoint = null;
         }
 
-        private void RenderTextAnnotation(DocumentController region)
+        private void RenderRegion(DocumentController region)
         {
             var posList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
@@ -780,17 +745,7 @@ namespace Dash
             {
                 if (_currentSelections.Count > 1 || _regionRectangles.Any())
                 {
-                    _currentSelections.Clear();
-                    //_selectionStartPoint = null;
-                    _selectedRectangles.Clear();
-                    XSelectionCanvas.Children.Clear();
-                    _regionRectangles.Clear();
-                    var removeItems = XAnnotationCanvas.Children.Where(i => !((i as Rectangle)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
-                    removeItems.Add(XAnnotationCanvas.Children.Last());
-                    foreach (var item in removeItems)
-                    {
-                        XAnnotationCanvas.Children.Remove(item);
-                    }
+                    ClearSelection();
                 }
             }
 

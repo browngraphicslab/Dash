@@ -627,24 +627,27 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target)
         {
-            var offsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
-            if (offsets == null) return;
+            var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            if (ratioOffsets == null) return;
 
-            var currOffset = offsets.First().Data;
-            var firstOffset = offsets.First().Data;
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * BottomScrollViewer.ExtentHeight);
+
+            var currOffset = offsets.First();
+            var firstOffset = offsets.First();
             var maxOffset = BottomScrollViewer.ViewportHeight;
             var splits = new List<double>();
             foreach (var offset in offsets.Skip(1))
             {
-                if (offset.Data - currOffset > maxOffset)
+                if (offset - currOffset > maxOffset)
                 {
-                    splits.Add(offset.Data);
-                    currOffset = offset.Data;
+                    splits.Add(offset);
+                    currOffset = offset;
                 }
             }
 
             Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
+            // TODO: functionality for more than one split maybe?
             if (splits.Any())
             {
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
@@ -654,7 +657,9 @@ namespace Dash
             }
             else
             {
-                BottomScrollViewer.ChangeView(null, firstOffset + Height, null);
+                xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                BottomScrollViewer.ChangeView(null, firstOffset, null);
             }
         }
 
