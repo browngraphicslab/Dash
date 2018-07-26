@@ -630,7 +630,7 @@ namespace Dash
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
             if (ratioOffsets == null) return;
 
-            var offsets = ratioOffsets.TypedData.Select(i => i.Data * BottomScrollViewer.ExtentHeight);
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * BottomScrollViewer.ScrollableHeight);
 
             var currOffset = offsets.First();
             var firstOffset = offsets.First();
@@ -653,7 +653,7 @@ namespace Dash
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 TopScrollViewer.ChangeView(null, firstOffset, null);
-                BottomScrollViewer.ChangeView(null, splits[0] +  Height, null);
+                BottomScrollViewer.ChangeView(null, splits[0] + Height / 2, null);
             }
             else
             {
