@@ -36,7 +36,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
-        Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
+        Dictionary<int, Color> _originalCharFormat = new Dictionary<int, Color>();
 
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
 
@@ -277,7 +277,7 @@ namespace Dash
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     if (!_originalCharFormat.ContainsKey(s))
-                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor);
                     if (selectionFound > 0)
                     {
                         xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
@@ -499,6 +499,8 @@ namespace Dash
                         break;
                 }
             }
+            else
+                ;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
@@ -519,7 +521,7 @@ namespace Dash
         #region load/unload
         void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
         {
-            MatchQuery(getSelected());
+            Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
         }
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
@@ -783,7 +785,8 @@ namespace Dash
 
         private void MatchQuery(List<TextController> queries)
         {
-            if (getDocView() == null)
+            if (getDocView() == null || queries == null || queries.Count == 0 ||
+                FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;
             ClearSearchHighlights();
             _nextMatch = 0;
@@ -791,26 +794,20 @@ namespace Dash
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
-            int i = 1;
             // find and highlight all matches
-
-            // the following if statement might not be necessary, but I'll leave it just in case so that it doesn't crash during demo
-            if (queries == null)
-            {
-                return;
-            }
             foreach (var query in queries.Select(t => t.Data).Where((s) => !string.IsNullOrEmpty(s)))
             {
-                xRichEditBox.Document.Selection.StartPosition = 0;
-                xRichEditBox.Document.Selection.EndPosition = 0;
-                while (i > 0 )
+                Debug.WriteLine("Query:" + query);
+                xRichEditBox.Document.Selection.SetRange(0, 0);
+                int i = 1;
+                while (i > 0) 
                 {
                     i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     var selectedText = xRichEditBox.Document.Selection;
                     if (i > 0 && !_originalCharFormat.ContainsKey(s))
                     {
-                        _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
+                        _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
                     }
                     if (selectedText != null)
                     {
@@ -818,7 +815,6 @@ namespace Dash
                     }
                     xRichEditBox.Document.Selection.Collapse(false);
                 }
-                i = 1;
             }
         }
 
@@ -847,15 +843,17 @@ namespace Dash
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
+            xRichEditBox.Document.Selection.SetRange(0, getReadableText().Length);
+            xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            var keys = _originalCharFormat.Keys;
-            foreach (var key in keys)
-            {
-                xRichEditBox.Document.Selection.StartPosition = key;
-                xRichEditBox.Document.Selection.EndPosition = key + _prevQueryLength;
-                xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
-                xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
-            }
+            //var keys = _originalCharFormat.Keys;
+            //foreach (var tuple in _originalCharFormat)
+            //{
+            //    xRichEditBox.Document.Selection.SetRange(tuple.Key, tuple.Key + _prevQueryLength);
+            //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
+            //   // xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
+            //}
+            xRichEditBox.Document.Selection.Collapse(true);
             if (!silent)
                 UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
@@ -872,11 +870,11 @@ namespace Dash
             {
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
                 var start = xRichEditBox.Document.Selection.StartPosition;
-                ITextCharacterFormat clone;
+                Color clone;
                 _originalCharFormat.TryGetValue(start, out clone);
                 if (clone != null)
                 {
-                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = clone;
                     _originalCharFormat.Remove(start);
                     if (_nextMatch >= _originalCharFormat.Keys.Count || _nextMatch == 0)
                         _nextMatch = 0;
