@@ -947,7 +947,7 @@ namespace Dash
                 }
                 else
                 {
-                    if (text[i] == '\\' && text[i + 1] != '\'')
+                    if (text[i] == '\\')
                     {
                         if (matchCount > 0)
                             matchWithFormat += 1;
