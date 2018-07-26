@@ -247,9 +247,12 @@ namespace Dash
             var xamlRTF = getRtfText();
             if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
             {
+                _lastXamlRTFText = xamlRTF;
                 // don't update if the Text is the same as what we last set it to
+                var start = this.xRichEditBox.Document.Selection.StartPosition;
+                var end = this.xRichEditBox.Document.Selection.EndPosition;
                 Text = new RichTextModel.RTD(xamlRTF);
-                _lastXamlRTFText = xamlRTF; // if this comes before the previous line, then setting background text colors or text colors don't persist
+                this.xRichEditBox.Document.Selection.SetRange(start, end);
             }
         }
 
@@ -800,7 +803,6 @@ namespace Dash
             // find and highlight all matches
             foreach (var query in queries.Select(t => t.Data).Where((s) => !string.IsNullOrEmpty(s)))
             {
-                Debug.WriteLine("Query:" + query);
                 xRichEditBox.Document.Selection.SetRange(0, 0);
                 int i = 1;
                 while (i > 0) 
