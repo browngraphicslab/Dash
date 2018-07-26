@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -447,6 +448,40 @@ namespace Dash
 
             (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
                 ListController<DocumentController>)?[item.Index]?.SetField<TextController>(KeyStore.DateModifiedKey, newTitle, true);
+        }
+
+
+        //private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        //{
+        //    foreach (var m in args.Items)
+        //    {
+        //        var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
+        //        args.Data.Properties[nameof(DragDocumentModel)] = docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
+        //        // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+        //        args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        //        break;
+        //    }
+        //}
+
+        private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
+        {
+                var dvm = ViewModel;
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            if (e.Items.Count.Equals(0)) return;
+            var first = e.Items.First() as SnapshotView;
+            var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
+            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(snapshots[first.Index], true);
+            e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void ListViewBase_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            ClosePopups();
         }
     }
 }
