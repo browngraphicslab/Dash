@@ -41,7 +41,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToBackground);
             fields.Add(KeyStore.IsAdornmentKey, new TextController("true"));
             fields.Add(KeyStore.SideCountKey, refToSides);
-            fields.Add(KeyStore.BackgroundColorKey, refToFill);
+            fields.Add(KeyStore.GroupBackgroundColorKey, refToFill);
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
@@ -79,7 +79,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = KeyStore.BackgroundColorKey,
+                Key = KeyStore.GroupBackgroundColorKey,
                 Converter = new StringToBrushConverter(),
                 Context = context,
                 Tag = "BackgroundShape Fill"

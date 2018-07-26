@@ -43,6 +43,12 @@ namespace Dash
                     case "boolean":
                         inputType = TypeInfo.Bool;
                         break;
+                    case "document":
+                        inputType = TypeInfo.Document;
+                        break;
+                    case "list":
+                        inputType = TypeInfo.List;
+                        break;
                     default:
                         break;
                 }

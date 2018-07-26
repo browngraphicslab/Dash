@@ -9,7 +9,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
 using Windows.UI.Core;
-
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
 
 namespace Dash
 {
@@ -32,11 +35,6 @@ namespace Dash
             move_hdlr = new PointerEventHandler((sender, e) => PointerMoved(sender, e));
             release_hdlr = new PointerEventHandler(PointerReleased);
             _eventElement = eventElement;
-            _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
-            _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-            var shiftState = _eventElement.IsShiftPressed();
-            if (!shiftState && pointer != null)
-                _eventElement.CapturePointer(pointer);
 
             var nestings = _eventElement.GetAncestorsOfType<CollectionView>().ToList();
             var manipTarget = (nestings.Count() < 2 || drillDown) ? _eventElement : nestings[nestings.Count - 2];
@@ -54,7 +52,20 @@ namespace Dash
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
+
+            _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
+
+            if (false) // bcz: set to 'true' for drag/Drop interactions
+                _manipulationDocumentTarget.SetupDragDropDragging(null);
+            else
+            {
+                _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
+                _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
+                if (!_eventElement.IsShiftPressed() && pointer != null)
+                    _eventElement.CapturePointer(pointer);
+            }
         }
+
 
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -116,6 +127,7 @@ namespace Dash
                 _manipulationDocumentTarget?.DocumentView_OnTapped(null, new TappedRoutedEventArgs());
                 if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
+                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);
             }
             else
                 _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();

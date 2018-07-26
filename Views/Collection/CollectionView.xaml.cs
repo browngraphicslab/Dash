@@ -12,6 +12,7 @@ using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
 using Windows.UI.Core;
+using Dash.Converters;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -54,6 +55,7 @@ namespace Dash
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
+	        var color = xOuterGrid.Background;
         }
 
         /// <summary>
@@ -80,6 +82,7 @@ namespace Dash
                     if (parentParentFreeform != null)
                         CurrentView.ManipulationMode = ManipulationModes.None;
             }
+
         }
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -92,6 +95,8 @@ namespace Dash
         {
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
+
+	       // var docView = this.GetFirstAncestorOfType<DocumentView>();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocument == null)
@@ -206,20 +211,19 @@ namespace Dash
             contextMenu.Items.Add(viewCollectionAs);
             elementsToBeRemoved.Add(viewCollectionAs);
 
-            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            foreach (CollectionViewType n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
             {
                 var vtype = new MenuFlyoutItem() {Text = n.ToString()};
 
-                void VType_OnClick(object sender, RoutedEventArgs e)
+                void VTypeOnClick(object sender, RoutedEventArgs e)
                 {
-                    UndoManager.StartBatch();
-                    SetView(n);
-                    UndoManager.EndBatch();
+                    using (UndoManager.GetBatchHandle())
+                        SetView(n);
                 }
 
-                vtype.Click += VType_OnClick;
-                vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
-                viewCollectionAs.Items.Add(vtype);
+                vtype.Click += VTypeOnClick;
+                //vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
+                viewCollectionAs.Items?.Add(vtype);
             }
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
@@ -326,8 +330,8 @@ namespace Dash
             {
                 case CollectionViewType.Freeform:
                     if (CurrentView is CollectionFreeformView) return;
-                    CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
-                    break;
+                    CurrentView = new CollectionFreeformView();
+					break;
                 case CollectionViewType.Grid:
                     if (CurrentView is CollectionGridView) return;
                     CurrentView = new CollectionGridView();
@@ -358,7 +362,7 @@ namespace Dash
                     break;
                 case CollectionViewType.Standard:
                     if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
+                    CurrentView = new CollectionStandardView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

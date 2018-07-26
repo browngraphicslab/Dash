@@ -4,7 +4,9 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 using System;
+using Windows.UI;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using static Dash.DocumentController;
 
@@ -18,11 +20,7 @@ namespace Dash
         public static DocumentType DocumentType = DashConstants.TypeStore.CollectionBoxType;
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
-
-        /// <summary>
-        /// If the view type is unassigned this is the default view displayed to the user
-        /// </summary>
-        private static readonly string DefaultCollectionView = CollectionView.CollectionViewType.Grid.ToString();
+        
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
@@ -42,10 +40,7 @@ namespace Dash
             {
                 //var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
                 //Debug.Assert(collectionController != null);
-                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
-                {
-                    InkController = docController.GetField(KeyStore.InkDataKey) as InkController
-                };
+                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey);
 
                 var view = new CollectionView(collectionViewModel);
 
@@ -64,9 +59,8 @@ namespace Dash
                 {
                     docController.RemoveFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
                 };
-
-
-                return view;
+				
+				return view;
             }
 
             return null;

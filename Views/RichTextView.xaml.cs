@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
@@ -20,8 +21,10 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : UserControl, IAnnotatable
+    public sealed partial class RichTextView 
     {
+        #region Intilization 
+
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
@@ -33,8 +36,8 @@ namespace Dash
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
-        Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
         string _originalRtfFormat;
+        Dictionary<int, Color> _originalCharFormat = new Dictionary<int, Color>();
 
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
 
@@ -96,12 +99,23 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
-                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
-                _everFocused = true;
-                getDocView().CacheMode = null;
-                ClearSearchHighlights();
-                SetSelected("");
-                xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                var docView = getDocView();
+                if (docView != null)
+                {
+                    if (!MainPage.Instance.IsShiftPressed())
+                    {
+                        SelectionManager.DeselectAll();
+                        SelectionManager.Select(docView);
+                    }
+                    FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+                    _everFocused = true;
+                    docView.CacheMode = null;
+                    ClearSearchHighlights();
+                    SetSelected("");
+                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    Clipboard.ContentChanged += Clipboard_ContentChanged;
+                    //CursorToEnd();
+                }
             };
 
             xRichEditBox.LostFocus += delegate
@@ -116,15 +130,17 @@ namespace Dash
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
-            xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
+            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
             xRichEditBox.LostFocus += (s, e) =>
             {
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
                 {
                     var docView = getDocView();
                     if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
-                        docView.DeleteDocument();
+                        using (UndoManager.GetBatchHandle())
+                            docView.DeleteDocument();
                 }
             };
 
@@ -160,6 +176,7 @@ namespace Dash
         {
             if (!(getSelected()?.First()?.Data != ""))
                 _originalRtfFormat = getRtfText();
+
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null)
@@ -193,9 +210,10 @@ namespace Dash
         }
         public RichTextModel.RTD Text
         {
-            get { return (RichTextModel.RTD)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get => (RichTextModel.RTD)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
+
         public DocumentController DataDocument { get; set; }
         public DocumentController LayoutDocument { get; set; }
         DocumentView getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
@@ -232,10 +250,18 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
+            {
+                _lastXamlRTFText = xamlRTF;
+                // don't update if the Text is the same as what we last set it to
+                //var start = this.xRichEditBox.Document.Selection.StartPosition;
+                //var end = this.xRichEditBox.Document.Selection.EndPosition;
                 Text = new RichTextModel.RTD(xamlRTF);
-            _lastXamlRTFText = xamlRTF;
+               // this.xRichEditBox.Document.Selection.SetRange(start, end);
+            }
         }
+
+        #endregion
 
         #region eventhandlers
         string _lastXamlRTFText = "";
@@ -250,7 +276,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
             {
                 //var s1 = xRichEditBox.Document.Selection.StartPosition;
                 //var s2 = xRichEditBox.Document.Selection.EndPosition;
@@ -267,9 +293,13 @@ namespace Dash
 
                     //var s = xRichEditBox.Document.Selection.StartPosition;
                     //if (!_originalCharFormat.ContainsKey(s))
-                    //    _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
-                    //xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-                    //// Not really sure what this is supposed to be for, but I'll comment it out for now
+                    //_originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor);
+                    //if (selectionFound > 0)
+                    //{
+                    //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                    //}
+
+                    // Not really sure what this is supposed to be for, but I'll comment it out for now
                     //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
                 //this.xRichEditBox.Document.Selection.StartPosition = s1;
@@ -278,29 +308,22 @@ namespace Dash
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
-        public async void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
+        public async void RegionSelected(Point pointPressed)
         {
-            if (region == this)
+            _target = getHyperlinkTargetForSelection();
+            if (_target != null)
             {
-                _annotationManager.RegionPressed(DataDocument, pointPressed);
-            }
-            else
-            {
-                _target = getHyperlinkTargetForSelection();
-                if (_target != null)
+                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
+                if (theDoc != null)
                 {
-                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
-                    if (theDoc != null)
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                     {
-                        if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
-                        {
-                            _annotationManager.RegionPressed(theDoc, pointPressed);
-                        }
+                        _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
-                    else if (_target.StartsWith("http"))
-                    {
-                        await Launcher.LaunchUriAsync(new Uri(_target));
-                    }
+                }
+                else if (_target.StartsWith("http"))
+                {
+                    await Launcher.LaunchUriAsync(new Uri(_target));
                 }
             }
         }
@@ -312,20 +335,21 @@ namespace Dash
                 if (MainPage.Instance.WebContext != null)
                     MainPage.Instance.WebContext.SetUrl(_target);
                 else
-                {
-                    nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
-                    if (nearestOnCollection != null)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        if (this.IsCtrlPressed())
-                            nearestOnCollection.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        nearestOnCollection = FindNearestDisplayedBrowser(pt, _target);
+                        if (nearestOnCollection != null)
+                        {
+                            if (this.IsCtrlPressed())
+                                nearestOnCollection.DeleteDocument();
+                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                        }
+                        else
+                        {
+                            theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
+                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                        }
                     }
-                    else
-                    {
-                        theDoc = new HtmlNote(_target, _target, new Point(), new Size(200, 300)).Document;
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-                    }
-                }
             }
         }
 
@@ -358,7 +382,13 @@ namespace Dash
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-            RegionSelected(null, e.GetPosition(MainPage.Instance), null);
+            RegionSelected(e.GetPosition(MainPage.Instance));
+        }
+
+        private void CursorToEnd()
+        {
+            xRichEditBox.Document.GetText(TextGetOptions.None, out string text);
+            xRichEditBox.Document.Selection.StartPosition = text.Length;
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -366,12 +396,12 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var dragDoc   = dragModel.DraggedDocument;
+                var dragDoc = dragModel.DraggedDocument;
                 if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 }
-                    
+
                 linkDocumentToSelection(dragModel.DraggedDocument, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
@@ -450,6 +480,11 @@ namespace Dash
                 xRichEditBox.Document.Selection.TypeText("\t");
                 e.Handled = true;
             }
+            else if (e.Key == VirtualKey.Space)
+            {
+                xRichEditBox.Document.Selection.TypeText(Convert.ToChar(160).ToString());
+                e.Handled = true;
+            }
             else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
             {
                 switch (e.Key)
@@ -480,7 +515,22 @@ namespace Dash
                         break;
                 }
             }
+            else
+                ;
         }
+
+        private async void Clipboard_ContentChanged(object sender, object e)
+        {
+            Clipboard.ContentChanged -= Clipboard_ContentChanged;
+            var dataPackage = new DataPackage();
+            DataPackageView clipboardContent = Clipboard.GetContent();
+            dataPackage.SetText(await clipboardContent.GetTextAsync());
+            //set RichTextView property to this view
+            dataPackage.Properties[nameof(RichTextView)] = this;
+            Clipboard.SetContent(dataPackage);
+            Clipboard.ContentChanged += Clipboard_ContentChanged;
+        }
+
 
         #endregion
 
@@ -490,21 +540,48 @@ namespace Dash
         {
             _searchHighlight = true;
             MatchQuery(getSelected());
+           // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
         }
+        public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            IsLoaded = false;
             ClearSearchHighlights(true);
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
         }
 
+        public const string HyperlinkMarker = "<hyperlink marker>";
+
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            IsLoaded = true;
+
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+            _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
+            this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+            if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
+            {
+                var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
+
+                //this does better formatting/ parsing than the regex stuff can
+                var link =  title ?? CollectionViewModel.GetTitlesUrl(url);
+
+                this.xRichEditBox.Document.Selection.Text = link;
+                this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
+                this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
+            }
+
+
         }
 
         #endregion
@@ -516,13 +593,13 @@ namespace Dash
         {
             var selection = xRichEditBox.Document.Selection;
             if (string.IsNullOrEmpty(selection.Text))
-                return DataDocument;
+                return LayoutDocument;
 
 
             // possibly reuse any existing hyperlink region
             var target = getHyperlinkTargetForSelection();
             var theDoc = target == null ? null : ContentController<FieldModel>.GetController<DocumentController>(target);
-            
+
 
             // get the document controller for the target hyperlink (region) document
             var dc = createRTFHyperlink();
@@ -531,13 +608,14 @@ namespace Dash
                 if (target != null && theDoc == null)
                 {
                     dc = new HtmlNote(target, selection.Text).Document;
-                    dc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+                    dc.SetRegionDefinition(LayoutDocument);
                 }
                 if (dc != null)
                 {
                     var link = "\"" + dc.Id + "\"";
                     xRichEditBox.Document.Selection.Link = link;
-                } else
+                }
+                else
                     return theDoc;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
@@ -591,11 +669,11 @@ namespace Dash
         DocumentController createRTFHyperlink()
         {
             var selectedText = xRichEditBox.Document.Selection.Text;
-            var start        = xRichEditBox.Document.Selection.StartPosition;
-            var length       = xRichEditBox.Document.Selection.EndPosition - start;
+            var start = xRichEditBox.Document.Selection.StartPosition;
+            var length = xRichEditBox.Document.Selection.EndPosition - start;
             string link = null;
             DocumentController targetRegionDocument = null;
-            
+
             var origStart = start;
 
             while (true)
@@ -608,12 +686,13 @@ namespace Dash
                     {
                         if (xRichEditBox.Document.Selection.Link.StartsWith("\"http"))
                         {
-                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length + 1;
                             xRichEditBox.Document.Selection.FormattedText.Link = "";
                             replaced = true;
-                        } else if ( xRichEditBox.Document.Selection.Link.StartsWith("\"mailto"))
+                        }
+                        else if (xRichEditBox.Document.Selection.Link.StartsWith("\"mailto"))
                         {
-                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length +1;
+                            length -= xRichEditBox.Document.Selection.FormattedText.Link.Length + " HYPERLINK".Length + 1;
                             xRichEditBox.Document.Selection.FormattedText.Link = "";
                             replaced = true;
                         }
@@ -625,10 +704,10 @@ namespace Dash
 
             for (int i = 0; i <= length; i++)
             {
-                xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                xRichEditBox.Document.Selection.StartPosition = start + i;
+                xRichEditBox.Document.Selection.EndPosition = start + i + 1;
                 if (xRichEditBox.Document.Selection.Link != "")
                 {
-                    xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
                     var color = xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
                     var nextColor = color == Colors.LightCyan ? Colors.LightBlue : color == Colors.LightBlue ? Colors.DeepSkyBlue : Colors.Cyan;
                     xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = nextColor;
@@ -637,8 +716,8 @@ namespace Dash
                     var newstart = xRichEditBox.Document.Selection.EndPosition;
                     for (int j = 0; j < i; j++)
                     {
-                        xRichEditBox.Document.Selection.SetRange(start, start + i-j);
-                        xRichEditBox.Document.Selection.SetRange(start, start + i-j);
+                        xRichEditBox.Document.Selection.StartPosition = start;
+                        xRichEditBox.Document.Selection.EndPosition = start + i - j;
                         if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                             break;
                     }
@@ -657,7 +736,7 @@ namespace Dash
                     i = -1;
                 }
             }
-            var endpos = xRichEditBox.Document.Selection.EndPosition-1;
+            var endpos = xRichEditBox.Document.Selection.EndPosition - 1;
             xRichEditBox.Document.Selection.SetRange(start, start + length);
             for (int j = 0; j < length; j++)
             {
@@ -666,15 +745,15 @@ namespace Dash
                 if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                     break;
             }
-            if (length > 0 && !string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text) && !string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text) )
+            if (length > 0 && !string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text) && !string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
             {
                 if (link == null)
                 {
                     link = getTargetLink(selectedText, out targetRegionDocument);
-                }   
+                }
                 xRichEditBox.Document.Selection.SetRange(start, start + length);
                 // set the hyperlink for the matched text
-                xRichEditBox.Document.Selection.Link = link; 
+                xRichEditBox.Document.Selection.Link = link;
                 endpos = xRichEditBox.Document.Selection.EndPosition;
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
             }
@@ -685,7 +764,7 @@ namespace Dash
         private string getTargetLink(string selectedText, out DocumentController theDoc)
         {
             theDoc = new RichTextNote(selectedText).Document;
-            theDoc.SetRegionDefinition(LayoutDocument, AnnotationManager.AnnotationType.TextSelection);
+            theDoc.SetRegionDefinition(LayoutDocument);
             var link = "\"" + theDoc.Id + "\"";
             if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
@@ -726,8 +805,9 @@ namespace Dash
         private int _jCount;
         private void MatchQuery(List<TextController> queries)
         {
-            if (getDocView() == null)
-                return;             
+            if (getDocView() == null || queries == null || queries.Count == 0
+                ) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
+                return;
             ClearSearchHighlights();
             _originalRtfFormat = getRtfText();
             // note to self- save format before clear search highlights to maintain formatting
@@ -781,6 +861,7 @@ namespace Dash
                     else
                     {
                         newRtf += " " + split[i];
+                       // _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
                     }
                 }
                 newRtf += split[split.Length - 1];
@@ -907,20 +988,7 @@ namespace Dash
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
-            //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            //var keys = _originalCharFormat.Keys;
-            //if (keys.Count > 1)
-            //{ }
-            //foreach (var key in keys)
-            //{
-            //    xRichEditBox.Document.Selection.StartPosition = key;
-            //    xRichEditBox.Document.Selection.EndPosition = key + _prevQueryLength;
-            //    xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
-            //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
-            //}
-            //if (!silent)
-            //    UpdateDocumentFromXaml();
-            //_originalCharFormat.Clear();
+           
             if (_originalRtfFormat == null)
                 return;
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, _originalRtfFormat);
@@ -929,6 +997,18 @@ namespace Dash
             {
                 _searchHighlight = false;
             }
+            
+            //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+            //foreach (var tuple in _originalCharFormat)
+            //{
+            //    xRichEditBox.Document.Selection.StartPosition = tuple.Key;
+            //    xRichEditBox.Document.Selection.EndPosition = tuple.Key + _prevQueryLength;
+            //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
+            //}
+            //xRichEditBox.Document.Selection.Collapse(true);
+            //if (!silent)
+            //    UpdateDocumentFromXaml();
+            //_originalCharFormat.Clear();
         }
 
         /// <summary>
@@ -942,11 +1022,11 @@ namespace Dash
             {
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
                 var start = xRichEditBox.Document.Selection.StartPosition;
-                ITextCharacterFormat clone;
+                Color clone;
                 _originalCharFormat.TryGetValue(start, out clone);
                 if (clone != null)
                 {
-                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = clone;
                     _originalCharFormat.Remove(start);
                     if (_nextMatch >= _originalCharFormat.Keys.Count || _nextMatch == 0)
                         _nextMatch = 0;

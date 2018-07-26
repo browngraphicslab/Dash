@@ -321,26 +321,37 @@ namespace Dash
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            var neighboringRaw = dataDocument.GetDereferencedField(KeyStore.WebContextKey, null);
+            string url = null;
+            var type = neighboringRaw?.TypeInfo.ToString();
+            if (type == "List")
             {
-                var context = doc.GetFirstContext();
-                if (context != null)
+                var neighboring = neighboringRaw as ListController<TextController>;
+                if (neighboring != null && neighboring.TypedData.Count > 0)
                 {
-                    MainPage.Instance.WebContext.SetUrl(context.Url);
+                    var context = doc.GetFirstContext();
                     MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                    url = context.Url;
                 }
+            } else if (type == "Text")
+            {
+                url = (neighboringRaw as TextController).Data;
             }
+
+            if (url != null)
+            {
+                MainPage.Instance.WebContext?.SetUrl(url);
+                
+            }
+
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField<DateTimeController>(KeyStore.ModifiedTimestampKey, DateTime.Now, true);
-            if (MainPage.Instance.WebContext == null)
-            {
-                return;
-            }
+            DocumentController dataDocument = doc.GetDataDocument();
+            dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
+
+            if (MainPage.Instance.WebContext == null) return;
 
             //var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 

@@ -1,33 +1,22 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Input;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
-using Dash.Views;
 using DashShared;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
-using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -35,43 +24,53 @@ using Visibility = Windows.UI.Xaml.Visibility;
 namespace Dash
 {
 
-	public partial class EditableImage : INotifyPropertyChanged, IVisualAnnotatable
-	{
-		private readonly Context _context;
-		private readonly DocumentController _docCtrl;
-		private StateCropControl _cropControl;
-		private ImageController _imgctrl;
-		public bool IsCropping;
-		private DocumentView _docview;
-	    public VisualAnnotationManager AnnotationManager;
-        
+    public partial class EditableImage : INotifyPropertyChanged
+    {
+        private readonly Context _context;
+        private readonly DocumentController _docCtrl;
+        private StateCropControl _cropControl;
+        private ImageController _imgctrl;
+        public bool IsCropping;
+        private DocumentView _docview;
+
         // interface-required event to communicate with the AnnotationManager about when it's okay to start annotating
-	    public event PointerEventHandler NewRegionStarted;
 
         public Image Image => xImage;
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-		public EditableImage(DocumentController docCtrl, Context context)
-		{
-			InitializeComponent();
-			_docCtrl = docCtrl;
-			_context = context;
-			Image.Loaded += Image_Loaded;
-			// gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
-			_imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+        private NewAnnotationOverlay _annotationOverlay;
 
-			// existing annotated regions are loaded with the VisualAnnotationManager
-		}
+        public EditableImage(DocumentController docCtrl, Context context)
+        {
+            InitializeComponent();
+            _docCtrl = docCtrl;
+            _context = context;
+            Image.Loaded += Image_Loaded;
+            Image.ImageOpened += (sender, args) =>
+            {
+                var source = Image.Source as BitmapSource;
+                XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
+                XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
+            };
+            // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
+            _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-	    public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
-	    {
-	        AnnotationManager.RegionSelected(region, pt, chosenDoc);
-	    }
+            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter);
+            _annotationOverlay.SetAnnotationType(AnnotationType.Region);
+            XAnnotationGrid.Children.Add(_annotationOverlay);
 
-	    public async Task ReplaceImage()
-		{
-			_imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            // existing annotated regions are loaded with the VisualAnnotationManager
+        }
+
+        private DocumentController RegionGetter(AnnotationType type)
+        {
+            return new ImageNote(_imgctrl.ImageSource).Document;
+        }
+
+        public async Task ReplaceImage()
+        {
+            _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
             // get the file from the current image controller
             var file = await GetImageFile();
@@ -86,43 +85,38 @@ namespace Dash
             _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
         }
 
-		private async Task<StorageFile> GetImageFile(bool originalImage = false)
-		{
-			// finds local uri path of image controller's image source
-			StorageFile file;
-			Uri src;
-			if (originalImage)
-			{
-				src = _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
-			}
-			else
-			{
-				src = _imgctrl.ImageSource;
-			}
+        private async Task<StorageFile> GetImageFile(bool originalImage = false)
+        {
+            // finds local uri path of image controller's image source
+            StorageFile file;
+            Uri src;
+            if (originalImage)
+            {
+                src = _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
+            }
+            else
+            {
+                src = _imgctrl.ImageSource;
+            }
 
-			/*
+            /*
 			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
 			 * try catch is literally the only way we can deal with regular
 			 * local uris, absolute uris, and website uris as the same time
 			 */
-			try
-			{
-				// method of getting file from local uri
-				file = await StorageFile.GetFileFromPathAsync(src.LocalPath);
-			}
-			catch (Exception)
-			{
-				// method of getting file from absolute uri
-				file = await StorageFile.GetFileFromApplicationUriAsync(src);
-			}
+            try
+            {
+                // method of getting file from local uri
+                file = await StorageFile.GetFileFromPathAsync(src.LocalPath);
+            }
+            catch (Exception)
+            {
+                // method of getting file from absolute uri
+                file = await StorageFile.GetFileFromApplicationUriAsync(src);
+            }
 
-			return file;
-	    }
-
-	    public VisualAnnotationManager GetAnnotationManager()
-	    {
-	        return AnnotationManager;
-	    }
+            return file;
+        }
 
 
         public async void Revert()
@@ -144,49 +138,48 @@ namespace Dash
             }
         }
 
-		private void Image_Loaded(object sender, RoutedEventArgs e)
-		{
-			// initialize values that rely on the image
-			_docview = this.GetFirstAncestorOfType<DocumentView>();
-			Focus(FocusState.Keyboard);
-			_cropControl = new StateCropControl(_docCtrl, this);
-			AnnotationManager = new VisualAnnotationManager(this, _docCtrl, xAnnotations);
-		}
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            // initialize values that rely on the image
+            _docview = this.GetFirstAncestorOfType<DocumentView>();
+            Focus(FocusState.Keyboard);
+            _cropControl = new StateCropControl(_docCtrl, this);
+        }
 
-		public async Task Rotate()
-		{
-			Rect rect = new Rect
-			{
-				X = 0,
-				Y = 0,
-				Width = Math.Floor(Image.ActualHeight),
-				Height = Math.Floor(Image.ActualWidth)
-			};
+        public async Task Rotate()
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Width = Math.Floor(Image.ActualHeight),
+                Height = Math.Floor(Image.ActualWidth)
+            };
 
-			await Crop(rect, BitmapRotation.Clockwise90Degrees);
-		}
+            await Crop(rect, BitmapRotation.Clockwise90Degrees);
+        }
 
-		public async Task MirrorHorizontal()
-		{
-			await MirrorImage(BitmapFlip.Horizontal);
-		}
+        public async Task MirrorHorizontal()
+        {
+            await MirrorImage(BitmapFlip.Horizontal);
+        }
 
-		public async Task MirrorVertical()
-		{
-			await MirrorImage(BitmapFlip.Vertical);
-		}
+        public async Task MirrorVertical()
+        {
+            await MirrorImage(BitmapFlip.Vertical);
+        }
 
-		private async Task MirrorImage(BitmapFlip flip)
-		{
-			Rect rect = new Rect
-			{
-				X = 0,
-				Y = 0,
-				Height = Math.Floor(Image.ActualHeight),
-				Width = Math.Floor(Image.ActualWidth)
-			};
-			await Crop(rect, BitmapRotation.None, flip);
-		}
+        private async Task MirrorImage(BitmapFlip flip)
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Height = Math.Floor(Image.ActualHeight),
+                Width = Math.Floor(Image.ActualWidth)
+            };
+            await Crop(rect, BitmapRotation.None, flip);
+        }
 
         // called when the cropclick action is invoked in the image subtoolbar
         public void StartCrop()
@@ -195,7 +188,6 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
-            _docview.ViewModel.DisableDecorations = true;
             _docview.hideControls();
             IsCropping = true;
         }
@@ -212,90 +204,89 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None,
-            BitmapFlip flip = BitmapFlip.None)
+        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-            var file = await GetImageFile();
+            StorageFile file = await GetImageFile();
 
-			var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            ImageProperties fileProperties = await file.Properties.GetImagePropertiesAsync();
 
-			if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
-			{
-				var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-				_docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-			}
+            if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
+            {
+                var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            }
 
-			//_originalWidth is original width of owl, not replaced image
-			var scale = fileProperties.Width / Image.ActualWidth;
+            //_originalWidth is original width of owl, not replaced image
+            var scale = fileProperties.Width / Image.ActualWidth;
 
-			// retrieves data from rectangle
-			var startPointX = (uint) rectangleGeometry.X;
-			var startPointY = (uint) rectangleGeometry.Y;
-			var height = (uint) rectangleGeometry.Height;
-			var width = (uint) rectangleGeometry.Width;
+            // retrieves data from rectangle
+            var startPointX = (uint)rectangleGeometry.X;
+            var startPointY = (uint)rectangleGeometry.Y;
+            var height = (uint)rectangleGeometry.Height;
+            var width = (uint)rectangleGeometry.Width;
 
-			Debug.Assert(file != null); // if neither works, something's hecked up
-			WriteableBitmap cropBmp;
+            Debug.Assert(file != null); // if neither works, something's hecked up
+            WriteableBitmap cropBmp;
 
-			// opens the uri path and reads it
-			using (IRandomAccessStream stream = await file.OpenReadAsync())
-			{
-				var decoder = await BitmapDecoder.CreateAsync(stream);
+            // opens the uri path and reads it
+            using (IRandomAccessStream stream = await file.OpenReadAsync())
+            {
+                var decoder = await BitmapDecoder.CreateAsync(stream);
 
-				// finds scaled size of the new bitmap image
-				var scaledWidth = (uint) Math.Ceiling(decoder.PixelWidth / scale);
-				var scaledHeight = (uint) Math.Ceiling(decoder.PixelHeight / scale);
+                // finds scaled size of the new bitmap image
+                var scaledWidth = (uint)Math.Ceiling(decoder.PixelWidth / scale);
+                var scaledHeight = (uint)Math.Ceiling(decoder.PixelHeight / scale);
 
-				if (flip != BitmapFlip.None && (height != scaledHeight || width != scaledWidth))
-				{
-					height = scaledHeight;
-					width = scaledWidth;
-					rectangleGeometry.Height = scaledHeight;
-					rectangleGeometry.Width = scaledWidth;
-				}
+                if (flip != BitmapFlip.None && (height != scaledHeight || width != scaledWidth))
+                {
+                    height = scaledHeight;
+                    width = scaledWidth;
+                    rectangleGeometry.Height = scaledHeight;
+                    rectangleGeometry.Width = scaledWidth;
+                }
 
-				if (rot == BitmapRotation.Clockwise90Degrees && (height != scaledWidth || width != scaledHeight))
-				{
-					height = scaledWidth;
-					width = scaledHeight;
-					rectangleGeometry.Height = scaledWidth;
-					rectangleGeometry.Width = scaledHeight;
-				}
+                if (rot == BitmapRotation.Clockwise90Degrees && (height != scaledWidth || width != scaledHeight))
+                {
+                    height = scaledWidth;
+                    width = scaledHeight;
+                    rectangleGeometry.Height = scaledWidth;
+                    rectangleGeometry.Width = scaledHeight;
+                }
 
-				// sets the boundaries for how we are cropping the bitmap image
-				var bitmapTransform = new BitmapTransform();
-				var bounds = new BitmapBounds
-				{
-					X = startPointX,
-					Y = startPointY,
-					Width = width,
-					Height = height
-				};
-				bitmapTransform.Rotation = rot;
-				bitmapTransform.Flip = flip;
-				bitmapTransform.Bounds = bounds;
-				bitmapTransform.ScaledWidth = scaledWidth;
-				bitmapTransform.ScaledHeight = scaledHeight;
+                // sets the boundaries for how we are cropping the bitmap image
+                var bitmapTransform = new BitmapTransform();
+                var bounds = new BitmapBounds
+                {
+                    X = startPointX,
+                    Y = startPointY,
+                    Width = width,
+                    Height = height
+                };
+                bitmapTransform.Rotation = rot;
+                bitmapTransform.Flip = flip;
+                bitmapTransform.Bounds = bounds;
+                bitmapTransform.ScaledWidth = scaledWidth;
+                bitmapTransform.ScaledHeight = scaledHeight;
 
-				// creates a new bitmap image with those boundaries
-				var pix = await decoder.GetPixelDataAsync(
-					BitmapPixelFormat.Bgra8,
-					BitmapAlphaMode.Straight,
-					bitmapTransform,
-					ExifOrientationMode.IgnoreExifOrientation,
-					ColorManagementMode.ColorManageToSRgb
-				);
+                // creates a new bitmap image with those boundaries
+                var pix = await decoder.GetPixelDataAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Straight,
+                    bitmapTransform,
+                    ExifOrientationMode.IgnoreExifOrientation,
+                    ColorManagementMode.ColorManageToSRgb
+                );
 
-				var pixels = pix.DetachPixelData();
+                var pixels = pix.DetachPixelData();
 
-				// dis is it, the new bitmap image
-				cropBmp = new WriteableBitmap((int) width, (int) height);
-				var pixStream = cropBmp.PixelBuffer.AsStream();
-				pixStream.Write(pixels, 0, (int) (width * height * 4));
+                // dis is it, the new bitmap image
+                cropBmp = new WriteableBitmap((int)width, (int)height);
+                var pixStream = cropBmp.PixelBuffer.AsStream();
+                pixStream.Write(pixels, 0, (int)(width * height * 4));
 
-				SaveCroppedImageAsync(cropBmp, decoder, rectangleGeometry, pixels);
-			}
-		}
+                SaveCroppedImageAsync(cropBmp, decoder, rectangleGeometry, pixels);
+            }
+        }
 
         private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
             byte[] pixels)
@@ -303,8 +294,8 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
 
-                var width = (uint) rectgeo.Width;
-                var height = (uint) rectgeo.Height;
+                var width = (uint)rectgeo.Width;
+                var height = (uint)rectgeo.Height;
 
                 // randomly generate a new guid for the filename
                 var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
@@ -353,11 +344,11 @@ namespace Dash
             }
         }
 
-		[NotifyPropertyChangedInvocator]
-		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         // functionality for saving a crop and for moving the cropping boxes with directional keys
         private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -370,7 +361,6 @@ namespace Dash
                         IsCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
-                        _docview.ViewModel.DisableDecorations = false;
                         _docview.hideControls();
 
                         break;
@@ -385,70 +375,79 @@ namespace Dash
             e.Handled = true;
         }
 
-		// removes the cropping controls and allows image to be moved and used when focus is lost
-		private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
-		{
-			if (!IsCropping) return;
-			IsCropping = false;
-			_docview.showControls();
-			xGrid.Children.Remove(_cropControl);
-		    AnnotationManager.ToggleRegionPreviewVisibility(Visibility.Collapsed);
-		}
+        // removes the cropping controls and allows image to be moved and used when focus is lost
+        private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (!IsCropping) return;
+            IsCropping = false;
+            _docview.showControls();
+            xGrid.Children.Remove(_cropControl);
+        }
 
-		private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-		{
-			if (IsCropping) e.Handled = true;
-		}
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
 
-		private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-		{
-			if (IsCropping) e.Handled = true;
-		}
+            var point = e.GetCurrentPoint(_annotationOverlay);
 
-		private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-		{
-			if (IsCropping) e.Handled = true;
-			var properties = e.GetCurrentPoint(this).Properties;
-
-			if (!IsCropping && properties.IsRightButtonPressed == false)
-			{
-			    NewRegionStarted?.Invoke(this, e);
+            if (!IsCropping)
+            {
+                if (point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+                {
+                    _annotationOverlay.EndAnnotation(point.Position);
+                    e.Handled = true;
+                }
+                else if(point.Properties.IsLeftButtonPressed)
+                {
+                    _annotationOverlay.UpdateRegion(point.Position);
+                    e.Handled = true;
+                }
             }
-		}
+        }
 
-		public DocumentController GetRegionDocument()
-		{
-		    return AnnotationManager.GetRegionDocument();
-		}
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
+            var point = e.GetCurrentPoint(_annotationOverlay);
 
-	    public DocumentController GetDocControllerFromSelectedRegion(AnnotationManager.AnnotationType annotationType)
-	    {
-			// calculate the starting point since the overlay only gives us the percentile
-		    var topLeft = xAnnotations.GetTopLeftPercentile();
-		    var x = topLeft.X * xImage.ActualWidth;
-		    var y = topLeft.Y * xImage.ActualHeight;
+            if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+            {
+                _annotationOverlay.EndAnnotation(point.Position);
+                e.Handled = true;
+            }
+        }
 
-            // the bitmap streaming to crop doesn't work yet
-	        var imNote = new ImageNote(_imgctrl.ImageSource, new Point(x, y),
-	                xAnnotations.GetDuringPreviewActualSize()).Document;
-	        imNote.SetRegionDefinition(_docCtrl, annotationType);
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
+            var point = e.GetCurrentPoint(_annotationOverlay);
 
-	        return imNote;
-	    }
+            if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            {
+                _annotationOverlay.StartAnnotation(point.Position);
+                e.Handled = true;
+            }
+        }
 
-	    public FrameworkElement Self()
-	    {
-	        return this;
-	    }
+        public DocumentController GetRegionDocument()
+        {
+            return _annotationOverlay.GetRegionDoc() ?? _docCtrl;
+        }
 
-	    public Size GetTotalDocumentSize()
-	    {
-	        return new Size(xImage.ActualWidth, xImage.ActualHeight);
-	    }
+        public void ShowRegions()
+        {
+            _annotationOverlay.AnnotationVisibility = true;
+        }
 
-	    public FrameworkElement GetPositionReference()
-	    {
-	        return xImage;
-	    }
-	}
+        public void HideRegions()
+        {
+            _annotationOverlay.AnnotationVisibility = false;
+        }
+
+
+        public bool AreAnnotationsVisible()
+        {
+            return _annotationOverlay.AnnotationVisibility;
+        }
+    }
 }

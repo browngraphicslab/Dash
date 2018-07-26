@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -33,6 +34,7 @@ using Windows.Foundation.Metadata;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Core;
+using Page = Microsoft.Office.Interop.Word.Page;
 
 namespace Dash
 {
@@ -98,7 +100,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents();   // pan/zoom collection so all of its contents are visible
+                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
 
         public void Loaded(bool isLoaded)
@@ -106,6 +108,10 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -132,7 +138,7 @@ namespace Dash
                 _lastDoc = null;
             }
         }
-        public InkController InkController;
+        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
         public TransformGroupData TransformGroup
         {
             get
@@ -158,6 +164,7 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
 
+        static int csize = 0;
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
@@ -165,7 +172,7 @@ namespace Dash
             SetCollectionRef(containerDocument, fieldKey);
 
             CellSize = 250; // TODO figure out where this should be set
-                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         DocumentController _lastDoc = null;
@@ -191,11 +198,13 @@ namespace Dash
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
-        public void FitContents()
+        public void FitContents(CollectionView cview)
         {
             if (FitToParent && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                var parSize = ContainerDocument.GetActualSize() ?? new Point();
+                 var realPar = cview?.CurrentView;
+                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -249,12 +258,12 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in args.NewItems)
                     {
-                        var visible = !d.GetHidden();
-                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
-                        if (visible && !shown)
-                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        if (!visible && shown)
-                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //var visible = !d.GetHidden();
+                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                        //if (visible && !shown)
+                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //if (!visible && shown)
+                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
@@ -279,7 +288,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -401,7 +409,7 @@ namespace Dash
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
@@ -643,8 +651,50 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            string urlSource = null;
+                            if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
+                            {
+                                var html = await Clipboard.GetContent().GetHtmlFormatAsync();
+                                foreach (var str in html.Split(new char[] {'\r'}))
+                                {
+                                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                                    if (matches.Count != 0)
+                                    {
+                                        urlSource = matches[0].Value.Replace("SourceURL:", "");
+                                        break;
+                                    }
+                                }
+                            }
+
+
+                            DocumentController postitNote;
+                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            {
+                                var region = new RichTextNote("Rich text region").Document;
+
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                postitNote = postitView.Document;
+                                postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
+                                    sourceDoc.DataDocument.Title, true);
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+
+                                region.SetRegionDefinition(postitNote);
+                                region.SetAnnotationType(AnnotationType.Selection);
+
+                                region.Link(sourceDoc.LayoutDocument);
+
+                            }
+                            else
+                            {
+                               postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+                            }
+
+                            
                             Actions.DisplayDocument(this, postitNote, where);
+
+                            
+
                         }
                     }
                 }
@@ -679,6 +729,46 @@ namespace Dash
             }
         }
 
+        public static string GetTitlesUrl(string uri)
+        {
+            //try to get website title
+            var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
+            webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
+                webName.Replace('_', ' ').Replace('-', ' '));
+
+            var pageTitle = uriParts[uriParts.Count - 1];
+            //convert symbols back to correct chars
+            pageTitle = Uri.UnescapeDataString(pageTitle);
+            //handle complicated google search url
+            var googleSearchRes = pageTitle.Split("q=");
+            pageTitle = googleSearchRes.Length > 1 ?
+                googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
+            //check if pageTitle is some id
+            pageTitle = (uriParts.Count > 1 &&
+                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' || x == '#' ) > pageTitle.Length / 3
+                                                || pageTitle == "index.html")) ?
+                uriParts[uriParts.Count - 2] : pageTitle;
+            pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
+            pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
+            //dashes are used in urls as spaces
+            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
+            //if first word is basically all numbers, its id, so delete
+            var firstTitleWord = pageTitle.Split(' ').First();
+            pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
+                         pageTitle.Length > firstTitleWord.Length) ?
+                pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
+            //if last word is basically all numbers, its id, so delete
+            var lastTitleWord = pageTitle.Split(' ').Last();
+            pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
+                            pageTitle.Length > lastTitleWord.Length) ?
+                pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
+            pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+
+            return webName + " (" + pageTitle + ")";
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -707,12 +797,16 @@ namespace Dash
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
 
+				//adds all docs in the group, if applicable
+	            var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
+				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+	            adornmentGroups.ForEach((dv) =>
+	            {
+		           AddDocument(dv.ViewModel.DataDocument);
+	            });
 
-
-
-
-                // if we drag from the file system
-                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+				// if we drag from the file system
+				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
                     try
                     {
@@ -731,6 +825,39 @@ namespace Dash
                 {
                     _pasteWhereHack = where;
                     var html = await e.DataView.GetHtmlFormatAsync();
+
+                    //get url of where this html is coming from
+                    var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
+                    var beforeHtml = html.Substring(0, htmlStartIndex);
+                    var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
+                    var uri = introParts.Last().Substring(10);
+
+                    //try to get website and article title
+                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + GetTitlesUrl(uri) + " </a> </div>";
+                   
+
+                    //update html length in intro - the way that word reads HTML is kinda funny
+                    //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
+                    //we must change these numbers
+                    var endingInfo = introParts.ElementAt(2);
+                    var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[2] = endingInfo.Substring(0, 8) + endingNum;
+                    var endingInfo2 = introParts.ElementAt(4);
+                    var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
+                        .ToString().PadLeft(10, '0');
+                    introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
+                    var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
+
+
+                    //get parts so additon is before closing
+                    var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
+                    var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
+                    var htmlClose = html.Substring(endPoint);
+                   
+
+                    //combine all parts
+                    html = newHtmlStart + mainHtml + addition + htmlClose;
 
                     //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
                     html = String.Concat(html,
@@ -788,6 +915,9 @@ namespace Dash
                         await DotNetRPC.CallRPCAsync(table);
                         var dataPackageView = Clipboard.GetContent();
                         var richtext = await dataPackageView.GetRtfAsync();
+                        //richtext +=
+                        //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                        //            "\"} {\\fldrslt" + uri + "}}";
                         htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                     }
 
@@ -814,6 +944,9 @@ namespace Dash
                             if (dataPackageView.Contains(StandardDataFormats.Rtf))
                             {
                                 var richtext = await dataPackageView.GetRtfAsync();
+                                //richtext +=
+                                //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
+                                //    "\"} {\\fldrslt" + uri + "}}";
                                 htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
                             }
                             else
@@ -852,7 +985,7 @@ namespace Dash
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
                         {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
                                 matches[0].Value.Replace("SourceURL:", ""), true);
                             break;
                         }
@@ -908,6 +1041,9 @@ namespace Dash
                             }
                         }
                     }
+
+                    //make context navigate back to website
+                    htmlNote.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(uri), true);
 
                     AddDocument(htmlNote);
                 }
@@ -1163,6 +1299,11 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
+            var currentBoundingBox = new Rect(e.GetPosition(MainPage.Instance.xMainDocView),
+                new Size(10, 10));
+
+            var dir =  MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
+            MainPage.Instance.DockManager.HighlightDock(dir);
             HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

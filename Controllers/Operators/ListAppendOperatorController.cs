@@ -40,10 +40,10 @@ namespace Dash
             var listA = inputs[ListAKey] as BaseListController;
             var toAppendController = inputs[ToAppendKey];
 
-            var typeList = listA?.ListSubTypeInfo;
+            var typeList = listA.ListSubTypeInfo;
             var typeElement = toAppendController.TypeInfo;
 
-            if (typeList != typeElement) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeElement, typeList, InvalidListOperationErrorModel.OpError.AppendType));
+            if (!typeList.HasFlag(typeElement)) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeElement, typeList, InvalidListOperationErrorModel.OpError.AppendType));
 
             var l = (BaseListController) listA.Copy();
             l.AddBase(toAppendController);

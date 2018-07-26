@@ -72,19 +72,6 @@ namespace Dash
                 element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
             }
         }
-        protected static void BindBackgroundColor(RichTextView element, DocumentController docController, Context context)
-        {
-            var backgroundBinding = new FieldBinding<TextController>()
-            {
-                Key = KeyStore.BackgroundColorKey,
-                Document = docController,
-                Converter = new StringToBrushConverter(),
-                Mode = BindingMode.TwoWay,
-                Context = context,
-                FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
-            };
-            element.xRichEditBox.AddFieldBinding(RichEditBox.BackgroundProperty, backgroundBinding);
-        }
         public static DocumentController MakeRegionDocument(DocumentView richTextBox)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
@@ -109,7 +96,6 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
-                BindBackgroundColor(rtv, docController, context);
 
             return rtv;
         }

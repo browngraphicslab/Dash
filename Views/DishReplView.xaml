@@ -41,9 +41,9 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
-                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped" />
+                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Consolas"/>
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
-                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  />
+                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Consolas" />
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
@@ -58,7 +58,7 @@
                     </ItemsControl>
                 </ScrollViewer>
                 <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="18"
-                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"
+                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Consolas"
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
                 </local:ActionTextBox>
                 <Popup x:Name="xSuggestionsPopup" Grid.Row="3" Canvas.ZIndex="-1">
@@ -71,7 +71,7 @@
                                         <Grid>
                                             <Border Height="40">
                                                 <TextBlock Text="{x:Bind Name}" 
-                                                FontSize="15" Foreground="Black"/>
+                                                FontSize="15" Foreground="Black" FontFamily="Consolas"/>
                                             </Border>
                                         </Grid>
                                     </DataTemplate>

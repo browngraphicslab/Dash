@@ -8,9 +8,7 @@ namespace Dash
     {
         public abstract List<FieldControllerBase> Data { get; set; }
 
-        protected BaseListController(ListModel fieldModel) : base(fieldModel)
-        {
-        }
+        protected BaseListController(ListModel fieldModel) : base(fieldModel) { }
 
         public bool Indexed { get; set; }
 

@@ -311,8 +311,9 @@ namespace Dash
 
                 ToggleSelectOptions(docs.Count() > 0);
 
+
                 // just single select
-                if (docs.Count() == 1)
+                if (docs.Count() == 1 )
                 {
                     var selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
@@ -378,7 +379,7 @@ namespace Dash
                                 if (!containsInternalContent)
                                 {
                                     var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                    xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                    xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                     subtoolbarElement = xCollectionToolbar;
                                 }
                                 else
@@ -389,7 +390,7 @@ namespace Dash
                             else
                             {
                                 var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
                             xGroupToolbar.TryMakeGroupEditable(false);
@@ -441,7 +442,7 @@ namespace Dash
                             if (!containsInternalContent)
                             {
                                 var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
                             else
@@ -452,19 +453,19 @@ namespace Dash
                         else
                         {
                             var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                            xCollectionToolbar.SetCollectionBinding(thisCollection);
+                            xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                             subtoolbarElement = xCollectionToolbar;
                         }
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     //Annnotation controls
-                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
-                    if (annot != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+                    //var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
+                    //if (annot != null)
+                    //{
+                    //    System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
-                    }
+                    //}
 
                     
 
@@ -474,23 +475,12 @@ namespace Dash
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
-                        if (subtoolbarElement is ICommandBarBased toOpen)
-                        {
-                            toOpen.CommandBarOpen(true);
-                            //Displays padding in stack panel only if the menu isn't collapsed
-                            //if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
-                            var margin = xSubtoolbarStackPanel.Margin;
-                            margin.Top = 20;
-                            xSubtoolbarStackPanel.Margin = margin;
-                        }
-                        else
-                        {
-                            //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                          //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
                             var margin = xSubtoolbarStackPanel.Margin;
                             margin.Top = 7;
-                            xSubtoolbarStackPanel.Margin = margin;
-                            //xPadding.Visibility = Visibility.Collapsed;
-                        }
+                          xSubtoolbarStackPanel.Margin = margin;
+                         //xPadding.Visibility = Visibility.Collapsed;
+                     
                     }
                     else
                     {
@@ -556,10 +546,11 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
-            {
-                d.DeleteDocument();
-            }
+            using (UndoManager.GetBatchHandle())
+                foreach (DocumentView d in SelectionManager.SelectedDocs)
+                {
+                    d.DeleteDocument();
+                }
         }
 
 
@@ -728,10 +719,21 @@ namespace Dash
 	        xToolbar.IsOpen = true;
 		}
 
-        /// <summary>
-        /// Rotates the internal stack panel of the command bar. Currently inactive.
-        /// </summary>
-        private void RotateToolbar()
+	    private void Add_Group_On_Click(object sender, RoutedEventArgs e)
+	    {
+			//create and add group to workspace
+		    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+
+			MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
+		}
+
+
+
+		/// <summary>
+		/// Rotates the internal stack panel of the command bar. Currently inactive.
+		/// </summary>
+		private void RotateToolbar()
         {
             Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation

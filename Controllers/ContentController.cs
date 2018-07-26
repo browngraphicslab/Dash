@@ -100,7 +100,6 @@ namespace Dash
         {
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
-	        Debug.WriteLine("CONTROLLER IDS: " + controllerIds);
 
 			/*
 			foreach (var controller in _controllers)

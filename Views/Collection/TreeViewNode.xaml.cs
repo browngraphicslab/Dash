@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -7,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -44,25 +49,69 @@ namespace Dash
         }
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
+        private readonly ObservableCollection<SnapshotView> _items = new ObservableCollection<SnapshotView>();
+        private bool snapStarted;
+
         public TreeViewNode()
         {
             this.InitializeComponent();
+            MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
+          focusOnSelected();
+        }
+
+        public async void NewSnapshot()
+        {
+            var snapshots =
+                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                    ListController<DocumentController>);
+            var index = _items.Count;
+            var doc = snapshots?[index];
+
+            string image = null;
+            string time = null;
+            if (snapshots != null)
+            {
+                image = doc.GetField<TextController>(KeyStore.SnapshotImage, true)?.Data;
+                time = doc.GetField<TextController>(KeyStore.DateModifiedKey, true)?.Data;
+            }
+
+            if (image == null)
+            {
+                image = await Util.ExportAsImage(MainPage.Instance.MainDocView, "snapshot.png", true);
+                doc?.SetField<TextController>(KeyStore.SnapshotImage, image, true);
+                time = DateTime.Now.ToString(new CultureInfo("en-US"));
+                doc?.SetField<TextController>(KeyStore.DateModifiedKey, time, true);
+            }
+
+            var newSnapshot = new SnapshotView(time, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + image, index);
+            _items.Add(newSnapshot);
+            snapStarted = false;
+
+        }
+
+        public void UpdateSnapshots()
+        {
+            var dvm = ViewModel;
+            var snapshots = dvm?.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
+            if (snapshots != null && snapshots.Count > _items.Count && !snapStarted)
+            {
+                snapStarted = true;
+                XSnapshotArrowBlock.Visibility = Visibility.Visible;
+
+                NewSnapshot();
+            }
+
+            if (snapshots == null || snapshots.Count == 0)
+            {
+                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dvm = ViewModel;
-            var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
-            if (snapshots != null && XSnapshotArrowBlock.Visibility == Visibility.Collapsed)
-            {
-                var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
-                SnapshotTreeView.SortCriterion = null;
-                SnapshotTreeView.DataContext = snapshotCollectionViewModel;
-                SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                XSnapshotArrowBlock.Visibility = Visibility.Visible;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-            }
+            UpdateSnapshots();
         }
+
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -131,26 +180,21 @@ namespace Dash
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
-                if (snapshots != null)
+                if (snapshots != null && snapshots.Count != 0)
                 {
-                    var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
-                    SnapshotTreeView.SortCriterion = null;
-                    SnapshotTreeView.DataContext = snapshotCollectionViewModel;
-                    SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                    XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
                     XSnapshotArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeSnapCol";
                 }
                 else
                 {
-                    XSnapshotArrowBlock.Text = "";
                     XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-                    SnapshotTreeView.DataContext = null;
-                    SnapshotTreeView.Visibility = Visibility.Collapsed;
+                    XSnapshotsPopup.Visibility = Visibility.Collapsed;
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
                 XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
+
+                UpdateSnapshots();
             }
         }
 
@@ -185,6 +229,7 @@ namespace Dash
             {
                 CollectionTreeView.Visibility = Visibility.Visible;
                 XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+                ClosePopups();
             }
             else
             {
@@ -197,15 +242,14 @@ namespace Dash
         {
             e.Handled = true;
             //Toggle visibility
-            if (SnapshotTreeView.Visibility == Visibility.Collapsed)
+            if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
-                SnapshotTreeView.Visibility = Visibility.Visible;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ContractArrowIcon"];
+                ClosePopups();
+                XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
             {
-                SnapshotTreeView.Visibility = Visibility.Collapsed;
-                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                XSnapshotsPopup.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -237,6 +281,12 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+
+            UnfocusText();
+            ClosePopups();
+
+            XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+            XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
         }
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -247,6 +297,7 @@ namespace Dash
 
         public void DeleteDocument()
         {
+            ClosePopups();
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
@@ -262,6 +313,7 @@ namespace Dash
         
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
+            ClosePopups();
             UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
@@ -299,5 +351,124 @@ namespace Dash
                 args.Cancel = true;
         }
 
+        private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
+        {
+            var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
+            var index = data.Index;
+            if (!_items.Count.Equals(0))
+            {
+                _items.RemoveAt(index);
+            }
+            
+         
+            (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>)?.RemoveAt(index);
+            foreach (var snap in _items)
+            {
+                if (snap.Index > index)
+                {
+                    snap.Index -= 1;
+                }
+            }
+
+            if (_items.Count == 0)
+            {
+                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+            }
+
+        }
+
+        private void ClosePopups()
+        {
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                node.XSnapshotsPopup.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UnfocusText()
+        {
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
+                node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
+
+                node.XSnapshotSelected.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var item = (sender as StackPanel)?.DataContext as SnapshotView;
+            var itemNum = item.Index;
+            MainPage.Instance.ToggleSettingsVisibility(false);
+            var snaps = (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>);
+            if (snaps != null && snaps.Count > itemNum)
+            {
+                var docToFocus = snaps[itemNum];
+                if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            }
+
+            ClosePopups();
+            UnfocusText();
+
+            SelectedTitle.Text = item.Title;
+            SelectedImage.Source = new BitmapImage(new Uri(item.Image));
+            XSnapshotSelected.Visibility = Visibility.Visible;
+        }
+
+        private void focusOnSelected()
+        {
+            var workspace = MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey, true) as DocumentController;
+            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
+            {
+                if (node.ViewModel?.DocumentController == workspace)
+                {
+                    node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
+                }
+            }
+        }
+
+        private void TextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            //snapshot title changed
+            var newKey = e.Key.ToString().ToLower();
+            newKey = newKey == "enter" ? "" : newKey;
+            var text = (sender as TextBox).Text;
+            var newTitle = text + newKey;
+            newTitle = newKey == "back" ? text.Substring(0, text.Length ) : newTitle;
+
+            SelectedTitle.Text = newTitle;
+
+            var item = (sender as TextBox)?.DataContext as SnapshotView;
+            item.Title = newTitle;
+
+            (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
+                ListController<DocumentController>)?[item.Index]?.SetField<TextController>(KeyStore.DateModifiedKey, newTitle, true);
+        }
+
+        private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
+         {
+            var dvm = ViewModel;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            if (e.Items.Count.Equals(0)) return;
+            var first = e.Items.First() as SnapshotView;
+            var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
+            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(snapshots[first.Index], true);
+            e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void ListViewBase_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            ClosePopups();
+        }
     }
 }

@@ -35,7 +35,7 @@
                         </controls:TextToolbar.ButtonModifications>
 
                     </controls:TextToolbar>
-                    <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="60"
+                    <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="60" AllowFocusOnInteraction="True"
             Background="LightGray" Label="Color" Click="XBackgroundColorButton_OnClick">
                 <Button.Flyout>
                     <Flyout x:Name="xColorPickerFlyout">

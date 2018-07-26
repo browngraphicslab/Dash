@@ -30,17 +30,50 @@
             </Grid.ColumnDefinitions>
 
             <Grid Background="LightGray" Grid.Column="1" Opacity="0.3" Visibility="{Binding DecorationState}" IsHitTestVisible="False"/>
-            <TextBlock x:Name="XTextBlock" Grid.Column="1" FontSize="{StaticResource DataSizing}" 
+            <Border x:Name="XBlockBorder"  Grid.Column="1">
+            <TextBlock x:Name="XTextBlock" FontSize="{StaticResource DataSizing}" 
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
                     CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="{x:Bind Foreground, Mode=OneWay}" />
+            </Border>
             <Border x:Name="xBorder" Grid.Column="2" Visibility="Collapsed">
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
             <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
-            <TextBlock x:Name="XSnapshotArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="2" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
+            <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" CanDrag="True"  DragStarting="xControlIcon_DragStarting"  Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" Margin="5,0,5,0" />
+
+            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0" >
+                <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="{StaticResource AccentGreenLight}" DragItemsStarting="ListViewBase_OnDragItemsStarting" DragItemsCompleted="ListViewBase_OnDragItemsCompleted">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:SnapshotView">
+                            <StackPanel DoubleTapped="UIElement_OnDoubleTapped" Margin="0 10 0 10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                        <ColumnDefinition Width="20"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{x:Bind Title}" PlaceholderText="{x:Bind Title}" Background="Transparent" Grid.Column="0"
+                                               FontSize="10" Foreground="White" KeyDown="TextBox_OnKeyDown" Width="125"/>
+                                    <FontIcon Glyph="&#xE711;" Foreground="White" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Grid.Column="1" />
+                                </Grid>
+                                <Border Height="100" Width="150" HorizontalAlignment="Center">
+                                    <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                </ListView>
+            </Popup>
         </Grid>
+        <StackPanel x:Name="XSnapshotSelected" Visibility="Collapsed" Background="Gray" >
+            <TextBlock x:Name="SelectedTitle" FontSize="15" Foreground="Black"/>
+            <Border BorderThickness="2" BorderBrush="Black" Width="100">
+                <Image x:Name="SelectedImage" Width="100" />
+            </Border>
+        </StackPanel>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="YPos" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
-        <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="SnapshotTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
     </StackPanel>
 </UserControl>
