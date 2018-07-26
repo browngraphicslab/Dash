@@ -164,8 +164,7 @@
                     </Grid.RowDefinitions>
 
                     <!--Main document view 
-
-                    
+ 
                      Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                     <Grid.ContextFlyout>
                         <MenuFlyout x:Name="xMenuFlyout">
