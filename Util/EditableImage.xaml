@@ -14,9 +14,9 @@
     Background="Beige" IsTabStop="True">
 
 
-    <Grid x:Name="xGrid" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
-          PointerPressed="OnPointerPressed">
-        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Fill" CacheMode="BitmapCache" />
+    <Grid x:Name="xGrid" >
+        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
+               PointerPressed="OnPointerPressed" Stretch="Fill" CacheMode="BitmapCache" />
         <Viewbox Stretch="Fill" x:Name="AnnotationViewbox">
             <Grid x:Name="XAnnotationGrid" />
         </Viewbox>
