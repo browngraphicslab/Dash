@@ -57,7 +57,7 @@ namespace Dash
                 computedTitle = regex.Replace(computedTitle, "");
             }
 
-            int maxTitleLength = 37;
+            int maxTitleLength = 35;
             if (computedTitle?.Length > maxTitleLength)
             {
                 var shortenedTitle = "";
