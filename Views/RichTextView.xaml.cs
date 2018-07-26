@@ -1010,7 +1010,12 @@ namespace Dash
            
             if (_originalRtfFormat == null)
                 return;
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, _originalRtfFormat);
+            xRichEditBox.Document.Selection.StartPosition = s1;
+            xRichEditBox.Document.Selection.EndPosition = s2;
+            
             _originalRtfFormat = null;
             if (_searchHighlight)
             {
