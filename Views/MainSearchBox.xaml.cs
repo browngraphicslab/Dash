@@ -152,7 +152,7 @@ namespace Dash
                 .Select(sr => sr.ViewDocument.GetViewCopy());
 
             args.Data.Properties[nameof(DragCollectionFieldModel)] =
-                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
+                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Page);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
