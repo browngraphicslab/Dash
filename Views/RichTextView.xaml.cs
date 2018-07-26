@@ -898,6 +898,9 @@ namespace Dash
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
         }
 
+        /// <summary>
+        /// Adds highlight tags to all strings that match the query in the text
+        /// </summary>
         private int _highlightNum;
         private string InsertHighlight(string rtf, string query)
         {
@@ -911,6 +914,10 @@ namespace Dash
             return rtf;
         }
 
+        /// <summary>
+        /// Gets the index of query while ignoring instances in escaped rtf.
+        /// Also gets the length of the match, which will differ in the case that there is escaped rtf inside the query.
+        /// </summary>
         private int[] ModIndexOf(string text, string query)
         {
             int len = query.Length;
@@ -940,7 +947,7 @@ namespace Dash
                 }
                 else
                 {
-                    if (text[i] == '\\')
+                    if (text[i] == '\\' && text[i + 1] != '\'')
                     {
                         if (matchCount > 0)
                             matchWithFormat += 1;
@@ -990,8 +997,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Clears the highlights that result from searching within the xRichEditBox (to make sure that
-        /// original highlights wouldn't get erased)
+        /// Restores the original formatting of the richtextbox before the search was conducted
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
