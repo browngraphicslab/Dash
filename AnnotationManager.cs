@@ -25,7 +25,7 @@ namespace Dash
 		private List<DocumentController> _lastHighlighted = new List<DocumentController>();
         public enum LinkContexts
         {
-            PDFSplitScreen
+            PDFSplitScreen, None
         }
 
 		public AnnotationManager(FrameworkElement uiElement)

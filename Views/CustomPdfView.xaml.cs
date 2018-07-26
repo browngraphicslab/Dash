@@ -553,6 +553,8 @@ namespace Dash
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, _scrollRatio * TopScrollViewer.ExtentHeight, null, true);
+            Debug.WriteLine("Top Extent Height: " + TopScrollViewer.ExtentHeight);
+            Debug.WriteLine("Bottom Extent Height: " + BottomScrollViewer.ExtentHeight);
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -625,10 +627,35 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target)
         {
-            var offset = target.GetDataDocument().GetPosition()?.Y;
-            if (offset == null) return;
+            var offsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            if (offsets == null) return;
 
-            BottomScrollViewer.ChangeView(null, offset.Value + BottomScrollViewer.ViewportHeight, null);
+            var currOffset = offsets.First().Data;
+            var firstOffset = offsets.First().Data;
+            var maxOffset = BottomScrollViewer.ViewportHeight;
+            var splits = new List<double>();
+            foreach (var offset in offsets.Skip(1))
+            {
+                if (offset.Data - currOffset > maxOffset)
+                {
+                    splits.Add(offset.Data);
+                    currOffset = offset.Data;
+                }
+            }
+
+            Debug.WriteLine($"{splits} screen splits are needed to show everything");
+
+            if (splits.Any())
+            {
+                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                TopScrollViewer.ChangeView(null, firstOffset, null);
+                BottomScrollViewer.ChangeView(null, splits[0] +  Height, null);
+            }
+            else
+            {
+                BottomScrollViewer.ChangeView(null, firstOffset + Height, null);
+            }
         }
 
         // when the sidebar marker gets pressed
@@ -712,7 +739,7 @@ namespace Dash
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
-                region.Link(note);
+                region.Link(note, AnnotationManager.LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { Undecorated = true },
@@ -735,7 +762,7 @@ namespace Dash
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
 
-                region.Link(note);
+                region.Link(note, AnnotationManager.LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { DecorationState = false },
@@ -983,18 +1010,72 @@ namespace Dash
 
         public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            //if (linkDoc.GetField<TextController>(KeyStore.LinkContextKey).Data
-            //    .Equals(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()))
-            //{
+            if (_bottomAnnotationOverlay._regions.Any(i =>
+                i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey))))
+            {
+                var destRegion = _topAnnotationOverlay._regions.First(i =>
+                    i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey)));
+                if (destRegion.Selected)
+                {
+                    destRegion.Deselect();
+                }
+                else
+                {
+                    destRegion.Select();
+                }
+                return true;
+            }
 
-            //}
+            if (_topAnnotationOverlay._regions.Any(i =>
+                i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey))))
+            {
+                var destRegion = _bottomAnnotationOverlay._regions.FirstOrDefault(i =>
+                    i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey)));
+                if (destRegion.Selected)
+                {
+                    destRegion.Deselect();
+                }
+                else
+                {
+                    destRegion.Select();
+                }
+                return true;
+            }
+
             return false;
         }
 
-        private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
+        //private void XLinkButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    var source = sender == xBottomLinkButton ? _bottomAnnotationOverlay : _topAnnotationOverlay;
+        //    var destination = sender == xBottomLinkButton ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+        //    var srcDoc = source.GetRegionDoc();
+        //    var dstDoc = destination.GetRegionDoc(false);
 
-        }
+        //    if (srcDoc == null || dstDoc == null) return;
+
+        //    srcDoc.Link(dstDoc, AnnotationManager.LinkContexts.PDFSplitScreen);
+        //    //// note is the new annotation textbox that is created
+        //    //var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN))
+        //    //    .Document;
+
+        //    //srcDoc.Link(note, AnnotationManager.LinkContexts.None);
+        //    //var docview = new DocumentView
+        //    //{
+        //    //    DataContext = new DocumentViewModel(note) {DecorationState = false},
+        //    //    Width = xTopAnnotationBox.ActualWidth,
+        //    //    BindRenderTransform = false
+        //    //};
+        //    //docview.hideResizers();
+
+        //    //Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
+        //    ////SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+        //    //BottomAnnotations.Add(docview);
+        //    /*DocControllers.Add(srcDoc);*/ //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+        //    //DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers),
+        //    //    true);
+        //    e.Handled = true;
+        //}
     }
 }
 
