@@ -682,7 +682,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument);
+                                region.Link(sourceDoc.LayoutDocument, AnnotationManager.LinkContexts.None);
 
                             }
                             else
@@ -1217,7 +1217,7 @@ namespace Dash
 							var note = new RichTextNote("<annotation>", where).Document;
 	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 
-                            dragDoc.Link(note);
+                            dragDoc.Link(note, AnnotationManager.LinkContexts.None);
                             AddDocument(note);
                         }
                     }

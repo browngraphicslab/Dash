@@ -44,7 +44,7 @@ namespace Dash.Converters
 
             FrameworkElement currView = null;
 
-            if (_lastType == data?.TypeInfo)
+            if (_lastType == data?.TypeInfo && _lastType != TypeInfo.Document)
             {
                 return _lastElement;
             }

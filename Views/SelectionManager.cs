@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Casting;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 
 namespace Dash
 {
