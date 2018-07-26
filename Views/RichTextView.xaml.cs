@@ -248,8 +248,8 @@ namespace Dash
             if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
             {
                 // don't update if the Text is the same as what we last set it to
-                _lastXamlRTFText = xamlRTF;
                 Text = new RichTextModel.RTD(xamlRTF);
+                _lastXamlRTFText = xamlRTF; // if this comes before the previous line, then setting background text colors or text colors don't persist
             }
         }
 
@@ -846,16 +846,12 @@ namespace Dash
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
-            xRichEditBox.Document.Selection.SetRange(0, getReadableText().Length);
-            xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            //var keys = _originalCharFormat.Keys;
-            //foreach (var tuple in _originalCharFormat)
-            //{
-            //    xRichEditBox.Document.Selection.SetRange(tuple.Key, tuple.Key + _prevQueryLength);
-            //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
-            //   // xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
-            //}
+            foreach (var tuple in _originalCharFormat)
+            {
+                xRichEditBox.Document.Selection.SetRange(tuple.Key, tuple.Key + _prevQueryLength);
+                xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
+            }
             xRichEditBox.Document.Selection.Collapse(true);
             if (!silent)
                 UpdateDocumentFromXaml();
