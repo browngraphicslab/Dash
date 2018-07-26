@@ -21,7 +21,7 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
-       
+
 
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
@@ -43,15 +43,32 @@ namespace Dash
 
         private void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectionManager.DeselectAll();
             if (e.AddedItems.Count > 0)
-                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals( (e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
+            {
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
+
+            }
+
         }
 
         private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                docview.ManipulationMode = ManipulationModes.All;
+            }
+            else
+            {
+                docview.ManipulationMode = ManipulationModes.None;
+                //SelectionManager.Select(docview);
+                
+            }
+
             e.Handled = true;
+
+
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -95,12 +112,12 @@ namespace Dash
         #endregion
 
         #region Activation
-        
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
-            e.Handled = true;
-        }
+
+        //private void OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
+        //    e.Handled = true;
+        //}
 
         #endregion
 
@@ -135,6 +152,7 @@ namespace Dash
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
             MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
+          
         }
     }
 }

@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
-    Tapped="OnTapped"
+    
     >
     <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
