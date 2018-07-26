@@ -296,19 +296,25 @@ namespace Dash
         {
             if (sender.Equals(TopScrollViewer))
             {
-                _topTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                _topTimer.Start();
+
+                if (TopScrollViewer.ExtentHeight != 0)
+                {
+                    _topTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                    _topTimer.Start();
+                }
+                
             }
 
             else if (sender.Equals(BottomScrollViewer))
             {
-                _bottomTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                _bottomTimer.Start();
+                if (BottomScrollViewer.ExtentHeight != 0)
+                {
+                    _bottomTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                    _bottomTimer.Start();
+                }
+               
             }
-            //if (!e.IsIntermediate)
-            //{
-            //    AddToStack((sender == BottomScrollViewer) ? _bottomBackStack : _topBackStack, (sender as ScrollViewer));
-            //}
+           
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -1015,7 +1021,15 @@ namespace Dash
             if (backstack.Any())
             {
                 var pop = backstack.Pop();
-                viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
+                if (backstack.Count > 0 && !backstack.Peek().Equals(Double.NaN) && !viewer.ExtentHeight.Equals(Double.NaN))
+                {
+                    viewer.ChangeView(null, backstack.Peek() * viewer.ExtentHeight, 1);
+                }
+                else
+                {
+                    viewer.ChangeView(null, 0, 1);
+                }
+                //viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
                 forwardstack.Push(pop);
             }
         }
