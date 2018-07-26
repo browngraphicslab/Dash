@@ -18,6 +18,7 @@ using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media.Animation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 using iText.Layout.Element;
@@ -50,6 +51,10 @@ namespace Dash
         public SettingsView GetSettingsView => xSettingsView;
 
         public Popup LayoutPopup => xLayoutPopup;
+
+        public Grid SnapshotOverlay => xSnapshotOverlay;
+        public Storyboard FadeIn => xFadeIn;
+        public Storyboard FadeOut => xFadeOut;
 
 
 
@@ -972,5 +977,10 @@ namespace Dash
         }
 
         #endregion
+
+        public void Timeline_OnCompleted(object sender, object e)
+        {
+            xSnapshotOverlay.Visibility = Visibility.Collapsed;
+        }
     }
 }
