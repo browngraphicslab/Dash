@@ -802,7 +802,12 @@ namespace Dash
 
         #region search
 
-        private int _jCount;
+        private int _colorParamsCount;
+
+        /// <summary>
+        /// Searches through richtextbox for textcontrollers in queries- does so by storing the formatting/state of the textbox before the search was conducted
+        /// and modifying the rtf directly, since the previous method of using iTextSelection was way too slow to be useful
+        /// </summary>
         private void MatchQuery(List<TextController> queries)
         {
             if (getDocView() == null || queries == null || queries.Count == 0
@@ -832,20 +837,22 @@ namespace Dash
             {
                 if (string.IsNullOrEmpty(query))
                     return;
-                int b = currentRtf.IndexOf("\\fs");
-                int bb = currentRtf.IndexOf(" ", b);
+                int fs = currentRtf.IndexOf("\\fs");
+                int textStart = currentRtf.IndexOf(" ", fs);
 
-                int j = currentRtf.IndexOf("\\colortbl");
-                int jj = currentRtf.IndexOf('}', j);
-                _jCount = currentRtf.Substring(j, jj - j).Where(c => c == ';').Count();
+                int colorParams = currentRtf.IndexOf("\\colortbl");
+                int colorParamsEnd = currentRtf.IndexOf('}', colorParams);
+                _colorParamsCount = currentRtf.Substring(colorParams, colorParamsEnd - colorParams).Where(c => c == ';').Count();
 
-                string cc = currentRtf.Substring(0, bb + 1);
-                string cc2 = currentRtf.Substring(bb + 1);
-                string d = cc + InsertHighlight(cc2, query.ToLower());
+                string rtfFormatting = currentRtf.Substring(0, textStart + 1);
+                string text = currentRtf.Substring(textStart + 1);
+                string highlightedText = rtfFormatting + InsertHighlight(text, query.ToLower());
 
-                d = d.Insert(jj - 1, ";\\red255\\green255\\blue0");
+                highlightedText = highlightedText.Insert(colorParamsEnd - 1, ";\\red255\\green255\\blue0");
                 
-                string[] split = d.Split(' ');
+                // Splitting the text and reconstructing the string is due to the fact that \\highlight can't have spaces when combined with another escaped
+                // rtf command, so we need to delete specifically those spaces, but leave spaces following \\highlight when next to normal text
+                string[] split = highlightedText.Split(' ');
                 for (int i = 0; i < split.Length - 1; i++)
                 {
                     if (i == 0)
@@ -853,7 +860,7 @@ namespace Dash
                         newRtf = split[0];
                     }
                     else if (!string.IsNullOrEmpty(split[i]) && (split[i].Remove(split[i].Length - 1).EndsWith("\\highlight") && split[i + 1].StartsWith("\\") && !split[i + 1].StartsWith("\\'")) || 
-                        (split[i + 1].StartsWith($"\\highlight{_jCount}") && split[i].Contains("\\") && !(split[i].Contains("\n") || split[i].Contains("\t") || split[i].Contains("\r") || split[i].Contains("\\'"))))
+                        (split[i + 1].StartsWith($"\\highlight{_colorParamsCount}") && split[i].Contains("\\") && !(split[i].Contains("\n") || split[i].Contains("\t") || split[i].Contains("\r") || split[i].Contains("\\'"))))
                     {
                         newRtf += " " + split[i] + split[i + 1];
                         i++;
@@ -899,7 +906,7 @@ namespace Dash
             int len = modIndex[1];
             if (i >= 0)
             {
-                return rtf.Substring(0, i) + $"\\highlight{_jCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);
+                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);
             }
             return rtf;
         }
