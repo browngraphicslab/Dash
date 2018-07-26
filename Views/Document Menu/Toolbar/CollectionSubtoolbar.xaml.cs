@@ -114,6 +114,8 @@ namespace Dash
                     _collection.SetView((CollectionView.CollectionViewType) xViewModesDropdown.SelectedItem);
                 }
             }
+
+            CommandBarOpen(true);
         }
 
         /// <summary>

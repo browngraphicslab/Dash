@@ -142,7 +142,12 @@ namespace Dash
         private Stack<double> _topBackStack;
         private Stack<double> _bottomBackStack;
 
-        private DispatcherTimer _timer;
+        private Stack<double> _topForwardStack;
+        private Stack<double> _bottomForwardStack;
+
+        private DispatcherTimer _topTimer;
+        private DispatcherTimer _bottomTimer;
+
 
         public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
@@ -240,21 +245,70 @@ namespace Dash
             _topBackStack.Push(0);
             _bottomBackStack = new Stack<double>();
             _bottomBackStack.Push(0);
-            
+            _topForwardStack = new Stack<double>();
+            _bottomForwardStack = new Stack<double>();
+
             BottomScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
             TopScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
             Canvas.SetZIndex(xBottomButtonPanel, 999);
             Canvas.SetZIndex(xTopButtonPanel, 999);
-            
+
+            _topTimer = new DispatcherTimer()
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 500)
+            };
+            _topTimer.Tick += TimerTick;
+
+            _bottomTimer = new DispatcherTimer()
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 500)
+            };
+            _bottomTimer.Tick += TimerTick;
+
+            _topTimer.Start();
+            _bottomTimer.Start();
+
         }
+
+        private void TimerTick(object sender, object o)
+        {
+            
+            if (sender.Equals(_topTimer))
+            {
+                _topTimer.Stop();
+                AddToStack(_topBackStack, TopScrollViewer);
+                //_topTimer.Start();
+
+            }
+
+             else if (sender.Equals(_bottomTimer))
+            {
+                _bottomTimer.Stop();
+                AddToStack(_bottomBackStack, BottomScrollViewer);
+               //_bottomTimer.Start();
+            }
+        }
+
+     
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            if (!e.IsIntermediate)
+            if (sender.Equals(TopScrollViewer))
             {
-                AddToStack((sender == BottomScrollViewer) ? _bottomBackStack : _topBackStack, (sender as ScrollViewer));
+                _topTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                _topTimer.Start();
             }
+
+            else if (sender.Equals(BottomScrollViewer))
+            {
+                _bottomTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                _bottomTimer.Start();
+            }
+            //if (!e.IsIntermediate)
+            //{
+            //    AddToStack((sender == BottomScrollViewer) ? _bottomBackStack : _topBackStack, (sender as ScrollViewer));
+            //}
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -543,7 +597,8 @@ namespace Dash
         #endregion
 
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
-        private double _scrollRatio;
+        private double _topScrollRatio;
+        private double _bottomScrollRatio;
         private double _height;
         private double _width;
         private double _verticalOffset;
@@ -552,14 +607,22 @@ namespace Dash
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            TopScrollViewer.ChangeView(null, _scrollRatio * TopScrollViewer.ExtentHeight, null, true);
-            //BottomScrollViewer.ChangeView(null, _scrollRatio * BottomScrollViewer.ExtentHeight, null, true);
+            TopScrollViewer.ChangeView(null, _topScrollRatio * TopScrollViewer.ExtentHeight, null, true);
+            BottomScrollViewer.ChangeView(null, _bottomScrollRatio * BottomScrollViewer.ExtentHeight, null, true);
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _scrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
-            LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
+            if (sender.Equals(TopScrollViewer))
+            {
+                _topScrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
+            } else if (sender.Equals(BottomScrollViewer))
+            {
+                _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
+            }
+           
+            
+            //LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
         }
 
         public void UnFreeze()
@@ -647,6 +710,7 @@ namespace Dash
             {
                 // todo: do we need the zoom factor multiplied by offset here?
                 TopScrollViewer.ChangeView(null, region.Offset, null);
+
             }
         }
         private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -799,6 +863,7 @@ namespace Dash
         private void XBottomScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             BottomScrollViewer.ChangeView(null, 0, null);
+            _bottomBackStack.Push(0);
         }
 
         private void XBottomNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -814,7 +879,7 @@ namespace Dash
 
         private void XBottomScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_bottomBackStack, BottomScrollViewer);
+            PopBackStack(_bottomBackStack, _bottomForwardStack, BottomScrollViewer);
         }
 
         private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -830,11 +895,12 @@ namespace Dash
         private void XTopScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, 0, null);
+            _topBackStack.Push(0);
         }
 
         private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_topBackStack, TopScrollViewer);
+            PopBackStack(_topBackStack, _topForwardStack, TopScrollViewer);
         }
         
 
@@ -863,7 +929,7 @@ namespace Dash
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
-                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= 0)
+                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= -1)
 
                 {
                     break;
@@ -873,6 +939,15 @@ namespace Dash
             }
 
             scroller.ChangeView(null, currOffset, 1);
+            if (scroller.Equals(TopScrollViewer))
+            {
+                _topBackStack.Push(currOffset / TopScrollViewer.ExtentHeight);
+            }
+            else if (scroller.Equals(BottomScrollViewer))
+            {
+                _bottomBackStack.Push(currOffset / BottomScrollViewer.ExtentHeight);
+            }
+
         }
 
         private void PageNext(ScrollViewer scroller)
@@ -908,30 +983,40 @@ namespace Dash
             }
 
             scroller.ChangeView(null, currOffset, 1);
+            if (scroller.Equals(TopScrollViewer))
+            {
+                _topBackStack.Push(currOffset / TopScrollViewer.ExtentHeight);
+            }
+            else if (scroller.Equals(BottomScrollViewer))
+            {
+                _bottomBackStack.Push(currOffset / BottomScrollViewer.ExtentHeight);
+            }
+
         }
         
         private void AddToStack(Stack<double> stack, ScrollViewer viewer)
         {
             if (!stack.Count().Equals(0))
             {
-                if (!stack.Peek().Equals(viewer.VerticalOffset))
+                if (!stack.Peek().Equals(viewer.VerticalOffset / viewer.ExtentHeight))
                 {
-                    stack.Push(viewer.VerticalOffset);
+                    stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
                 }
             }
             else
             {
                 stack.Push(0);
-                stack.Push(viewer.VerticalOffset);
+                stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
             }
         }
 
-        private void PopStack(Stack<double> stack, ScrollViewer viewer)
+        private void PopBackStack(Stack<double> backstack, Stack<double> forwardstack, ScrollViewer viewer)
         {
-            if (stack.Any())
+            if (backstack.Any())
             {
-                stack.Pop();
-                viewer.ChangeView(null, stack.Any() ? stack.Peek() : 0, 1);
+                var pop = backstack.Pop();
+                viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
+                forwardstack.Push(pop);
             }
         }
 
@@ -985,9 +1070,25 @@ namespace Dash
             return false;
         }
 
-        private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
+       
 
+        private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_topForwardStack, TopScrollViewer);
+        }
+
+        private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_bottomForwardStack, BottomScrollViewer);
+        }
+
+        private void PopForwardStack(Stack<double> forwardstack, ScrollViewer viewer)
+        {
+            if (forwardstack.Any())
+            {
+                var pop = forwardstack.Pop();
+                viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() * viewer.ExtentHeight : 0, 1);
+            }
         }
     }
 }
