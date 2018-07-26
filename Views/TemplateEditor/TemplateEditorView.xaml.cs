@@ -281,10 +281,10 @@ namespace Dash
 			RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
 			RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
 
-			//hide resize and ellipse controls for template editor
-			var docView = this.GetFirstAncestorOfType<DocumentView>();
-			docView.hideControls();
-			docView.RemoveResizeHandlers();
+            //hide resize and ellipse controls for template editor
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView.hideControls();
+            docView.RemoveResizeHandlers();
 
 			// determine if the active layout exists and has information about rows and columns
 			var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);

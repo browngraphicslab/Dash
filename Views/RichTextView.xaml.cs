@@ -45,6 +45,8 @@ namespace Dash
         private bool _everFocused;
         private AnnotationManager _annotationManager;
         private string _target;
+        public Action OnManipulatorHelperStarted;
+        public Action OnManipulatorHelperCompleted;
         public static bool _searchHighlight = false;
         public bool wasInit = false;
 
@@ -60,7 +62,10 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
+                {
+                    OnManipulatorHelperStarted?.Invoke();
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                }
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
 
@@ -96,7 +101,7 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            //PointerWheelChanged += (s, e) => e.Handled = true;
+            PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>
             {
                 var docView = getDocView();
@@ -132,13 +137,14 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
+
             xRichEditBox.LostFocus += (s, e) =>
             {
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
-                if (string.IsNullOrEmpty(getReadableText()) && xRichEditBox.FocusState == FocusState.Unfocused)
+                if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView.ViewModel?.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }
@@ -165,11 +171,22 @@ namespace Dash
                 // Height = double.NaN;
                 // if we're inside of a RelativePanel that was resized, we need to 
                 // reset it to have NaN height so that it can grow as we type.
+                //xRichEditBox.Height = e.NewSize.Height;
                 if (Parent is RelativePanel relative)
                 {
                     relative.Height = double.NaN;
                 }
             };
+        }
+
+        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
+            {
+                var docView = getDocView();
+                if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    docView.DeleteDocument();
+            }
         }
 
         public void UpdateDocumentFromXaml()
@@ -549,6 +566,7 @@ namespace Dash
             ClearSearchHighlights(true);
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
@@ -562,6 +580,7 @@ namespace Dash
 
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
 
+            SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
             documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
@@ -1148,6 +1167,11 @@ namespace Dash
         //    }
         //}
         #endregion
+
+        public void CompletedManipulation()
+        {
+            OnManipulatorHelperCompleted?.Invoke();
+        }
     }
 }
 
