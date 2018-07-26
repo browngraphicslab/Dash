@@ -174,7 +174,7 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
-            if (!(getSelected()?.First()?.Data != ""))
+            if (!(getSelected()?.Count == 0 || getSelected()?.First()?.Data != ""))
                 _originalRtfFormat = getRtfText();
 
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
@@ -837,6 +837,8 @@ namespace Dash
             {
                 if (string.IsNullOrEmpty(query))
                     return;
+
+                // Last field of Rtf format is font size specification
                 int fs = currentRtf.IndexOf("\\fs");
                 int textStart = currentRtf.IndexOf(" ", fs);
 
@@ -846,6 +848,12 @@ namespace Dash
 
                 string rtfFormatting = currentRtf.Substring(0, textStart + 1);
                 string text = currentRtf.Substring(textStart + 1);
+
+                int defaultHighlight = rtfFormatting.IndexOf("\\highlight");
+                if (defaultHighlight> 0)
+                    _highlightNum = rtfFormatting[defaultHighlight + 10] - '0';
+                else
+                    _highlightNum = 0;
                 string highlightedText = rtfFormatting + InsertHighlight(text, query.ToLower());
 
                 highlightedText = highlightedText.Insert(colorParamsEnd - 1, ";\\red255\\green255\\blue0");
@@ -909,7 +917,7 @@ namespace Dash
             int len = modIndex[1];
             if (i >= 0)
             {
-                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);
+                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);;
             }
             return rtf;
         }
@@ -925,13 +933,26 @@ namespace Dash
             int matchWithFormat = 0;
             int highlightIndex = 0;
             bool ignore = false;
+            int pict = 0; //the number of curly braces (once the entire pict is closed, then we can continue search)
             int[] modIndex = new int[2];
 
             for (int i = 0; i < text.Length; i++)
             {
-                if (ignore)
+                if (pict > 0)
                 {
-                    if (highlightIndex == 9)
+                    if (text[i] == '{')
+                        pict += 1;
+                    else if (text[i] == '}')
+                        pict -= 1;
+                }
+                else if (ignore)
+                {
+                    if (text.Length > i + 6 && text.Substring(i, 6).Equals("{\\pict"))
+                    {
+                        pict += 1;
+                        ignore = false;
+                    }
+                    else if (highlightIndex == 9)
                     {
                         _highlightNum = text[i] - '0';
                         highlightIndex = 0;
@@ -947,7 +968,9 @@ namespace Dash
                 }
                 else
                 {
-                    if (text[i] == '\\')
+                    if (text.Length > i + 6 && text.Substring(i, 6).Equals("{\\pict"))
+                        pict += 1;
+                    else if (text[i] == '\\')
                     {
                         if (matchCount > 0)
                             matchWithFormat += 1;
