@@ -772,7 +772,8 @@ namespace Dash
                     {
                         newRtf = split[0];
                     }
-                    else if ((split[i].EndsWith("\\highlight0") && split[i + 1].StartsWith("\\")) || (split[i + 1].StartsWith($"\\highlight{_jCount}") && split[i].Contains("\\") && !(split[i].Contains("\n") || split[i].Contains("\t") || split[i].Contains("\r"))))
+                    else if (!string.IsNullOrEmpty(split[i]) && (split[i].Remove(split[i].Length - 1).EndsWith("\\highlight") && split[i + 1].StartsWith("\\") && !split[i + 1].StartsWith("\\'")) || 
+                        (split[i + 1].StartsWith($"\\highlight{_jCount}") && split[i].Contains("\\") && !(split[i].Contains("\n") || split[i].Contains("\t") || split[i].Contains("\r") || split[i].Contains("\\'"))))
                     {
                         newRtf += " " + split[i] + split[i + 1];
                         i++;
@@ -809,7 +810,7 @@ namespace Dash
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
         }
 
-
+        private int _highlightNum;
         private string InsertHighlight(string rtf, string query)
         {
             int[] modIndex = ModIndexOf(rtf.ToLower(), query);
@@ -817,7 +818,7 @@ namespace Dash
             int len = modIndex[1];
             if (i >= 0)
             {
-                return rtf.Substring(0, i) + $"\\highlight{_jCount} " + rtf.Substring(i, len) + "\\highlight0 " + InsertHighlight(rtf.Substring(i + len), query);
+                return rtf.Substring(0, i) + $"\\highlight{_jCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);
             }
             return rtf;
         }
@@ -827,6 +828,7 @@ namespace Dash
             int len = query.Length;
             int matchCount = 0;
             int matchWithFormat = 0;
+            int highlightIndex = 0;
             bool ignore = false;
             int[] modIndex = new int[2];
 
@@ -834,6 +836,15 @@ namespace Dash
             {
                 if (ignore)
                 {
+                    if (highlightIndex == 9)
+                    {
+                        _highlightNum = text[i] - '0';
+                        highlightIndex = 0;
+                    }
+                    else if ("highlight"[highlightIndex] == text[i])
+                        highlightIndex += 1;
+                    else
+                        highlightIndex = 0;
                     if (matchCount > 0)
                         matchWithFormat += 1;
                     if (text[i] == ' ' || text[i] == '\n' || text[i] == '\r' || text[i] == '\t')
