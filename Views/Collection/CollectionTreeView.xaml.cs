@@ -119,6 +119,11 @@ namespace Dash
 
         private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+
+            MainPage.Instance.SnapshotOverlay.Visibility = Visibility.Visible;
+            MainPage.Instance.FadeIn.Begin();
+            MainPage.Instance.FadeOut.Begin();
+           
             if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
             {
                 var snapshot = freeFormView.Snapshot();
@@ -138,6 +143,7 @@ namespace Dash
                    node.UpdateSnapshots();
                 }
             }
+            
         }
     }
 }
