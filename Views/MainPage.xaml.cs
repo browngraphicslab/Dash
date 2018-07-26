@@ -18,6 +18,7 @@ using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media.Animation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 using iText.Layout.Element;
@@ -50,6 +51,10 @@ namespace Dash
         public SettingsView GetSettingsView => xSettingsView;
 
         public Popup LayoutPopup => xLayoutPopup;
+
+        public Grid SnapshotOverlay => xSnapshotOverlay;
+        public Storyboard FadeIn => xFadeIn;
+        public Storyboard FadeOut => xFadeOut;
 
 
 
@@ -739,10 +744,10 @@ namespace Dash
             var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
             var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
-            
+            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y });
+                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -972,5 +977,10 @@ namespace Dash
         }
 
         #endregion
+
+        public void Timeline_OnCompleted(object sender, object e)
+        {
+            xSnapshotOverlay.Visibility = Visibility.Collapsed;
+        }
     }
 }
