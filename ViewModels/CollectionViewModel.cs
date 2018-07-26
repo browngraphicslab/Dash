@@ -1302,6 +1302,11 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
+            var currentBoundingBox = new Rect(e.GetPosition(MainPage.Instance.xMainDocView),
+                new Size(10, 10));
+
+            var dir =  MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
+            MainPage.Instance.DockManager.HighlightDock(dir);
             HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

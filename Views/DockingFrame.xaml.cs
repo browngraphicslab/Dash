@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -201,7 +203,9 @@ namespace Dash
 
         public void HighlightDock(DockDirection dir)
         {
-            _highlightRecs[(int)dir].Opacity = 0.4;
+            if (dir != DockDirection.None)
+                _highlightRecs[(int)dir].Opacity = 0.4;
+            else UnhighlightDock();
         }
 
         public void UnhighlightDock()
@@ -351,6 +355,58 @@ namespace Dash
         private void xBottomSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[3].GetElements().First(), NewLength = xBottomDockRow.Height.Value });
+        }
+
+        private void xDockLeft_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Left);
+        }
+
+        private void HandleDrop(DragEventArgs e, DockDirection dir)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                e.Handled = true;
+                UnhighlightDock();
+                // accept move, then copy, and finally accept whatever they requested (for now)
+                if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+                    e.AcceptedOperation = DataPackageOperation.Move;
+                else e.AcceptedOperation = e.DataView.RequestedOperation;
+
+                if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                {
+                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                    Dock(dragModel.GetDropDocument(new Point()), dir);
+                }
+            }
+        }
+
+        private void xDockRight_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Right);
+        }
+
+        private void xDockTop_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Top);
+        }
+
+        private void xDockBottom_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Bottom);
+        }
+
+        private void xDockLeft_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            }
+        }
+
+        private void xDockLeft_DragLeave(object sender, DragEventArgs e)
+        {
+
         }
     }
 }

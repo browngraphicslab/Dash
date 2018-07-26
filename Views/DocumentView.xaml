@@ -153,14 +153,14 @@
             <Border x:Name="xTargetBorder">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="xLeftColumn" Width="10" />
+                        <ColumnDefinition x:Name="xLeftColumn" Width="15" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition x:Name="xRightColumn" Width="10" />
+                        <ColumnDefinition x:Name="xRightColumn" Width="15" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xTopRow" Height="10" />
+                        <RowDefinition x:Name="xTopRow" Height="15" />
                         <RowDefinition Height="*" />
-                        <RowDefinition x:Name="xBottomRow" Height="10" />
+                        <RowDefinition x:Name="xBottomRow" Height="15" />
                     </Grid.RowDefinitions>
 
                     <!--Main document view 

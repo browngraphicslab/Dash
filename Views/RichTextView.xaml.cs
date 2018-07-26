@@ -36,7 +36,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
-        Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
+        Dictionary<int, Color> _originalCharFormat = new Dictionary<int, Color>();
 
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
 
@@ -245,9 +245,15 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
+            {
+                _lastXamlRTFText = xamlRTF;
+                // don't update if the Text is the same as what we last set it to
+                var start = this.xRichEditBox.Document.Selection.StartPosition;
+                var end = this.xRichEditBox.Document.Selection.EndPosition;
                 Text = new RichTextModel.RTD(xamlRTF);
-            _lastXamlRTFText = xamlRTF;
+                this.xRichEditBox.Document.Selection.SetRange(start, end);
+            }
         }
 
         #endregion
@@ -277,7 +283,7 @@ namespace Dash
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     if (!_originalCharFormat.ContainsKey(s))
-                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor);
                     if (selectionFound > 0)
                     {
                         xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
@@ -499,6 +505,8 @@ namespace Dash
                         break;
                 }
             }
+            else
+                ;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
@@ -519,7 +527,7 @@ namespace Dash
         #region load/unload
         void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
         {
-            MatchQuery(getSelected());
+            Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
         }
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
@@ -683,10 +691,10 @@ namespace Dash
 
             for (int i = 0; i <= length; i++)
             {
-                xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                xRichEditBox.Document.Selection.StartPosition = start + i;
+                xRichEditBox.Document.Selection.EndPosition = start + i + 1;
                 if (xRichEditBox.Document.Selection.Link != "")
                 {
-                    xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
                     var color = xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
                     var nextColor = color == Colors.LightCyan ? Colors.LightBlue : color == Colors.LightBlue ? Colors.DeepSkyBlue : Colors.Cyan;
                     xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = nextColor;
@@ -695,8 +703,8 @@ namespace Dash
                     var newstart = xRichEditBox.Document.Selection.EndPosition;
                     for (int j = 0; j < i; j++)
                     {
-                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
-                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
+                        xRichEditBox.Document.Selection.StartPosition = start;
+                        xRichEditBox.Document.Selection.EndPosition = start + i - j;
                         if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                             break;
                     }
@@ -783,7 +791,8 @@ namespace Dash
 
         private void MatchQuery(List<TextController> queries)
         {
-            if (getDocView() == null)
+            if (getDocView() == null || queries == null || queries.Count == 0 
+                ) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;
             ClearSearchHighlights();
             _nextMatch = 0;
@@ -791,28 +800,19 @@ namespace Dash
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
-            xRichEditBox.Document.Selection.StartPosition = 0;
-            xRichEditBox.Document.Selection.EndPosition = 0;
-            int i = 1;
             // find and highlight all matches
-
-            // the following if statement might not be necessary, but I'll leave it just in case so that it doesn't crash during demo
-            if (queries == null)
+            foreach (var query in queries.Select(t => t.Data).Where((s) => !string.IsNullOrEmpty(s)))
             {
-                xRichEditBox.Document.Selection.StartPosition = 0;
-                xRichEditBox.Document.Selection.EndPosition = 0;
-                return;
-            }
-            foreach (var query in queries.Select(t => t.Data))
-            {
-                while (i > 0 && !string.IsNullOrEmpty(query))
+                xRichEditBox.Document.Selection.SetRange(0, 0);
+                int i = 1;
+                while (i > 0) 
                 {
                     i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                     var s = xRichEditBox.Document.Selection.StartPosition;
                     var selectedText = xRichEditBox.Document.Selection;
                     if (i > 0 && !_originalCharFormat.ContainsKey(s))
                     {
-                        _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
+                        _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
                     }
                     if (selectedText != null)
                     {
@@ -820,10 +820,6 @@ namespace Dash
                     }
                     xRichEditBox.Document.Selection.Collapse(false);
                 }
-
-                xRichEditBox.Document.Selection.StartPosition = 0;
-                xRichEditBox.Document.Selection.EndPosition = 0;
-                i = 1;
             }
         }
 
@@ -853,14 +849,13 @@ namespace Dash
         private void ClearSearchHighlights(bool silent = false)
         {
             //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            var keys = _originalCharFormat.Keys;
-            foreach (var key in keys)
+            foreach (var tuple in _originalCharFormat)
             {
-                xRichEditBox.Document.Selection.StartPosition = key;
-                xRichEditBox.Document.Selection.EndPosition = key + _prevQueryLength;
-                xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
-                xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
+                xRichEditBox.Document.Selection.StartPosition = tuple.Key;
+                xRichEditBox.Document.Selection.EndPosition = tuple.Key + _prevQueryLength;
+                xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
             }
+            xRichEditBox.Document.Selection.Collapse(true);
             if (!silent)
                 UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
@@ -877,11 +872,11 @@ namespace Dash
             {
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
                 var start = xRichEditBox.Document.Selection.StartPosition;
-                ITextCharacterFormat clone;
+                Color clone;
                 _originalCharFormat.TryGetValue(start, out clone);
                 if (clone != null)
                 {
-                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = clone;
                     _originalCharFormat.Remove(start);
                     if (_nextMatch >= _originalCharFormat.Keys.Count || _nextMatch == 0)
                         _nextMatch = 0;
