@@ -354,7 +354,11 @@ namespace Dash
         {
             var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
             var index = data.Index;
-            _items.RemoveAt(index);
+            if (!_items.Count.Equals(0))
+            {
+                _items.RemoveAt(index);
+            }
+            
          
             (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
                 ListController<DocumentController>)?.RemoveAt(index);
@@ -362,7 +366,7 @@ namespace Dash
             {
                 if (snap.Index > index)
                 {
-                    snap.Index = snap.Index - 1;
+                    snap.Index -= 1;
                 }
             }
 
