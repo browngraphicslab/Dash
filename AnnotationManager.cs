@@ -23,6 +23,10 @@ namespace Dash
 		private FrameworkElement    _element;
 		private readonly MenuFlyout   _linkFlyout = new MenuFlyout();
 		private List<DocumentController> _lastHighlighted = new List<DocumentController>();
+        public enum LinkContexts
+        {
+            PDFSplitScreen, None
+        }
 
 		public AnnotationManager(FrameworkElement uiElement)
 		{

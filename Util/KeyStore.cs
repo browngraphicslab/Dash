@@ -120,6 +120,7 @@ namespace Dash
         public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");
         public static KeyController GoToRegionLinkKey = new KeyController("Goto Region Link", "150C5291-0830-4095-9C18-FAE1F315599F");
         public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
+        public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller

@@ -173,7 +173,7 @@
 
             </StackPanel>
         
-        <ScrollViewer  x:Name="BottomScrollViewer" ViewChanging="ScrollViewer_OnViewChanging">
+        <ScrollViewer  x:Name="BottomScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
 
             <Viewbox  Stretch="UniformToFill">
                 <Grid>

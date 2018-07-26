@@ -1818,7 +1818,7 @@ namespace Dash
                 if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
-                dragDoc.Link(dropDoc);
+                dragDoc.Link(dropDoc, AnnotationManager.LinkContexts.None);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
