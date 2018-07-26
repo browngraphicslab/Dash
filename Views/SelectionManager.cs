@@ -131,13 +131,16 @@ namespace Dash
         /*
          * This method deselects everything that's currently selected.
          */
-        public static void DeselectAll()
+        public static void DeselectAll(bool deSelect = true)
         {
             if (_selectedDocs.Count > 0)
             {
-                var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocs), new List<DocumentView>());
                 DeselectAllHelper();
-                SelectionChanged?.Invoke(args);
+                if (deSelect)
+                {
+                    var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocs), new List<DocumentView>());
+                    SelectionChanged?.Invoke(args);
+                }
             }
         }
 
