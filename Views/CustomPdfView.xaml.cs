@@ -579,7 +579,7 @@ namespace Dash
                     new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-                if (e.Key == VirtualKey.C && allSelections.Last().Key != -1)
+                if (e.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Key != -1)
                 {
                     Debug.Assert(allSelections.Last().Value != -1);
                     Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
