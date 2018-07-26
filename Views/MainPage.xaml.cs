@@ -744,10 +744,10 @@ namespace Dash
             var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
             var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
-            
+            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y });
+                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
