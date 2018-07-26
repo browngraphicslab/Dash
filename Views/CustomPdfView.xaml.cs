@@ -630,7 +630,7 @@ namespace Dash
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
             if (ratioOffsets == null) return;
 
-            var offsets = ratioOffsets.TypedData.Select(i => i.Data * BottomScrollViewer.ScrollableHeight);
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight);
 
             var currOffset = offsets.First();
             var firstOffset = offsets.First();
@@ -652,8 +652,8 @@ namespace Dash
             {
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, firstOffset, null);
-                BottomScrollViewer.ChangeView(null, splits[0] + Height / 2, null);
+                TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
+                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
             }
             else
             {
@@ -1015,38 +1015,6 @@ namespace Dash
 
         public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (_bottomAnnotationOverlay._regions.Any(i =>
-                i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey))))
-            {
-                var destRegion = _topAnnotationOverlay._regions.First(i =>
-                    i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey)));
-                if (destRegion.Selected)
-                {
-                    destRegion.Deselect();
-                }
-                else
-                {
-                    destRegion.Select();
-                }
-                return true;
-            }
-
-            if (_topAnnotationOverlay._regions.Any(i =>
-                i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey))))
-            {
-                var destRegion = _bottomAnnotationOverlay._regions.FirstOrDefault(i =>
-                    i.RegionDocument.Equals(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey)));
-                if (destRegion.Selected)
-                {
-                    destRegion.Deselect();
-                }
-                else
-                {
-                    destRegion.Select();
-                }
-                return true;
-            }
-
             return false;
         }
 

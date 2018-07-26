@@ -239,7 +239,10 @@ namespace Dash
                     {
                         regionPosList.Add(new PointController(rect.X, rect.Y));
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
-                        var scrollRatio = rect.Y / this.GetFirstAncestorOfType<CustomPdfView>().TopScrollViewer.ScrollableHeight;
+                        var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+                        var scale = pdfView.Width / pdfView.PdfMaxWidth;
+                        var vOffset = rect.Y * scale;
+                        var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
                         subRegionsOffsets.Add(scrollRatio);
                         minRegionY = Math.Min(rect.Y, minRegionY);
                     }
@@ -264,7 +267,10 @@ namespace Dash
                         var elem = _textSelectableElements[index];
                         if (prevIndex + 1 != index)
                         {
-                            var scrollRatio = elem.Bounds.Y / this.GetFirstAncestorOfType<CustomPdfView>().TopScrollViewer.ScrollableHeight;
+                            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+                            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+                            var vOffset = elem.Bounds.Y * scale;
+                            var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
                             subRegionsOffsets.Add(scrollRatio);
                         }
                         regionPosList.Add(new PointController(elem.Bounds.X, elem.Bounds.Y));
