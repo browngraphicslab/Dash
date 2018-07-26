@@ -274,7 +274,7 @@ namespace Dash
                     {
                         return i;
                     }
-                }
+                }           
             }
             return -1;
         }
@@ -325,12 +325,27 @@ namespace Dash
             }
             else
             {
-                searchResults = GetBasicSearchResults(modifiedSearchTerm);
+                var searchResultsList = GetBasicSearchResults(modifiedSearchTerm).ToList();
+                foreach (var res in searchResultsList)
+                {
+                    res.RtfHighlight.Add(new SearchTerm(modifiedSearchTerm));
+                }
+                searchResults = searchResultsList.AsEnumerable();
             }
 
             if (negate >= 0 && negate % 2 == 1)
             {
-                searchResults = NegateSearch(searchResults);
+                var searchResultsList = NegateSearch(searchResults);
+                foreach (var res in searchResultsList)
+                {
+                    var list = new List<SearchTerm>();
+                    foreach (var term in res.RtfHighlight)
+                    {
+                        list.Add(new SearchTerm(term._term, !term.Negate));
+                    }
+                    res.RtfHighlight = list;
+                }
+                searchResults = searchResultsList.AsEnumerable();
             }
 
             int len = inputString.Length;
@@ -346,7 +361,7 @@ namespace Dash
             switch (divider)
             {
                 case ' ':
-                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest));
+                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest), modifiedSearchTerm);
                 case '|':
                     return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
                 default:
@@ -359,14 +374,23 @@ namespace Dash
 
             public bool Negate { get; set; }
             public readonly string _term;
-            public SearchTerm(string term, bool negate)
+            public SearchTerm(string term, bool negate = false)
             {
                 Negate = negate;
                 _term = term;
             }
-            public void Invert()
+            
+            public static ListController<TextController> ConvertSearchTerms(List<SearchTerm> searchTerms)
             {
-                Negate = !Negate;
+                var list = new ListController<TextController>();
+                foreach (var term in searchTerms)
+                {
+                    if (!term.Negate)
+                    {
+                        list.Add(new TextController(term._term));
+                    }
+                }
+                return list;
             }
         }
         // Breaks down inputstring into a list of separate string queries- mainly for highlighting in RichTextView
@@ -414,7 +438,7 @@ namespace Dash
             }
             else
             {
-                searchResults.Add(new SearchTerm(modifiedSearchTerm, false));
+                searchResults.Add(new SearchTerm(modifiedSearchTerm));
             }
 
             if (negate >= 0 && negate % 2 == 1)
@@ -466,7 +490,8 @@ namespace Dash
             return list;
         }
 
-        private static IEnumerable<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
+
+        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
         {
             var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
             return results.Select(res => new SearchResult(res, new List<string>(), new List<string>())).ToList();
@@ -477,23 +502,55 @@ namespace Dash
         {
             //probably won't work
             //return search1.Union(search2);
+            var joined = new List<SearchResult>();
+            foreach (var res in search1)
+            {
+                foreach (var res2 in search2)
+                {
+                    if (res2.ViewDocument == res.ViewDocument)
+                    {
+                        res.RtfHighlight.AddRange(res2.RtfHighlight);
+                        break;
+                    }
+                }
+                joined.Add(res);
+            }
 
-            return (search1.Concat(search2)).DistinctBy(node => node.ViewDocument);
+            foreach (var res in search2)
+            {
+                if (!joined.Any(res1 => res1.ViewDocument == res.ViewDocument))
+                {
+                    joined.Add(res);
+                }
+            }
+
+            return joined;
         }
 
-        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2, string searchTerm)
         {
             //probably won't work
             //return search1.Intersection(search2);
 
-            var search1List = search1.ToList();
-            var joined = search1List.Where(result => search2.Any(node => node.ViewDocument == result.ViewDocument)).ToList();
-
-            foreach (var result in search2)
+            var search2List = search2.ToList();
+            var joined = new List<SearchResult>();
+            foreach (var result in search2List)
             {
-                if (search1List.Any(node => node.ViewDocument == result.ViewDocument) &&
-                    !joined.Any((node => node.ViewDocument == result.ViewDocument)))
+                if (search1.Any(node => node.ViewDocument == result.ViewDocument))
+                {
+                    result.RtfHighlight.Add(new SearchTerm(searchTerm));
                     joined.Add(result);
+                }
+            }
+
+            foreach (var result in search1)
+            {
+                if (search2List.Any(node => node.ViewDocument == result.ViewDocument) &&
+                    !joined.Any((node => node.ViewDocument == result.ViewDocument)))
+                {
+                    result.RtfHighlight.Add(new SearchTerm(searchTerm));
+                    joined.Add(result);
+                }
                 //TODO: combine information from the repeated results
             }
             return joined;

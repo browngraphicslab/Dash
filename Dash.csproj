@@ -555,6 +555,9 @@
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
+    <Compile Include="Views\DocumentDecorations.xaml.cs">
+      <DependentUpon>DocumentDecorations.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
@@ -1122,6 +1125,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DishReplView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DocumentDecorations.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

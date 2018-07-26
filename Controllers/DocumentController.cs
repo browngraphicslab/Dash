@@ -49,7 +49,6 @@ namespace Dash
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
-            TypeInfo = TypeInfo.Document;
             if (saveOnServer)
             {
                 IsOnServer(delegate (bool onServer)
@@ -1255,7 +1254,7 @@ namespace Dash
             DocumentDeleted?.Invoke(this, EventArgs.Empty);
         }
 
-        public override TypeInfo TypeInfo { get; }
+        public override TypeInfo TypeInfo => TypeInfo.Document;
 
         public override bool TrySetValue(object value)
         {

@@ -150,7 +150,7 @@
             BorderThickness="{Binding SearchHighlightState}" 
             Grid.Row="1" 
             Grid.Column="0">
-            <Border x:Name="xTargetBorder">
+            <Border x:Name="xTargetBorder" x:FieldModifier="public">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="xLeftColumn" Width="15" />
@@ -296,141 +296,59 @@
             </Border>
         </Border>
 
-        <Border 
-            x:Name="xTitleBorder" 
-            Grid.Column="0" 
-            Grid.Row="1"
-            RelativePanel.AlignRightWithPanel="True"
-            Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
-            Background="Transparent" 
-            HorizontalAlignment="Left"
-            Margin="-32, 0, 0, 0" 
-            VerticalAlignment="Top">
-            <TextBlock 
-                x:Name="xTitleIcon"
-                FontSize="16"
-                FontFamily="{StaticResource FontAwesome}"
-                Foreground="{StaticResource TitleText}"
-                Text="{StaticResource DocumentPlainIcon}"
-                HorizontalAlignment="Stretch"
-                Padding="0, 0, 10, 0"
-                Tapped="XTitleIcon_OnTapped"/>
+
+        <!--<Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32, 0, 0, 0" VerticalAlignment="Top" >
+            <TextBlock x:Name="xTitleIcon" 
+                       FontSize="16"
+                       FontFamily="{StaticResource FontAwesome}" 
+                       Foreground="{StaticResource TitleText}"           
+                       Text="{StaticResource DocumentPlainIcon}" 
+                       HorizontalAlignment="Stretch"
+                       Padding="0, 0, 10, 0"
+                        />
         </Border>
 
-        <Border 
-            x:Name="xOperatorEllipseBorder"
-            Grid.Column="1"
-            Grid.Row="1"
-            CanDrag="True"
-            Background="Transparent"
-            Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Padding="5, 0, 0, 0">
-            <Grid>
-                <Ellipse
-                    x:Name="OperatorEllipseUnhighlight"
-                    Style="{StaticResource xFieldHandle}"
-                    Width="25"
-                    Height="25" />
-                <Ellipse
-                    x:Name="OperatorEllipseHighlight"
-                    Style="{StaticResource xFieldHandleHighlighted}"
-                    Width="25"
-                    Height="25"
-                    Visibility="Collapsed" />
-                <TextBlock
-                    x:Name="xOperatorEllipseText"
-                    Foreground="White"
-                    FontFamily="Segoe MDL2 Assets"
-                    Text="&#xE11B;"
-                    FontSize="12"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Margin="1,0,0,0" />
+
+        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="2" Grid.Row="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
+            <Grid  >
+                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}" Width="25" Height="25"/>
+
+                <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}" Width="25" Height="25"
+                         Visibility="Collapsed"/>
+                <TextBlock x:Name="xOperatorEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0" />
+                    <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                        />
                 </ToolTipService.ToolTip>
             </Grid>
         </Border>
-
-        <Border 
-            x:Name="xAnnotateEllipseBorder" 
-            Grid.Column="1" 
-            Grid.Row="1" 
-            CanDrag="True" 
-            Background="Transparent"
-            Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top" 
-            Padding="5 0 0 0"
-            Tapped="XAnnotateEllipseBorder_OnTapped_">
-            <Grid>
-                <Ellipse 
-                    x:Name="AnnotateEllipseUnhighlight" 
-                    Style="{StaticResource xFieldLinkHandle}" 
-                    Width="25"
-                    Height="25" />
-                <Ellipse 
-                    x:Name="AnnotateEllipseHighlight" 
-                    Style="{StaticResource xFieldLinkHandleHighlighted}"
-                    Visibility="Collapsed" 
-                    Width="25" 
-                    Height="25" />
-                <TextBlock 
-                    x:Name="xAnnotateEllipseText" 
-                    Foreground="White" 
-                    FontFamily="Segoe MDL2 Assets"
-                    Text="&#xE167;" 
-                    FontSize="12" 
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Center"
-                    Margin="0,0,0,0" />
+        <Border x:Name="xAnnotateEllipseBorder" Grid.Column="2" Grid.Row="1" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
+            <Grid  >
+                <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}" Width="25" Height="25"/>
+                <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" Visibility="Collapsed" Width="25" Height="25"/>
+                <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
                 <ToolTipService.ToolTip>
-                    <ToolTip 
-                        Content="Create A Link" 
-                        Placement="Right" 
-                        HorizontalOffset="40" 
-                        VerticalOffset="0" />
+                    <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                    />
                 </ToolTipService.ToolTip>
             </Grid>
         </Border>
-
-        <Border 
-            x:Name="xTemplateEditorEllipseBorder" 
-            Grid.Column="1"
-            Grid.Row="1" 
-            CanDrag="True"
-            Background="Transparent"
-            Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Top" 
-            Padding="5 0 0 0">
+        <Border x:Name="xTemplateEditorEllipseBorder" Grid.Column ="2"  Grid.Row="2" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
             <Grid HorizontalAlignment="Left">
-                <Ellipse
-                    x:Name="TemplateEditorEllipseBorderUnhighlight" Style="{StaticResource xFieldTemplateHandle}"
-                    Width="25" Height="25" />
-                <Ellipse 
-                    x:Name="TemplateEditorEllipseBorderHighlight"
-                    Style="{StaticResource xFieldTemplateHandleHighlighted}" Width="25" Height="25"
-                    Visibility="Collapsed"/>
-                <TextBlock 
-                    x:Name="xTemplateEllipseText" 
-                    Foreground="White" 
-                    FontFamily="Segoe MDL2 Assets"
-                    Text="&#xE14E;" 
-                    FontSize="12" 
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Center"
-                    Margin="1,0,0,0" />
+                <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldTemplateHandle}" Width="25" Height="25"/>
+                <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"  Style="{StaticResource xFieldTemplateHandleHighlighted}" Width="25" Height="25"
+                     Visibility="Collapsed"/>
+                <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+
                 <ToolTipService.ToolTip>
-                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0" />
+                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                       />
                 </ToolTipService.ToolTip>
+
             </Grid>
-        </Border>
-
+        </Border>-->
     </Grid>
-          
-
-
 </UserControl>
