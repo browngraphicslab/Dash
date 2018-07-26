@@ -956,21 +956,18 @@ namespace Dash
             }
 
             DocumentView view = docViews.First();
-            DocumentView checkedView = view;
 
-            foreach (var parentView in checkedView.GetAncestorsOfType<DocumentView>())
+            foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
             {
-                var transformedBounds = checkedView.TransformToVisual(parentView)
-                    .TransformBounds(new Rect(0, 0, checkedView.ActualWidth, checkedView.ActualHeight));
-                var parentBounds = parentView.ViewModel.Bounds;
+                var transformedBounds = view.TransformToVisual(parentView)
+                    .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
                 if (!(containsTL && containsBR))
                 {
                     return null;
                 }
-
-                checkedView = parentView;
             }
 
             return view;
