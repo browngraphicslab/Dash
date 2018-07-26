@@ -138,7 +138,6 @@ namespace Dash
             get => _decorationState;
             set
             {
-                
                 SetProperty(ref _decorationState, value);
             }
         }

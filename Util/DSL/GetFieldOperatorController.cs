@@ -58,6 +58,8 @@ namespace Dash
             {
                 outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(keyName), null);
             }
+
+            
         }
     }
 }

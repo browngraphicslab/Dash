@@ -597,7 +597,6 @@ namespace Dash
             }
 
             overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
-            e.Handled = true;
         }
 
         #endregion
@@ -695,10 +694,40 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target)
         {
-            var offset = target.GetDataDocument().GetPosition()?.Y;
-            if (offset == null) return;
+            var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            if (ratioOffsets == null) return;
 
-            BottomScrollViewer.ChangeView(null, offset.Value + BottomScrollViewer.ViewportHeight, null);
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight);
+
+            var currOffset = offsets.First();
+            var firstOffset = offsets.First();
+            var maxOffset = BottomScrollViewer.ViewportHeight;
+            var splits = new List<double>();
+            foreach (var offset in offsets.Skip(1))
+            {
+                if (offset - currOffset > maxOffset)
+                {
+                    splits.Add(offset);
+                    currOffset = offset;
+                }
+            }
+            
+            Debug.WriteLine($"{splits} screen splits are needed to show everything");
+
+            // TODO: functionality for more than one split maybe?
+            if (splits.Any())
+            {
+                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
+                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
+            }
+            else
+            {
+                xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                BottomScrollViewer.ChangeView(null, firstOffset, null);
+            }
         }
 
         // when the sidebar marker gets pressed
@@ -776,12 +805,14 @@ namespace Dash
                 region.SetPosition(new Point(0, yPos));
                 region.SetWidth(50);
                 region.SetHeight(20);
+                region.SetField(KeyStore.LinkContextKey,
+                    new TextController(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()), true);
                 (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
-                region.Link(note);
+                region.Link(note, AnnotationManager.LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { Undecorated = true },
@@ -804,7 +835,7 @@ namespace Dash
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
 
-                region.Link(note);
+                region.Link(note, AnnotationManager.LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { DecorationState = false },
@@ -819,7 +850,7 @@ namespace Dash
                 DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
                 DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
             }
-
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1083,9 +1114,6 @@ namespace Dash
         {
             return false;
         }
-
-       
-
         private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PopForwardStack(_topForwardStack, TopScrollViewer);
