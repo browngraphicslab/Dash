@@ -461,6 +461,7 @@ namespace Dash
             {
                 XPreviewRect.Height = p.Y - _previewStartPoint.Y;
             }
+            XPreviewRect.Visibility = Visibility.Visible;
         }
 
         public void EndRegion(Point p)
