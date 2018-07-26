@@ -451,10 +451,10 @@ namespace Dash
         }
 
         private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
-        {
-                var dvm = ViewModel;
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
-                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+         {
+            var dvm = ViewModel;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)

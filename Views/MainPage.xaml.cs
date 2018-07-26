@@ -806,7 +806,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Visible;
             xComboBox.SelectedItem = null;
-
         }
 
         private void Popup_OnClosed(object sender, object e)
