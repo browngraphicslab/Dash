@@ -11,6 +11,7 @@ namespace Dash
         public int Rank;
         public List<string> RelevantText;
         public List<string> FormattedKeyRef;
+        public List<Search.SearchTerm> RtfHighlight { get; set; }
 
         public SearchResult() : this(null, new List<string>(), new List<string>(), 0) { }
 
@@ -32,6 +33,7 @@ namespace Dash
 
             ViewDocument = node.ViewDocument;
             DataDocument = node.DataDocument;
+            RtfHighlight = new List<Search.SearchTerm>();
         }
     }
 }
