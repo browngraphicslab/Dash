@@ -108,6 +108,10 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -160,6 +164,7 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
 
+        static int csize = 0;
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
@@ -167,7 +172,7 @@ namespace Dash
             SetCollectionRef(containerDocument, fieldKey);
 
             CellSize = 250; // TODO figure out where this should be set
-                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         DocumentController _lastDoc = null;
@@ -253,12 +258,12 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in args.NewItems)
                     {
-                        var visible = !d.GetHidden();
-                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
-                        if (visible && !shown)
-                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        if (!visible && shown)
-                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //var visible = !d.GetHidden();
+                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                        //if (visible && !shown)
+                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //if (!visible && shown)
+                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
@@ -283,7 +288,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -661,10 +665,35 @@ namespace Dash
                                     }
                                 }
                             }
-                            RichTextView sourceDoc = Clipboard.GetContent().Properties[nameof(RichTextView)] as RichTextView;
 
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+
+                            DocumentController postitNote;
+                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            {
+                                var region = new RichTextNote("Rich text region").Document;
+
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                postitNote = postitView.Document;
+                                postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
+                                    sourceDoc.DataDocument.Title, true);
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+
+                                region.SetRegionDefinition(postitNote);
+                                region.SetAnnotationType(AnnotationType.Selection);
+
+                                region.Link(sourceDoc.LayoutDocument);
+
+                            }
+                            else
+                            {
+                               postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+                            }
+
+                            
                             Actions.DisplayDocument(this, postitNote, where);
+
+                            
 
                         }
                     }
@@ -767,10 +796,17 @@ namespace Dash
                     var lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
-                
 
-                // if we drag from the file system
-                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+				//adds all docs in the group, if applicable
+	            var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
+				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+	            adornmentGroups.ForEach((dv) =>
+	            {
+		           AddDocument(dv.ViewModel.DataDocument);
+	            });
+
+				// if we drag from the file system
+				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
                     try
                     {

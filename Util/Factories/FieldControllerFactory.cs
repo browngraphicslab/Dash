@@ -84,6 +84,9 @@ namespace Dash
                 case TypeInfo.Bool:
                     controller = new BoolController(model as BoolModel);
                     break;
+                case TypeInfo.Color:
+                    controller = new ColorController(model as ColorModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
                 case TypeInfo.Reference:
@@ -159,6 +162,9 @@ namespace Dash
                     break;
                 case TypeInfo.Bool:
                     controller = new ListController<BoolController>(model);
+                    break;
+                case TypeInfo.Color:
+                    controller = new ListController<ColorController>(model);
                     break;
                 case TypeInfo.Any:
                     //Debug.Fail("idk why you got here");

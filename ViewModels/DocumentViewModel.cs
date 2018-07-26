@@ -131,6 +131,7 @@ namespace Dash
                 OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
             }
         }
+
         public bool Undecorated { get; set; }
         public bool DecorationState
         {

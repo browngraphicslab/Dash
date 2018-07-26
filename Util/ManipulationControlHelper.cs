@@ -52,7 +52,9 @@ namespace Dash
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
-            _manipulationDocumentTarget.PointerId = pointer.PointerId;
+
+            _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
+
             if (false) // bcz: set to 'true' for drag/Drop interactions
                 _manipulationDocumentTarget.SetupDragDropDragging(null);
             else
@@ -125,6 +127,7 @@ namespace Dash
                 _manipulationDocumentTarget?.DocumentView_OnTapped(null, new TappedRoutedEventArgs());
                 if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
+                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);
             }
             else
                 _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();

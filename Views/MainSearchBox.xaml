@@ -51,8 +51,12 @@
             <AutoSuggestBox.ItemTemplate>
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" 
-                          CanDrag="True" DragStarting="SearchResult_OnDragStarting">
+                    <Grid 
+                        PointerEntered="Grid_PointerEntered" 
+                        PointerExited="Grid_PointerExited" 
+                        CanDrag="True" 
+                        DragStarting="SearchResult_OnDragStarting"
+                        Tapped="UIElement_OnTapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32"/>
                             <ColumnDefinition Width="Auto"/>

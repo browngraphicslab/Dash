@@ -56,24 +56,7 @@ namespace Dash
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (args.ChosenSuggestion != null)
-            {
-                if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
-                if (resultVm.DocumentCollection != null)
-                {
-                    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                    if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
-                    {
-                        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
-                    }
-                }
 
-                MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
-            }
-            else
-            {
-                // Use args.QueryText to determine what to do.
-            }
         }
 
         private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
@@ -430,6 +413,22 @@ namespace Dash
             else viewModel?.PreviousField();
 
             e.Handled = true;
+        }
+
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (!((sender as Grid)?.DataContext is SearchResultViewModel resultVm)) return;
+
+            if (resultVm.DocumentCollection != null)
+            {
+                var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
+                {
+                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
+                }
+            }
+
+            MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
         }
     }
 }

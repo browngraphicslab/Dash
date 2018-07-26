@@ -696,7 +696,8 @@ namespace Dash
                     return ParseToExpression(varStatement.DeclarationList);
                 case SyntaxKind.EmptyStatement:
                     //return empty string
-                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
+                    break;
+                    //return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                 case SyntaxKind.ExpressionStatement:
                     var exp = (node as ExpressionStatement).Expression;
                     return ParseToExpression(exp);
@@ -978,7 +979,14 @@ namespace Dash
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
                     var parameters = new List<ScriptExpression>();
-                    var test = callExpr.Expression;
+                    INode callFunc = callExpr.Expression;
+                    var type = callExpr.Expression.Kind;
+
+                    if (type == SyntaxKind.PropertyAccessExpression)
+                    {
+                        parameters.Add(ParseToExpression(((PropertyAccessExpression)callFunc).First));
+                        callFunc = ((PropertyAccessExpression) callFunc).Last;
+                    }
 
 
                     foreach (var arg in callExpr.Arguments)
@@ -986,7 +994,7 @@ namespace Dash
                         parameters.Add(ParseToExpression(arg));
                     }
 
-                    var func = new FunctionExpression(parameters, callExpr?.IdentifierStr);
+                    var func = new FunctionExpression(parameters, ParseToExpression(callFunc));
                     return func;
 
                 default:

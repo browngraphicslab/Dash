@@ -320,15 +320,8 @@ namespace Dash
         {
             foreach (var doc in SelectedDocs)
             {
-                if (doc.ViewModel.Content is IAnnotatable element)
-                {
-                    element.RegionSelected(element, new Point(0, 0));
-                }
-                else
-                {
-                    var ann = new AnnotationManager(doc.ViewModel.Content);
-                    ann.RegionPressed(doc.ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-                }
+                var ann = new AnnotationManager(doc);
+                ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc));
             }
         }
 

@@ -69,9 +69,7 @@ namespace Dash
 				    {
 					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
 					    if (docCtrl == null) return;
-					    var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
-					    if (isVisible != null)
-							docCtrl.ToggleAnnotationPin(isVisible.Data, false);
+						docCtrl.ToggleHidden();
 						MainPage.Instance.HighlightDoc(docCtrl, false, 2);
 				    }
 				}
@@ -87,7 +85,7 @@ namespace Dash
 				{
 					var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
 					if (docCtrl == null) return;
-					docCtrl.ToggleAnnotationPin(true, true);
+					docCtrl.ToggleHidden();
 				    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
 			    }
 			}

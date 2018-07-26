@@ -45,9 +45,7 @@ namespace Dash
 
         private CollectionViewModel _oldViewModel;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-
-        private bool _needsToLoad = false;
-
+        
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
@@ -57,14 +55,8 @@ namespace Dash
 
             Loaded += (sender, e) =>
             {
-                if (ViewModel != null)
-                {
-                    ViewModel.Loaded(true);
-                }
-                else
-                {
-                    _needsToLoad = true;
-                }
+                //if (ViewModel != null)
+                //    ViewModel.Loaded(true);
             };
             Unloaded += (sender, e) =>
             {
@@ -105,12 +97,9 @@ namespace Dash
             }
 
             _oldViewModel = ViewModel;
+            
+            ViewModel.Loaded(true);
 
-            if (_needsToLoad)
-            {
-                ViewModel.Loaded(true);
-                _needsToLoad = false;
-            }
             if (!string.IsNullOrEmpty(SortCriterion))
                 ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription(SortCriterion, SortDirection.Ascending));
             ViewModel.BindableDocumentViewModels.Filter = Filter;

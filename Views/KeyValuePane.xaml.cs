@@ -172,36 +172,37 @@ namespace Dash
         /// </summary>
         private void AddKeyValuePair()
         {
-            UndoManager.StartBatch();
-            var key = new KeyController(xNewKeyText.Text);
-            var stringValue = xNewValueText.Text;
-
-            FieldControllerBase fmController;
-
-            try
+            using (UndoManager.GetBatchHandle())
             {
-                //fmController = DSL.InterpretUserInput(stringValue, true);
-                fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
-            }
-            catch (DSLException e)
-            {
-                fmController = new TextController(e.GetHelpfulString());
-            }
+                var key = new KeyController(xNewKeyText.Text);
+                var stringValue = xNewValueText.Text;
 
-            activeContextDoc.SetField(key, fmController, true);
-            
-            // reset the fields to the empty values
-            xNewKeyText.Text = "";
-            xNewValueText.Text = "";
-            xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
+                FieldControllerBase fmController;
 
-            UndoManager.EndBatch();
+                try
+                {
+                    //fmController = DSL.InterpretUserInput(stringValue, true);
+                    fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
+                }
+                catch (DSLException e)
+                {
+                    fmController = new TextController(e.GetHelpfulString());
+                }
+
+                activeContextDoc.SetField(key, fmController, true);
+
+                // reset the fields to the empty values
+                xNewKeyText.Text = "";
+                xNewValueText.Text = "";
+                xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
+            }
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.DeleteDocument();
+            using (UndoManager.GetBatchHandle())
+                docView.DeleteDocument();
             e.Handled = true;
         }
 
