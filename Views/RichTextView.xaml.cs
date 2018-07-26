@@ -245,9 +245,12 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
+            {
+                // don't update if the Text is the same as what we last set it to
+                _lastXamlRTFText = xamlRTF;
                 Text = new RichTextModel.RTD(xamlRTF);
-            _lastXamlRTFText = xamlRTF;
+            }
         }
 
         #endregion
