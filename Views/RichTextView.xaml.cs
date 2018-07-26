@@ -246,7 +246,7 @@ namespace Dash
         }
         /// <summary>
         /// Retrieves the Xaml RTF of this view and stores it in the Dash document's Text field model.
-        /// </summary>                                                                                                            9999
+        /// </summary>
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
