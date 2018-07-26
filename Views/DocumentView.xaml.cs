@@ -1439,7 +1439,7 @@ namespace Dash
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
-            xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
             xTopLeftResizeControl.Fill =
                 selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
@@ -2015,10 +2015,10 @@ namespace Dash
 
 
 
-            xBottomRow.Height = new GridLength(newpoint.Y * 5);
-            xTopRow.Height = new GridLength(newpoint.Y * 5);
-            xLeftColumn.Width = new GridLength(newpoint.X * 5);
-            xRightColumn.Width = new GridLength(newpoint.X * 5);
+            xBottomRow.Height = new GridLength(newpoint.Y * 15);
+            xTopRow.Height = new GridLength(newpoint.Y * 15);
+            xLeftColumn.Width = new GridLength(newpoint.X * 15);
+            xRightColumn.Width = new GridLength(newpoint.X * 15);
 
             UpdateEllipses(newpoint);
 

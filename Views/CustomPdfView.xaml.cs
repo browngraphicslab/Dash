@@ -553,6 +553,7 @@ namespace Dash
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, _scrollRatio * TopScrollViewer.ExtentHeight, null, true);
+            //BottomScrollViewer.ChangeView(null, _scrollRatio * BottomScrollViewer.ExtentHeight, null, true);
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)

@@ -239,7 +239,7 @@ namespace Dash
                     ClearPreviewRegion();
                     break;
                 case AnnotationType.Selection:
-                    if (_currentSelections.Any() || _currentSelections.Last().Key == -1)
+                    if (!_currentSelections.Any() || _currentSelections.Last().Key == -1)
                     {
                         goto case AnnotationType.None;
                     }
@@ -400,7 +400,6 @@ namespace Dash
             Canvas.SetTop(XPreviewRect, p.Y);
             XPreviewRect.Width = 0;
             XPreviewRect.Height = 0;
-            XPreviewRect.Visibility = Visibility.Visible;
         }
 
         public void UpdateRegion(Point p)
@@ -434,6 +433,7 @@ namespace Dash
             {
                 XPreviewRect.Height = p.Y - _previewStartPoint.Y;
             }
+            XPreviewRect.Visibility = Visibility.Visible;
         }
 
         public void EndRegion(Point p)
