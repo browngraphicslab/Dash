@@ -142,7 +142,11 @@ namespace Dash
         private Stack<double> _topBackStack;
         private Stack<double> _bottomBackStack;
 
+        private Stack<double> _topForwardStack;
+        private Stack<double> _bottomForwardStack;
+
         private DispatcherTimer _timer;
+
 
         public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
@@ -240,7 +244,9 @@ namespace Dash
             _topBackStack.Push(0);
             _bottomBackStack = new Stack<double>();
             _bottomBackStack.Push(0);
-            
+            _topForwardStack = new Stack<double>();
+            _bottomForwardStack = new Stack<double>();
+
             BottomScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
             TopScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
@@ -553,7 +559,6 @@ namespace Dash
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             TopScrollViewer.ChangeView(null, _scrollRatio * TopScrollViewer.ExtentHeight, null, true);
-            //BottomScrollViewer.ChangeView(null, _scrollRatio * BottomScrollViewer.ExtentHeight, null, true);
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -814,7 +819,7 @@ namespace Dash
 
         private void XBottomScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_bottomBackStack, BottomScrollViewer);
+            PopBackStack(_bottomBackStack, _bottomForwardStack, BottomScrollViewer);
         }
 
         private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -834,7 +839,7 @@ namespace Dash
 
         private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopStack(_topBackStack, TopScrollViewer);
+            PopBackStack(_topBackStack, _topForwardStack, TopScrollViewer);
         }
         
 
@@ -863,7 +868,7 @@ namespace Dash
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
-                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= 0)
+                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= -1)
 
                 {
                     break;
@@ -926,12 +931,13 @@ namespace Dash
             }
         }
 
-        private void PopStack(Stack<double> stack, ScrollViewer viewer)
+        private void PopBackStack(Stack<double> backstack, Stack<double> forwardstack, ScrollViewer viewer)
         {
-            if (stack.Any())
+            if (backstack.Any())
             {
-                stack.Pop();
-                viewer.ChangeView(null, stack.Any() ? stack.Peek() : 0, 1);
+                var pop = backstack.Pop();
+                viewer.ChangeView(null, backstack.Any() ? backstack.Peek() : 0, 1);
+                forwardstack.Push(pop);
             }
         }
 
@@ -985,9 +991,25 @@ namespace Dash
             return false;
         }
 
-        private void XToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
+       
 
+        private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_topForwardStack, TopScrollViewer);
+        }
+
+        private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_bottomForwardStack, BottomScrollViewer);
+        }
+
+        private void PopForwardStack(Stack<double> forwardstack, ScrollViewer viewer)
+        {
+            if (forwardstack.Any())
+            {
+                var pop = forwardstack.Pop();
+                viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() : 0, 1);
+            }
         }
     }
 }
