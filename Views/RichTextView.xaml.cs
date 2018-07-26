@@ -249,10 +249,10 @@ namespace Dash
             {
                 _lastXamlRTFText = xamlRTF;
                 // don't update if the Text is the same as what we last set it to
-                var start = this.xRichEditBox.Document.Selection.StartPosition;
-                var end = this.xRichEditBox.Document.Selection.EndPosition;
+                //var start = this.xRichEditBox.Document.Selection.StartPosition;
+                //var end = this.xRichEditBox.Document.Selection.EndPosition;
                 Text = new RichTextModel.RTD(xamlRTF);
-                this.xRichEditBox.Document.Selection.SetRange(start, end);
+               // this.xRichEditBox.Document.Selection.SetRange(start, end);
             }
         }
 
