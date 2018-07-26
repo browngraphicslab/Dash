@@ -791,8 +791,8 @@ namespace Dash
 
         private void MatchQuery(List<TextController> queries)
         {
-            if (getDocView() == null || queries == null || queries.Count == 0 ||
-                FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
+            if (getDocView() == null || queries == null || queries.Count == 0 
+                ) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;
             ClearSearchHighlights();
             _nextMatch = 0;
