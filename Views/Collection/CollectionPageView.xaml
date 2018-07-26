@@ -54,7 +54,7 @@
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus" VerticalAlignment="Stretch"
                                  TextChanged="XTextBox_OnTextChanged" IsSpellCheckEnabled="False" AcceptsReturn="True"
-                                 FontFamily="Consolas" IsColorFontEnabled="True">
+                                 FontFamily="Consolas" IsColorFontEnabled="True" AllowDrop="True" Drop="XTextBox_OnDrop">
             </local:ActionTextBox>
             <!--<local:DocumentView x:Name="xDocCaption" x:FieldModifier="public" Grid.Row="1" Height="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Visibility="Collapsed" />-->
         </Grid>

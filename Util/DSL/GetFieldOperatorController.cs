@@ -60,16 +60,25 @@ namespace Dash
             {
                 var sb = new StringBuilder();
                 var pattern = @"([a-z])([A-Z])";
-                var match = Regex.Match(keyName, pattern);
-                if (match.Success)
+                var matches = Regex.Matches(keyName, pattern);
+                var prevIndex = 0;
+                if (matches.Any())
                 {
-                    for (var ctr = 1; ctr <= match.Groups.Count - 1; ctr++)
+                    foreach (Match match in matches)
                     {
-                        var captureCtr = 0;
-                        //sb.Append(keyName.Substring(0, ))
+                        var caml = match.Groups.First();
+                        var startIndex = caml.Captures.First().Index;
+                        sb.Append(keyName.Substring(prevIndex, startIndex - prevIndex));
+                        if (startIndex == prevIndex) continue;
+                        sb.Append(keyName[startIndex] + " " + keyName[startIndex + 1]);
+                        prevIndex = startIndex + 2;
+
                     }
                 }
-                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(keyName), null);
+                sb.Append(keyName.Substring(prevIndex));
+
+                var newKeyName = sb.ToString();
+                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(newKeyName), null);
             }
 
             

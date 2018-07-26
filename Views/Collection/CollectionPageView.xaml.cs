@@ -533,5 +533,18 @@ namespace Dash
         {
 
         }
+
+        private void XTextBox_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            {
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                var showField = dragModel.DraggedKey;
+
+                xTextBox.Text += "." + showField.Name;
+
+                e.Handled = true;
+            }
+        }
     }
 }
