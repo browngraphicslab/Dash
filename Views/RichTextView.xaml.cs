@@ -691,10 +691,10 @@ namespace Dash
 
             for (int i = 0; i <= length; i++)
             {
-                xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
+                xRichEditBox.Document.Selection.StartPosition = start + i;
+                xRichEditBox.Document.Selection.EndPosition = start + i + 1;
                 if (xRichEditBox.Document.Selection.Link != "")
                 {
-                    xRichEditBox.Document.Selection.SetRange(start + i, start + i + 1);
                     var color = xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
                     var nextColor = color == Colors.LightCyan ? Colors.LightBlue : color == Colors.LightBlue ? Colors.DeepSkyBlue : Colors.Cyan;
                     xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = nextColor;
@@ -703,8 +703,8 @@ namespace Dash
                     var newstart = xRichEditBox.Document.Selection.EndPosition;
                     for (int j = 0; j < i; j++)
                     {
-                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
-                        xRichEditBox.Document.Selection.SetRange(start, start + i - j);
+                        xRichEditBox.Document.Selection.StartPosition = start;
+                        xRichEditBox.Document.Selection.EndPosition = start + i - j;
                         if (!xRichEditBox.Document.Selection.Text.Contains("HYPERLINK"))
                             break;
                     }
@@ -851,7 +851,8 @@ namespace Dash
             //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
             foreach (var tuple in _originalCharFormat)
             {
-                xRichEditBox.Document.Selection.SetRange(tuple.Key, tuple.Key + _prevQueryLength);
+                xRichEditBox.Document.Selection.StartPosition = tuple.Key;
+                xRichEditBox.Document.Selection.EndPosition = tuple.Key + _prevQueryLength;
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = tuple.Value;
             }
             xRichEditBox.Document.Selection.Collapse(true);
