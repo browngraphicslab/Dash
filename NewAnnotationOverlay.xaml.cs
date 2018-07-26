@@ -471,10 +471,14 @@ namespace Dash
                 return;
             }
             _annotatingRegion = false;
-            var lastRect = _regionRectangles.Last();
+
+            if (_regionRectangles.Count > 0)
+            {
             _regionRectangles[_regionRectangles.Count - 1] =
                 new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
                     XPreviewRect.Height);
+
+            }
             var viewRect = new Rectangle {Width = XPreviewRect.Width, Height = XPreviewRect.Height, Fill = XPreviewRect.Fill};
             XAnnotationCanvas.Children.Add(viewRect);
             Canvas.SetLeft(viewRect, Canvas.GetLeft(XPreviewRect));

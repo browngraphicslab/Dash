@@ -22,7 +22,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="70"/>
             </Grid.ColumnDefinitions>
             <AppBarButton x:Name="xMoreButton" Icon="Add" Width ="67" Label="More" Background="{StaticResource AccentGreenLight}" Click="XMoreButton_OnClick" ></AppBarButton>
                     <controls:TextToolbar 
@@ -35,8 +35,8 @@
                         </controls:TextToolbar.ButtonModifications>
 
                     </controls:TextToolbar>
-                    <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="60" AllowFocusOnInteraction="True"
-            Background="LightGray" Label="Color" Click="XBackgroundColorButton_OnClick">
+                    <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="3" Height="60" Width="70" AllowFocusOnInteraction="True"
+            Background="LightGray" Label="Background" Click="XBackgroundColorButton_OnClick">
                 <Button.Flyout>
                     <Flyout x:Name="xColorPickerFlyout">
                         <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
