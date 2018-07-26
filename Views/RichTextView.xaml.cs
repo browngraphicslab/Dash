@@ -245,9 +245,12 @@ namespace Dash
         void convertTextFromXamlRTF()
         {
             var xamlRTF = getRtfText();
-            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)  // don't update if the Text is the same as what we last set it to
+            if (!xamlRTF.Equals(_lastXamlRTFText) && _everFocused)
+            {
+                // don't update if the Text is the same as what we last set it to
+                _lastXamlRTFText = xamlRTF;
                 Text = new RichTextModel.RTD(xamlRTF);
-            _lastXamlRTFText = xamlRTF;
+            }
         }
 
         #endregion
@@ -791,21 +794,19 @@ namespace Dash
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
-            xRichEditBox.Document.Selection.StartPosition = 0;
-            xRichEditBox.Document.Selection.EndPosition = 0;
             int i = 1;
             // find and highlight all matches
 
             // the following if statement might not be necessary, but I'll leave it just in case so that it doesn't crash during demo
             if (queries == null)
             {
-                xRichEditBox.Document.Selection.StartPosition = 0;
-                xRichEditBox.Document.Selection.EndPosition = 0;
                 return;
             }
-            foreach (var query in queries.Select(t => t.Data))
+            foreach (var query in queries.Select(t => t.Data).Where((s) => !string.IsNullOrEmpty(s)))
             {
-                while (i > 0 && !string.IsNullOrEmpty(query))
+                xRichEditBox.Document.Selection.StartPosition = 0;
+                xRichEditBox.Document.Selection.EndPosition = 0;
+                while (i > 0 )
                 {
                     i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                     var s = xRichEditBox.Document.Selection.StartPosition;
@@ -820,9 +821,6 @@ namespace Dash
                     }
                     xRichEditBox.Document.Selection.Collapse(false);
                 }
-
-                xRichEditBox.Document.Selection.StartPosition = 0;
-                xRichEditBox.Document.Selection.EndPosition = 0;
                 i = 1;
             }
         }
