@@ -145,6 +145,10 @@ namespace Dash
 
         public override void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
         {
+            if (RichTextView._searchHighlight)
+            {
+                return;
+            }
             var watch = Stopwatch.StartNew();
 
             _transactionMutex.WaitOne();
