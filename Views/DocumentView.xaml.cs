@@ -1262,6 +1262,12 @@ namespace Dash
                 newSize.Height = oldSize.Height;
                 newPos.Y = ViewModel.YPos;
             }
+            else
+            {
+                //this is so blue box is always same size as data (image, text, etc)
+                //without this, after the width gets below 140, the blue box will stay size, but data still decrease
+                MinWidth = 140;
+            }
 
 
             // re-clamp the position to keep it in bounds
