@@ -199,14 +199,28 @@ namespace Dash
 
         private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            using (UndoManager.GetBatchHandle())
-                richTextView.Superscript(true);
-        }
+	        //store selection (it will get lost by formatting)
+	        var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	        var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+			using (UndoManager.GetBatchHandle())
+                richTextView.Superscript(false);
+
+	        //reset selection
+	        xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
+		}
 
         private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            using (UndoManager.GetBatchHandle())
+	        //store selection (it will get lost by formatting)
+	        var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	        var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+			using (UndoManager.GetBatchHandle())
                 richTextView.Subscript(true);
+
+	        //reset selection
+	        xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
 		}
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -270,9 +284,16 @@ namespace Dash
             }
             using (UndoManager.GetBatchHandle())
             {
-                xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-                richTextView.UpdateDocumentFromXaml();
-            }
+	            //store selection
+	            var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	            var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+				xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+				richTextView.UpdateDocumentFromXaml();
+
+				//reset selection
+	            xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
+			}
 		}
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -290,9 +311,16 @@ namespace Dash
                 }
                 using (UndoManager.GetBatchHandle())
                 {
-                    xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
+					//store selection
+	                var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	                var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+					xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
                     richTextView.UpdateDocumentFromXaml();
-                }
+
+					//reset selection
+	                xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
+				}
 
 			}
                
@@ -304,8 +332,16 @@ namespace Dash
         {
             if(sender is DashColorPicker colorPicker)
             {
-                var color = colorPicker.SelectedColor;
-                richTextView.Foreground(color, true);
+	            //store selection (it will get lost by changing the foregound color)
+	            var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	            var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+				//add highlight
+				var color = colorPicker.SelectedColor;
+	            richTextView.Foreground(color, true);
+
+				//reset selection
+				xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
             }
         }
 
@@ -313,8 +349,16 @@ namespace Dash
         {
             if (sender is DashColorPicker colorPicker)
             {
-                var color = colorPicker.SelectedColor;
+                //store selection (it will get lost by highlighting)
+	            var selectionStart = xRichEditBox.Document.Selection.StartPosition;
+	            var selectionEnd = xRichEditBox.Document.Selection.EndPosition;
+
+				//add highlight
+	            var color = colorPicker.SelectedColor;
 				richTextView.Highlight(color, true);
+
+				//reset selection
+				xRichEditBox.Document.Selection.SetRange(selectionStart, selectionEnd);
             }
         }
 
@@ -342,7 +386,11 @@ namespace Dash
 
 	    }
 		*/
-	}
+	    private void FormattingMenu_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+	    {
+		    var answer = 3 + 4;
+	    }
+    }
 
 
 }
