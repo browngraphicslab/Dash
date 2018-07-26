@@ -450,19 +450,6 @@ namespace Dash
                 ListController<DocumentController>)?[item.Index]?.SetField<TextController>(KeyStore.DateModifiedKey, newTitle, true);
         }
 
-
-        //private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
-        //{
-        //    foreach (var m in args.Items)
-        //    {
-        //        var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
-        //        args.Data.Properties[nameof(DragDocumentModel)] = docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
-        //        // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-        //        args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-        //        break;
-        //    }
-        //}
-
         private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
         {
                 var dvm = ViewModel;
