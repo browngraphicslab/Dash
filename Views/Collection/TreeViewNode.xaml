@@ -42,23 +42,23 @@
             <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
             <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" CanDrag="True"  DragStarting="xControlIcon_DragStarting"  Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" Margin="5,0,0,0" />
 
-            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0" >
-                <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="White" DragItemsStarting="ListViewBase_OnDragItemsStarting" DragItemsCompleted="ListViewBase_OnDragItemsCompleted">
+            <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed" Margin="30,35,30,35" >
+                <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="{StaticResource AccentGreenDarkDark}" DragItemsStarting="ListViewBase_OnDragItemsStarting" DragItemsCompleted="ListViewBase_OnDragItemsCompleted">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
-                            <StackPanel DoubleTapped="UIElement_OnDoubleTapped">
+                            <StackPanel DoubleTapped="UIElement_OnDoubleTapped" Margin="0 5 5 0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"></ColumnDefinition>
                                         <ColumnDefinition Width="20"></ColumnDefinition>
                                     </Grid.ColumnDefinitions>
                                     <TextBox Text="{x:Bind Title}" PlaceholderText="{x:Bind Title}" Grid.Column="0"
-                                               FontSize="15" Foreground="Black" KeyDown="TextBox_OnKeyDown"/>
-                                    <FontIcon Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="5,0,0,0" Grid.Column="1" />
+                                               FontSize="10" Foreground="White" Background="Transparent" KeyDown="TextBox_OnKeyDown" Width="125" Margin="5 0 0 0" HorizontalAlignment="Left"/>
+                                    <FontIcon Foreground="White" Glyph="&#xE711;" FontFamily="Segoe MDL2 Assets" Tapped="DeleteSnap_OnClick" FontSize="10" Margin="0,0,0,0" Grid.Column="1" />
                                 </Grid>
-                                <Border BorderThickness="2" BorderBrush="Black" Height="100">
-                                    <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
-                                </Border>
+                                
+                                    <Image Source="{x:Bind Image}"  Height="100" Width="150" HorizontalAlignment="Center"/>
+                               
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -70,7 +70,7 @@
         </Grid>
         <StackPanel x:Name="XSnapshotSelected" Visibility="Collapsed" Background="Gray" >
             <TextBlock x:Name="SelectedTitle" FontSize="15" Foreground="Black"/>
-            <Border BorderThickness="2" BorderBrush="Black" Width="100">
+            <Border Width="100">
                 <Image x:Name="SelectedImage" Width="100" />
             </Border>
         </StackPanel>
