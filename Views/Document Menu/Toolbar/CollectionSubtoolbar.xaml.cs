@@ -91,6 +91,8 @@ namespace Dash
                 //add them each to the main canvas
                 foreach (DocumentViewModel vm in vms)
                 {
+                    vm.XPos += _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.XPos ?? 0;
+	                vm.YPos += _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.YPos ?? 0;
                     mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
                 }
 
@@ -114,6 +116,8 @@ namespace Dash
                     _collection.SetView((CollectionView.CollectionViewType) xViewModesDropdown.SelectedItem);
                 }
             }
+
+            CommandBarOpen(true);
         }
 
         /// <summary>
