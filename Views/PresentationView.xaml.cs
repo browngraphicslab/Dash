@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -35,20 +26,38 @@ namespace Dash
 
         public PresentationView()
         {
-            this.InitializeComponent();
-            DataContext = new PresentationViewModel();
+            InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private PresentationViewModel _oldViewModel;
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (_oldViewModel == args.NewValue) return;
+
+            if (_oldViewModel != null)
+            {
+                _oldViewModel.PinnedNodes.CollectionChanged -= PinnedNodes_CollectionChanged;
+            }
+
+            _oldViewModel = ViewModel;
+
+            if (ViewModel == null) return;
 
             ShowLinesButton.Background = new SolidColorBrush(Colors.White);
-     
+            ViewModel.PinnedNodes.CollectionChanged += PinnedNodes_CollectionChanged;
+
             //remove all paths
             DrawLines();
             RemoveLines();
         }
 
+        private void PinnedNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => DrawLinesWithNewDocs();
+
         private void PlayStopButton_Click(object sender, RoutedEventArgs e)
         {
             // can't play/stop if there's nothing in it
-            if (PinnedNodesListView.Items.Count != 0)
+            if (xPinnedNodesListView.Items.Count != 0)
             {
                 if (IsPresentationPlaying)
                 {
@@ -56,15 +65,15 @@ namespace Dash
                     IsPresentationPlaying = false;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Play);
                     PlayStopButton.Label = "Play";
-                    PinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
+                    xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
                     //TODO: zoom out to initial view
                 }
                 else
                 {
                     // zoom to first item in the listview
-                    PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
-                    PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
-                    NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+                    xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
+                    xPinnedNodesListView.SelectedItem = xPinnedNodesListView.Items[0];
+                    NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -85,18 +94,18 @@ namespace Dash
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
+            int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
             // only move back if there is a step to go back to
             if (selectedIndex != 0)
             {
                 NextButton.IsEnabled = true;
                 NextButton.Opacity = 1;
-                PinnedNodesListView.SelectedIndex = selectedIndex - 1;
+                xPinnedNodesListView.SelectedIndex = selectedIndex - 1;
             }
             else if (_repeat)
             {
-                PinnedNodesListView.SelectedIndex = PinnedNodesListView.Items.Count - 1;
+                xPinnedNodesListView.SelectedIndex = xPinnedNodesListView.Items.Count - 1;
             }
             if(selectedIndex == 1 && !_repeat)
             {
@@ -106,42 +115,44 @@ namespace Dash
             }
 
 
-            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
+            int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
             // can only move forward if there's a node to move forward to
-            if (selectedIndex != PinnedNodesListView.Items.Count - 1)
+            if (selectedIndex != xPinnedNodesListView.Items.Count - 1)
             {
                 BackButton.Opacity = 1;
                 BackButton.IsEnabled = true;
-                PinnedNodesListView.SelectedIndex = selectedIndex + 1;
+                xPinnedNodesListView.SelectedIndex = selectedIndex + 1;
             }else if (_repeat)
             {
-                PinnedNodesListView.SelectedIndex = 0;
+                xPinnedNodesListView.SelectedIndex = 0;
             }
-            if (selectedIndex == PinnedNodesListView.Items.Count - 2 && !_repeat)
+            if (selectedIndex == xPinnedNodesListView.Items.Count - 2 && !_repeat)
             {
                 //end presentation
                 NextButton.IsEnabled = false;
                 NextButton.Opacity = 0.3;
             }
 
-            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
 
-        // remove from viewmodel
-        private void DeletePin(object sender, RoutedEventArgs e)
+        // ON TRASH CLICK: remove from viewmodel
+        private void DeletePin(object sender, RoutedEventArgs e) => FullPinDelete((sender as Button)?.DataContext as DocumentController);
+
+        public void FullPinDelete(DocumentController doc)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).DataContext as DocumentController);
+            ViewModel.RemovePinFromPinnedNodesCollection(doc);
 
             DrawLinesWithNewDocs();
 
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
-            if (selectedIndex == PinnedNodesListView.Items.Count - 1 && !_repeat)
+            int selectedIndex = xPinnedNodesListView.SelectedIndex;
+            if (selectedIndex == xPinnedNodesListView.Items?.Count - 1 && !_repeat)
             {
                 //end presentation
                 NextButton.IsEnabled = false;
@@ -182,7 +193,7 @@ namespace Dash
         // if user strays in middle of presentation, hitting this will bring them back to the selected node
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -224,7 +235,7 @@ namespace Dash
         private List<Point> GetFourBeizerPoints(int i)
         {
             var canvas = MainPage.Instance.xCanvas;
-            var docs = PinnedNodesListView.Items;
+            var docs = xPinnedNodesListView.Items;
 
             //use bounds to find closest sides on each neighboring doc
             //get midpoitns of every side of both docs
@@ -328,13 +339,13 @@ namespace Dash
         private void UpdatePaths()
         {
             //if pins changed, updating won't work
-            if (_paths.Count / 2 != PinnedNodesListView.Items.Count - 1)
+            if (_paths.Count / 2 != xPinnedNodesListView.Items.Count - 1)
             {
                 DrawLines();
             }
 
             //draw lines between members of presentation 
-            var docs = PinnedNodesListView.Items;
+            var docs = xPinnedNodesListView.Items;
 
             for (var i = 0; i < docs?.Count - 1; i++)
             {
@@ -402,7 +413,7 @@ namespace Dash
             _paths = new List<UIElement>();
 
             //draw lines between members of presentation 
-            var docs = PinnedNodesListView.Items;
+            var docs = xPinnedNodesListView.Items;
 
             for (var i = 0; i < docs?.Count - 1; i++)
             {
@@ -489,23 +500,22 @@ namespace Dash
 
         public void DrawLinesWithNewDocs()
         {
-            if ((ShowLinesButton.Background as SolidColorBrush).Color.ToString() != "#FFFFFFFF")
+            if ((ShowLinesButton.Background as SolidColorBrush)?.Color.ToString() == "#FFFFFFFF") return;
+
+            //show lines
+            foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                //show lines
-                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
-                {
-                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
-                }
-
-                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
-                {
-                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
-                }
-
-                DrawLines();
+                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
+
+            foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
+            {
+                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+            }
+
+            DrawLines();
         }
 
         private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
@@ -573,8 +583,8 @@ namespace Dash
         {
             _repeat = false;
 
-            int selectedIndex = PinnedNodesListView.SelectedIndex;
-            if (selectedIndex == PinnedNodesListView.Items.Count - 1 && !_repeat)
+            int selectedIndex = xPinnedNodesListView.SelectedIndex;
+            if (selectedIndex == xPinnedNodesListView.Items.Count - 1 && !_repeat)
             {
                 //end presentation
                 NextButton.IsEnabled = false;
@@ -592,7 +602,33 @@ namespace Dash
         private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
         {
             //close presentation
-            MainPage.Instance.TogglePresentationMode();
+            MainPage.Instance.TogglePresentationMode(true);
         }
+
+        private async void Timeline_OnCompleted(object sender, object e)
+        {
+            await Task.Delay(350);
+            xTransportControls.MinHeight = 0;
+            xTransportControls.Opacity = 1;
+        }
+
+        public void TryHighlightMatches(DocumentView viewRef)
+        {
+            DocumentController viewRefDoc = viewRef.ViewModel.LayoutDocument;
+
+            var ind = 0;
+            foreach (DocumentController viewDoc in ViewModel.PinnedNodes)
+            {
+                if (viewDoc == viewRefDoc) break;
+                ind++;
+            }
+
+            if (ind == ViewModel.PinnedNodes.Count) return;
+
+            xPinnedNodesListView.SelectedIndex = ind;
+            xPinnedNodesListView.Focus(FocusState.Programmatic);
+        }
+
+        public void ClearHighlightedMatch() => xPinnedNodesListView.SelectedIndex = -1;
     }
 }

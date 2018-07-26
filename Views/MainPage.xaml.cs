@@ -42,17 +42,18 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
 
-        private bool IsPresentationModeToggled = false;
+        private bool IsPresentationModeExpanded
+        {
+            get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? true;
+            set => MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, value, true);
+        }
 
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
 
         public Popup LayoutPopup => xLayoutPopup;
-
-       
-
-
+        
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -94,7 +95,6 @@ namespace Dash
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
-
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -123,12 +123,8 @@ namespace Dash
                 }
                 LoadSettings();
 
-                var presentationItems =
-                    MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                if (presentationItems != null)
-                {
-                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
-                }
+                var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -161,6 +157,12 @@ namespace Dash
                 xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
+
+                if (IsPresentationModeExpanded)
+                {
+                    IsPresentationModeExpanded = !IsPresentationModeExpanded;
+                    TogglePresentationMode(false);
+                }
             }
 
             await DotNetRPC.Init();
@@ -766,30 +768,52 @@ namespace Dash
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
 
-        public void TogglePresentationMode()
+        public void TogglePresentationMode(bool animate)
         {
-            IsPresentationModeToggled = !IsPresentationModeToggled;
-            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            if (IsPresentationModeToggled)
+            xMainTreeView.TogglePresentationMode(IsPresentationModeExpanded);
+            IsPresentationModeExpanded = !IsPresentationModeExpanded;
+
+            if (IsPresentationModeExpanded)
             {
-                xUtilTabColumn.Width = new GridLength(330);
+                if (animate)
+                {
+                    xPresentationView.xSettingsOut.Begin();
+                    xPresentationView.xContentOut.Begin();
+                    xPresentationRetract.Begin();
+                }
+                else
+                {
+                    xUtilTabColumn.Width = new GridLength(0);
+                    xPresentationView.xTransportControls.Height = 0;
+                }
+                
             }
             else
             {
-                //close presentation
-                xUtilTabColumn.Width = new GridLength(0);
-                var presView = Instance.xPresentationView;
+                //open presentation
+                if (animate)
+                {
+                    xPresentationExpand.Begin();
+                    xPresentationExpand.Completed += (sender, o) => { xPresentationView.xContentIn.Begin(); };
+                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
+                }
+                else
+                {
+                    xUtilTabColumn.Width = new GridLength(300);
+                    xPresentationView.xTransportControls.Height = 60;
+                }
+
+                PresentationView presView = Instance.xPresentationView;
                 presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
-             
         }
 
         public void PinToPresentation(DocumentController dc)
         {
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
-            if (!IsPresentationModeToggled)
-                TogglePresentationMode();
+            if (IsPresentationModeExpanded)
+                TogglePresentationMode(true);
 
             xPresentationView.DrawLinesWithNewDocs();
         }

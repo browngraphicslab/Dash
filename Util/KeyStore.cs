@@ -14,6 +14,8 @@ namespace Dash
         public static KeyController RegionTypeKey = new KeyController("Region Type", "8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC");
         public static KeyController ActiveLayoutKey = new KeyController("ActiveLayout", "BEBEC91F-F85A-4F72-A7D2-E2912571FBDA");
         public static KeyController TitleKey = new KeyController("Title", "0C074CB4-6D05-4363-A867-C0A061C1573F");
+        public static KeyController PresentationTitleKey = new KeyController("Presentation Title", "3A153DAA-C2E1-40D9-9EE8-18CB09439EDD");
+        public static KeyController PresentationViewVisibleKey = new KeyController("Presentation Active", "7D999F66-A6A9-4A74-B2B3-AD12812FAAB6");
         public static KeyController CaptionKey = new KeyController("Caption", "D01D6702-A3AD-4546-9BFB-C5263F8D5599");
         public static KeyController PrototypeKey = new KeyController("_Prototype", "866A6CC9-0B8D-49A3-B45F-D7954631A682");
         public static KeyController DelegatesKey = new KeyController("_Delegates", "D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB");

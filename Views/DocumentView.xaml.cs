@@ -1500,6 +1500,8 @@ namespace Dash
             }
 
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
+            MainPage.Instance.xPresentationView.ClearHighlightedMatch();
+
             if (MainPage.Instance.MainDocView != this)
             {
                 var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
@@ -1514,6 +1516,7 @@ namespace Dash
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             DocumentView_PointerEntered();
+            e.Handled = true;
         }
 
         public void DocumentView_PointerEntered()
@@ -1527,6 +1530,7 @@ namespace Dash
                 }
 
                 MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
+                MainPage.Instance.xPresentationView.TryHighlightMatches(this);
             }
 
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -1927,6 +1931,8 @@ namespace Dash
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
+            if (Equals(MainPage.Instance.MainDocView)) return;
+            
             MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
             if (ViewModel.LayoutDocument == null)
             {

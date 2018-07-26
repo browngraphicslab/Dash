@@ -76,7 +76,7 @@ namespace Dash
         
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.TogglePresentationMode();
+            MainPage.Instance.TogglePresentationMode(true);
         }
 
         public void TogglePresentationMode(bool on)

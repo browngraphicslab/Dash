@@ -1,4 +1,5 @@
-﻿using Windows.System;
+﻿using System;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -15,7 +16,11 @@ namespace Dash
         public PresentationViewTextBox()
         {
             InitializeComponent();
-            KeyDown += (sender, args) => { if (args.Key == VirtualKey.Enter) UpdateName(); };
+            KeyDown += (sender, args) =>
+            {
+                if (args.Key == VirtualKey.Enter) UpdateName();
+                args.Handled = true;
+            };
         }
 
         private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => TriggerEdit();
@@ -28,8 +33,8 @@ namespace Dash
             if (!HasBeenCustomRenamed)
             {
                 HasBeenCustomRenamed = true;
-                Textblock.AddFieldBinding(TextBlock.TextProperty, null);
-                Textbox.AddFieldBinding(TextBox.TextProperty, null);
+                //SetCustomTitleBinding((DocumentController)DataContext);
+                CancelBinding();
             }
             Textblock.Visibility = Visibility.Visible;
             Textbox.Visibility = Visibility.Collapsed;
@@ -40,6 +45,7 @@ namespace Dash
             Textblock.Visibility = Visibility.Collapsed;
             Textbox.Visibility = Visibility.Visible;
             Textbox.Focus(FocusState.Programmatic);
+            CancelBinding();
         }
         
         // binding to the title of the corresponding document
@@ -47,7 +53,7 @@ namespace Dash
         {
             if (args.NewValue is DocumentController dc)
             {
-                string currentTitle = dc.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data;
+                string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null).GetValue(null).ToString();
                 if (string.IsNullOrEmpty(currentTitle))
                     dc.SetField(KeyStore.TitleKey, new TextController("<untitled>"), true);
                 SetTitleBinding(dc);
@@ -62,14 +68,32 @@ namespace Dash
 
         private void SetTitleBinding(DocumentController dc)
         {
-            var binding = new FieldBinding<TextController>
+            var initialBinding = new FieldBinding<TextController>
             {
                 Document = dc,
                 Key = KeyStore.TitleKey,
                 Mode = BindingMode.OneWay
             };
-            Textbox.AddFieldBinding(TextBox.TextProperty, binding);
-            Textblock.AddFieldBinding(TextBlock.TextProperty, binding);
+            Textbox.AddFieldBinding(TextBox.TextProperty, initialBinding);
+            Textblock.AddFieldBinding(TextBlock.TextProperty, initialBinding);
+        }
+
+        private void SetCustomTitleBinding(DocumentController dc)
+        {
+            var renamedBinding = new FieldBinding<TextController>
+            {
+                Document = dc,
+                Key = KeyStore.PresentationTitleKey,
+                Mode = BindingMode.OneWay
+            };
+            Textblock.AddFieldBinding(TextBlock.TextProperty, renamedBinding);
+            Textbox.AddFieldBinding(TextBox.TextProperty, renamedBinding);
+        }
+
+        private void CancelBinding()
+        {
+            Textblock.AddFieldBinding(TextBlock.TextProperty, null);
+            Textbox.AddFieldBinding(TextBox.TextProperty, null);
         }
     }
 }
