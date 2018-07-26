@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using DashShared;
 
@@ -57,6 +58,7 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
+                var sb = new StringBuilder();
                 var pattern = @"([a-z])([A-Z])";
                 var match = Regex.Match(keyName, pattern);
                 if (match.Success)
@@ -64,10 +66,7 @@ namespace Dash
                     for (var ctr = 1; ctr <= match.Groups.Count - 1; ctr++)
                     {
                         var captureCtr = 0;
-                        foreach (var capture in match.Groups[ctr].Captures)
-                        {
-                            captureCtr += 1;
-                        }
+                        //sb.Append(keyName.Substring(0, ))
                     }
                 }
                 outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(keyName), null);
