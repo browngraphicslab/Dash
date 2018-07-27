@@ -15,7 +15,7 @@
     
     KeyDown="CustomPdfView_OnKeyDown"
     >
-    <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+    <Grid x:Name="xPdfContainer" Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
 
