@@ -91,15 +91,15 @@ namespace Dash
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)
         {
+            var linkHandlers = this.GetAncestorsOfType<ILinkHandler>().ToList();
+            linkHandlers.Insert(0, this);
+            _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
             if (_selectedRegion == selectable)
             {
                 return;
             }
             _selectedRegion?.Deselect();
             _selectedRegion = selectable;
-            var linkHandlers = this.GetAncestorsOfType<ILinkHandler>().ToList();
-            linkHandlers.Insert(0, this);
-            _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
             _selectedRegion.Select();
 
         }
@@ -246,9 +246,10 @@ namespace Dash
                         regionPosList.Add(new PointController(rect.X, rect.Y));
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
                         var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-                        var scale = pdfView.Width / pdfView.PdfMaxWidth;
+                        var imgView = this.GetFirstAncestorOfType<EditableImage>();
+                        var scale = pdfView != null ? pdfView.Width / pdfView.PdfMaxWidth : 1;
                         var vOffset = rect.Y * scale;
-                        var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
+                        var scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
                         subRegionsOffsets.Add(scrollRatio);
                         minRegionY = Math.Min(rect.Y, minRegionY);
                     }
@@ -290,9 +291,13 @@ namespace Dash
                     //TODO Add ListController.DeferUpdate
                     annotation.SetField(KeyStore.SelectionRegionTopLeftKey, regionPosList, true);
                     annotation.SetField(KeyStore.SelectionRegionSizeKey, regionSizeList, true);
-                    annotation.SetField(KeyStore.PDFSubregionKey,
-                        new ListController<NumberController>(
-                            subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                    if ((this.GetFirstAncestorOfType<CustomPdfView>()) != null)
+                    {
+                        annotation.SetField(KeyStore.PDFSubregionKey,
+                            new ListController<NumberController>(
+                                subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                    }
+
                     annotation.GetDataDocument().SetPosition(new Point(0, minRegionY));
                     ClearSelection(true);
                     break;

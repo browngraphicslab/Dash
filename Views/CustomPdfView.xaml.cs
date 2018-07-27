@@ -820,13 +820,13 @@ namespace Dash
                 region.Link(note, LinkContexts.PDFSplitScreen);
                 var docview = new DocumentView
                 {
-                    DataContext = new DocumentViewModel(note) { Undecorated = true },
+                    DataContext = new DocumentViewModel(note) {Undecorated = true},
                     Width = xTopAnnotationBox.ActualWidth,
-                    BindRenderTransform = false
-                };
-                docview.RenderTransform = new TranslateTransform
-                {
-                    Y = yPos
+                    BindRenderTransform = false,
+                    RenderTransform = new TranslateTransform
+                    {
+                        Y = yPos
+                    }
                 };
                 docview.hideResizers();
 
