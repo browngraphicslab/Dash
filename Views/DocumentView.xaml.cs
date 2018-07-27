@@ -1262,12 +1262,6 @@ namespace Dash
                 newSize.Height = oldSize.Height;
                 newPos.Y = ViewModel.YPos;
             }
-            else
-            {
-                //this is so blue box is always same size as data (image, text, etc)
-                //without this, after the width gets below 140, the blue box will stay size, but data still decrease
-                MinWidth = 140;
-            }
 
 
             // re-clamp the position to keep it in bounds
@@ -1522,9 +1516,9 @@ namespace Dash
                 else
                 {
                     //if it is webview, don't completely deselect
-                    var deselect = sender?.GetType().Name != "WebView" && 
-                                   ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
-                    SelectionManager.DeselectAll(deselect);
+                    //var deselect = sender?.GetType().Name != "WebView" && 
+                    //               ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
+                    SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
                 }
 

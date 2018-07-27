@@ -11,7 +11,7 @@
     d:DesignWidth="944">
 
         <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
-    <Grid Width="1012" Height="60">
+    <Grid Width="944" Height="60">
         <Grid.Resources>
             <!--Button style set here-->
             <Style x:Key="xButtonStyle" TargetType="Button">
@@ -33,7 +33,6 @@
         <!--First row with font family, font size, and clear style-->
         <Grid Grid.Row="1" Background="LightGray">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="70" />
                 <ColumnDefinition Width="3.5*"/>
                 <ColumnDefinition Width="2.5*"/>
                 <ColumnDefinition Width="*"/>
@@ -41,19 +40,15 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Grid Width="67" Margin="-4, 0, 0, 0"  Grid.Column="0" Background="{StaticResource WindowsBlue}"/>
             <!--All caps-->
-            <Button Width="67" Margin="-2" Height="50" Background="Transparent"  Grid.Column="0" Tapped="BackButton_Tapped" HorizontalAlignment="Center" VerticalAlignment="Center" >
-                <SymbolIcon Symbol="Back"/>
-            </Button>
             <!--Font family combo box-->
-            <ComboBox Name="xFontFamilyComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,9.5,0" Grid.Column="1" BorderBrush="LightGray" ItemsSource="{x:Bind FontFamilyNames}" DisplayMemberPath="Source" SelectionChanged="FontFamilyComboBox_SelectionChanged" VerticalAlignment="Center"/>
+            <ComboBox Name="xFontFamilyComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,9.5,0" Grid.Column="0" BorderBrush="LightGray" ItemsSource="{x:Bind FontFamilyNames, Mode=OneWay}" DisplayMemberPath="Source" SelectionChanged="FontFamilyComboBox_SelectionChanged" VerticalAlignment="Center"/>
             <!--Font size combo box-->
-            <TextBox Name="xFontSizeTextBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,45,0" Grid.Column="2" BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" TextChanged="XFontSizeTextBox_OnTextChanged"/>
-            <ComboBox Name="xFontSizeComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="2" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center" Canvas.ZIndex="0" 
+            <TextBox Name="xFontSizeTextBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,45,0" Grid.Column="1" BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" TextChanged="XFontSizeTextBox_OnTextChanged"/>
+            <ComboBox Name="xFontSizeComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center" Canvas.ZIndex="0" 
                       Foreground="White"/>
             <!--Font color button-->
-            <Button x:Name="xFontColor" Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
+            <Button x:Name="xFontColor" Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="2">
                 <Button.Flyout>
                     <Flyout x:Name="xForegroundColorFlyout">
                         <local:DashColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged" />
@@ -65,7 +60,7 @@
                 </Grid>
             </Button>
             <!--Font highlight button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4">
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
 
                 <Button.Flyout >
                     <Flyout x:Name="xBackgroundColorFlyout">
@@ -79,14 +74,14 @@
 
 
             <!--Superscript button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="5" HorizontalAlignment="Center" Margin="7,0,0,0" Tapped="SuperscriptButton_Tapped">
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4" HorizontalAlignment="Center" Margin="7,0,0,0" Tapped="SuperscriptButton_Tapped">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
                     <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,-8,20,0">1</TextBlock>
                 </StackPanel>
             </Button>
             <!--Subscript button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="6" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="5" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
                     <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,8,20,0">1</TextBlock>
