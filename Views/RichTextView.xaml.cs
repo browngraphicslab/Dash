@@ -414,10 +414,17 @@ namespace Dash
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var dragDoc = dragModel.DraggedDocument;
-                if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+
+                if (dragModel.LinkSourceView != null)
                 {
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                    e.Handled = false;
+                    return;
                 }
+                    
+                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                //{
+                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                //}
 
                 linkDocumentToSelection(dragModel.DraggedDocument, true);
 
@@ -427,7 +434,6 @@ namespace Dash
             {
                 linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
             }
-
             e.Handled = true;
         }
         /// <summary>
@@ -678,7 +684,7 @@ namespace Dash
             }
 
             var region = GetRegionDocument();
-            region.Link(theDoc, AnnotationManager.LinkContexts.None);
+            region.Link(theDoc, LinkContexts.None);
 
             convertTextFromXamlRTF();
 

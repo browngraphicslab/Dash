@@ -343,6 +343,10 @@ namespace Dash
         {
             var comboBox = sender as ComboBox;
             var selectedFontSize = comboBox?.SelectedValue;
+            if (selectedFontSize == null)
+            {
+                return;
+            }
             _fontSizeTextChanged = true;
             xFontSizeTextBox.Text = selectedFontSize.ToString();
             if (!_fontSizeChanged)
@@ -385,16 +389,7 @@ namespace Dash
             {
                 var selectedFontSize = xFontSizeTextBox.Text;
 
-                double fontSize;
-                try
-                {
-                    fontSize = Convert.ToDouble(selectedFontSize);
-                }
-                catch (FormatException)
-                {
-                    return;
-                }
-                catch (OverflowException)
+                if (!double.TryParse(selectedFontSize, out double fontSize))
                 {
                     return;
                 }
