@@ -929,6 +929,7 @@ namespace Dash
                     }
                     else
                     {
+                        //DocumentTree.MainPageTree.Where(node => node.ViewDocument.Equals(target)).First().Parent.ViewDocument
                         DockManager.Dock(target, DockDirection.Right);
                     }
                 }
@@ -952,7 +953,8 @@ namespace Dash
             if (docViews.Count > 1)
             {
                 //Should this happen?
-                Debug.Fail("I don't think there should be more than 2 found doc views");
+               // Debug.Fail("I don't think there should be more than 2 found doc views");
+               // choose the document view that's in the same collection, but need to think about other issues as well...
             }
 
             DocumentView view = docViews.First();

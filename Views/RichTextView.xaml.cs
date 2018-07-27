@@ -416,12 +416,15 @@ namespace Dash
                 var dragDoc = dragModel.DraggedDocument;
 
                 if (dragModel.LinkSourceView != null)
-                    return;
-                    
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                    e.Handled = false;
+                    return;
                 }
+                    
+                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                //{
+                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                //}
 
                 linkDocumentToSelection(dragModel.DraggedDocument, true);
 
