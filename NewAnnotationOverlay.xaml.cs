@@ -31,7 +31,8 @@ namespace Dash
         None,
         Region,
         Selection,
-        Ink
+        Ink,
+        Pin 
     }
 
     public interface ISelectable
@@ -44,7 +45,7 @@ namespace Dash
         DocumentController RegionDocument { get; }
     }
 
-    public sealed partial class NewAnnotationOverlay : UserControl
+    public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
     {
         private AnnotationType _currentAnnotationType = AnnotationType.None;
 
@@ -96,7 +97,9 @@ namespace Dash
             }
             _selectedRegion?.Deselect();
             _selectedRegion = selectable;
-            _annotationManager.FollowRegion(selectable.RegionDocument, this.GetAncestorsOfType<ILinkHandler>(), mousePos ?? new Point(0, 0));
+            var linkHandlers = this.GetAncestorsOfType<ILinkHandler>().ToList();
+            linkHandlers.Insert(0, this);
+            _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
             _selectedRegion.Select();
 
         }
@@ -138,17 +141,20 @@ namespace Dash
 
         private void RenderAnnotation(DocumentController documentController)
         {
-                switch (documentController.GetAnnotationType())
-                {
-                    case AnnotationType.Region:
-                    case AnnotationType.Selection:
-                        RenderRegion(documentController);
-                        break;
-                    case AnnotationType.Ink:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+            switch (documentController.GetAnnotationType())
+            {
+                case AnnotationType.Region:
+                case AnnotationType.Selection:
+                    RenderRegion(documentController);
+                    break;
+                case AnnotationType.Ink:
+                    break;
+                case AnnotationType.Pin:
+                    RenderPin(documentController);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void OnUnloaded(object o, RoutedEventArgs routedEventArgs)
@@ -293,6 +299,8 @@ namespace Dash
                 case AnnotationType.Ink:
                 case AnnotationType.None:
                     return null;
+                case AnnotationType.Pin:
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -325,6 +333,9 @@ namespace Dash
                 case AnnotationType.None:
                 case AnnotationType.Ink:
                     return;
+                case AnnotationType.Pin:
+                    CreatePin(p);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -342,6 +353,7 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
+                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -361,6 +373,8 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
+                    return;
+                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -428,6 +442,76 @@ namespace Dash
                 XAnnotationCanvas.Children.Add(XPreviewRect);
             }
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
+        }
+
+        private void CreatePin(Point point)
+        {
+            if (_currentAnnotationType != AnnotationType.Pin)
+            {
+                return;
+            }
+            
+            foreach (var region in XAnnotationCanvas.Children)
+            {
+                if (region is Ellipse existingPin && existingPin.GetBoundingRect(this).Contains(point))
+                {
+                    return;
+                }
+            }
+
+            var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
+                new Size(150, 75));
+            richText .Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            var annotation = _regionGetter(_currentAnnotationType);
+            annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+            annotation.SetWidth(10);
+            annotation.SetHeight(10);
+            annotation.GetDataDocument()
+                .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+            annotation.Link(richText.Document, LinkContexts.PushPin);
+            _regionList.Add(annotation);
+            RegionAdded?.Invoke(this, annotation);
+            RenderPin(annotation);
+        }
+
+        private void RenderPin(DocumentController region)
+        {
+            var point = region.GetPosition() ?? new Point(0, 0);
+            point.X -= 10;
+            point.Y -= 10;
+            var pin = new Ellipse {Width = 10, Height = 10, Fill = new SolidColorBrush(Colors.OrangeRed)};
+            Canvas.SetLeft(pin, point.X - pin.Width / 2);
+            Canvas.SetTop(pin, point.Y - pin.Height / 2);
+            XAnnotationCanvas.Children.Add(pin);
+
+            var vm = new SelectionViewModel(region)
+            {
+                SelectedBrush = new SolidColorBrush(Colors.OrangeRed),
+                UnselectedBrush = new SolidColorBrush(Color.FromArgb(128, 255, 0, 0))
+            };
+            pin.DataContext = vm;
+            
+            pin.Tapped += (sender, args) =>
+            {
+                SelectRegion(vm, args.GetPosition(this));
+                args.Handled = true;
+            };
+            pin.SetBinding(Shape.FillProperty, new Binding
+            {
+                Path = new PropertyPath(nameof(vm.SelectionColor)),
+                Mode = BindingMode.OneWay
+            });
+            pin.SetBinding(VisibilityProperty, new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(AnnotationVisibility)),
+                Converter = new BoolToVisibilityConverter(),
+                Mode = BindingMode.OneWay
+            });
+
+            _regions.Add(vm);
+
+            SelectRegion(vm, new Point(point.X + pin.Width, point.Y + pin.Height));
         }
 
         public void UpdateRegion(Point p)
@@ -526,8 +610,20 @@ namespace Dash
 
             public event PropertyChangedEventHandler PropertyChanged;
 
-            private readonly SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0));
-            private readonly SolidColorBrush _unselectedBrush = new SolidColorBrush(Color.FromArgb(60, 255, 255, 0));
+            private SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0));
+
+            public SolidColorBrush SelectedBrush
+            {
+                get => _selectedBrush;
+                set => _selectedBrush = value;
+            }
+            private SolidColorBrush _unselectedBrush = new SolidColorBrush(Color.FromArgb(60, 255, 255, 0));
+
+            public SolidColorBrush UnselectedBrush
+            {
+                get => _unselectedBrush;
+                set => _unselectedBrush = value;
+            }
 
             public SelectionViewModel(DocumentController region)
             {
@@ -572,11 +668,11 @@ namespace Dash
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
             _regionRectangles.Clear();
-            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as Rectangle)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
+            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
             if (XAnnotationCanvas.Children.Any())
             {
                 var lastAdded = XAnnotationCanvas.Children.Last();
-                if (!((lastAdded as Rectangle)?.DataContext is SelectionViewModel))
+                if (!((lastAdded as FrameworkElement)?.DataContext is SelectionViewModel))
                 {
                     removeItems.Add(lastAdded);
                 }
@@ -643,7 +739,7 @@ namespace Dash
             {
                 Width = size.X,
                 Height = size.Y,
-                Fill = new SolidColorBrush(Color.FromArgb(80, 0xFF, 0xFF, 0x00)),
+                Fill = vm.UnselectedBrush,
                 DataContext = vm,
                 IsDoubleTapEnabled = false
             };
@@ -659,7 +755,7 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
-            
+
             r.SetBinding(VisibilityProperty, new Binding
             {
                 Source = this,
@@ -805,5 +901,32 @@ namespace Dash
 
         #endregion
 
+        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false) &&
+                _regionList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            {
+                var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
+                var docView = new DocumentView
+                {
+                    DataContext = new DocumentViewModel(dest) {Undecorated = true, DecorationState = false},
+                    BindRenderTransform = true
+                };
+                docView.Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)};
+                XAnnotationCanvas.Children.Add(docView);
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(docView);
+                SelectionManager.SelectionChanged += (args) =>
+                {
+                    if (args.SelectedViews.Any() && !args.SelectedViews.Contains(docView))
+                    {
+                        XAnnotationCanvas.Children.Remove(docView);
+                    }
+                };
+                return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -434,7 +434,7 @@ namespace Dash
                 }
             });
             
-            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages() - 1);
+            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.SetSelectableElements(selectableElements);
             _bottomAnnotationOverlay.SetSelectableElements(selectableElements);
 
@@ -510,7 +510,11 @@ namespace Dash
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-
+            if (CurrentAnnotationType.Equals(AnnotationType.Pin))
+            {
+                var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+                overlay.StartAnnotation(e.GetPosition(overlay));
+            }
             //    if (AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
             //    {
             //        var mouse = new Point(e.GetPosition(xPdfGrid).X, e.GetPosition(xPdfGrid).Y);
@@ -591,13 +595,15 @@ namespace Dash
         {
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed)
+            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed || CurrentAnnotationType.Equals(AnnotationType.Pin))
             {
                 return;
             }
 
             overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
         }
+
+
 
         #endregion
 
@@ -805,14 +811,12 @@ namespace Dash
                 region.SetPosition(new Point(0, yPos));
                 region.SetWidth(50);
                 region.SetHeight(20);
-                region.SetField(KeyStore.LinkContextKey,
-                    new TextController(AnnotationManager.LinkContexts.PDFSplitScreen.ToString()), true);
                 (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay).RenderNewRegion(region);
 
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
-                region.Link(note, AnnotationManager.LinkContexts.None);
+                region.Link(note, LinkContexts.PDFSplitScreen);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { Undecorated = true },
@@ -835,7 +839,7 @@ namespace Dash
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN)).Document;
 
-                region.Link(note, AnnotationManager.LinkContexts.None);
+                region.Link(note, LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) { DecorationState = false },
