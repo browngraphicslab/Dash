@@ -116,7 +116,7 @@ namespace Dash
                     _everFocused = true;
                     docView.CacheMode = null;
                     ClearSearchHighlights();
-                    SetSelected("");
+                    //SetSelected("");
                     xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
                     //CursorToEnd();
