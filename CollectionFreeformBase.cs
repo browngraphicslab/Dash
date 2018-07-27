@@ -1047,6 +1047,12 @@ namespace Dash
                     
                     previewTextbox.Visibility = Visibility.Collapsed;
                 }
+                else if (this.IsCtrlPressed())
+                {
+                    //if we can access rich text view here, we can actually respond to these events
+                    //either call the key down event in richtextbox or handle diff control cases here
+                    LoadNewActiveTextBox("", where);
+                }
                 else
                 {
                     previewTextBuffer += text;
@@ -1071,8 +1077,8 @@ namespace Dash
                 }
                 else
                 {
-                    var postitNote = new RichTextNote(text: text).Document;
-                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                    var postitNote = new RichTextNote(text: text);
+                    Actions.DisplayDocument(ViewModel, postitNote.Document, where);
                 }
             }
         }
