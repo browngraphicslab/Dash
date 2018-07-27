@@ -54,19 +54,11 @@ namespace Dash
                     OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 OldViewModel = null;
             };
-            Loaded += CollectionPageView_Loaded;
-
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
             this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
-        }
-
-        private void CollectionPageView_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<CollectionView>().xOuterGrid.BorderBrush =
-                Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
         }
 
         private void EnterPressed(KeyRoutedEventArgs obj)
