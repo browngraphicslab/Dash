@@ -484,7 +484,13 @@ namespace Dash
             var point = region.GetPosition() ?? new Point(0, 0);
             point.X -= 10;
             point.Y -= 10;
-            var pin = new Ellipse {Width = 10, Height = 10, Fill = new SolidColorBrush(Colors.OrangeRed)};
+            var pin = new Ellipse
+            {
+                Width = 10,
+                Height = 10,
+                Fill = new SolidColorBrush(Colors.OrangeRed),
+                IsDoubleTapEnabled = false
+            };
             Canvas.SetLeft(pin, point.X - pin.Width / 2);
             Canvas.SetTop(pin, point.Y - pin.Height / 2);
             XAnnotationCanvas.Children.Add(pin);
@@ -918,10 +924,10 @@ namespace Dash
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
                 var docView = new DocumentView
                 {
-                    DataContext = new DocumentViewModel(dest) {Undecorated = true, DecorationState = false},
-                    BindRenderTransform = true
+                    DataContext = new DocumentViewModel(dest) {Undecorated = true},
+                    BindRenderTransform = true,
+                    Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)}
                 };
-                docView.Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)};
                 XAnnotationCanvas.Children.Add(docView);
                 SelectionManager.DeselectAll();
                 SelectionManager.Select(docView);
