@@ -91,9 +91,13 @@ namespace Dash
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)
         {
+            // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = this.GetAncestorsOfType<ILinkHandler>().ToList();
+            // NewAnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, this);
             _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
+
+            // we still want to follow the region even if it's already selected, so this code's position matters
             if (_selectedRegion == selectable)
             {
                 return;
@@ -143,6 +147,7 @@ namespace Dash
         {
             switch (documentController.GetAnnotationType())
             {
+                // regions and selectons follow the same functionality
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
                     RenderRegion(documentController);
@@ -565,16 +570,23 @@ namespace Dash
             {
                 return;
             }
+
             _annotatingRegion = false;
 
             if (_regionRectangles.Count > 0)
             {
-            _regionRectangles[_regionRectangles.Count - 1] =
-                new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
-                    XPreviewRect.Height);
+                _regionRectangles[_regionRectangles.Count - 1] =
+                    new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
+                        XPreviewRect.Height);
 
             }
-            var viewRect = new Rectangle {Width = XPreviewRect.Width, Height = XPreviewRect.Height, Fill = XPreviewRect.Fill};
+
+            var viewRect = new Rectangle
+            {
+                Width = XPreviewRect.Width,
+                Height = XPreviewRect.Height,
+                Fill = XPreviewRect.Fill
+            };
             XAnnotationCanvas.Children.Add(viewRect);
             Canvas.SetLeft(viewRect, Canvas.GetLeft(XPreviewRect));
             Canvas.SetTop(viewRect, Canvas.GetTop(XPreviewRect));
@@ -591,7 +603,6 @@ namespace Dash
             r.Visibility = Visibility.Visible;
             r.Background = new SolidColorBrush(Colors.Goldenrod);
             Canvas.SetTop(r, region.GetPosition().Value.Y);
-            Canvas.SetZIndex(r, 1000000);
             //r.SetBinding(VisibilityProperty, new Binding
             //{
             //    Source = this,
@@ -700,6 +711,13 @@ namespace Dash
 
         public void StartTextSelection(Point p)
         {
+            if (!this.IsCtrlPressed())
+            {
+                if (_currentSelections.Any() || _regionRectangles.Any())
+                {
+                    ClearSelection();
+                }
+            }
             _selectionStartPoint = p;
         }
 
@@ -861,13 +879,6 @@ namespace Dash
 
         private void SelectElements(int startIndex, int endIndex)
         {// if control isn't pressed, reset the selection
-            if (!this.IsCtrlPressed())
-            {
-                if (_currentSelections.Count > 1 || _regionRectangles.Any())
-                {
-                    ClearSelection();
-                }
-            }
 
             // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
             if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))

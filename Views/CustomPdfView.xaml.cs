@@ -596,7 +596,8 @@ namespace Dash
         {
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed || CurrentAnnotationType.Equals(AnnotationType.Pin))
+            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||
+                CurrentAnnotationType.Equals(AnnotationType.Pin))
             {
                 return;
             }
