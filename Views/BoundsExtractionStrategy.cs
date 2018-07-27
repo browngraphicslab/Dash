@@ -106,7 +106,7 @@ namespace Dash
         public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
-            if (_pages.Count <= endPage || endPage < startPage)
+            if (_pages.Count < endPage || endPage < startPage)
             {
                 return new List<SelectableElement>();
             }

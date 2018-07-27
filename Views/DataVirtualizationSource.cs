@@ -65,7 +65,8 @@ namespace Dash
                     Width = PageSizes[i].Width,
                     Height = PageSizes[i].Height,
                     Margin = new Thickness(0, 0, 0, 10),
-                    Fill = new SolidColorBrush(Colors.White)
+                    Fill = new SolidColorBrush(Colors.White),
+                    Tag = false
                 });
             }
 
@@ -154,8 +155,9 @@ namespace Dash
                     img.Source = await RenderPage((uint)i);
                 }
                 // otherwise, if it's currently a rectangle, create a new image with the rendered page
-                else if (_visibleElements[i] is Rectangle)
+                else if (_visibleElements[i] is Rectangle rect && !(bool)rect.Tag)
                 {
+                    rect.Tag = true;
                     _visibleElements[i] = new Image
                     {
                         Source = await RenderPage((uint) i),
@@ -178,7 +180,8 @@ namespace Dash
                             Width = img.ActualWidth,
                             Height = img.ActualHeight,
                             Margin = new Thickness(0, 0, 0, 10),
-                            Fill = new SolidColorBrush(Colors.White)
+                            Fill = new SolidColorBrush(Colors.White),
+                            Tag = false
                         };
                     }
                 }

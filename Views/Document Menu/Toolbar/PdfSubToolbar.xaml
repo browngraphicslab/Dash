@@ -16,6 +16,7 @@
             <AppBarToggleButton x:Name="xInkToggle" Label="Ink" Icon="Edit" Checked="XInkToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xTextToggle" Label="Selection" Icon="Font"  Checked="XTextToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xRegionToggle" Label="Region" Icon="SelectAll" Checked="XRegionToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
+            <AppBarToggleButton x:Name="xPinToggle" Label="Pin" Icon="Message" Checked="XPinToggle_OnChecked_"  Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
         </StackPanel>
     </Grid>
 </UserControl>
