@@ -269,6 +269,7 @@ namespace Dash
             _topTimer.Start();
             _bottomTimer.Start();
 
+            SetAnnotationType(AnnotationType.Region);
         }
 
         private void TimerTick(object sender, object o)

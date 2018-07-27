@@ -674,7 +674,7 @@ namespace Dash
 
             if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
             {
-                if (theDoc != null) xRichEditBox.Document.Selection.Text = theDoc.Title;
+                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
             }
 
             var region = GetRegionDocument();
