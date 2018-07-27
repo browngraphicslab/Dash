@@ -85,7 +85,7 @@ namespace Dash
         }
         public double Width
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height

@@ -1345,7 +1345,9 @@ namespace Dash
         /// </summary>
         public void ForceLeftTapped()
         {
-            this.DocumentView_OnTapped(null, null);
+            //since this is only used by webBox, a web view is being sent in so 
+            //links and other selection features are still active inside a web box
+            this.DocumentView_OnTapped(new WebView(), null);
         }
 
         // this action is used to remove template editor in sync with document
@@ -1513,6 +1515,9 @@ namespace Dash
                 }
                 else
                 {
+                    //if it is webview, don't completely deselect
+                    //var deselect = sender?.GetType().Name != "WebView" && 
+                    //               ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
                     SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
                 }
