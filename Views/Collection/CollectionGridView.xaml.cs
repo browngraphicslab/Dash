@@ -21,7 +21,7 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
-       
+
 
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
@@ -43,15 +43,32 @@ namespace Dash
 
         private void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectionManager.DeselectAll();
             if (e.AddedItems.Count > 0)
-                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals( (e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
+            {
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
+
+            }
+
         }
 
         private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                docview.ManipulationMode = ManipulationModes.All;
+            }
+            else
+            {
+                docview.ManipulationMode = ManipulationModes.None;
+                //SelectionManager.Select(docview);
+                
+            }
+
             e.Handled = true;
+
+
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -64,13 +81,20 @@ namespace Dash
                 var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
                 if (ViewModel.CellSize + scaleAmount > 10 && ViewModel.CellSize + scaleAmount < 1000)
                 {
+                    
                     ViewModel.CellSize += scaleAmount;
-                    var style = new Style(typeof(GridViewItem));
-                    style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-                    style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-                    xGridView.ItemContainerStyle = style;
+
+                    ((ItemsWrapGrid) xGridView.ItemsPanelRoot).ItemWidth = ViewModel.CellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = ViewModel.CellSize;
+
+                    //var style = new Style(typeof(GridViewItem));
+                    
+                    //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                    //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                    //xGridView.ItemContainerStyle = style;
+                    e.Handled = true;
                 }
-                e.Handled = true;
+                
             }
         }
 
@@ -81,10 +105,10 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var style = new Style(typeof(GridViewItem));
-            style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-            style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-            xGridView.ItemContainerStyle = style;
+            //var style = new Style(typeof(GridViewItem));
+            //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+            //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+            //xGridView.ItemContainerStyle = style;
         }
 
         #region DragAndDrop
@@ -93,17 +117,7 @@ namespace Dash
             XDropIndicationRectangle.Fill = fill;
         }
         #endregion
-
-        #region Activation
         
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
-            e.Handled = true;
-        }
-
-        #endregion
-
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
@@ -135,6 +149,7 @@ namespace Dash
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
             MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
+          
         }
     }
 }

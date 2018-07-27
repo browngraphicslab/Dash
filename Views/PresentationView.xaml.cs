@@ -29,6 +29,10 @@ namespace Dash
         private bool _repeat = false;
         private List<UIElement> _paths = new List<UIElement>();
 
+        private PointController _panZoom;
+        private PointController _panPos;
+        private DocumentController _startCollection;
+
         public PresentationView()
         {
             InitializeComponent();
@@ -87,17 +91,27 @@ namespace Dash
                 {
                     // if it's currently playing, then it means the user just clicked the stop button. Reset.
                     IsPresentationPlaying = false;
+
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Play);
                     xPlayStopButton.Label = "Play";
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
-                    //TODO: zoom out to initial view
+
+                    _startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
+                    _startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
+                    MainPage.Instance.SetCurrentWorkspace(_startCollection);
                 }
                 else
                 {
                     // zoom to first item in the listview
+
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     xPinnedNodesListView.SelectedIndex = 0;
                     NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
+
+                    _startCollection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
+                    _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
+                    NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -115,10 +129,12 @@ namespace Dash
                 if (ViewModel.PinnedNodes.Count == 1) IsNextEnabled(false);
             }
 
-            if (!_repeat) return;
+            if (_repeat && ViewModel.PinnedNodes.Count == 1)
+            {
+                IsBackEnabled(false);
+                IsNextEnabled(false);
 
-            IsBackEnabled(false);
-            IsNextEnabled(false);
+            }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

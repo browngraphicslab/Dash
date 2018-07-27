@@ -134,6 +134,7 @@ namespace Dash
             // getvalue does not mean anything on an operator since
             // operators don't have any implicit value, the value is defind
             // by the input references passed to it in execute
+            return "";
             throw new System.NotImplementedException();
         }
 

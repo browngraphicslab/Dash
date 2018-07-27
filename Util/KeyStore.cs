@@ -126,6 +126,7 @@ namespace Dash
         public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
         public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
         public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
+        public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller

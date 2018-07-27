@@ -74,6 +74,7 @@
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+            <local:DocumentDecorations />
             <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
             
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
