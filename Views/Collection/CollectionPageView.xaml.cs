@@ -74,7 +74,14 @@ namespace Dash
                 try
                 {
                     var result = _dsl.Run(keyString.Substring(1));
-                    SetHackCaptionText(result);
+                    if (result == null)
+                    {
+                        SetHackCaptionText(new TextController("Field not found, make sure the key name is correct and that you're accessing the right document!"));
+                    }
+                    else
+                    {
+                        SetHackCaptionText(result);
+                    }
                 }
                 catch (DSLException)
                 {
@@ -533,7 +540,20 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var showField = dragModel.DraggedKey;
 
-                xTextBox.Text += "." + showField.Name;
+                if (xTextBox.Text.Length == 0)
+                {
+                    xTextBox.Text = "=this";
+                }
+
+                var fieldName = "";
+                foreach (var letter in showField.Name)
+                {
+                    if (!char.IsWhiteSpace(letter))
+                    {
+                        fieldName += letter;
+                    }
+                }
+                xTextBox.Text += "." + fieldName;
 
                 e.Handled = true;
             }
