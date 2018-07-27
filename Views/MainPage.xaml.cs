@@ -807,7 +807,6 @@ namespace Dash
                     xUtilTabColumn.MinWidth = 300;
                     xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
-                    /*if (xPresentationView.ViewModel.PinnedNodes.Count == 0)*/ xPresentationView.xHelpPrompt.Visibility = Visibility.Visible;
                 }
                 
             }

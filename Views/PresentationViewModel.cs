@@ -47,7 +47,7 @@ namespace Dash
                 MainPage.Instance.MainDocument.SetField(KeyStore.PresentationItemsKey, _listController, true);
             }
 
-            if (PinnedNodes.Contains(dc)) return;
+            //if (PinnedNodes.Contains(dc)) return;
 
             if (PinnedNodes.Count == 0)
             {

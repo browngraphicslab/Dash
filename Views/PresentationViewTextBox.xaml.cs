@@ -40,6 +40,7 @@ namespace Dash
         private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs, Context context)
         {
             if (dArgs.OldValue == null && dArgs.NewValue != null) SetCustomTitleBinding(dc);
+            else if (dArgs.NewValue == null) SetTitleBinding(dc);
         }
 
         private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => TriggerEdit();

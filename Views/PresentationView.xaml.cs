@@ -369,6 +369,8 @@ namespace Dash
 
         private void UpdatePaths()
         {
+            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+
             //if pins changed, updating won't work
             if (_paths.Count / 2 != xPinnedNodesListView.Items.Count - 1)
             {
@@ -437,6 +439,8 @@ namespace Dash
 
         public void DrawLines()
         {
+            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+
             var canvas = MainPage.Instance.xCanvas;
             //only recalcualte if you need to 
 
@@ -532,7 +536,7 @@ namespace Dash
         public void DrawLinesWithNewDocs()
         {
             var isChecked = xShowLinesButton.IsChecked;
-            if (isChecked != null && (bool) !isChecked) return;
+            if (isChecked != null && (bool) !isChecked || MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
             //show lines
             foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
