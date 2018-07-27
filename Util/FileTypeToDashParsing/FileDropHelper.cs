@@ -181,7 +181,7 @@ namespace Dash
         private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
-            if (storageItem.FileType.EndsWith(".url"))
+            if (storageItem.FileType.EndsWith(".url") && dataView.Contains(StandardDataFormats.WebLink))
             {
                 var link = await dataView.GetWebLinkAsync();
                 // if the link does not have a filetype assume its a web link

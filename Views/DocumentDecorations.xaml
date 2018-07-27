@@ -44,7 +44,7 @@
                          Visibility="Collapsed"/>
                     <TextBlock x:Name="xOperatorEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                        <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
                         />
                     </ToolTipService.ToolTip>
                 </Grid>
@@ -57,7 +57,7 @@
                     <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" Visibility="Collapsed" Width="25" Height="25"/>
                     <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
                     />
                     </ToolTipService.ToolTip>
                 </Grid>
@@ -72,7 +72,7 @@
                     <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
 
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                        <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
                        />
                     </ToolTipService.ToolTip>
 
