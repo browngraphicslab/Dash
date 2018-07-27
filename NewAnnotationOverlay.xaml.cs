@@ -320,12 +320,6 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            if (!SelectionManager.SelectedDocs.Contains(docView))
-            {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
-            }
             ClearPreviewRegion();
             //ClearSelection();
             switch (_currentAnnotationType)
