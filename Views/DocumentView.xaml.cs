@@ -1345,7 +1345,9 @@ namespace Dash
         /// </summary>
         public void ForceLeftTapped()
         {
-            this.DocumentView_OnTapped(null, null);
+            //since this is only used by webBox, a web view is being sent in so 
+            //links and other selection features are still active inside a web box
+            this.DocumentView_OnTapped(new WebView(), null);
         }
 
         // this action is used to remove template editor in sync with document
@@ -1513,6 +1515,9 @@ namespace Dash
                 }
                 else
                 {
+                    //if it is webview, don't completely deselect
+                    //var deselect = sender?.GetType().Name != "WebView" && 
+                    //               ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
                     SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
                 }
@@ -1818,7 +1823,7 @@ namespace Dash
                 if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
-                dragDoc.Link(dropDoc);
+                dragDoc.Link(dropDoc, LinkContexts.None);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
@@ -2017,10 +2022,10 @@ namespace Dash
 
 
 
-            xBottomRow.Height = new GridLength(newpoint.Y * 15);
-            xTopRow.Height = new GridLength(newpoint.Y * 15);
-            xLeftColumn.Width = new GridLength(newpoint.X * 15);
-            xRightColumn.Width = new GridLength(newpoint.X * 15);
+            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
+            xTopRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
+            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
 
             UpdateEllipses(newpoint);
 

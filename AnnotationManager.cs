@@ -18,7 +18,11 @@ using iText.StyledXmlParser.Jsoup.Select;
 
 namespace Dash
 {
-	public class AnnotationManager
+    public enum LinkContexts
+    {
+        PDFSplitScreen, None, PushPin
+    }
+    public class AnnotationManager
 	{
 		private FrameworkElement    _element;
 		private readonly MenuFlyout   _linkFlyout = new MenuFlyout();

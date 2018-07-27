@@ -57,6 +57,24 @@ namespace Dash
                 computedTitle = regex.Replace(computedTitle, "");
             }
 
+            int maxTitleLength = 35;
+            if (computedTitle?.Length > maxTitleLength)
+            {
+                var shortenedTitle = "";
+                foreach (var word in computedTitle.Split(' '))
+                {
+                    if ((shortenedTitle + word).Length < maxTitleLength)
+                    {
+                        shortenedTitle += " " + word;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                computedTitle = shortenedTitle.Length <= 1 ? computedTitle.Substring(0, maxTitleLength) + "..." : shortenedTitle.Substring(1) + "...";
+            }
+
             outputs[ComputedTitle] = new TextController(computedTitle ?? "");
         }
 
