@@ -319,8 +319,6 @@ namespace Dash
             //highlight doc results
             HighlightSearchResults(docs);
 
-
-            var searchTerms = Search.ConvertSearchTerms(text);
             var vmGroups = new List<SearchResultViewModel>();
             foreach (SearchResult res in searchRes)
             {

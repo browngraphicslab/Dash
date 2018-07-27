@@ -839,8 +839,7 @@ namespace Dash
                 return;
             ClearSearchHighlights();
             _originalRtfFormat = getRtfText();
-                                              // note to self- save format before clear search highlights to maintain formatting
-
+                                             
             //_nextMatch = 0;
             //_prevQueryLength = queries?.FirstOrDefault() == null ? 0 : queries.First().Data.Length;
             //string text;
