@@ -326,7 +326,7 @@ namespace Dash
             {
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
-                    res.DataDocument.SetField(CollectionDBView.SelectedKey, searchTerms, true);
+                    res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;
@@ -373,7 +373,7 @@ namespace Dash
                 var a = node.DataDocument;
                 if (a.GetField(CollectionDBView.SelectedKey) != null)
                 {
-                    a.RemoveField(CollectionDBView.SelectedKey);
+                    a.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController("")), true);
                 }
             }
         }

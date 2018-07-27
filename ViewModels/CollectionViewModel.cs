@@ -682,7 +682,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument);
+                                region.Link(sourceDoc.LayoutDocument, AnnotationManager.LinkContexts.None);
 
                             }
                             else
@@ -1015,9 +1015,12 @@ namespace Dash
                         foreach (var img in imgs)
                         {
                             var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                            var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                            var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                            related.Add(i.Document);
+                            if (srcMatch.Length > 6)
+                            {
+                                var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                                var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                                related.Add(i.Document);
+                            }
                         }
 
                         htmlNote.GetDataDocument()
@@ -1217,7 +1220,7 @@ namespace Dash
 							var note = new RichTextNote("<annotation>", where).Document;
 	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 
-                            dragDoc.Link(note);
+                            dragDoc.Link(note, AnnotationManager.LinkContexts.None);
                             AddDocument(note);
                         }
                     }

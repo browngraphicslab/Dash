@@ -33,6 +33,10 @@ namespace Dash
         private bool _repeat = false;
         private List<UIElement> _paths = new List<UIElement>();
 
+        private PointController _panZoom;
+        private PointController _panPos;
+        private DocumentController _startCollection;
+
         public PresentationView()
         {
             this.InitializeComponent();
@@ -57,13 +61,19 @@ namespace Dash
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Play);
                     PlayStopButton.Label = "Play";
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
-                    //TODO: zoom out to initial view
+
+                    _startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
+                    _startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
+                    MainPage.Instance.SetCurrentWorkspace(_startCollection);
                 }
                 else
                 {
                     // zoom to first item in the listview
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
+                    _startCollection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
+                    _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
                     NavigateToDocument((DocumentController) PinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
