@@ -425,6 +425,7 @@ namespace Dash
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 _annotationOverlay.StartAnnotation(point.Position);
+                e.Handled = true;
             }
         }
 
