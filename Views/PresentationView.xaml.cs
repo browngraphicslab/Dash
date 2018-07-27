@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
@@ -14,9 +17,11 @@ using Point = Windows.Foundation.Point;
 
 namespace Dash
 {
-    public sealed partial class PresentationView : UserControl
+    public sealed partial class PresentationView
     {
         public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
+
+        private int LastSelectedIndex { get; set; }
 
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
@@ -28,6 +33,7 @@ namespace Dash
         {
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
+            xHelpPrompt.Text = "Pinned items will appear here.\rAdd content from right-click\rcontext menu.";
         }
 
         private PresentationViewModel _oldViewModel;
@@ -44,8 +50,24 @@ namespace Dash
 
             if (ViewModel == null) return;
 
-            ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+            var loopBinding = new FieldBinding<BoolController, BoolController>()
+            {
+                Document = MainPage.Instance.MainDocument.GetDataDocument(),
+                Key = KeyStore.PresLoopOnKey,
+                Mode = BindingMode.TwoWay
+            };
+            xLoopButton.AddFieldBinding(ToggleButton.IsCheckedProperty, loopBinding);
+
+            var lineVisBinding = new FieldBinding<BoolController, BoolController>()
+            {
+                Document = MainPage.Instance.MainDocument.GetDataDocument(),
+                Key = KeyStore.PresLinesVisibleKey,
+                Mode = BindingMode.TwoWay
+            };
+            xShowLinesButton.AddFieldBinding(ToggleButton.IsCheckedProperty, lineVisBinding);
+
             ViewModel.PinnedNodes.CollectionChanged += PinnedNodes_CollectionChanged;
+            if (ViewModel.PinnedNodes.Count == 0) xHelpPrompt.Visibility = Visibility.Visible;
 
             //remove all paths
             DrawLines();
@@ -54,7 +76,9 @@ namespace Dash
 
         private void PinnedNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => DrawLinesWithNewDocs();
 
-        private void PlayStopButton_Click(object sender, RoutedEventArgs e)
+        private void PlayStopButton_Click(object sender, RoutedEventArgs e) => PlayStopClick();
+
+        public void PlayStopClick()
         {
             // can't play/stop if there's nothing in it
             if (xPinnedNodesListView.Items.Count != 0)
@@ -63,8 +87,8 @@ namespace Dash
                 {
                     // if it's currently playing, then it means the user just clicked the stop button. Reset.
                     IsPresentationPlaying = false;
-                    PlayStopButton.Icon = new SymbolIcon(Symbol.Play);
-                    PlayStopButton.Label = "Play";
+                    xPlayStopButton.Icon = new SymbolIcon(Symbol.Play);
+                    xPlayStopButton.Label = "Play";
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
                     //TODO: zoom out to initial view
                 }
@@ -72,12 +96,12 @@ namespace Dash
                 {
                     // zoom to first item in the listview
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
-                    xPinnedNodesListView.SelectedItem = xPinnedNodesListView.Items[0];
-                    NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
+                    xPinnedNodesListView.SelectedIndex = 0;
+                    NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
-                    PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
-                    PlayStopButton.Label = "Stop";
+                    xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
+                    xPlayStopButton.Label = "Stop";
                 }
             }
 
@@ -87,9 +111,14 @@ namespace Dash
             if (!_repeat && IsPresentationPlaying)
             {
                 //disable back button
-                BackButton.IsEnabled = false;
-                BackButton.Opacity = 0.3;
+                IsBackEnabled(false);
+                if (ViewModel.PinnedNodes.Count == 1) IsNextEnabled(false);
             }
+
+            if (!_repeat) return;
+
+            IsBackEnabled(false);
+            IsNextEnabled(false);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -97,10 +126,9 @@ namespace Dash
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
             // only move back if there is a step to go back to
-            if (selectedIndex != 0)
+            if (selectedIndex > 0)
             {
-                NextButton.IsEnabled = true;
-                NextButton.Opacity = 1;
+                IsNextEnabled(true);
                 xPinnedNodesListView.SelectedIndex = selectedIndex - 1;
             }
             else if (_repeat)
@@ -110,10 +138,10 @@ namespace Dash
             if(selectedIndex == 1 && !_repeat)
             {
                 //disable back button
-                BackButton.IsEnabled = false;
-                BackButton.Opacity = 0.3;
+                IsBackEnabled(false);
             }
 
+            LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
             NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
@@ -125,19 +153,21 @@ namespace Dash
             // can only move forward if there's a node to move forward to
             if (selectedIndex != xPinnedNodesListView.Items.Count - 1)
             {
-                BackButton.Opacity = 1;
-                BackButton.IsEnabled = true;
+                xBackButton.Opacity = 1;
+                xBackButton.IsEnabled = true;
                 xPinnedNodesListView.SelectedIndex = selectedIndex + 1;
-            }else if (_repeat)
+            }
+            else if (_repeat)
             {
                 xPinnedNodesListView.SelectedIndex = 0;
             }
             if (selectedIndex == xPinnedNodesListView.Items.Count - 2 && !_repeat)
             {
                 //end presentation
-                NextButton.IsEnabled = false;
-                NextButton.Opacity = 0.3;
+                IsNextEnabled(false);
             }
+
+            LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
             NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
@@ -155,64 +185,51 @@ namespace Dash
             if (selectedIndex == xPinnedNodesListView.Items?.Count - 1 && !_repeat)
             {
                 //end presentation
-                NextButton.IsEnabled = false;
-                NextButton.Opacity = 0.3;
+                IsNextEnabled(false);
             }
             if (selectedIndex == 0 && !_repeat)
             {
                 //disable back button
-                BackButton.IsEnabled = false;
-                BackButton.Opacity = 0.3;
+                IsBackEnabled(false);
             }
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            DocumentController dc = (DocumentController) e.ClickedItem;
+            var dc = (DocumentController) e.ClickedItem;
             NavigateToDocument(dc);
         }
 
         // helper method for moving the mainpage screen
-        private void NavigateToDocument(DocumentController dc)
-        {
-            MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true);
-        }
+        private static void NavigateToDocument(DocumentController dc) => MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true);
 
         // these buttons are only enabled when the presentation is playing
         private void ResetBackNextButtons()
         {
-            BackButton.IsEnabled = IsPresentationPlaying;
-            NextButton.IsEnabled = IsPresentationPlaying;
-            ResetButton.IsEnabled = IsPresentationPlaying;
-            BackButton.Opacity = IsPresentationPlaying ? 1 : 0.3;
-            NextButton.Opacity = IsPresentationPlaying ? 1 : 0.3;
-            ResetButton.Opacity = IsPresentationPlaying ? 1 : 0.3;
+            IsBackEnabled(IsPresentationPlaying);
+            IsNextEnabled(IsPresentationPlaying);
+            IsResetEnabled(IsPresentationPlaying);
         }
 
         // if user strays in middle of presentation, hitting this will bring them back to the selected node
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
+            xPinnedNodesListView.SelectedIndex = LastSelectedIndex;
             NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            ListView listView = (ListView) sender;
+            var listView = (ListView) sender;
             PinnedNodeFlyout.ShowAt(listView, e.GetPosition(listView));
             var source = (FrameworkElement) e.OriginalSource;
             _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ?? source.GetFirstAncestorOfType<PresentationViewTextBox>();
         }
 
-        private void Edit_OnClick(object sender, RoutedEventArgs e)
-        {
-            _giveTextBoxFocusUponFlyoutClosing = true;
-        }
+        private void Edit_OnClick(object sender, RoutedEventArgs e) => _giveTextBoxFocusUponFlyoutClosing = true;
 
-        private void Reset_OnClick(object sender, RoutedEventArgs e)
-        {
-            _textbox.ResetTitle();
-        }
+        private void Reset_OnClick(object sender, RoutedEventArgs e) => _textbox.ResetTitle();
 
         private void Flyout_Closed(object sender, object e)
         {
@@ -225,8 +242,6 @@ namespace Dash
         
         #region Presenation Lines
        
-
-
         private double distSqr(Point a, Point b)
         {
             return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
@@ -500,7 +515,8 @@ namespace Dash
 
         public void DrawLinesWithNewDocs()
         {
-            if ((ShowLinesButton.Background as SolidColorBrush)?.Color.ToString() == "#FFFFFFFF") return;
+            var isChecked = xShowLinesButton.IsChecked;
+            if (isChecked != null && (bool) !isChecked) return;
 
             //show lines
             foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
@@ -518,53 +534,52 @@ namespace Dash
             DrawLines();
         }
 
-        private void ShowLinesButton_OnClick(object sender, RoutedEventArgs e)
+        private void ShowLinesButton_OnChecked(object sender, RoutedEventArgs e) => ShowLines();
+
+        public void ShowLines()
         {
+            //show lines
             var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>();
-        
+            //xShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
 
-            if ((ShowLinesButton.Background as SolidColorBrush).Color.ToString() == "#FFFFFFFF")
+            DrawLines();
+
+            foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                //show lines
-                ShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
-
-                DrawLines();
-
-                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
-                {
-                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                    viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
-                }
-
-                foreach (var coll in allCollections)
-                {
-                    var track = coll.ViewModel.ContainerDocument;
-
-                    track.AddFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
-                    track.AddFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
-                }
+                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
-            else
+
+            foreach (var coll in allCollections)
             {
-                //hide lines
-                ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                var track = coll.ViewModel.ContainerDocument;
 
-                //remove all paths
-                RemoveLines();
+                track.AddFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
+                track.AddFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
+            }
+        }
 
-                foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
-                {
-                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                    viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
-                }
+        private void ShowLinesButton_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            //hide lines
+            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>();
+            //xShowLinesButton.Background = new SolidColorBrush(Colors.White);
 
-                foreach (var coll in allCollections)
-                {
-                    var track = coll.ViewModel.ContainerDocument;
+            //remove all paths
+            RemoveLines();
 
-                    track.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
-                    track.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
-                }
+            foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
+            {
+                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+            }
+
+            foreach (var coll in allCollections)
+            {
+                var track = coll.ViewModel.ContainerDocument;
+
+                track.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, DocFieldUpdated);
+                track.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
             }
         }
         #endregion
@@ -573,10 +588,10 @@ namespace Dash
         {
             _repeat = true;
 
-            NextButton.IsEnabled = true;
-            NextButton.Opacity = 1;
-            BackButton.IsEnabled = true;
-            BackButton.Opacity = 1;
+            xNextButton.IsEnabled = true;
+            xNextButton.Opacity = 1;
+            xBackButton.IsEnabled = true;
+            xBackButton.Opacity = 1;
         }
 
         private void RepeatButton_OnUnchecked(object sender, RoutedEventArgs e)
@@ -584,25 +599,23 @@ namespace Dash
             _repeat = false;
 
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
-            if (selectedIndex == xPinnedNodesListView.Items.Count - 1 && !_repeat)
+            if (selectedIndex == xPinnedNodesListView.Items?.Count - 1)
             {
                 //end presentation
-                NextButton.IsEnabled = false;
-                NextButton.Opacity = 0.3;
+                IsNextEnabled(false);
             }
-            if (selectedIndex == 0 && !_repeat)
+            if (selectedIndex == 0)
             {
                 //disable back button
-                BackButton.IsEnabled = false;
-                BackButton.Opacity = 0.3;
+                IsBackEnabled(false);
             }
-
         }
 
         private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
         {
             //close presentation
-            MainPage.Instance.TogglePresentationMode(true);
+            MainPage.Instance.SetPresentationState(false);
+            TryPlayStopClick();
         }
 
         private async void Timeline_OnCompleted(object sender, object e)
@@ -625,10 +638,62 @@ namespace Dash
 
             if (ind == ViewModel.PinnedNodes.Count) return;
 
-            xPinnedNodesListView.SelectedIndex = ind;
-            xPinnedNodesListView.Focus(FocusState.Programmatic);
+            xNumberList.SelectionMode = ListViewSelectionMode.None;
+            xNumberList.SelectedIndex = ind;
+            if (xNumberList.SelectedItem is PresentationNumberViewModel selectedNum) selectedNum.FontWeight = FontWeights.ExtraBold;
         }
 
-        public void ClearHighlightedMatch() => xPinnedNodesListView.SelectedIndex = -1;
+        public void ClearHighlightedMatch()
+        {
+            if (xNumberList.Items != null)
+            {
+                foreach (object vm in xNumberList.Items)
+                {
+                    (vm as PresentationNumberViewModel).FontWeight = FontWeights.Normal;
+                }
+            }
+            xNumberList.SelectedIndex = -1;
+        }
+
+        internal void SimulateAnimation(bool expand)
+        {
+            if (expand)
+            {
+                xTransportControls.Height = 60;
+                xPinnedNodesListView.Opacity = 1;
+                xPresentationTitle.Opacity = 1;
+                xSettingsPanel.Opacity = 1;
+            }
+            else
+            {
+                xTransportControls.Height = 0;
+                xPinnedNodesListView.Opacity = 0;
+                xPresentationTitle.Opacity = 0;
+                xSettingsPanel.Opacity = 0;
+            }
+        }
+
+        public void IsBackEnabled(bool enabled)
+        {
+            xBackButton.Opacity = enabled ? 1 : 0.3;
+            xBackButton.IsEnabled = enabled;
+        }
+
+        public void IsNextEnabled(bool enabled)
+        {
+            xNextButton.Opacity = enabled ? 1 : 0.3;
+            xNextButton.IsEnabled = enabled;
+        }
+
+        public void IsResetEnabled(bool enabled)
+        {
+            xResetButton.Opacity = enabled ? 1 : 0.3;
+            xResetButton.IsEnabled = enabled;
+        }
+
+        public void TryPlayStopClick()
+        {
+            if (IsPresentationPlaying) PlayStopClick();
+        }
     }
 }

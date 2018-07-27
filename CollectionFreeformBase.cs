@@ -90,7 +90,7 @@ namespace Dash
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
             MakeInkCanvas();
-            UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
+           // UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;
@@ -887,6 +887,7 @@ namespace Dash
 
                                 foreach (DocumentView v in views)
                                 {
+                                    v.ViewModel.LayoutDocument.IsMovingCollections = true;
                                     v.DeleteDocument();
                                 }
                             });
@@ -1027,9 +1028,9 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            e.Handled = true;
             if (e.Key.Equals(VirtualKey.Escape))
             {
+                e.Handled = true;
                 PreviewTextbox_LostFocus(null, null);
                 return;
             }

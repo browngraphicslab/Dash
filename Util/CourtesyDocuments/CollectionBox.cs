@@ -20,11 +20,7 @@ namespace Dash
         public static DocumentType DocumentType = DashConstants.TypeStore.CollectionBoxType;
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
-
-        /// <summary>
-        /// If the view type is unassigned this is the default view displayed to the user
-        /// </summary>
-        private static readonly string DefaultCollectionView = CollectionView.CollectionViewType.Grid.ToString();
+        
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);

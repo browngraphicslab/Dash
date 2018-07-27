@@ -17,7 +17,7 @@
             <RowDefinition Height ="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Button x:Name="xClosePresentation"  Margin="270,0,0,0" Click="XClosePresentation_OnClick" Background="LightGray">
+        <Button x:Name="xClosePresentation"  Margin="241,-30,0,0" Click="XClosePresentation_OnClick" Background="LightGray">
           <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />
         </Button>
         <StackPanel Grid.Row="1" Margin="0,-10,0,0" x:Name="xOuterStack" x:FieldModifier="public">
@@ -91,15 +91,32 @@
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
+                <Storyboard x:Name="xHelpIn" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0.5"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xHelpOut" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
             </StackPanel.Resources>
             <TextBlock x:Name="xPresentationTitle" Opacity="0"  TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
             <CommandBar x:Name="xTransportControls" Height="0"  Opacity="1" HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed" x:FieldModifier="public">
 
-                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
-                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
-                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="xBackButton" x:FieldModifier="public" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="xPlayStopButton" x:FieldModifier="public" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
+                <AppBarButton x:Name="xNextButton" x:FieldModifier="public" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
 
             </CommandBar>
+            <TextBlock x:Name="xHelpPrompt" x:FieldModifier="public" Visibility="Collapsed" Opacity="0"  TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
@@ -110,11 +127,12 @@
                     ItemsSource="{Binding PinNumbers}" 
                     SelectionMode="None" 
                     IsItemClickEnabled="False" 
+                    Margin="7, -26, 0, 0"
                     Grid.Column="0"
                     Opacity="0">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="system:Int32">
-                            <TextBlock Text="{x:Bind}" FontSize="20" Foreground="LightGray"/>
+                        <DataTemplate x:DataType="dash:PresentationNumberViewModel">
+                            <TextBlock Text="{x:Bind Num}" FontSize="20" Foreground="LightGray" FontWeight="{x:Bind FontWeight, Mode=OneWay}"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -122,11 +140,13 @@
                     x:Name="xPinnedNodesListView" 
                     ItemsSource="{Binding PinnedNodes}" 
                     ReorderMode="Enabled" 
+                    Margin="0, -26, 0, 0"
                     CanReorderItems="True"
                     AllowDrop="True" 
                     HorizontalAlignment="Stretch" 
                     Grid.Column="1" 
                     Opacity="0"
+                    x:FieldModifier="public"
                     SelectionMode="None" 
                     IsItemClickEnabled="True" 
                     ItemClick="PinnedNode_Click" 
@@ -150,9 +170,10 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1">
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="2">
                                     <SymbolIcon Symbol="Delete"/>
                                     </Button>
                             </Grid>
@@ -162,9 +183,34 @@
             </Grid>
         </StackPanel>
         <StackPanel x:Name="xSettingsPanel" Opacity="0" HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="2">
-            <AppBarButton x:Name="ResetButton" Icon="Zoom" Label="Re-Focus" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3" IsCompact="False" Margin="10"/>
-            <AppBarToggleButton Icon="RepeatAll" Label="Loop" Checked="RepeatButton_OnChecked" Unchecked="RepeatButton_OnUnchecked" Margin="0,10,0,0"/>
-            <AppBarButton x:Name="ShowLinesButton" Icon="Go" Label="Show Lines" IsEnabled="True" IsCompact="False" Margin="10" Click="ShowLinesButton_OnClick" Background="White" Foreground="Black" x:FieldModifier="public"/>
+            <AppBarButton 
+                x:Name="xResetButton"
+                Icon="Zoom" 
+                Label="Re-Focus" 
+                Click="ResetButton_Click" 
+                IsEnabled="False" 
+                Opacity="0.3" 
+                IsCompact="False" 
+                Margin="10"/>
+            <AppBarToggleButton 
+                x:Name="xLoopButton" 
+                Icon="RepeatAll" 
+                Label="Loop" 
+                Checked="RepeatButton_OnChecked" 
+                Unchecked="RepeatButton_OnUnchecked" 
+                Margin="0,10,0,0"/>
+            <AppBarToggleButton 
+                x:Name="xShowLinesButton" 
+                Icon="Go" 
+                Label="Show Lines" 
+                IsEnabled="True" 
+                IsCompact="False" 
+                Margin="10" 
+                Checked="ShowLinesButton_OnChecked"
+                Unchecked="ShowLinesButton_OnUnchecked"
+                Background="White" 
+                Foreground="Black"
+                x:FieldModifier="public"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -108,6 +108,10 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -160,6 +164,7 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
 
+        static int csize = 0;
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
@@ -167,7 +172,7 @@ namespace Dash
             SetCollectionRef(containerDocument, fieldKey);
 
             CellSize = 250; // TODO figure out where this should be set
-                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         DocumentController _lastDoc = null;
@@ -253,12 +258,12 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in args.NewItems)
                     {
-                        var visible = !d.GetHidden();
-                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
-                        if (visible && !shown)
-                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        if (!visible && shown)
-                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //var visible = !d.GetHidden();
+                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                        //if (visible && !shown)
+                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //if (!visible && shown)
+                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
@@ -283,7 +288,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -380,6 +384,12 @@ namespace Dash
                 // just update the collection, the colllection will update our view automatically
                 ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
 
+                if (document.IsMovingCollections)
+                {
+                    document.IsMovingCollections = false;
+                    return;
+                }
+
                 PresentationView pres = MainPage.Instance.xPresentationView;
                 if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document)) pres.FullPinDelete(document);
             }
@@ -408,7 +418,7 @@ namespace Dash
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
@@ -678,7 +688,8 @@ namespace Dash
                                     sourceDoc.DataDocument.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
-                                region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
+                                region.SetRegionDefinition(postitNote);
+                                region.SetAnnotationType(AnnotationType.Selection);
 
                                 region.Link(sourceDoc.LayoutDocument);
 
@@ -1297,6 +1308,11 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
+            var currentBoundingBox = new Rect(e.GetPosition(MainPage.Instance.xMainDocView),
+                new Size(10, 10));
+
+            var dir =  MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
+            MainPage.Instance.DockManager.HighlightDock(dir);
             HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

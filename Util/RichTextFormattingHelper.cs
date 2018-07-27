@@ -133,9 +133,10 @@ namespace Dash
         /// <param name="updateDocument"></param>
         public static void Highlight(this RichTextView v, Color background, bool updateDocument)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor == background)
-                v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
-            else v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
+            //if (v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor == background)
+            //    v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
+            //else
+                v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
             if (updateDocument) v.UpdateDocumentFromXaml();
         }
 

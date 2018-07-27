@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -100,6 +101,15 @@ namespace Dash
             set => SetValue(BindRenderTransformProperty, value);
         }
 
+        public static readonly DependencyProperty BindVisibilityProperty = DependencyProperty.Register(
+            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+
+        public bool BindVisibility
+        {
+            get { return (bool)GetValue(BindVisibilityProperty); }
+            set { SetValue(BindVisibilityProperty, value); }
+        }
+
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
             "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView),
             new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
@@ -160,9 +170,10 @@ namespace Dash
             _newpoint = new Point(0, 0);
 
 
-            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
+            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
+            RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
 
-            void updateBindings(object sender, DependencyProperty dp)
+            void updateRenderTransformBinding(object sender, DependencyProperty dp)
             {
                 var doc = ViewModel?.LayoutDocument;
 
@@ -177,7 +188,30 @@ namespace Dash
                         Tag = "RenderTransform multi binding in DocumentView"
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
-                ToFront();
+            }
+
+            void updateVisibilityBinding(object sender, DependencyProperty dp)
+            {
+                var doc = ViewModel?.LayoutDocument;
+
+                var binding = !BindVisibility || doc == null
+                    ? null
+                    : new FieldBinding<BoolController>
+                    {
+                        Converter = new InverseBoolToVisibilityConverter(),
+                        Document = doc,
+                        Key = KeyStore.HiddenKey,
+                        Mode = BindingMode.OneWay,
+                        Tag = "Visibility binding in DocumentView"
+                    };
+                this.AddFieldBinding(VisibilityProperty, binding);
+            }
+
+            void updateBindings()
+            {
+                updateRenderTransformBinding(null, null);
+                updateVisibilityBinding(null, null);
+
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
                 this.BindBackgroundColor();
@@ -196,8 +230,8 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
-                updateBindings(null, null);
-                DataContextChanged += (s, a) => updateBindings(null, null);
+                updateBindings();
+                DataContextChanged += (s, a) => updateBindings();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
@@ -253,6 +287,9 @@ namespace Dash
                     UpdateEllipses(_newpoint);
                 }
 
+                UpdateResizers();
+
+
                 //var converter = new StringToBrushConverter();
                 //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
                 //if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
@@ -293,7 +330,7 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
+                    //this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
                     PointerExited -=
                         DocumentView_PointerExited; // ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
@@ -542,7 +579,11 @@ namespace Dash
 
             //xValueBox.GotFocus += XValueBoxOnGotFocus;
 
-            LostFocus += (sender, args) => { if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry(); };
+            LostFocus += (sender, args) =>
+            {
+                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                MainPage.Instance.xPresentationView.ClearHighlightedMatch();
+            };
 
             MenuFlyout = xMenuFlyout;
 
@@ -551,6 +592,8 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+
+            ToFront();
         }
 
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
@@ -1111,17 +1154,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-
-
-
-            //if (ViewModel.DocumentController.DocumentType.Equals(DashShared.DocumentType.))
-
+            e.Handled = true;
             if (this.IsRightBtnPressed() || PreventManipulation)
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            {
+                return;
+            }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
                 ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
-            e.Handled = true;
 
             double extraOffsetX = 0;
             if (!Double.IsNaN((ViewModel.Width)))
@@ -1400,7 +1440,6 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
             UndoManager.EndBatch();
         }
@@ -1413,7 +1452,7 @@ namespace Dash
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
-            xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
             xTopLeftResizeControl.Fill =
                 selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
@@ -1434,6 +1473,21 @@ namespace Dash
             xLeftResizeControl.Fill =
                 selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
 
+		}
+
+        public void hideResizers()
+        {
+            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTopRightResizeControl.Visibility = Visibility.Collapsed;
+            xTopResizeControl.Visibility = Visibility.Collapsed;
+
+            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
+            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
+            xBottomResizeControl.Visibility = Visibility.Collapsed;
+
+            xRightResizeControl.Visibility = Visibility.Collapsed;
+            xLeftResizeControl.Visibility = Visibility.Collapsed;
+            xTargetBorder.Margin = new Thickness(0);
         }
 
         #endregion
@@ -1452,6 +1506,8 @@ namespace Dash
                 Focus(FocusState.Programmatic);
             }
             //if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
+
+            MainPage.Instance.xPresentationView.TryHighlightMatches(this);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
@@ -1500,7 +1556,6 @@ namespace Dash
             }
 
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
-            MainPage.Instance.xPresentationView.ClearHighlightedMatch();
 
             if (MainPage.Instance.MainDocView != this)
             {
@@ -1519,18 +1574,18 @@ namespace Dash
             e.Handled = true;
         }
 
-        public void DocumentView_PointerEntered()
-        {
-            if (ViewModel != null)
-            {
-                if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
-                {
-                    ViewModel.DecorationState = ViewModel?.Undecorated == false;
-                }
+		public void DocumentView_PointerEntered()
+		{
+			if (ViewModel != null)
+			{
+				if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+				     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
+				{
+				    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
+				}
 
                 MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
-                MainPage.Instance.xPresentationView.TryHighlightMatches(this);
             }
 
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -1942,15 +1997,8 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.Content is IAnnotatable element)
-            {
-                element.RegionSelected(element, new Point(0, 0));
-            }
-            else
-            {
-                var ann = new AnnotationManager(ViewModel.Content);
-                ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
-            }
+            var ann = new AnnotationManager(this);
+            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void X_Direction_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -1986,10 +2034,10 @@ namespace Dash
 
 
 
-            xBottomRow.Height = new GridLength(newpoint.Y * 5);
-            xTopRow.Height = new GridLength(newpoint.Y * 5);
-            xLeftColumn.Width = new GridLength(newpoint.X * 5);
-            xRightColumn.Width = new GridLength(newpoint.X * 5);
+            xBottomRow.Height = new GridLength(newpoint.Y * 15);
+            xTopRow.Height = new GridLength(newpoint.Y * 15);
+            xLeftColumn.Width = new GridLength(newpoint.X * 15);
+            xRightColumn.Width = new GridLength(newpoint.X * 15);
 
             UpdateEllipses(newpoint);
 
@@ -2152,8 +2200,6 @@ namespace Dash
 
         private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
         {
-            if (xKeyBox.Text.Length < 2) return;
-
             var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
             if (split == null || split.Length != 2) return;
 
@@ -2171,7 +2217,6 @@ namespace Dash
                 xValueBox.Text = _lastValueInput;
                 return;
             }
-
 
             _articialChange = true;
             xValueBox.Text = val.GetValue(null).ToString();
@@ -2238,7 +2283,10 @@ namespace Dash
                 computedValue = new TextController(xValueBox.Text.Trim());
                 xValueErrorFailure.Begin();
             }
-            target.SetField(new KeyController(components[1].Replace("_", " ")), computedValue, true);
+
+            string key = components[1].Replace("_", " ");
+
+            target.SetField(new KeyController(key), computedValue, true);
 
             _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
             xKeyEditSuccess.Begin();
