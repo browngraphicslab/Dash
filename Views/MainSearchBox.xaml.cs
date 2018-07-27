@@ -373,7 +373,7 @@ namespace Dash
                 var a = node.DataDocument;
                 if (a.GetField(CollectionDBView.SelectedKey) != null)
                 {
-                    a.RemoveField(CollectionDBView.SelectedKey);
+                    a.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController("")), true);
                 }
             }
         }
