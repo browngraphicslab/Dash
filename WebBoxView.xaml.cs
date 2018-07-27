@@ -43,7 +43,6 @@ namespace Dash
                
                TextBlock.Visibility = Visibility.Visible;
                TextBlock.Inlines.Add(hyperlink);
-
             }
         }
     }
