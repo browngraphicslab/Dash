@@ -211,7 +211,8 @@ namespace Dash
 
         private IEnumerable<DocumentController> runSearch()
         {
-            string text = xAutoSuggestBox.Text;
+            //don't get results for docs whichare regions or links
+            string text = xAutoSuggestBox.Text + " !Region:\"\"";
 
             var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
             itemsSource?.Clear();
