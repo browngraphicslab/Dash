@@ -12,10 +12,9 @@
     d:DesignWidth="400"
    
     SizeChanged="CustomPdfView_OnSizeChanged"
-    
     KeyDown="CustomPdfView_OnKeyDown"
     >
-    <Grid x:Name="xPdfContainer" Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+    <Grid x:Name="xPdfContainer" MinWidth="50"  Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
 
