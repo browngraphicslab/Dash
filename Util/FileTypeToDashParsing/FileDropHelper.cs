@@ -86,6 +86,8 @@ namespace Dash
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
                 {
+                    documentController.SetTitle(files[0].Name);
+                    documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.GetPositionField().Data = where;
                     documentController.GetDataDocument()?
                         .SetField<TextController>(KeyStore.WebContextKey, fileType.FileUri?.AbsoluteUri, true);
