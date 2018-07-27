@@ -572,6 +572,11 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
+            if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            {
+                SelectionManager.DeselectAll();
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+            }
         }
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -600,7 +605,6 @@ namespace Dash
             {
                 return;
             }
-
             overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
         }
 
