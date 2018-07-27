@@ -51,7 +51,7 @@ namespace Dash
 
         private readonly DocumentController _mainDocument;
         public readonly RegionGetter _regionGetter;
-        private readonly ListController<DocumentController> _regionList;
+        public readonly ListController<DocumentController> RegionDocsList;
         private readonly InkController _inkController;
 
         public delegate DocumentController RegionGetter(AnnotationType type);
@@ -123,12 +123,12 @@ namespace Dash
 
             _annotationManager = new AnnotationManager(this);
 
-            _regionList =
+            RegionDocsList =
                 _mainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
             _inkController = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
-            foreach (var documentController in _regionList)
+            foreach (var documentController in RegionDocsList)
             {
                 RenderAnnotation(documentController);
             }
@@ -164,17 +164,17 @@ namespace Dash
 
         private void OnUnloaded(object o, RoutedEventArgs routedEventArgs)
         {
-            _regionList.FieldModelUpdated -= RegionListOnFieldModelUpdated;
+            RegionDocsList.FieldModelUpdated -= RegionDocsListOnFieldModelUpdated;
             _inkController.FieldModelUpdated -= _inkController_FieldModelUpdated;
         }
 
         private void OnLoaded(object o, RoutedEventArgs routedEventArgs)
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
-            _regionList.FieldModelUpdated += RegionListOnFieldModelUpdated;
+            RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
         }
 
-        private void RegionListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
             var listArgs = fieldUpdatedEventArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
             if (listArgs == null)
@@ -320,7 +320,7 @@ namespace Dash
                 "If returning the main document, return it immediately, don't fall through to here");
             annotation.SetRegionDefinition(_mainDocument);
             annotation.SetAnnotationType(_currentAnnotationType);
-            _regionList.Add(annotation);
+            RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
 
             return annotation;
@@ -479,7 +479,7 @@ namespace Dash
             annotation.GetDataDocument()
                 .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
             annotation.Link(richText.Document, LinkContexts.PushPin);
-            _regionList.Add(annotation);
+            RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation);
         }
@@ -929,8 +929,9 @@ namespace Dash
 
         public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false) &&
-                _regionList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data
+                     .Equals(nameof(LinkContexts.PushPin)) ?? false) &&
+                RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
                 var docView = new DocumentView
@@ -951,6 +952,7 @@ namespace Dash
                 };
                 return true;
             }
+
 
             return false;
         }

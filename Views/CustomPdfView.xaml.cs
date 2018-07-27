@@ -154,6 +154,62 @@ namespace Dash
         private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+        }
+
+        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        {
+            if (this.IsCtrlPressed())
+            {
+                var selections = new List<List<KeyValuePair<int, int>>>
+                {
+                    new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
+                    new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
+                };
+                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
+                if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Key != -1)
+                {
+                    Debug.Assert(allSelections.Last().Value != -1);
+                    Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
+                    StringBuilder sb = new StringBuilder();
+                    allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+
+                    // get the indices from our selections and ignore any duplicate selections
+                    var indices = new List<int>();
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Key; i <= selection.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                indices.Add(i);
+                            }
+                        }
+                    }
+
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
+                    var prevIndex = indices.First();
+                    foreach (var index in indices.Skip(1))
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        if (selectableElement.Type == SelectableElement.ElementType.Text)
+                        {
+                            sb.Append((string)selectableElement.Contents);
+                        }
+
+                        prevIndex = index;
+                    }
+
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(sb.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    args.Handled = true;
+                }
+            }
         }
 
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
@@ -645,62 +701,7 @@ namespace Dash
             BottomPages.View_SizeChanged();
         }
 
-        private void CustomPdfView_OnKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (this.IsCtrlPressed())
-            {
-                var selections = new List<List<KeyValuePair<int, int>>>
-                {
-                    new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
-                    new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
-                };
-                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-                if (e.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Key != -1)
-                {
-                    Debug.Assert(allSelections.Last().Value != -1);
-                    Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
-                    StringBuilder sb = new StringBuilder();
-                    allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
-
-                    // get the indices from our selections and ignore any duplicate selections
-                    var indices = new List<int>();
-                    foreach (var selection in allSelections)
-                    {
-                        for (var i = selection.Key; i <= selection.Value; i++)
-                        {
-                            if (!indices.Contains(i))
-                            {
-                                indices.Add(i);
-                            }
-                        }
-                    }
-
-                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
-                    var prevIndex = indices.First();
-                    foreach (var index in indices.Skip(1))
-                    {
-                        if (prevIndex + 1 != index)
-                        {
-                            sb.Append("\r\n\r\n");
-                        }
-                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
-                        if (selectableElement.Type == SelectableElement.ElementType.Text)
-                        {
-                            sb.Append((string)selectableElement.Contents);
-                        }
-
-                        prevIndex = index;
-                    }
-
-                    var dataPackage = new DataPackage();
-                    dataPackage.SetText(sb.ToString());
-                    Clipboard.SetContent(dataPackage);
-                    e.Handled = true;
-                }
-            }
-        }
-
-        public void ScrollToRegion(DocumentController target)
+        public void ScrollToRegion(DocumentController target, bool scrollBottom = true)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
             if (ratioOffsets == null) return;
@@ -728,7 +729,7 @@ namespace Dash
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
-                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
+                if (!scrollBottom) BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
             }
             else
             {
@@ -818,7 +819,7 @@ namespace Dash
                 // note is the new annotation textbox that is created
                 var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0), new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
-                region.Link(note, LinkContexts.PDFSplitScreen);
+                region.Link(note, LinkContexts.None);
                 var docview = new DocumentView
                 {
                     DataContext = new DocumentViewModel(note) {Undecorated = true},
@@ -1118,6 +1119,13 @@ namespace Dash
 
         public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
+            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
+                .GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            {
+                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+                ScrollToRegion(src, false);
+            }
+
             return false;
         }
         private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1137,6 +1145,11 @@ namespace Dash
                 var pop = forwardstack.Pop();
                 viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() * viewer.ExtentHeight : 0, 1);
             }
+        }
+
+        private void Test(object sender, KeyRoutedEventArgs e)
+        {
+
         }
     }
 }
