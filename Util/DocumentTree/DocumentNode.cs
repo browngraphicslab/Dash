@@ -23,6 +23,8 @@ namespace Dash
          */
         public DocumentController ViewDocument { get; }
 
+        private HashSet<DocumentController> foundDocuments;
+
         /*
          * Only constructor must have two documents, one for the view and one for the data.
          * They can be the same document
@@ -34,9 +36,16 @@ namespace Dash
 
             nodes.TryAdd(DataDocument, this);
 
+            //all enum displayable fields, if list of doc cont = add all, if ref add doc it refs , hash set to  check if already found
+            //each region and doc has link to and from - all vis
+            //search through links + regions, discard link / region, parent null = dock
             Parent = parent;
+
+            var childRegions = DataDocument.GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+            IEnumerable<FieldControllerBase> childDocControllers2 = viewDocument.EnumDisplayableFields().Select(x => x.Value);
             var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this, nodes)).ToList();
+             Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this, nodes)).ToList();
+            //maybe add Children to hash set here?
         }
 
         public IEnumerator<DocumentNode> GetEnumerator()
