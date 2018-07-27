@@ -312,6 +312,7 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
             ClearPreviewRegion();
             //ClearSelection();
             switch (_currentAnnotationType)
