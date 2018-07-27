@@ -13,8 +13,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="35" x:Name="xLeftColumn"/>
-            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition Width="0" x:Name="xLeftColumn"/>            <ColumnDefinition x:Name="ContentColumn" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -35,9 +34,9 @@
         <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" />
 
-        <StackPanel Grid.Row="0" Grid.Column="2" Background="Transparent">
+        <StackPanel Grid.Row="0" Grid.Column="2" Background="Transparent" Height="90" VerticalAlignment="Top">
             <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" PointerReleased="AllEllipses_OnPointerReleased"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" PointerPressed="XOperatorEllipseBorder_OnPointerPressed" DragStarting="XOperatorEllipseBorder_OnDragStarting">
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" PointerPressed="XOperatorEllipseBorder_OnPointerPressed" DragStarting="XOperatorEllipseBorder_OnDragStarting">
                 <Grid  >
                     <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}" Width="25" Height="25"/>
 
@@ -52,7 +51,7 @@
             </Border>
             <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                 <Grid  >
                     <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}" Width="25" Height="25"/>
                     <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" Visibility="Collapsed" Width="25" Height="25"/>
@@ -65,7 +64,7 @@
             </Border>
             <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5 0 0 0">
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
                 <Grid HorizontalAlignment="Left">
                     <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldTemplateHandle}" Width="25" Height="25"/>
                     <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"  Style="{StaticResource xFieldTemplateHandleHighlighted}" Width="25" Height="25"

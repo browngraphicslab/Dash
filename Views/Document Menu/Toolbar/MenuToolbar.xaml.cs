@@ -485,10 +485,9 @@ namespace Dash
                     else
                     {
                         //If nothing is selected, open/label the main menu toolbar
-                        if (state == State.Expanded) xToolbar.IsOpen = true;
-						// xToolbar.IsOpen = false;
-						//update margin
-						var margin = xSubtoolbarStackPanel.Margin;
+                        xToolbar.IsOpen = false;
+                        //update margin
+                        var margin = xSubtoolbarStackPanel.Margin;
 	                    margin.Top = 7;
 	                    xSubtoolbarStackPanel.Margin = margin;
                     }

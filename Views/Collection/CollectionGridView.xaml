@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
-    Tapped="OnTapped"
+    
     >
     <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
@@ -22,18 +22,28 @@
                 ManipulationMode="All"
                 IsHitTestVisible="{Binding IsSelected}"
                 SelectionMode="Single"
-                Style="{StaticResource xCollectionGridViewStyle}"
                 ShowsScrollingPlaceholders="False" 
                 >
+
+            
             <GridView.ItemTemplate>
                 <DataTemplate>
+
                     <Border BorderBrush="#20000000" Background="#01111111" BorderThickness="1" CornerRadius="5" Tapped="Viewbox_Tapped">
-                        <Viewbox >
+                        <Viewbox>
                             <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
                         </Viewbox>
                     </Border>
                 </DataTemplate>
             </GridView.ItemTemplate>
+            
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Horizontal" ItemHeight="200" ItemWidth="200" />
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+          
+
         </GridView>
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xGridView, Path=Width}" Height="{Binding ElementName=xGridView, Path=Height}" IsHitTestVisible="False"></Rectangle>
     </Grid>

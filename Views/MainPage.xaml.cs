@@ -429,7 +429,8 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, 
+            DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -928,6 +929,7 @@ namespace Dash
                     }
                     else
                     {
+                        //DocumentTree.MainPageTree.Where(node => node.ViewDocument.Equals(target)).First().Parent.ViewDocument
                         DockManager.Dock(target, DockDirection.Right);
                     }
                 }
@@ -951,25 +953,23 @@ namespace Dash
             if (docViews.Count > 1)
             {
                 //Should this happen?
-                Debug.Fail("I don't think there should be more than 2 found doc views");
+               // Debug.Fail("I don't think there should be more than 2 found doc views");
+               // choose the document view that's in the same collection, but need to think about other issues as well...
             }
 
             DocumentView view = docViews.First();
-            DocumentView checkedView = view;
 
-            foreach (var parentView in checkedView.GetAncestorsOfType<DocumentView>())
+            foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
             {
-                var transformedBounds = checkedView.TransformToVisual(parentView)
-                    .TransformBounds(new Rect(0, 0, checkedView.ActualWidth, checkedView.ActualHeight));
-                var parentBounds = parentView.ViewModel.Bounds;
+                var transformedBounds = view.TransformToVisual(parentView)
+                    .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
                 if (!(containsTL && containsBR))
                 {
                     return null;
                 }
-
-                checkedView = parentView;
             }
 
             return view;
