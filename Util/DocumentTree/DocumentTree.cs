@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -20,6 +21,39 @@ namespace Dash
             var title = headRef.GetField<TextController>(KeyStore.TitleKey);
             headRef.SetField<TextController>(KeyStore.TitleKey, $"*{title}*", true);
             Head = new DocumentNode(headRef, null, Nodes);
+        }
+
+        public IEnumerable<DocumentNode> GetAllNodes()
+        {
+            var toSearch = new List<DocumentController>();
+            var cachedNodes = new Dictionary<DocumentController, DocumentNode>();
+
+            toSearch.Add(Head.ViewDocument);
+
+            while (toSearch.Any())
+            {
+                var doc = toSearch.Last();
+                toSearch.RemoveAt(toSearch.Count - 1);
+                if (doc.GetField(KeyStore.RegionsKey) == null && doc.GetField(KeyStore.LinkDestinationKey) == null)
+                {
+                    cachedNodes[doc] = new DocumentNode(doc, null, null);
+                }
+
+                foreach (var enumDisplayableField in doc.EnumDisplayableFields())
+                {
+                    if (enumDisplayableField.Value is DocumentController docField)
+                    {
+                        toSearch.Add(docField);
+                    } else if(enumDisplayableField.Value is ListController<DocumentController> listField)
+                    {
+                        toSearch.AddRange(listField);
+                    }
+                }
+            }
+
+            var l = this.ToList();
+            l.AddRange(cachedNodes.Values.Where(n => !l.Contains(n)));
+            return l;
         }
 
         /*
