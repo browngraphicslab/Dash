@@ -681,7 +681,7 @@ namespace Dash
             }
 
             var region = GetRegionDocument();
-            region.Link(theDoc, AnnotationManager.LinkContexts.None);
+            region.Link(theDoc, LinkContexts.None);
 
             convertTextFromXamlRTF();
 

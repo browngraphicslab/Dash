@@ -427,6 +427,7 @@ namespace Dash
                 _annotationOverlay.StartAnnotation(point.Position);
                 e.Handled = true;
             }
+
         }
 
         public DocumentController GetRegionDocument()
