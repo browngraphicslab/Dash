@@ -258,7 +258,7 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value,
+                X = topLeft.X - xLeftColumn.Width.Value-3,
                 Y = topLeft.Y
             };
 

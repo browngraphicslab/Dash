@@ -414,7 +414,11 @@ namespace Dash
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var dragDoc = dragModel.DraggedDocument;
-                if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+
+                if (dragModel.LinkSourceView != null)
+                    return;
+                    
+                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 }
@@ -427,7 +431,6 @@ namespace Dash
             {
                 linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
             }
-
             e.Handled = true;
         }
         /// <summary>
