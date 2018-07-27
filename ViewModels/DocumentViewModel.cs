@@ -85,7 +85,7 @@ namespace Dash
         }
         public double Width
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
@@ -131,14 +131,14 @@ namespace Dash
                 OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
             }
         }
+
         public bool Undecorated { get; set; }
         public bool DecorationState
         {
             get => _decorationState;
             set
             {
-                if (!DisableDecorations) SetProperty(ref _decorationState, value);
-                else SetProperty(ref _decorationState, false);
+                SetProperty(ref _decorationState, value);
             }
         }
 
@@ -154,7 +154,6 @@ namespace Dash
             get => _standardViewLevel;
             set => SetProperty(ref _standardViewLevel, value);
         }
-        public bool DisableDecorations { get; set; } = false;
 
 
         // == FIELD UPDATED EVENT HANDLERS == 

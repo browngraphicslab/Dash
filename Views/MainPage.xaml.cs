@@ -18,8 +18,10 @@ using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media.Animation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
+using iText.Layout.Element;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 
 
@@ -30,7 +32,7 @@ namespace Dash
     /// <summary>
     ///     Zoomable pannable canvas. Has an overlay canvas unaffected by pan / zoom.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, ILinkHandler
     {
         public static MainPage Instance { get; private set; }
 
@@ -50,7 +52,11 @@ namespace Dash
 
         public Popup LayoutPopup => xLayoutPopup;
 
-       
+        public Grid SnapshotOverlay => xSnapshotOverlay;
+        public Storyboard FadeIn => xFadeIn;
+        public Storyboard FadeOut => xFadeOut;
+
+
 
 
         public MainPage()
@@ -151,7 +157,7 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DisableDecorations = true };
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
                 MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
@@ -423,7 +429,8 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, 
+            DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -473,23 +480,23 @@ namespace Dash
             return false;
         }
 
-	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
-		{
-			var dvm = MainDocView.DataContext as DocumentViewModel;
-			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+        public Point GetDistanceFromMainDocCenter(DocumentController dc)
+        {
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
-			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
-		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
-			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
-				dcPoint.X + dcSize.X / 2,
-				dcPoint.Y + dcSize.Y / 2
-		    ));
+            var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+            var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+            var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+            var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+                dcPoint.X + dcSize.X / 2,
+                dcPoint.Y + dcSize.Y / 2
+            ));
 
-			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
-		    return new Point(center.X - shift.X, center.Y - shift.Y);
-	    }
+            Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+            return new Point(center.X - shift.X, center.Y - shift.Y);
+        }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
@@ -517,7 +524,7 @@ namespace Dash
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
 
-            if(this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
+            if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
@@ -709,7 +716,7 @@ namespace Dash
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch};
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
                 //xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
@@ -738,10 +745,10 @@ namespace Dash
             var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
             var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
-            
+            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X * mainFreeformXf.M11 + xMainDocView.ActualWidth/2 , Y = -mapPt.Y * mainFreeformXf.M22 + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y });
+                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -782,7 +789,7 @@ namespace Dash
                 presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
-             
+
         }
 
         public void PinToPresentation(DocumentController dc)
@@ -799,7 +806,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Visible;
             xComboBox.SelectedItem = null;
-            
         }
 
         private void Popup_OnClosed(object sender, object e)
@@ -856,6 +862,122 @@ namespace Dash
             xConfirmButton.Tapped += XConfirmButton_OnClick;
 
             return tcs.Task;
+        }
+
+        public void NavigateToDocument(DocumentController doc)//More options
+        {
+            var tree = DocumentTree.MainPageTree;
+            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
+            if (node?.Parent == null)
+            {
+                SetCurrentWorkspace(doc);
+                return;
+            }
+
+            var workspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            if (workspace.GetDataDocument().Equals(node.Parent.DataDocument))
+            {
+                NavigateToDocumentInWorkspace(doc, true, false);
+            }
+            else
+            {
+                SetCurrentWorkspaceAndNavigateToDocument(node.Parent.ViewDocument, doc);
+            }
+        }
+
+        public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
+        {
+            var parent = docOrRegion.GetRegionDefinition();
+            NavigateToDocument(parent ?? docOrRegion);
+            if (parent != null)
+            {
+                parent.GotoRegion(docOrRegion, link);
+            }
+        }
+
+        #region Annotation logic
+
+        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            var target = region.GetRegionDefinition() ?? region;
+
+            if (this.IsCtrlPressed())
+            {
+                NavigateToDocumentOrRegion(region, linkDoc);
+            }
+            else
+            {
+                var onScreenView = GetTargetDocumentView(target);
+                if (onScreenView != null)
+                {
+                    if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
+                    {
+                        target.ToggleHidden();
+                    }
+                    else
+                    {
+                        target.SetHidden(false);
+                    }
+                }
+                else
+                {
+                    var docked = DockManager.GetDockedView(target);
+                    if (docked != null)
+                    {
+                        DockManager.Undock(docked);
+                    }
+                    else
+                    {
+                        DockManager.Dock(target, DockDirection.Right);
+                    }
+                }
+
+                target.GotoRegion(region, linkDoc);
+            }
+
+
+            return true;
+        }
+
+        public DocumentView GetTargetDocumentView(DocumentController target)
+        {
+            //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
+            var docViews = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            if (!docViews.Any())
+            {
+                return null;
+            }
+
+            if (docViews.Count > 1)
+            {
+                //Should this happen?
+                Debug.Fail("I don't think there should be more than 2 found doc views");
+            }
+
+            DocumentView view = docViews.First();
+
+            foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
+            {
+                var transformedBounds = view.TransformToVisual(parentView)
+                    .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
+                bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
+                bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
+                if (!(containsTL && containsBR))
+                {
+                    return null;
+                }
+            }
+
+            return view;
+        }
+
+        #endregion
+
+        public void Timeline_OnCompleted(object sender, object e)
+        {
+            xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
     }
 }

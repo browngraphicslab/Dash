@@ -37,6 +37,8 @@ namespace Dash
         public static KeyController PositionFieldKey = new KeyController("Position", "E2AB7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController LinkFromKey = new KeyController("Link From", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
         public static KeyController LinkToKey = new KeyController("Link To", "649A7F35-C428-49EC-B914-5746E2590DAC");
+        public static KeyController LinkDestinationKey = new KeyController("Link Destination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
+        public static KeyController LinkSourceKey = new KeyController("Link Source", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
         public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
         public static KeyController ScaleAmountFieldKey = new KeyController("_Scale Amount", "AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE");
         public static KeyController IconTypeFieldKey = new KeyController("_IconType", "ICON7D27-FA81-4D88-B2FA-42B7888525AF");
@@ -97,6 +99,8 @@ namespace Dash
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController("_Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("_Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("_Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
+        public static KeyController SelectionRegionTopLeftKey = new KeyController("_Selection Top Left", "B42844C8-B80A-4DE9-BFC3-AF3F94A83D2E");
+        public static KeyController SelectionRegionSizeKey = new KeyController("_Selection Size", "34E957C1-A0FC-41B0-8862-174224FBE90B");
 	    public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
@@ -111,6 +115,12 @@ namespace Dash
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
         public static readonly KeyController SnapshotImage = new KeyController("Snapshot Image", "1D3D649D-A29D-41DF-8608-3822D8546EEA");
+        public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
+        public static KeyController AnnotationsKey = new KeyController("TopAnnotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
+        public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");
+        public static KeyController GoToRegionLinkKey = new KeyController("Goto Region Link", "150C5291-0830-4095-9C18-FAE1F315599F");
+        public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
+        public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Casting;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 
 namespace Dash
 {
@@ -55,45 +57,43 @@ namespace Dash
             SelectionChanged?.Invoke(args);
         }
 
-	    public static void SelectRegion(DocumentController region)
-	    {
-			// todo: this is a hack, should refactor elsewhere later
-		    if (SelectedRegion != null)
-		    {
-			    var toLinks = SelectedRegion.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-			    if (toLinks != null)
-			    {
-				    foreach (var dc in toLinks)
-				    {
-					    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
-					    if (docCtrl == null) return;
-					    var isVisible = docCtrl.GetDereferencedField<BoolController>(KeyStore.AnnotationVisibilityKey, null);
-					    if (isVisible != null)
-							docCtrl.ToggleAnnotationPin(isVisible.Data, false);
-						MainPage.Instance.HighlightDoc(docCtrl, false, 2);
-				    }
-				}
-			}
+        public static void SelectRegion(DocumentController region)
+        {
+            // todo: this is a hack, should refactor elsewhere later
+            if (SelectedRegion != null)
+            {
+                var toLinks = SelectedRegion.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+                if (toLinks != null)
+                {
+                    foreach (var dc in toLinks)
+                    {
+                        var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+                        if (docCtrl == null) return;
+                        docCtrl.ToggleHidden();
+                        MainPage.Instance.HighlightDoc(docCtrl, false, 2);
+                    }
+                }
+            }
 
-		    SelectedRegion = region;
+            SelectedRegion = region;
 
-		    if (region != null)
-			{
-				var newToLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-				if (newToLinks == null) return;
-				foreach (var dc in newToLinks)
-				{
-					var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
-					if (docCtrl == null) return;
-					docCtrl.ToggleAnnotationPin(true, true);
-				    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
-			    }
-			}
-	    }
+            if (region != null)
+            {
+                var newToLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+                if (newToLinks == null) return;
+                foreach (var dc in newToLinks)
+                {
+                    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
+                    if (docCtrl == null) return;
+                    docCtrl.ToggleHidden();
+                    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
+                }
+            }
+        }
 
         public static void SelectDocuments(List<DocumentView> docs)
-		{
-			var args = new DocumentSelectionChangedEventArgs();
+        {
+            var args = new DocumentSelectionChangedEventArgs();
             foreach (var doc in docs)
             {
                 if (!_selectedDocs.Contains(doc))
@@ -106,10 +106,10 @@ namespace Dash
         }
 
         private static void SelectHelper(DocumentView doc)
-		{
-			if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
-				SelectRegion(null);
-			_selectedDocs.Add(doc);
+        {
+            if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
+                SelectRegion(null);
+            _selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
 
@@ -126,7 +126,7 @@ namespace Dash
         {
             if (DeselectHelper(doc))
             {
-                SelectionChanged?.Invoke(new DocumentSelectionChangedEventArgs(new List<DocumentView>{doc}, new List<DocumentView>()));
+                SelectionChanged?.Invoke(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
             }
         }
 
@@ -137,8 +137,8 @@ namespace Dash
         {
             if (_selectedDocs.Count > 0)
             {
-                var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocs), new List<DocumentView>());
                 DeselectAllHelper();
+                var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocs), new List<DocumentView>());
                 SelectionChanged?.Invoke(args);
             }
         }

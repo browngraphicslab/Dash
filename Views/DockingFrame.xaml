@@ -45,10 +45,10 @@
 
             <ContentPresenter Content="{x:Bind DocumentContent}" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
-            <Rectangle Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockLeft" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockRight" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockTop" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockBottom" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockLeft" AllowDrop="True" DragLeave="xDockLeft_DragLeave" DragOver="xDockLeft_DragOver" Drop="xDockLeft_Drop" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockRight" AllowDrop="True"  DragLeave="xDockLeft_DragLeave" DragOver="xDockLeft_DragOver" Drop="xDockRight_Drop" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockTop" AllowDrop="True" DragLeave="xDockLeft_DragLeave" DragOver="xDockLeft_DragOver" Drop="xDockTop_Drop" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockBottom" AllowDrop="True" DragLeave="xDockLeft_DragLeave" DragOver="xDockLeft_DragOver" Drop="xDockBottom_Drop" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
         </Grid>
     </Grid>
 </UserControl>

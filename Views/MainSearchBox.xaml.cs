@@ -152,7 +152,7 @@ namespace Dash
                 .Select(sr => sr.ViewDocument.GetViewCopy());
 
             args.Data.Properties[nameof(DragCollectionFieldModel)] =
-                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
+                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Page);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -326,7 +326,7 @@ namespace Dash
             {
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
-                    res.DataDocument.SetField(CollectionDBView.SelectedKey, searchTerms, true);
+                    res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;
@@ -373,7 +373,7 @@ namespace Dash
                 var a = node.DataDocument;
                 if (a.GetField(CollectionDBView.SelectedKey) != null)
                 {
-                    a.RemoveField(CollectionDBView.SelectedKey);
+                    a.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController("")), true);
                 }
             }
         }

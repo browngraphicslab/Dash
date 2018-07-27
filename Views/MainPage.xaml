@@ -56,14 +56,40 @@
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+            <local:DocumentDecorations />
             <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
+            
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             
-             
-            
             </Grid>
+
+            <Grid x:Name="xSnapshotOverlay" Background="White" Height="5000" Width="5000" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Storyboard x:Name="xFadeIn">
+                    <DoubleAnimation
+                        Storyboard.TargetName="xSnapshotOverlay"
+                        Storyboard.TargetProperty="Opacity"
+                        From="0.5" To="0.9" Duration="0:0:.05"
+                    />
+                    </Storyboard>
+
+                    <Storyboard x:Name="xFadeOut">
+                        <DoubleAnimation
+                            Storyboard.TargetName="xSnapshotOverlay"
+                            Storyboard.TargetProperty="Opacity"
+                            From="0.7" To="0.0" Duration="0:0:.8"
+                            Completed="Timeline_OnCompleted"
+                        />
+                    </Storyboard>
+
+                
+                </Grid.Resources>
+            </Grid>
+
         </Grid>
+        
+        
 
         <!--drag in html popup-->
         <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">

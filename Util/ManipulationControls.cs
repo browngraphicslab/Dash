@@ -541,6 +541,8 @@ namespace Dash
                     OnManipulatorCompleted.Invoke(); // then have to flush the caches to the viewmodel since we have to assume this is the end of the interaction.
                 }
             }
+
+            e.Handled = true;
         }
 
         // DO NOT ADD NEW CODE INTO THIS METHOD (see overloaded method with no parameters below). This one is ONLY for dealing with unique eventargs-related stuff.

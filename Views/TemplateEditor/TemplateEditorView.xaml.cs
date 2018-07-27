@@ -281,11 +281,10 @@ namespace Dash
 			RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
 			RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
 
-			//hide resize and ellipse controls for template editor
-			var docView = this.GetFirstAncestorOfType<DocumentView>();
-			docView.ViewModel.DisableDecorations = true;
-			docView.hideControls();
-			docView.RemoveResizeHandlers();
+            //hide resize and ellipse controls for template editor
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView.hideControls();
+            docView.RemoveResizeHandlers();
 
 			// determine if the active layout exists and has information about rows and columns
 			var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
@@ -1704,7 +1703,7 @@ namespace Dash
 								KeyStore.RegionCreator[dragDoc.DocumentType] != null)
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 							var note = new RichTextNote("<annotation>", where).Document;
-							dragDoc.Link(note);
+							dragDoc.Link(note, AnnotationManager.LinkContexts.None);
 							DocumentControllers.Add(note.GetViewCopy(new Point(0, 0)));
 						}
 					}

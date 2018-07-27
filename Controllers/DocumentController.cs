@@ -49,7 +49,6 @@ namespace Dash
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
-            TypeInfo = TypeInfo.Document;
             if (saveOnServer)
             {
                 IsOnServer(delegate (bool onServer)
@@ -377,11 +376,11 @@ namespace Dash
             return true;
         }
 
-        public void Link(DocumentController target)
+        public void Link(DocumentController target, AnnotationManager.LinkContexts context)
         {
             var linkDocument = new RichTextNote("<link description>").Document;
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ this });
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController> { target });
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
             target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
         }
@@ -895,6 +894,10 @@ namespace Dash
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
             where TDefault : FieldControllerBase, new()
         {
+            if (v is FieldControllerBase)
+            {
+                Debug.Fail("This method should be used when you have the data for a field, not a field itself. If you have a field, use the non-generic SetField, if you are passing in a field you just created, just pass the data into this instead of making a new field");
+            }
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
             {
@@ -921,6 +924,7 @@ namespace Dash
         /// </summary>
         public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
         {
+            //TODO this should delay field updates until all fields are set
             bool shouldSave = false;
             var oldFields = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var kv in fields)
@@ -1250,7 +1254,7 @@ namespace Dash
             DocumentDeleted?.Invoke(this, EventArgs.Empty);
         }
 
-        public override TypeInfo TypeInfo { get; }
+        public override TypeInfo TypeInfo => TypeInfo.Document;
 
         public override bool TrySetValue(object value)
         {
@@ -1445,25 +1449,5 @@ namespace Dash
 
         #endregion
 
-		/// <summary>
-		/// Shows or hides the pin, and optionally also sets the key as well.
-		/// </summary>
-		/// <returns></returns>
-	    public void ToggleAnnotationPin(bool toVisible, bool changeKey)
-	    {
-			if (changeKey)
-				SetField(KeyStore.AnnotationVisibilityKey, new BoolController(toVisible), true);
-		    this.SetHidden(!toVisible);
-	    }
-
-		/// <summary>
-		/// Returns the visibility based on pinned or unpinned.
-		/// </summary>
-	    public bool GetAnnotationPin()
-		{
-			return GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
-		}
-
-		
     }
 }

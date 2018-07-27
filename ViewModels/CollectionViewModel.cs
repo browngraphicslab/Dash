@@ -258,12 +258,12 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in args.NewItems)
                     {
-                        var visible = !d.GetHidden();
-                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
-                        if (visible && !shown)
-                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        if (!visible && shown)
-                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //var visible = !d.GetHidden();
+                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                        //if (visible && !shown)
+                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        //if (!visible && shown)
+                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
@@ -288,7 +288,6 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -410,7 +409,7 @@ namespace Dash
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
@@ -680,9 +679,10 @@ namespace Dash
                                     sourceDoc.DataDocument.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
-                                region.SetRegionDefinition(postitNote, AnnotationManager.AnnotationType.TextSelection);
+                                region.SetRegionDefinition(postitNote);
+                                region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument);
+                                region.Link(sourceDoc.LayoutDocument, AnnotationManager.LinkContexts.None);
 
                             }
                             else
@@ -1015,9 +1015,12 @@ namespace Dash
                         foreach (var img in imgs)
                         {
                             var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                            var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                            var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                            related.Add(i.Document);
+                            if (srcMatch.Length > 6)
+                            {
+                                var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                                var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                                related.Add(i.Document);
+                            }
                         }
 
                         htmlNote.GetDataDocument()
@@ -1217,7 +1220,7 @@ namespace Dash
 							var note = new RichTextNote("<annotation>", where).Document;
 	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 
-                            dragDoc.Link(note);
+                            dragDoc.Link(note, AnnotationManager.LinkContexts.None);
                             AddDocument(note);
                         }
                     }
@@ -1299,6 +1302,11 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
+            var currentBoundingBox = new Rect(e.GetPosition(MainPage.Instance.xMainDocView),
+                new Size(10, 10));
+
+            var dir =  MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
+            MainPage.Instance.DockManager.HighlightDock(dir);
             HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
