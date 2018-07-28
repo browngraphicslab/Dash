@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Dash.Models.DragModels;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -234,12 +235,13 @@ namespace Dash
             //    UpdateEllipses(_newpoint);
             //}
         }
-
+        static List<string> LinkNames = new List<string>();
         private void SetPositionAndSize()
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
+            xStackPanel.Height = 40;
             foreach (var doc in SelectedDocs)
             {
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
@@ -249,6 +251,47 @@ namespace Dash
 
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
+
+                AddLinkTypes(doc.ViewModel.DataDocument);
+                var regions = doc.ViewModel.DataDocument.GetRegions();
+                if (regions != null)
+                    foreach (var region in regions.TypedData)
+                        AddLinkTypes(region.GetDataDocument());
+
+                if (SelectedDocs.Count == 1)
+                {
+                    var ann = new AnnotationManager(doc);
+                    xButtonsPanel.Children.Clear();
+                    foreach (var linkName in LinkNames)
+                    {
+                        var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                        var g = new Grid();
+                        g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
+                        g.Children.Add(tb);
+                        var button = new ContentPresenter() { Content = g, Width = 22, Height = 22,CanDrag=true, HorizontalAlignment = HorizontalAlignment.Center, Background=null };
+                        button.DragStarting += (s, args) =>
+                        {
+                            args.Data.Properties[nameof(DragDocumentModel)] =
+                                new DragDocumentModel(doc.ViewModel.DocumentController, false, doc) { LinkType = linkName };
+                            args.AllowedOperations =
+                                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                            args.Data.RequestedOperation =
+                                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                            doc.ViewModel.DecorationState = false;
+                        };
+                        ToolTip toolTip = new ToolTip();
+                        toolTip.Content = linkName;
+                        toolTip.HorizontalOffset = 5;
+                        toolTip.Placement = PlacementMode.Right;
+                        ToolTipService.SetToolTip(button, toolTip);
+                        xButtonsPanel.Children.Add(button);
+                        button.PointerEntered += (s, e) => toolTip.IsOpen = true;
+                        button.PointerExited += (s, e) => toolTip.IsOpen = false;
+                        xStackPanel.Height += 22;
+
+                        button.Tapped += (s, e) => ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc), linkName);
+                    }
+                }
             }
 
             if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) || double.IsNegativeInfinity(botRight.X) || double.IsNegativeInfinity(botRight.Y))
@@ -263,7 +306,17 @@ namespace Dash
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+        }
+
+        private static void AddLinkTypes(DocumentController doc)
+        {
+            var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
+            if (linkedTo != null)
+                foreach (var l in linkedTo)
+                if (doc.GetLinks(KeyStore.LinkToKey) != null)
+                    if (!LinkNames.Contains(l.Title))
+                        LinkNames.Add(l.Title);
         }
 
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -326,42 +379,11 @@ namespace Dash
             }
         }
 
-        private void XOperatorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-            }
-
-            e.Handled = false;
-        }
-
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             foreach (var doc in SelectedDocs)
             {
                 doc.ManipulationMode = ManipulationModes.All;
-            }
-        }
-
-        private void XOperatorEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                //var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-                //if (selected?.Count() > 0)
-                //{
-                //    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-                //            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-                //}
-                //else
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false);
-                args.AllowedOperations =
-                    DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation =
-                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                doc.ViewModel.DecorationState = false;
             }
         }
 
