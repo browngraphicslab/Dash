@@ -164,8 +164,8 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             // set bounds
-            MinWidth = 35;
-            MinHeight = 35;
+            MinWidth = 25;
+            MinHeight = 25;
             _newpoint = new Point(0, 0);
 
 
