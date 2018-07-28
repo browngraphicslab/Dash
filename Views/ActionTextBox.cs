@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
@@ -14,7 +9,7 @@ namespace Dash
 {
     public class ActionTextBox : TextBox
     {
-        private readonly Dictionary<VirtualKey, Action<KeyRoutedEventArgs>> _actions = new Dictionary<VirtualKey, Action<KeyRoutedEventArgs>>();
+        private Dictionary<VirtualKey, Action<KeyRoutedEventArgs>> _actions = new Dictionary<VirtualKey, Action<KeyRoutedEventArgs>>();
 
         public void AddKeyHandler(VirtualKey key, Action<KeyRoutedEventArgs> action)
         {
@@ -26,6 +21,20 @@ namespace Dash
             {
                 _actions[key] = action;
             }
+        }
+
+        public void ClearHandlers(params VirtualKey[] keysToClear)
+        {
+            if (keysToClear.Length == 0)
+            {
+                _actions.Clear();
+                return;
+            }
+            //foreach (VirtualKey virtualKey in keysToClear)
+            //{
+            //    _actions.Remove(virtualKey);
+            //}
+            _actions = new Dictionary<VirtualKey, Action<KeyRoutedEventArgs>>(_actions.Where(k => !keysToClear.Contains(k.Key)));
         }
 
         protected override void OnKeyDown(KeyRoutedEventArgs e)

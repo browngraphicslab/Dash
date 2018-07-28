@@ -79,11 +79,10 @@ namespace Dash.Models.DragModels
                 return dbox;
             }
 
-            // create an instance with the same view
+            // create a key value pane
             var ctrlState = MainPage.Instance.IsCtrlPressed();
-            if (ctrlState) return DraggedDocument.GetDataInstance(where);
-
-
+            if (ctrlState) return DraggedDocument.GetKeyValueAlias(where);
+            
             var altState = MainPage.Instance.IsAltPressed();
             if (altState)
             {

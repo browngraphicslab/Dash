@@ -704,6 +704,7 @@
     <Compile Include="Views\CustomGroupGeometries\GeometryDesigner.xaml.cs">
       <DependentUpon>GeometryDesigner.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PresentationNumberViewModel.cs" />
     <Compile Include="Views\PresentationView.xaml.cs">
       <DependentUpon>PresentationView.xaml</DependentUpon>
     </Compile>

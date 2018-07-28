@@ -6,6 +6,7 @@ namespace Dash
 {
     public class KeyStore
     {
+        //NOTE: Underscore prefacing registers the field as invisible
         public static KeyController DocumentContextKey = new KeyController("_DocumentContext", "17D4CFDE-9146-47E9-8AF0-0F9D546E94EC");
         public static KeyController AbstractInterfaceKey = new KeyController("_AbstractInterface", "E579C81B-EE13-4B16-BB96-80688D30A73A");
         public static KeyController LayoutListKey = new KeyController("_LayoutList", "6546DD08-C753-4C34-924E-3C4016C4B95B");
@@ -120,6 +121,11 @@ namespace Dash
         public static KeyController GoToRegionKey = new KeyController("GotoRegion", "5A19BC33-4A83-4961-A230-4A0F8C949022");
         public static KeyController GoToRegionLinkKey = new KeyController("GotoRegionLink", "150C5291-0830-4095-9C18-FAE1F315599F");
         public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
+        public static KeyController PresentationTitleKey = new KeyController("PresTitle", "3A153DAA-C2E1-40D9-9EE8-18CB09439EDD");
+        public static KeyController PresentationViewVisibleKey = new KeyController("_Presentation Active", "7D999F66-A6A9-4A74-B2B3-AD12812FAAB6");
+        public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
+        public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
+        public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
         public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
 
         /// <summary>

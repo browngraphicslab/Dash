@@ -335,6 +335,8 @@ namespace Dash
                 {
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                     {
+                        // get region doc
+                        var region = theDoc.GetDataDocument().GetRegionDefinition();
                         _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }

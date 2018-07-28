@@ -9,11 +9,12 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel>
-    <Grid x:Name="xGrid">
-        <StackPanel x:Name="xPanel"/>
+    <Grid x:Name="xOuterGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="TextBlock" Grid.Row="1" x:FieldModifier="public" Visibility="Collapsed">Website from
+        </TextBlock>
     </Grid>
-        <TextBlock x:Name="TextBlock"  Visibility="Collapsed">Website from  
-    </TextBlock>
-    </StackPanel>
 </UserControl>
