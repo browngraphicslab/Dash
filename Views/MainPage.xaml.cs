@@ -954,8 +954,10 @@ namespace Dash
             else
             {
                 var onScreenView = GetTargetDocumentView(target);
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 if (onScreenView != null)
                 {
+                    onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                     if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                     {
                         target.ToggleHidden();
@@ -980,8 +982,13 @@ namespace Dash
                 }
 
                 target.GotoRegion(region, linkDoc);
-            }
 
+                void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+                {
+                    onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                    SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
+                }
+            }
 
             return true;
         }
@@ -1011,7 +1018,7 @@ namespace Dash
                 var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                if (!(containsTL && containsBR))
+                if (!(containsTL || containsBR))
                 {
                     return null;
                 }
