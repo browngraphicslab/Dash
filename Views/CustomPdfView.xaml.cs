@@ -1129,7 +1129,7 @@ namespace Dash
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
                 ScrollToRegion(src, false);
-                return LinkHandledResult.HandledClose;
+                return LinkHandledResult.Unhandled;
             }
 
             return LinkHandledResult.Unhandled;

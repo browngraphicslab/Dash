@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Dash.Models.DragModels;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -251,44 +252,45 @@ namespace Dash
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
 
-                if (doc.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey) != null)
-                    foreach (var l in doc.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey))
-                        if (doc.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey) != null)
-                            if (!LinkNames.Contains(l.Title))
-                                LinkNames.Add(l.Title);
+                AddLinkTypes(doc.ViewModel.DataDocument);
+                var regions = doc.ViewModel.DataDocument.GetRegions();
+                if (regions != null)
+                    foreach (var region in regions.TypedData)
+                        AddLinkTypes(region.GetDataDocument());
+
                 if (SelectedDocs.Count == 1)
                 {
                     var ann = new AnnotationManager(doc);
                     xButtonsPanel.Children.Clear();
                     foreach (var linkName in LinkNames)
+                    {
+                        var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                        var g = new Grid();
+                        g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
+                        g.Children.Add(tb);
+                        var button = new ContentPresenter() { Content = g, Width = 22, Height = 22,CanDrag=true, HorizontalAlignment = HorizontalAlignment.Center, Background=null };
+                        button.DragStarting += (s, args) =>
                         {
-                            var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-                            var g = new Grid();
-                            g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
-                            g.Children.Add(tb);
-                            var button = new ContentPresenter() { Content = g, Width = 22, Height = 22,CanDrag=true, HorizontalAlignment = HorizontalAlignment.Center, Background=null };
-                            button.DragStarting += (s, args) =>
-                            {
-                                args.Data.Properties[nameof(DragDocumentModel)] =
-                                    new DragDocumentModel(doc.ViewModel.DocumentController, false, doc) { LinkType = linkName };
-                                args.AllowedOperations =
-                                    DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                                args.Data.RequestedOperation =
-                                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                                doc.ViewModel.DecorationState = false;
-                            };
-                            ToolTip toolTip = new ToolTip();
-                            toolTip.Content = linkName;
+                            args.Data.Properties[nameof(DragDocumentModel)] =
+                                new DragDocumentModel(doc.ViewModel.DocumentController, false, doc) { LinkType = linkName };
+                            args.AllowedOperations =
+                                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                            args.Data.RequestedOperation =
+                                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                            doc.ViewModel.DecorationState = false;
+                        };
+                        ToolTip toolTip = new ToolTip();
+                        toolTip.Content = linkName;
                         toolTip.HorizontalOffset = 5;
                         toolTip.Placement = PlacementMode.Right;
-                            ToolTipService.SetToolTip(button, toolTip);
-                            xButtonsPanel.Children.Add(button);
-                            button.PointerEntered += (s, e) => toolTip.IsOpen = true;
-                            button.PointerExited += (s, e) => toolTip.IsOpen = false;
-                            xStackPanel.Height += 22;
+                        ToolTipService.SetToolTip(button, toolTip);
+                        xButtonsPanel.Children.Add(button);
+                        button.PointerEntered += (s, e) => toolTip.IsOpen = true;
+                        button.PointerExited += (s, e) => toolTip.IsOpen = false;
+                        xStackPanel.Height += 22;
 
-                            button.Tapped += (s, e) => ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc), linkName);
-                        }
+                        button.Tapped += (s, e) => ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc), linkName);
+                    }
                 }
             }
 
@@ -305,6 +307,16 @@ namespace Dash
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
             // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+        }
+
+        private static void AddLinkTypes(DocumentController doc)
+        {
+            var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
+            if (linkedTo != null)
+                foreach (var l in linkedTo)
+                if (doc.GetLinks(KeyStore.LinkToKey) != null)
+                    if (!LinkNames.Contains(l.Title))
+                        LinkNames.Add(l.Title);
         }
 
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)

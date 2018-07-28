@@ -38,20 +38,35 @@ namespace Dash
         //TODO This can be made static and can take in a framework element instead of IEnumerable<ILinkHandler>
 	    public void FollowRegion(DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
         {
+          
             _linkFlyout.Items?.Clear();
-            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
-	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
-	        var linkToCount = linksTo?.Count ?? 0;
-	        var linkFromCount = linksFrom?.Count ?? 0;
-	        var linkCount = linkToCount + linkFromCount;
-	        if (linkCount == 0)
-	        {
-	            return;
+            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey) ?? new ListController<DocumentController>();
+	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey) ?? new ListController<DocumentController>();
+            var subregions = region.GetDataDocument().GetRegions()?.TypedData;
+            if (subregions != null)
+            {
+                foreach (var subregion in subregions.Select((sr) => sr.GetDataDocument()))
+                {
+                    var sublinksTo = subregion.GetLinks(KeyStore.LinkToKey);
+                    var sublinksFrom = subregion.GetLinks(KeyStore.LinkFromKey);
+                    if (sublinksTo != null)
+                        linksTo.AddRange(sublinksTo);
+                    if (sublinksFrom != null)
+                        linksFrom.AddRange(sublinksFrom);
+                }
+            }
+            var linkToCount = linksTo?.Count ?? 0;
+            var linkFromCount = linksFrom?.Count ?? 0;
+            var linkCount = linkToCount + linkFromCount;
+            if (linkCount == 0)
+            {
+                return;
 	        }
 
 	        if (linkCount == 1)
 	        {
-	            FollowLink(linkToCount == 0 ? linksFrom?[0] : linksTo?[0], linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
+
+                FollowLink(linkToCount == 0 ? linksFrom?[0] : linksTo?[0], linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
