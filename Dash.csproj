@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -150,7 +150,7 @@
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
     <Content Include="Assets\return.png" />
-    <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="Assets\Fonts\FontAwesome.otf" /> 
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -621,6 +621,9 @@
     </Compile>
     <Compile Include="Views\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PdfSideAnnotation.xaml.cs">
+      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -1206,6 +1209,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PDFRegionMarker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PdfSideAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
