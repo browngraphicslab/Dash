@@ -279,8 +279,12 @@ namespace Dash
                             };
                             ToolTip toolTip = new ToolTip();
                             toolTip.Content = linkName;
+                        toolTip.HorizontalOffset = 30;
+                        toolTip.Placement = PlacementMode.Right;
                             ToolTipService.SetToolTip(button, toolTip);
                             xButtonsPanel.Children.Add(button);
+                            button.PointerEntered += (s, e) => toolTip.IsOpen = true;
+                            button.PointerExited += (s, e) => toolTip.IsOpen = false;
                             xStackPanel.Height += 22;
 
                             button.Tapped += (s, e) => ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc), linkName);
