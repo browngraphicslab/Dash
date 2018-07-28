@@ -76,7 +76,7 @@ namespace Dash
         
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.TogglePresentationMode();
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
         public void TogglePresentationMode(bool on)

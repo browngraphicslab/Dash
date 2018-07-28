@@ -62,6 +62,8 @@ namespace Dash
             Init();
         }
 
+        public bool IsMovingCollections { get; set; }
+
         public override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
