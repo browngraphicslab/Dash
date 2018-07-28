@@ -28,8 +28,6 @@ namespace Dash
         /// <param name="direction">The direction to follow the link in</param>
         /// <returns></returns>
 
-        //TODO: CONVERT BOOL TO ENUM
-
         LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction);
     }
 }

@@ -1703,7 +1703,7 @@ namespace Dash
 								KeyStore.RegionCreator[dragDoc.DocumentType] != null)
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 							var note = new RichTextNote("<annotation>", where).Document;
-							dragDoc.Link(note, AnnotationManager.LinkContexts.None);
+							dragDoc.Link(note, LinkContexts.None);
 							DocumentControllers.Add(note.GetViewCopy(new Point(0, 0)));
 						}
 					}

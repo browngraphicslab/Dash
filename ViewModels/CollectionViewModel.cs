@@ -676,7 +676,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument, AnnotationManager.LinkContexts.None);
+                                region.Link(sourceDoc.LayoutDocument, LinkContexts.None);
 
                             }
                             else
@@ -1238,7 +1238,7 @@ namespace Dash
 
                                     inputBox.Text = "";
                                     inputBox.Visibility = Visibility.Collapsed;
-                                    dragDoc.Link(note, AnnotationManager.LinkContexts.None, entry);
+                                    dragDoc.Link(note, LinkContexts.None, entry);
                                     AddDocument(note);
                                 }
 
