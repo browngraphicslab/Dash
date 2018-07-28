@@ -336,9 +336,17 @@ namespace Dash
                 return;
             var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
             if (linkedTo != null)
-                foreach (var l in linkedTo)
+                foreach (var l in linkedTo) { 
                     if (doc.GetLinks(KeyStore.LinkToKey) != null)
                         linknames.Add(l.Title);
+                }
+            var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
+            if (linkedFrom != null)
+                foreach (var l in linkedFrom)
+                {
+                    if (doc.GetLinks(KeyStore.LinkFromKey) != null)
+                        linknames.Add(l.Title);
+                }
             var regions = doc.GetDataDocument().GetRegions();
             if (regions != null)
                 foreach (var region in regions.TypedData)
