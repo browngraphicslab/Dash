@@ -1,10 +1,12 @@
 ﻿using Dash.Models.DragModels;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -523,16 +525,6 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XTextBox_OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-
-        }
-
-        private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
         private void XTextBox_OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
@@ -557,6 +549,38 @@ namespace Dash
 
                 e.Handled = true;
             }
+        }
+
+        private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var docs = new List<DocumentController>();
+            int i = 0;
+            foreach (var docViewModel in ViewModel.DocumentViewModels)
+            {
+                var doc = docViewModel.DocumentController;
+                _scope = new OuterReplScope();
+                _scope.DeclareVariable("this", doc);
+                _dsl = new DSL(_scope);
+                var keyString = xTextBox.Text;
+                if (keyString?.StartsWith("=") ?? false)
+                {
+                    try
+                    {
+                        var result = _dsl.Run(keyString.Substring(1));
+                        var db = new DataBox(result, i * 50, i * 50);
+                        docs.Add(db.Document);
+                    }
+                    catch (DSLException)
+                    {
+                        continue;
+                    }
+                }
+
+                i++;
+            }
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document, true);
+            // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }
