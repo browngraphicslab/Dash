@@ -100,7 +100,19 @@ namespace Dash
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
+            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
+        }
 
+        private void HideLinkInputBox()
+        {
+            xLinkInputBox.ClearHandlers(new[] { VirtualKey.Enter });
+            xLinkInputOut.Begin();
+            xLinkInputOut.Completed += (o, o1) =>
+            {
+                xLinkInputBox.Text = "";
+                xLinkInputBox.Visibility = Visibility.Collapsed;
+            };
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -887,7 +899,8 @@ namespace Dash
 
         public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
         {
-            var parent = docOrRegion.GetRegionDefinition();
+            DocumentController parent = docOrRegion.GetRegionDefinition();
+            (parent ?? docOrRegion).SetHidden(false);
             NavigateToDocument(parent ?? docOrRegion);
             if (parent != null)
             {
@@ -897,7 +910,7 @@ namespace Dash
 
         #region Annotation logic
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -905,39 +918,37 @@ namespace Dash
             if (this.IsCtrlPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
+                return LinkHandledResult.HandledClose;
             }
-            else
+
+            DocumentView onScreenView = GetTargetDocumentView(target);
+            if (onScreenView != null)
             {
-                var onScreenView = GetTargetDocumentView(target);
-                if (onScreenView != null)
+                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
-                    if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
-                    {
-                        target.ToggleHidden();
-                    }
-                    else
-                    {
-                        target.SetHidden(false);
-                    }
+                    target.ToggleHidden();
                 }
                 else
                 {
-                    var docked = DockManager.GetDockedView(target);
-                    if (docked != null)
-                    {
-                        DockManager.Undock(docked);
-                    }
-                    else
-                    {
-                        DockManager.Dock(target, DockDirection.Right);
-                    }
+                    target.SetHidden(false);
                 }
-
-                target.GotoRegion(region, linkDoc);
+            }
+            else
+            {
+                var docked = DockManager.GetDockedView(target);
+                if (docked != null)
+                {
+                    DockManager.Undock(docked);
+                }
+                else
+                {
+                    DockManager.Dock(target, DockDirection.Right);
+                }
             }
 
+            target.GotoRegion(region, linkDoc);
 
-            return true;
+            return LinkHandledResult.HandledRemainOpen;
         }
 
         public DocumentView GetTargetDocumentView(DocumentController target)

@@ -1111,10 +1111,8 @@ namespace Dash
             return _bottomAnnotationOverlay.AnnotationVisibility;
         }
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
-        {
-            return false;
-        }
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction) => LinkHandledResult.Unhandled;
+
         private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PopForwardStack(_topForwardStack, TopScrollViewer);

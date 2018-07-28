@@ -1823,7 +1823,40 @@ namespace Dash
                 if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
-                dragDoc.Link(dropDoc, AnnotationManager.LinkContexts.None);
+                ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+                Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+                Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+
+                Point where = e.GetPosition(MainPage.Instance.xCanvas);
+
+                inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
+
+                inputBox.AddKeyHandler(VirtualKey.Enter, args =>
+                {
+                    string entry = inputBox.Text.Trim();
+                    if (string.IsNullOrEmpty(entry)) return;
+
+                    inputBox.ClearHandlers(VirtualKey.Enter);
+
+                    void FadeOutOnCompleted(object sender2, object o1)
+                    {
+                        fadeOut.Completed -= FadeOutOnCompleted;
+
+                        inputBox.Text = "";
+                        inputBox.Visibility = Visibility.Collapsed;
+                        dragDoc.Link(dropDoc, AnnotationManager.LinkContexts.None, entry);
+                    }
+
+                    fadeOut.Completed += FadeOutOnCompleted;
+                    fadeOut.Begin();
+
+                    args.Handled = true;
+                });
+
+                inputBox.Visibility = Visibility.Visible;
+                fadeIn.Begin();
+                inputBox.Focus(FocusState.Programmatic);
+                dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link

@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -55,9 +56,9 @@ namespace Dash
 	        {
 	            if (linksTo != null)
                 {
-                    foreach (var linkTo in linksTo)
+                    foreach (DocumentController linkTo in linksTo)
                     {
-                        MenuFlyoutItem item = new MenuFlyoutItem
+                        var item = new MenuFlyoutItem
                         {
                             Text = linkTo.Title,
                             DataContext = linkTo
@@ -97,11 +98,20 @@ namespace Dash
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
-	        foreach (var linkHandler in linkHandlers)
+	        foreach (ILinkHandler linkHandler in linkHandlers)
 	        {
-	            if (linkHandler.HandleLink(link, direction))
+	            LinkHandledResult status = linkHandler.HandleLink(link, direction);
+
+	            if (status == LinkHandledResult.HandledClose) break;
+	            if (status == LinkHandledResult.HandledRemainOpen)
 	            {
-	                break;
+	                void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
+	                {
+	                    args.Cancel = true;
+                        _linkFlyout.Closing -= LinkFlyoutOnClosing;
+	                }
+
+                    _linkFlyout.Closing += LinkFlyoutOnClosing; 
 	            }
 	        }
 	    }

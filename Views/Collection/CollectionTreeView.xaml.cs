@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -25,6 +26,41 @@ namespace Dash
             AllowDrop = true;
             Drop += CollectionTreeView_Drop;
             DragOver += CollectionTreeView_DragOver;
+
+
+            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
+            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
+        }
+
+        private void HideLinkInputBox()
+        {
+            xLinkInputBox.ClearHandlers(new[] { VirtualKey.Enter });
+            xLinkInputOut.Begin();
+            xLinkInputOut.Completed += (o, o1) =>
+            {
+                xLinkInputBox.Text = "";
+                xLinkInputBox.Visibility = Visibility.Collapsed;
+            };
+        }
+
+        public void BindLinkInputBoxToDoc(DocumentController linkDocument)
+        {
+            ActionTextBox inputBox = xLinkInputBox;
+
+            inputBox.AddKeyHandler(VirtualKey.Enter, args =>
+            {
+                string entry = inputBox.Text.Trim();
+                if (string.IsNullOrEmpty(entry)) return;
+
+                inputBox.ClearHandlers(new[] { VirtualKey.Enter });
+
+                xLinkInputOut.Begin();
+                xLinkInputOut.Completed += (o, o1) =>
+                {
+                    inputBox.Text = "";
+                    inputBox.Visibility = Visibility.Collapsed;
+                };
+            });
         }
 
         private void CollectionTreeView_DragOver(object sender, DragEventArgs e)
