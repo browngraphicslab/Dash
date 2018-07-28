@@ -240,6 +240,7 @@ namespace Dash
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
+            xStackPanel.Height = 40;
             foreach (var doc in SelectedDocs)
             {
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
@@ -249,6 +250,44 @@ namespace Dash
 
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
+
+                if (SelectedDocs.Count == 1)
+                {
+                    var ann = new AnnotationManager(doc);
+                    xButtonsPanel.Children.Clear();
+                    var linkNames = new List<string>();
+                    if (doc.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey) != null)
+                        foreach (var l in doc.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey))
+                            if (!linkNames.Contains(l.Title))
+                            {
+                                linkNames.Add(l.Title);
+                                var tb = new TextBlock() { Text = l.Title.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                                var g = new Grid();
+                                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
+                                g.Children.Add(tb);
+                                var button = new ContentPresenter() { Content = g, Width = 22, Height = 22,CanDrag=true, HorizontalAlignment = HorizontalAlignment.Center, Background=null };
+                                button.DragStarting += (s, args) =>
+                                {
+                                    args.Data.Properties[nameof(DragDocumentModel)] =
+                                        new DragDocumentModel(doc.ViewModel.DocumentController, false, doc) { LinkType = l.Title };
+                                    args.AllowedOperations =
+                                        DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                                    args.Data.RequestedOperation =
+                                        DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                                    doc.ViewModel.DecorationState = false;
+                                };
+                                ToolTip toolTip = new ToolTip();
+                                toolTip.Content = l.Title;
+                                ToolTipService.SetToolTip(button, toolTip);
+                                xButtonsPanel.Children.Add(button);
+                                xStackPanel.Height += 22;
+
+                                button.Tapped += (s, e) =>
+                                {
+                                    ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doc), l.Title);
+                                };
+                            }
+                }
             }
 
             if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) || double.IsNegativeInfinity(botRight.X) || double.IsNegativeInfinity(botRight.Y))
@@ -263,7 +302,7 @@ namespace Dash
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
         }
 
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)

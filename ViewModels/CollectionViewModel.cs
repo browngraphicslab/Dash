@@ -1224,6 +1224,14 @@ namespace Dash
 		                        // if RegionCreator exists, then dragDoc becomes the region document
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 	                        }
+
+                            var freebase2 = senderView as CollectionFreeformBase;
+                            if (dragModel.LinkType != null)
+                            {
+                                var noteLocation = e.GetPosition(freebase2?.GetCanvas());
+                                freebase2.RenderPreviewTextbox(noteLocation, dragDoc, dragModel.LinkType, "");
+                                return;
+                            }
 							// note is the new annotation textbox that is created
 							//DocumentController note = new RichTextNote("<annotation>", where).Document;
 
@@ -1235,7 +1243,6 @@ namespace Dash
                             Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
                             Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
 
-                            var freebase2 = senderView as CollectionFreeformBase;
                             where = e.GetPosition(MainPage.Instance.xCanvas);
 
                             var moveTransform = new TranslateTransform {X = where.X, Y = where.Y};

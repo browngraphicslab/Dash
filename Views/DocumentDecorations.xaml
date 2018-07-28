@@ -34,7 +34,7 @@
         <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" />
 
-        <StackPanel Grid.Row="0" Grid.Column="2" Background="Transparent" Height="40" VerticalAlignment="Top">
+        <StackPanel x:Name="xStackPanel" Grid.Row="0" Grid.Column="2" Background="Transparent" Height="40" VerticalAlignment="Top">
             <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
@@ -48,6 +48,9 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
+            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+
+            </StackPanel>
             <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
             <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
