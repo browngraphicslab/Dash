@@ -113,7 +113,7 @@ namespace Dash
             {
                 // make a new ListController
                 _dockControllers[(int)dir] = new ListController<DocumentController>(toDock);
-                double length = 300;
+                double length = 500;
 
                 if (toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null) == null)
                 {
@@ -409,5 +409,7 @@ namespace Dash
         {
 
         }
+
+       
     }
 }

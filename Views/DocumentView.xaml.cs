@@ -1818,8 +1818,26 @@ namespace Dash
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
         {
+
+            var docs = new List<ListController<DocumentController>>
+            {
+                MainPage.Instance.DockManager.DocController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey,
+                    null)
+            };
+
             using (UndoManager.GetBatchHandle())
-                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+            {
+                var dockedView = this.GetFirstAncestorOfType<DockedView>();
+                if (dockedView != null)
+                {
+                    dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(ViewModel.DocumentController)});
+                }
+                else
+                {
+                    MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+                }
+            }
+                
         }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {

@@ -148,6 +148,9 @@ namespace Dash
         private DispatcherTimer _topTimer;
         private DispatcherTimer _bottomTimer;
 
+        public Grid TopAnnotationBox => xTopAnnotationBox;
+        public Grid BottomAnnotationBox => xBottomAnnotationBox;
+
 
         public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
