@@ -377,6 +377,15 @@ namespace Dash
             {
                 // just update the collection, the colllection will update our view automatically
                 ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
+
+                if (document.IsMovingCollections)
+                {
+                    document.IsMovingCollections = false;
+                    return;
+                }
+
+                PresentationView pres = MainPage.Instance.xPresentationView;
+                if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document)) pres.FullPinDelete(document);
             }
         }
 

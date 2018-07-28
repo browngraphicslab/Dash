@@ -887,6 +887,7 @@ namespace Dash
 
                                 foreach (DocumentView v in views)
                                 {
+                                    v.ViewModel.LayoutDocument.IsMovingCollections = true;
                                     v.DeleteDocument();
                                 }
                             });

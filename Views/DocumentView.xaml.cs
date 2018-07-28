@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -604,7 +605,11 @@ namespace Dash
 
             //xValueBox.GotFocus += XValueBoxOnGotFocus;
 
-            LostFocus += (sender, args) => { if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry(); };
+            LostFocus += (sender, args) =>
+            {
+                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                MainPage.Instance.xPresentationView.ClearHighlightedMatch();
+            };
 
             MenuFlyout = xMenuFlyout;
 
@@ -613,13 +618,15 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+
+            ToFront();
         }
 
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
         {
-            if (!_clearByClose && e.NewText.Length < xKeyBox.Text.Length)
+            if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
             {
-                if (xKeyBox.Text.Length <= 2)
+                if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
                 {
                     e.Cancel = true;
                 }
@@ -632,6 +639,10 @@ namespace Dash
                         xKeyBox.Focus(FocusState.Keyboard);
                     }
                 }
+            }
+            else
+            {
+                if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
             }
             _clearByClose = false;
         }
@@ -1459,7 +1470,6 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
             UndoManager.EndBatch();
         }
@@ -1527,6 +1537,8 @@ namespace Dash
             }
             //if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
 
+            MainPage.Instance.xPresentationView.TryHighlightMatches(this);
+
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1564,7 +1576,6 @@ namespace Dash
                 }
             }
         }
-
 		public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
 		{
 			//if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
@@ -1588,12 +1599,9 @@ namespace Dash
 			//}
 		}
 
-        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            DocumentView_PointerEntered();
-        }
+        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e) => DocumentView_PointerEntered();
 
-		public void DocumentView_PointerEntered()
+        public void DocumentView_PointerEntered()
 		{
 			//if (ViewModel != null)
 			//{
@@ -2038,6 +2046,8 @@ namespace Dash
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
+            if (Equals(MainPage.Instance.MainDocView)) return;
+            
             MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
             if (ViewModel.LayoutDocument == null)
             {
@@ -2250,8 +2260,6 @@ namespace Dash
 
         private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
         {
-            if (xKeyBox.Text.Length < 2) return;
-
             var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
             if (split == null || split.Length != 2) return;
 
@@ -2269,7 +2277,6 @@ namespace Dash
                 xValueBox.Text = _lastValueInput;
                 return;
             }
-
 
             _articialChange = true;
             xValueBox.Text = val.GetValue(null).ToString();
@@ -2336,7 +2343,10 @@ namespace Dash
                 computedValue = new TextController(xValueBox.Text.Trim());
                 xValueErrorFailure.Begin();
             }
-            target.SetField(new KeyController(components[1].Replace("_", " ")), computedValue, true);
+
+            string key = components[1].Replace("_", " ");
+
+            target.SetField(new KeyController(key), computedValue, true);
 
             _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
             xKeyEditSuccess.Begin();

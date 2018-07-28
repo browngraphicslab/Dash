@@ -34,6 +34,12 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
+        public enum PresentationViewState
+        {
+            Expanded,
+            Collapsed
+        }
+
         public static MainPage Instance { get; private set; }
 
         public BrowserView WebContext => BrowserView.Current;
@@ -44,20 +50,24 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
 
-        private bool IsPresentationModeToggled = false;
+        public PresentationViewState CurrPresViewState
+        {
+            get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
+            set
+            {
+                bool state = value == PresentationViewState.Expanded;
+                MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
+            }
+        }
 
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
 
         public Popup LayoutPopup => xLayoutPopup;
-
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
-
-
-
 
         public MainPage()
         {
@@ -100,6 +110,7 @@ namespace Dash
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+
             xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
             xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
         }
@@ -141,12 +152,8 @@ namespace Dash
                 }
                 LoadSettings();
 
-                var presentationItems =
-                    MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                if (presentationItems != null)
-                {
-                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
-                }
+                var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -179,6 +186,8 @@ namespace Dash
                 xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
+
+                if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
 
             await DotNetRPC.Init();
@@ -785,31 +794,71 @@ namespace Dash
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
 
-        public void TogglePresentationMode()
+        public void SetPresentationState(bool expand, bool animate = true)
         {
-            IsPresentationModeToggled = !IsPresentationModeToggled;
-            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            if (IsPresentationModeToggled)
+            xMainTreeView.TogglePresentationMode(expand);
+
+            if (expand)
             {
-                xUtilTabColumn.Width = new GridLength(330);
+                CurrPresViewState = PresentationViewState.Expanded;
+                if (animate)
+                {
+                    xPresentationExpand.Begin();
+                    xPresentationExpand.Completed += (sender, o) =>
+                    {
+                        xPresentationView.xContentIn.Begin();
+                        xPresentationView.xHelpIn.Begin();
+                    };
+                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
+                    xPresentationView.xSettingsIn.Completed += (sender, o) =>
+                    {
+                        var isChecked = xPresentationView.xShowLinesButton.IsChecked;
+                        if (isChecked != null && (bool) isChecked) xPresentationView.ShowLines();
+                    };
+                }
+                else
+                {
+                    xUtilTabColumn.MinWidth = 300;
+                    xPresentationView.xTransportControls.Height = 60;
+                    xPresentationView.SimulateAnimation(true);
+                }
+                
             }
             else
             {
-                //close presentation
-                xUtilTabColumn.Width = new GridLength(0);
-                var presView = Instance.xPresentationView;
-                presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                CurrPresViewState = PresentationViewState.Collapsed;
+                //open presentation
+                if (animate)
+                {
+                    xPresentationView.TryPlayStopClick();
+                    xPresentationView.xSettingsOut.Begin();
+                    xPresentationView.xContentOut.Begin();
+                    xPresentationView.xHelpOut.Begin();
+                    xPresentationRetract.Begin();
+                }
+                else
+                {
+                    xUtilTabColumn.MinWidth = 0;
+                    xPresentationView.xTransportControls.Height = 0;
+                    xPresentationView.SimulateAnimation(false);
+                }
+
+                PresentationView presView = Instance.xPresentationView;
+                presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
-
         }
 
         public void PinToPresentation(DocumentController dc)
         {
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
-            if (!IsPresentationModeToggled)
-                TogglePresentationMode();
-
+            if (CurrPresViewState == PresentationViewState.Collapsed)
+            {
+                TextBlock help = xPresentationView.xHelpPrompt;
+                help.Opacity = 0;
+                help.Visibility = Visibility.Collapsed;
+                SetPresentationState(true);
+            }
             xPresentationView.DrawLinesWithNewDocs();
         }
 
@@ -824,8 +873,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Collapsed;
         }
-
-
 
         public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
@@ -921,9 +968,11 @@ namespace Dash
                 return LinkHandledResult.HandledClose;
             }
 
-            DocumentView onScreenView = GetTargetDocumentView(target);
+            var onScreenView = GetTargetDocumentView(target);
+            SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
             if (onScreenView != null)
             {
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
                     target.ToggleHidden();
@@ -935,19 +984,24 @@ namespace Dash
             }
             else
             {
-                var docked = DockManager.GetDockedView(target);
+                DockedView docked = DockManager.GetDockedView(target);
                 if (docked != null)
                 {
                     DockManager.Undock(docked);
                 }
                 else
                 {
-                    //DocumentTree.MainPageTree.Where(node => node.ViewDocument.Equals(target)).First().Parent.ViewDocument
                     DockManager.Dock(target, DockDirection.Right);
                 }
             }
 
             target.GotoRegion(region, linkDoc);
+
+            void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+            {
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+            }
 
             return LinkHandledResult.HandledRemainOpen;
         }
@@ -977,7 +1031,9 @@ namespace Dash
                 var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                if (!(containsTL && containsBR))
+                bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
+                bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
+                if (!(containsTL || containsBR || containsBL || containsTR))
                 {
                     return null;
                 }
