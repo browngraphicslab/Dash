@@ -1192,9 +1192,9 @@ namespace Dash
                 ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
-            if (!Double.IsNaN((ViewModel.Width)))
+            if (!Double.IsNaN(Width))
             {
-                extraOffsetX = ViewModel.ActualSize.X - ViewModel.Width;
+                extraOffsetX = ActualWidth - Width;
             }
             else
             {
@@ -1204,9 +1204,9 @@ namespace Dash
 
             double extraOffsetY = 0;
 
-            if (!Double.IsNaN(ViewModel.Height))
+            if (!Double.IsNaN(Height))
             {
-                extraOffsetY = ViewModel.ActualSize.Y - ViewModel.Height;
+                extraOffsetY = ActualHeight - Height;
             }
             else
             {
@@ -1222,7 +1222,7 @@ namespace Dash
             //{
             //    delta.X = 0.0;
             //}
-            var oldSize = new Size(ViewModel.ActualSize.X - extraOffsetX, ViewModel.ActualSize.Y - extraOffsetY);
+            var oldSize = new Size(ActualWidth - extraOffsetX, ActualHeight - extraOffsetY);
 
             var oldPos = ViewModel.Position;
 
@@ -1235,14 +1235,14 @@ namespace Dash
             cumulativeDelta.X *= cursorXDirection;
             cumulativeDelta.Y *= cursorYDirection;
 
-            var w = ViewModel.ActualSize.X - extraOffsetX;
-            var h = ViewModel.ActualSize.Y - extraOffsetY;
+            var w = ActualWidth - extraOffsetX;
+            var h = ActualHeight - extraOffsetY;
 
             // clamp the drag position to the available Bounds
             if (Bounds != null)
             {
-                var width = ViewModel.ActualSize.X;
-                var height = ViewModel.ActualSize.Y;
+                var width = ActualWidth;
+                var height = ActualHeight;
                 var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
                     ViewModel.YPos + height * (1 - moveYScale));
                 if (!Bounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
