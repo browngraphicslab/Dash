@@ -2111,11 +2111,14 @@ namespace Dash
             _newpoint = newpoint;
 
 
-
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
+            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
+            xTopRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
+            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
+            //xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
+            //xTopRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
+            //xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
+            //xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
 
             UpdateEllipses(newpoint);
         }

@@ -386,6 +386,21 @@ namespace Dash
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
+                var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                var workspace = (DataContext as DocumentViewModel).DocumentController;
+                var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ? workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
+                workspaceView.SetWidth(double.NaN);
+                workspaceView.SetHeight(double.NaN);
+                MainDocView.DataContext = new DocumentViewModel(workspaceView);
+                if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
+                {
+                    workspaceView.SetFitToParent(false);
+                    setupMapView(workspaceView);
+                }
+
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
+                MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
+
                 return NavigateToDocument(coll, null, coll, document, animated, zoom, compareDataDocuments);
             }
             return false;
@@ -737,7 +752,7 @@ namespace Dash
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
                 //xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
