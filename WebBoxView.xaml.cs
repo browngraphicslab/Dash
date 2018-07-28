@@ -46,5 +46,7 @@ namespace Dash
                TextBlock.Inlines.Add(hyperlink);
             }
         }
+
+
     }
 }

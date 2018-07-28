@@ -1557,10 +1557,13 @@ namespace Dash
                 else
                 {
                     //if it is webview, don't completely deselect
-                    //var deselect = sender?.GetType().Name != "WebView" && 
-                    //               ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(this);
+                    var deselect = sender?.GetType().Name != "WebView" &&
+                                   ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
+                    if (!deselect)
+                    {
+                        SelectionManager.DeselectAll();
+                        SelectionManager.Select(this);
+                    }
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)

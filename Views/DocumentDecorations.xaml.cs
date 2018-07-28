@@ -301,12 +301,12 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value-3,
+                X = topLeft.X - xLeftColumn.Width.Value,
                 Y = topLeft.Y
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
         }
 
         private static void AddLinkTypes(DocumentController doc)
