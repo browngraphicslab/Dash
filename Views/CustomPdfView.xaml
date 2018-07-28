@@ -12,10 +12,9 @@
     d:DesignWidth="400"
    
     SizeChanged="CustomPdfView_OnSizeChanged"
-    
     KeyDown="CustomPdfView_OnKeyDown"
     >
-    <Grid x:Name="xPdfContainer" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+    <Grid x:Name="xPdfContainer" MinWidth="50"  Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered" PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
 
 
@@ -91,7 +90,7 @@
                     <!--This Grid will have the width and height of the pdf that is being displayed-->
                     <Grid Grid.Column="0" x:Name="xTopPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
                       PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
-                      DoubleTapped="XPdfGrid_OnDoubleTapped">
+                      DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                         <!-- ItemsControl that stores the page images -->
                         <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public">
                             </ItemsControl>
@@ -185,7 +184,8 @@
 
                     <!--This Grid will have the width and height of the pdf that is being displayed-->
                     <Grid Grid.Column="0" x:Name="xBottomPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
-                          PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased">
+                          PointerPressed="XPdfGrid_PointerPressed" PointerMoved="XPdfGrid_PointerMoved" PointerReleased="XPdfGrid_PointerReleased"
+                          DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                         <!-- ItemsControl that stores the page images -->
                         <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public">
                         </ItemsControl>

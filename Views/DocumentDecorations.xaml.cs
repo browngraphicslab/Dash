@@ -258,7 +258,7 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value,
+                X = topLeft.X - xLeftColumn.Width.Value-3,
                 Y = topLeft.Y
             };
 
@@ -272,7 +272,8 @@ namespace Dash
             if (doc.ViewModel != null)
             {
                 if ((doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                     doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && doc.ViewModel != null)
+                     doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && doc.ViewModel != null &&
+                    !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed && !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
                 {
                     VisibilityState = Visibility.Visible;
                 }

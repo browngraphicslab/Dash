@@ -107,7 +107,7 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    if (!MainPage.Instance.IsShiftPressed())
+                    if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsRightBtnPressed())
                     {
                         SelectionManager.DeselectAll();
                         SelectionManager.Select(docView);
@@ -414,10 +414,17 @@ namespace Dash
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var dragDoc = dragModel.DraggedDocument;
-                if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+
+                if (dragModel.LinkSourceView != null)
                 {
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                    e.Handled = false;
+                    return;
                 }
+                    
+                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                //{
+                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                //}
 
                 linkDocumentToSelection(dragModel.DraggedDocument, true);
 
@@ -427,7 +434,6 @@ namespace Dash
             {
                 linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
             }
-
             e.Handled = true;
         }
         /// <summary>
@@ -674,11 +680,11 @@ namespace Dash
 
             if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
             {
-                if (theDoc != null) xRichEditBox.Document.Selection.Text = theDoc.Title;
+                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
             }
 
             var region = GetRegionDocument();
-            region.Link(theDoc, AnnotationManager.LinkContexts.None);
+            region.Link(theDoc, LinkContexts.None);
 
             convertTextFromXamlRTF();
 
