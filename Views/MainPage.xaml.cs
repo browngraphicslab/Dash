@@ -969,9 +969,9 @@ namespace Dash
             }
 
             var onScreenView = GetTargetDocumentView(target);
-            SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
             if (onScreenView != null)
             {
+                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
