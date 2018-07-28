@@ -923,11 +923,16 @@ namespace Dash
 
                         await DotNetRPC.CallRPCAsync(table);
                         var dataPackageView = Clipboard.GetContent();
-                        var richtext = await dataPackageView.GetRtfAsync();
+                        if (dataPackageView.Contains(StandardDataFormats.Rtf))
+                        {
+                            var richtext = await dataPackageView.GetRtfAsync();
+                            htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                        }
+                      
                         //richtext +=
                         //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
                         //            "\"} {\\fldrslt" + uri + "}}";
-                        htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+                       
                     }
 
                     else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.Default))

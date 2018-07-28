@@ -67,8 +67,9 @@ namespace Dash
             AppServiceResponse response = await App.Connection.SendMessageAsync(data);
 
             // check the result
-            response.Message.TryGetValue("RESPONSE", out var result);
-            if (result.ToString() != "SUCCESS")
+            object result = "";
+            response.Message?.TryGetValue("RESPONSE", out result);
+            if (result?.ToString() != "SUCCESS")
             {
                 return null;
             }
