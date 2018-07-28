@@ -279,7 +279,7 @@ namespace Dash
                             };
                             ToolTip toolTip = new ToolTip();
                             toolTip.Content = linkName;
-                        toolTip.HorizontalOffset = 30;
+                        toolTip.HorizontalOffset = 5;
                         toolTip.Placement = PlacementMode.Right;
                             ToolTipService.SetToolTip(button, toolTip);
                             xButtonsPanel.Children.Add(button);
