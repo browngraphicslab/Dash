@@ -415,7 +415,7 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var dragDoc = dragModel.DraggedDocument;
 
-                if (dragModel.LinkSourceView != null)
+                if (dragModel.LinkSourceView != null && !MainPage.Instance.IsShiftPressed())
                 {
                     e.Handled = false;
                     return;

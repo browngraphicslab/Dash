@@ -1159,12 +1159,10 @@ namespace Dash
                 else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
                 {
                     var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                    if (dragModel.LinkSourceView != null
-                    ) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
+                    if (dragModel.LinkSourceView != null) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                     {
                         // bcz:  Needs to support LinksFrom as well as LinksTo...
-                        if (MainPage.Instance.IsShiftPressed()
-                        ) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
+                        if (MainPage.Instance.IsShiftPressed() && MainPage.Instance.IsAltPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                         {
                             var regions = dragModel.DraggedDocument.GetDataDocument()
                                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
@@ -1186,8 +1184,7 @@ namespace Dash
                                 AddDocument(cnote.Document);
                             }
                         }
-                        else if (MainPage.Instance.IsCtrlPressed()
-                        ) // if control is pressed during this drag, we want to see a collection of the actual link documents
+                        else if (MainPage.Instance.IsCtrlPressed() && MainPage.Instance.IsShiftPressed()) // if control is pressed during this drag, we want to see a collection of the actual link documents
                         {
                             var regions = dragModel.DraggedDocument.GetDataDocument()
                                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
@@ -1208,7 +1205,11 @@ namespace Dash
                                 AddDocument(cnote.Document);
                             }
                         }
-                        else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
+                        else if (MainPage.Instance.IsShiftPressed() || MainPage.Instance.IsAltPressed() || MainPage.Instance.IsCtrlPressed())
+                        {
+                            AddDocument(dragModel.GetDropDocument(where));
+                        }
+                        else// if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
                         {
                             var dragDoc = dragModel.DraggedDocument;
 	                        if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)

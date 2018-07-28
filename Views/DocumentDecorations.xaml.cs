@@ -326,42 +326,11 @@ namespace Dash
             }
         }
 
-        private void XOperatorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-            }
-
-            e.Handled = false;
-        }
-
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             foreach (var doc in SelectedDocs)
             {
                 doc.ManipulationMode = ManipulationModes.All;
-            }
-        }
-
-        private void XOperatorEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                //var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-                //if (selected?.Count() > 0)
-                //{
-                //    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-                //            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-                //}
-                //else
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false);
-                args.AllowedOperations =
-                    DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation =
-                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                doc.ViewModel.DecorationState = false;
             }
         }
 
