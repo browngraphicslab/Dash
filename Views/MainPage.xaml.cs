@@ -909,6 +909,7 @@ namespace Dash
             else
             {
                 var onScreenView = GetTargetDocumentView(target);
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 if (onScreenView != null)
                 {
                     onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
@@ -936,8 +937,13 @@ namespace Dash
                 }
 
                 target.GotoRegion(region, linkDoc);
-            }
 
+                void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+                {
+                    onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                    SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
+                }
+            }
 
             return true;
         }
