@@ -953,9 +953,10 @@ namespace Dash
                             double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
                             double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
 
-                           
+                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                            
                             col.SetField<PointController>(KeyStore.PanPositionKey,
-                                new Point(-pos.X * zoom + 0.2 * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+                                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
 
                             col.SetField<PointController>(KeyStore.PanZoomKey,
                                 new Point(zoom, zoom), true);
