@@ -1041,11 +1041,14 @@ namespace Dash
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                if (text == "v" && this.IsCtrlPressed())
+                if (this.IsCtrlPressed())
                 {
-                    ViewModel.Paste(Clipboard.GetContent(), where);
-                    
-                    previewTextbox.Visibility = Visibility.Collapsed;
+                    if (text == "v")
+                    {
+                        ViewModel.Paste(Clipboard.GetContent(), where);
+
+                        previewTextbox.Visibility = Visibility.Collapsed;
+                    }
                 }
                 else
                 {

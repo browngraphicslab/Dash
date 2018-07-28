@@ -335,7 +335,7 @@ namespace Dash
 
             if (negate >= 0 && negate % 2 == 1)
             {
-                var searchResultsList = NegateSearch(searchResults);
+                var searchResultsList = NegateSearch(searchResults, modifiedSearchTerm);
                 foreach (var res in searchResultsList)
                 {
                     var list = new List<SearchTerm>();
@@ -394,10 +394,10 @@ namespace Dash
             }
         }
 
-        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
+        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search, string term)
         {
             var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
-            return results.Select(res => new SearchResult(res, new List<string>().Append(" >> N/A").ToList(), new List<string>().Append("Negation Search").ToList())).ToList();
+            return results.Select(res => new SearchResult(res, new List<string>().Append(" >> N/A").ToList(), new List<string>().Append($"Negation Search: \"{term}\"").ToList())).ToList();
         }
 
         private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
