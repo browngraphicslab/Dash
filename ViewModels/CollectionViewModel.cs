@@ -1225,7 +1225,7 @@ namespace Dash
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 	                        }
 							// note is the new annotation textbox that is created
-							DocumentController note = new RichTextNote("<annotation>", where).Document;
+							//DocumentController note = new RichTextNote("<annotation>", where).Document;
 
                             //ActionTextBox inputBox = MainPage.Instance.xMainTreeView.xLinkInputBox;
                             //Storyboard fadeIn = MainPage.Instance.xMainTreeView.xLinkInputIn;
@@ -1235,6 +1235,7 @@ namespace Dash
                             Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
                             Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
 
+                            var freebase2 = senderView as CollectionFreeformBase;
                             where = e.GetPosition(MainPage.Instance.xCanvas);
 
                             var moveTransform = new TranslateTransform {X = where.X, Y = where.Y};
@@ -1251,10 +1252,19 @@ namespace Dash
                                 {
                                     fadeOut.Completed -= FadeOutOnCompleted;
 
-                                    inputBox.Text = "";
+                                    if (freebase2 != null)
+                                    {
+                                        var noteLocation = e.GetPosition(freebase2?.GetCanvas());
+                                        freebase2.RenderPreviewTextbox(noteLocation, dragDoc, entry, "");
+                                    }
+                                    else
+                                    {
+                                        var note = new RichTextNote("<annotation>", where).Document;
+                                        note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                                        dragDoc.Link(note, LinkContexts.None, entry);
+                                        AddDocument(note);
+                                    }
                                     inputBox.Visibility = Visibility.Collapsed;
-                                    dragDoc.Link(note, LinkContexts.None, entry);
-                                    AddDocument(note);
                                 }
 
                                 fadeOut.Completed += FadeOutOnCompleted;
@@ -1266,7 +1276,6 @@ namespace Dash
                             inputBox.Visibility = Visibility.Visible;
                             fadeIn.Begin();
                             inputBox.Focus(FocusState.Programmatic);
-	                        note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
 
                             var adjustLat = false;
                             var adjustVert = false;
