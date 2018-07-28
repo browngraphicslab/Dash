@@ -99,15 +99,6 @@ namespace Dash
             return this.Name;
         }
 
-        /// <summary>
-        /// Gets the name of the key.
-        /// </summary>
-        /// <returns></returns>
-        public string GetName()
-        {
-            return KeyModel.Name;
-        }
-
         public override bool Equals(object obj)
         {
             var k = obj as KeyController;

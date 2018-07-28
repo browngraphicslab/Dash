@@ -107,7 +107,7 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    if (!MainPage.Instance.IsShiftPressed())
+                    if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsRightBtnPressed())
                     {
                         SelectionManager.DeselectAll();
                         SelectionManager.Select(docView);
