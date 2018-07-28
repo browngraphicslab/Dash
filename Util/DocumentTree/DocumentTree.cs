@@ -39,7 +39,8 @@ namespace Dash
                     cachedNodes[doc] = new DocumentNode(doc, null, null);
                 }
 
-                foreach (var enumDisplayableField in doc.EnumDisplayableFields())
+                var dfields = doc.EnumDisplayableFields().ToList();
+                foreach (var enumDisplayableField in dfields)
                 {
                     if (enumDisplayableField.Value is DocumentController docField)
                     {
