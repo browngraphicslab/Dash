@@ -98,6 +98,7 @@ namespace Dash
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
             xBackButton.Tapped += (s, e) => GoBack();
+            xForwardButton.Tapped += (s, e) => GoForward();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
@@ -269,6 +270,11 @@ namespace Dash
             {
                 return true;
             }
+
+            if (currentWorkspace.GetDataDocument().Equals(workspace.GetDataDocument()))
+            {
+                return true;
+            }
             var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
             workspaceView.SetWidth(double.NaN);
             workspaceView.SetHeight(double.NaN);
@@ -292,6 +298,24 @@ namespace Dash
             {
                 var workspace = history.TypedData.Last();
                 history.Remove(workspace);
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceFutureKey)
+                    .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
+                MainDocView.DataContext = new DocumentViewModel(workspace);
+                setupMapView(workspace);
+                MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            }
+        }
+
+        public void GoForward()
+        {
+            var future =
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceFutureKey);
+            if (future.Count > 0)
+            {
+                var workspace = future.TypedData.Last();
+                future.Remove(workspace);
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey)
+                    .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
                 MainDocView.DataContext = new DocumentViewModel(workspace);
                 setupMapView(workspace);
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
