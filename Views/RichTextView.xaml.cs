@@ -336,8 +336,8 @@ namespace Dash
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                     {
                         // get region doc
-                        var region = theDoc.GetDataDocument().GetRegionDefinition().GetDataDocument();
-                        _annotationManager.FollowRegion(region, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        var region = theDoc.GetDataDocument().GetRegionDefinition();
+                        _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (_target.StartsWith("http"))

@@ -58,6 +58,12 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
+                var field = doc.GetField(new KeyController(keyName));
+                if (field != null)
+                {
+                    outputs[ResultFieldKey] = field;
+                    return;
+                }
                 var sb = new StringBuilder();
                 var pattern = @"([a-z])([A-Z])";
                 var matches = Regex.Matches(keyName, pattern);
