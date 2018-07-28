@@ -966,7 +966,7 @@ namespace Dash
                 var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                if (!(containsTL && containsBR))
+                if (!(containsTL || containsBR))
                 {
                     return null;
                 }
