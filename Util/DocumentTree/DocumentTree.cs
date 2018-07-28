@@ -43,10 +43,48 @@ namespace Dash
                 {
                     if (enumDisplayableField.Value is DocumentController docField)
                     {
+                        if (cachedNodes.ContainsKey(docField))
+                        {
+                            continue;
+                        }
                         toSearch.Add(docField);
                     } else if(enumDisplayableField.Value is ListController<DocumentController> listField)
                     {
-                        toSearch.AddRange(listField);
+                        foreach (var documentController in listField)
+                        {
+                            if (cachedNodes.ContainsKey(documentController))
+                            {
+                                continue;
+                            }
+                            toSearch.Add(documentController);
+                        }
+                    }
+                }
+
+                var dataDoc = doc.GetDataDocument();
+                if (!dataDoc.Equals(doc))
+                {
+                    foreach (var enumDisplayableField in dataDoc.EnumDisplayableFields())
+                    {
+                        if (enumDisplayableField.Value is DocumentController docField)
+                        {
+                            if (cachedNodes.ContainsKey(docField))
+                            {
+                                continue;
+                            }
+                            toSearch.Add(docField);
+                        }
+                        else if (enumDisplayableField.Value is ListController<DocumentController> listField)
+                        {
+                            foreach (var documentController in listField)
+                            {
+                                if (cachedNodes.ContainsKey(documentController))
+                                {
+                                    continue;
+                                }
+                                toSearch.Add(documentController);
+                            }
+                        }
                     }
                 }
             }
