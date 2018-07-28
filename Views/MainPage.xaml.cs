@@ -901,6 +901,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
+            
 
             if (this.IsCtrlPressed())
             {
@@ -929,7 +930,38 @@ namespace Dash
                     }
                     else
                     {
-                        DockManager.Dock(target, DockDirection.Right);
+                        var tree = DocumentTree.MainPageTree;
+                        var node = tree.Where(n => n.ViewDocument.Equals(target)).First();
+                        var collection = node.Parent.ViewDocument;
+
+
+                        if (collection == null)
+                        {
+                            DockManager.Dock(target, DockDirection.Right);
+                        }
+                        else
+                        {
+                            var docView = DockManager.Dock(collection, DockDirection.Right);
+                            var col = docView.ViewModel.DocumentController;
+
+                            var pos = node.ViewDocument.GetPosition() ?? new Point();
+                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                            double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                            //col.SetField<PointController>(KeyStore.PanPositionKey,
+                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+
+                           
+                            col.SetField<PointController>(KeyStore.PanPositionKey,
+                                new Point(-pos.X * zoom + 0.2 * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+
+                            col.SetField<PointController>(KeyStore.PanZoomKey,
+                                new Point(zoom, zoom), true);
+                        }
+
+                       
                     }
                 }
 
@@ -952,7 +984,7 @@ namespace Dash
             if (docViews.Count > 1)
             {
                 //Should this happen?
-                Debug.Fail("I don't think there should be more than 2 found doc views");
+                //Debug.Fail("I don't think there should be more than 2 found doc views");
             }
 
             DocumentView view = docViews.First();
