@@ -927,7 +927,7 @@ namespace Dash
 
         #endregion
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data
                      .Equals(nameof(LinkContexts.PushPin)) ?? false) &&
@@ -950,11 +950,10 @@ namespace Dash
                         XAnnotationCanvas.Children.Remove(docView);
                     }
                 };
-                return true;
+                return LinkHandledResult.HandledClose;
             }
 
-
-            return false;
+            return LinkHandledResult.Unhandled;
         }
     }
 }

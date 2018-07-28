@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -21,20 +20,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
-using Syncfusion.DocIO;
-using Syncfusion.DocIO.DLS;
 using Color = Windows.UI.Color;
 using Size = Windows.Foundation.Size;
-using Windows.ApplicationModel.AppService;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.UI.Popups;
 using Windows.Foundation.Collections;
-using Windows.Foundation.Metadata;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.Core;
-using Page = Microsoft.Office.Interop.Word.Page;
+using Windows.System;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace Dash
 {
@@ -173,6 +163,7 @@ namespace Dash
 
             CellSize = 250; // TODO figure out where this should be set
                                 //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+
         }
 
         DocumentController _lastDoc = null;
@@ -250,6 +241,9 @@ namespace Dash
         #region DocumentModel and DocumentViewModel Data Changes
 
         public string Tag;
+        private Storyboard _lateralAdjustment = new Storyboard();
+        private Storyboard _verticalAdjustment = new Storyboard();
+
         void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
             switch (args.ListAction)
@@ -797,9 +791,8 @@ namespace Dash
 
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
-                if (senderView is CollectionFreeformBase)
-                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
-                        e.GetPosition(MainPage.Instance.MainDocView));
+                if (senderView is CollectionFreeformBase freeformBase)
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainDocView));
                 else if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
@@ -1231,11 +1224,91 @@ namespace Dash
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 	                        }
 							// note is the new annotation textbox that is created
-							var note = new RichTextNote("<annotation>", where).Document;
-	                        note.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+							DocumentController note = new RichTextNote("<annotation>", where).Document;
 
-                            dragDoc.Link(note, LinkContexts.None);
-                            AddDocument(note);
+                            //ActionTextBox inputBox = MainPage.Instance.xMainTreeView.xLinkInputBox;
+                            //Storyboard fadeIn = MainPage.Instance.xMainTreeView.xLinkInputIn;
+                            //Storyboard fadeOut = MainPage.Instance.xMainTreeView.xLinkInputOut;
+
+                            ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+                            Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+                            Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+
+                            where = e.GetPosition(MainPage.Instance.xCanvas);
+
+                            var moveTransform = new TranslateTransform {X = where.X, Y = where.Y};
+                            inputBox.RenderTransform = moveTransform;
+
+                            inputBox.AddKeyHandler(VirtualKey.Enter, args =>
+                            {
+                                string entry = inputBox.Text.Trim();
+                                if (string.IsNullOrEmpty(entry)) return;
+
+                                inputBox.ClearHandlers(VirtualKey.Enter);
+
+                                void FadeOutOnCompleted(object sender2, object o1)
+                                {
+                                    fadeOut.Completed -= FadeOutOnCompleted;
+
+                                    inputBox.Text = "";
+                                    inputBox.Visibility = Visibility.Collapsed;
+                                    dragDoc.Link(note, LinkContexts.None, entry);
+                                    AddDocument(note);
+                                }
+
+                                fadeOut.Completed += FadeOutOnCompleted;
+                                fadeOut.Begin();
+
+                                args.Handled = true;
+                            });
+
+                            inputBox.Visibility = Visibility.Visible;
+                            fadeIn.Begin();
+                            inputBox.Focus(FocusState.Programmatic);
+	                        note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+
+                            var adjustLat = false;
+                            var adjustVert = false;
+
+                            double overExtensionX = where.X + inputBox.ActualWidth - MainPage.Instance.xCanvas.ActualWidth;
+                            if (overExtensionX > 0) adjustLat = true;
+
+                            var adjustX = new DoubleAnimation
+                            {
+                                By = -1 * overExtensionX - 10,
+                                EnableDependentAnimation = true,
+                                Duration = new Duration(TimeSpan.FromMilliseconds(500))
+                            };
+
+                            _lateralAdjustment = new Storyboard();
+                            _lateralAdjustment.Children.Add(adjustX);
+
+                            Storyboard.SetTarget(adjustX, moveTransform);
+                            Storyboard.SetTargetProperty(adjustX, "X");
+
+                            ResourceDictionary resources = MainPage.Instance.xOuterGrid.Resources;
+                            if (!resources.ContainsKey("lateralAdjustment")) resources.Add("lateralAdjustment", _lateralAdjustment);
+
+                            double overExtensionY = where.Y + inputBox.ActualHeight - MainPage.Instance.xCanvas.ActualHeight;
+                            if (overExtensionY > 0) adjustVert = true;
+
+                            var adjustY = new DoubleAnimation
+                            {
+                                By = -1 * overExtensionY - 10,
+                                EnableDependentAnimation = true,
+                                Duration = new Duration(TimeSpan.FromMilliseconds(500))
+                            };
+
+                            _verticalAdjustment = new Storyboard();
+                            _verticalAdjustment.Children.Add(adjustY);
+
+                            Storyboard.SetTarget(adjustY, moveTransform);
+                            Storyboard.SetTargetProperty(adjustY, "Y");
+
+                            if (!resources.ContainsKey("verticalAdjustment")) resources.Add("verticalAdjustment", _verticalAdjustment);
+
+                            if (adjustLat) _lateralAdjustment.Begin();
+                            if (adjustVert) _verticalAdjustment.Begin();
                         }
                     }
                     else if (dragModel.CanDrop(sender as FrameworkElement))

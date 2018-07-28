@@ -110,6 +110,20 @@ namespace Dash
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+
+            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
+            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
+        }
+
+        private void HideLinkInputBox()
+        {
+            xLinkInputBox.ClearHandlers(new[] { VirtualKey.Enter });
+            xLinkInputOut.Begin();
+            xLinkInputOut.Completed += (o, o1) =>
+            {
+                xLinkInputBox.Text = "";
+                xLinkInputBox.Visibility = Visibility.Collapsed;
+            };
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -932,7 +946,8 @@ namespace Dash
 
         public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
         {
-            var parent = docOrRegion.GetRegionDefinition();
+            DocumentController parent = docOrRegion.GetRegionDefinition();
+            (parent ?? docOrRegion).SetHidden(false);
             NavigateToDocument(parent ?? docOrRegion);
             if (parent != null)
             {
@@ -942,7 +957,7 @@ namespace Dash
 
         #region Annotation logic
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -950,47 +965,45 @@ namespace Dash
             if (this.IsCtrlPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
+                return LinkHandledResult.HandledClose;
             }
-            else
+
+            var onScreenView = GetTargetDocumentView(target);
+            if (onScreenView != null)
             {
-                var onScreenView = GetTargetDocumentView(target);
-                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-                if (onScreenView != null)
+                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
-                    onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                    if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
-                    {
-                        target.ToggleHidden();
-                    }
-                    else
-                    {
-                        target.SetHidden(false);
-                    }
+                    target.ToggleHidden();
                 }
                 else
                 {
-                    var docked = DockManager.GetDockedView(target);
-                    if (docked != null)
-                    {
-                        DockManager.Undock(docked);
-                    }
-                    else
-                    {
-                        //DocumentTree.MainPageTree.Where(node => node.ViewDocument.Equals(target)).First().Parent.ViewDocument
-                        DockManager.Dock(target, DockDirection.Right);
-                    }
+                    target.SetHidden(false);
                 }
-
-                target.GotoRegion(region, linkDoc);
-
-                void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+            }
+            else
+            {
+                DockedView docked = DockManager.GetDockedView(target);
+                if (docked != null)
                 {
-                    onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
-                    SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
+                    DockManager.Undock(docked);
+                }
+                else
+                {
+                    DockManager.Dock(target, DockDirection.Right);
                 }
             }
 
-            return true;
+            target.GotoRegion(region, linkDoc);
+
+            void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+            {
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+            }
+
+            return LinkHandledResult.HandledRemainOpen;
         }
 
         public DocumentView GetTargetDocumentView(DocumentController target)
