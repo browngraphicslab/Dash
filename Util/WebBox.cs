@@ -81,6 +81,7 @@ namespace Dash
                 {
                     var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
                     correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                    correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
                 }
                 else
                 {
