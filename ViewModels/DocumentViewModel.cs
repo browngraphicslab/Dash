@@ -147,7 +147,7 @@ namespace Dash
             set => SetProperty(ref _decorationState, value);
         }
 
-        public Thickness SearchHighlightWidth
+        public Thickness SearchHighlightState
         {
             get => _searchHighlightState;
             set => SetProperty(ref _searchHighlightState, value);
@@ -169,9 +169,9 @@ namespace Dash
 
         public async void ExpandBorder()
         {
-            while (SearchHighlightWidth.Bottom <= 7.5)
+            while (SearchHighlightState.Bottom <= 7.5)
             {
-                SearchHighlightWidth = new Thickness(SearchHighlightWidth.Bottom + 0.5);
+                SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
                 await Task.Delay(TimeSpan.FromMilliseconds(7));
             }
 
@@ -180,9 +180,9 @@ namespace Dash
 
         public async void RetractBorder()
         {
-            while (SearchHighlightWidth.Bottom >= 0.5)
+            while (SearchHighlightState.Bottom >= 0.5)
             {
-                SearchHighlightWidth = new Thickness(SearchHighlightWidth.Bottom - 0.5);
+                SearchHighlightState = new Thickness(SearchHighlightState.Bottom - 0.5);
                 await Task.Delay(TimeSpan.FromMilliseconds(7));
             }
 

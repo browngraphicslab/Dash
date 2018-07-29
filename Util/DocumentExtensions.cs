@@ -203,7 +203,7 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetPosition(
-                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetActualSize()?.X ?? doc.GetActiveLayout().GetActualSize()?.X ?? 0) + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetActualSize()?.X ?? doc.GetActiveLayout()?.GetActualSize()?.X ?? 0) + 70, 
                         where?.Y ?? oldPosition.Data.Y));
             }
 

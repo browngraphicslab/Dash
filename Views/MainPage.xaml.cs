@@ -442,7 +442,7 @@ namespace Dash
                         }
                         else
                         {
-                            dm.SearchHighlightWidth = new Thickness(8);
+                            dm.SearchHighlightState = new Thickness(8);
                         }
                     }
                     else
@@ -454,7 +454,7 @@ namespace Dash
                         }
                         else
                         {
-                            dm.SearchHighlightWidth = new Thickness(0);
+                            dm.SearchHighlightState = new Thickness(0);
                         }
                     }
                 }
@@ -995,71 +995,64 @@ namespace Dash
             }
 
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
-            if (onScreenView != null)
+            if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-                onScreenView.ViewModel.ExpandBorder();
-                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
+
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
                 {
-                    target.ToggleHidden();
+                    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
+                        target.ToggleHidden();
+                    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
                 }
-                else
+                else // otherwise, it's a hidden region that we have to show
                 {
                     target.SetHidden(false);
                 }
             }
             else
             {
-                DockedView docked = DockManager.GetDockedView(target);
+                DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
                 if (docked != null)
                 {
                     DockManager.Undock(docked);
                 }
-                else
+                else  // otherwise, we have to show the document in a docked view
                 {
                     var tree = DocumentTree.MainPageTree;
                     var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
                     var collection = node?.Parent.ViewDocument;
 
-
-                    if (collection == null)
+                    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
                     {
-                        DockManager.Dock(target, DockDirection.Right);
+                        var docview = DockManager.Dock(target, DockDirection.Right);
                     }
-                    else
+                    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
                     {
-                        DockedView dockedCollection = DockManager.GetDockedView(collection);
-                        if (dockedCollection != null)
-                        {
-                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-                            if (onScreenView != null && !onScreenView.ViewModel.IsSearchHighlighted)
-                                onScreenView.ViewModel.ExpandBorder();
-                           else  DockManager.Undock(dockedCollection);
-                        }
-                        else
-                        {
-                            var docView = DockManager.Dock(collection, DockDirection.Right);
-                            var col = docView.ViewModel.DocumentController;
+                        target.SetHidden(false);
+                        var docView = DockManager.Dock(collection, DockDirection.Right);
+                        var cview = docView.ViewModel.Content;
+                        cview.Tag = target;
+                        cview.Loaded += Docview_Loaded;
+                        var col = docView.ViewModel.DocumentController;
 
-                            var pos = node.ViewDocument.GetPosition() ?? new Point();
-                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                            double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                            //col.SetField<PointController>(KeyStore.PanPositionKey,
-                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                        var pos = node.ViewDocument.GetPosition() ?? new Point();
+                        double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                        double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                        var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                        //col.SetField<PointController>(KeyStore.PanPositionKey,
+                        //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                        double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                        double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                        double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                        col.SetField<PointController>(KeyStore.PanPositionKey,
+                            new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
 
-
-                            col.SetField<PointController>(KeyStore.PanPositionKey,
-                                new Point(-pos.X * zoom + 0.2 * xOff, -pos.Y * zoom + 0.4 * yOff), true);
-
-                            col.SetField<PointController>(KeyStore.PanZoomKey,
-                                new Point(zoom, zoom), true);
-                        }
+                        col.SetField<PointController>(KeyStore.PanZoomKey,
+                            new Point(zoom, zoom), true);
                     }
-
-
                 }
             }
 
@@ -1074,40 +1067,60 @@ namespace Dash
             return LinkHandledResult.HandledRemainOpen;
         }
 
+        private void Docview_Loaded(object sender, RoutedEventArgs e)
+        {
+            var cview = (sender as CollectionView);
+            foreach (var doc in cview.ViewModel.DocumentViewModels)
+                if (doc.DocumentController.Equals(cview.Tag as DocumentController))
+                {
+                    SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                    SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
+                    doc.SearchHighlightState = new Thickness(8);
+                    void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+                    {
+                        doc.SearchHighlightState = new Thickness(0);
+                        SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                    }
+                }
+
+
+            cview.Loaded -= Docview_Loaded;
+        }
+
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
+            var list = frame.GetDescendantsOfType<DocumentView>().Select((dv) => dv.ViewModel.DocumentController).ToList();
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
             }
 
-            if (docViews.Count > 1)
-            {
-                //Should this happen?
-               // Debug.Fail("I don't think there should be more than 2 found doc views");
-               // choose the document view that's in the same collection, but need to think about other issues as well...
-            }
+            DocumentView found = null;
 
-            DocumentView view = docViews.First();
-
-            foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
+            foreach (var view in docViews)
             {
-                var transformedBounds = view.TransformToVisual(parentView)
-                    .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
-                var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
-                bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
-                bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
-                bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
-                if (!(containsTL || containsBR || containsBL || containsTR))
+                found = view;
+                foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
                 {
-                    return null;
+                    var transformedBounds = view.TransformToVisual(parentView)
+                        .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                    var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
+                    bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
+                    bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
+                    bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
+                    bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
+                    if (!(containsTL || containsBR || containsBL || containsTR))
+                    {
+                        found = null;
+                    }
                 }
+                if (found != null)
+                    return found;
             }
 
-            return view;
+            return null;
         }
 
         #endregion

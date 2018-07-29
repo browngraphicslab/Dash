@@ -736,6 +736,8 @@ namespace Dash
         {
             //try to get website title
             var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (uriParts.Count < 2)
+                return "";
             var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
             var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
             webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
@@ -833,33 +835,37 @@ namespace Dash
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.Last().Substring(10);
+                    var titlesUrl = GetTitlesUrl(uri);
 
-                    //try to get website and article title
-                    var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + GetTitlesUrl(uri) + " </a> </div>";
-                   
-
-                    //update html length in intro - the way that word reads HTML is kinda funny
-                    //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
-                    //we must change these numbers
-                    var endingInfo = introParts.ElementAt(2);
-                    var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
-                        .ToString().PadLeft(10, '0');
-                    introParts[2] = endingInfo.Substring(0, 8) + endingNum;
-                    var endingInfo2 = introParts.ElementAt(4);
-                    var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
-                        .ToString().PadLeft(10, '0');
-                    introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
-                    var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
+                    if (!string.IsNullOrEmpty(titlesUrl))
+                    {
+                        //try to get website and article title
+                        var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
 
 
-                    //get parts so additon is before closing
-                    var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
-                    var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
-                    var htmlClose = html.Substring(endPoint);
-                   
+                        //update html length in intro - the way that word reads HTML is kinda funny
+                        //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
+                        //we must change these numbers
+                        var endingInfo = introParts.ElementAt(2);
+                        var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
+                            .ToString().PadLeft(10, '0');
+                        introParts[2] = endingInfo.Substring(0, 8) + endingNum;
+                        var endingInfo2 = introParts.ElementAt(4);
+                        var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
+                            .ToString().PadLeft(10, '0');
+                        introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
+                        var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
 
-                    //combine all parts
-                    html = newHtmlStart + mainHtml + addition + htmlClose;
+
+                        //get parts so additon is before closing
+                        var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
+                        var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
+                        var htmlClose = html.Substring(endPoint);
+
+
+                        //combine all parts
+                        html = newHtmlStart + mainHtml + addition + htmlClose;
+                    }
 
                     //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
                     html = String.Concat(html,
@@ -1229,7 +1235,9 @@ namespace Dash
                             if (dragModel.LinkType != null)
                             {
                                 var noteLocation = e.GetPosition(freebase2?.GetCanvas());
-                                freebase2.RenderPreviewTextbox(noteLocation, dragDoc, dragModel.LinkType, "");
+                                if (freebase2 != null)
+                                    freebase2.RenderPreviewTextbox(noteLocation, dragDoc, dragModel.LinkType, "");
+                                else e.Handled = false;
                                 return;
                             }
 							// note is the new annotation textbox that is created
@@ -1271,10 +1279,12 @@ namespace Dash
                                     }
                                     else
                                     {
-                                        var note = new RichTextNote("<annotation>", where).Document;
-                                        note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
-                                        dragDoc.Link(note, LinkContexts.None, entry);
-                                        AddDocument(note);
+                                        dragModel.LinkType = entry;
+                                        (senderView as FrameworkElement).GetFirstAncestorOfType<DocumentView>().This_Drop(sender, e);
+                                        //var note = new RichTextNote("<annotation>", where).Document;
+                                        //note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                                        //dragDoc.Link(note, LinkContexts.None, entry);
+                                        //AddDocument(note);
                                     }
                                     inputBox.Visibility = Visibility.Collapsed;
                                 }
