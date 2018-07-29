@@ -970,41 +970,40 @@ namespace Dash
             }
 
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
-            if (onScreenView != null)
+            if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
+                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
                 {
-                    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>())
+                    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                         target.ToggleHidden();
-                    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>());
+                    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
                 }
-                else
+                else // otherwise, it's a hidden region that we have to show
                 {
                     target.SetHidden(false);
                 }
             }
             else
             {
-                DockedView docked = DockManager.GetDockedView(target);
+                DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
                 if (docked != null)
                 {
                     DockManager.Undock(docked);
                 }
-                else
+                else  // otherwise, we have to show the document in a docked view
                 {
                     var tree = DocumentTree.MainPageTree;
                     var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
                     var collection = node?.Parent.ViewDocument;
 
-
-                    if (collection == null)
+                    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
                     {
                         var docview = DockManager.Dock(target, DockDirection.Right);
                     }
-                    else
+                    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
                     {
                         target.SetHidden(false);
                         var docView = DockManager.Dock(collection, DockDirection.Right);
@@ -1054,8 +1053,9 @@ namespace Dash
 
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
+            var list = frame.GetDescendantsOfType<DocumentView>().Select((dv) => dv.ViewModel.DocumentController).ToList();
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
