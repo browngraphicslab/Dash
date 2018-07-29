@@ -455,8 +455,8 @@ namespace Dash
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
             foreach (var d in snapshots)
             {
-                d.SetWidth(500);
-                d.SetHeight(500);
+                d.SetWidth(200);
+                d.SetHeight(200);
             }
             var dvm = ViewModel;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);

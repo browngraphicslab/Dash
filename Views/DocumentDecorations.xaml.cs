@@ -280,7 +280,7 @@ namespace Dash
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
         }
 
         private void rebuildMenuIfNeeded()
