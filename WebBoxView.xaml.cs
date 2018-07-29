@@ -21,8 +21,7 @@ namespace Dash
         {
             InitializeComponent();
             _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
-            xOuterGrid.Children.Add(_xWebView);
-            Grid.SetRow(_xWebView, 0);
+            xPanel.Children.Add(_xWebView);
             _xWebView.Visibility = Visibility.Collapsed;
             _xWebView.LoadCompleted += delegate { _xWebView.Visibility = Visibility.Visible; };
         }

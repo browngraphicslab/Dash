@@ -62,8 +62,6 @@ namespace Dash
             Init();
         }
 
-        public bool IsMovingCollections { get; set; }
-
         public override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
@@ -378,9 +376,9 @@ namespace Dash
             return true;
         }
 
-        public void Link(DocumentController target, LinkContexts context, string specTitle = "<link description>")
+        public void Link(DocumentController target, LinkContexts context)
         {
-            DocumentController linkDocument = new RichTextNote(specTitle).Document;
+            var linkDocument = new RichTextNote("<link description>").Document;
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkContextKey, context.ToString(), true);

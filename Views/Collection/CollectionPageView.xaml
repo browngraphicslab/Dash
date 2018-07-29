@@ -52,9 +52,9 @@
                 <Button Content="- footer -"    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 10" Width="100" Height="50" Opacity="0.5" Background="White" AllowDrop="True" Drop="Bottom_Drop"/>
             </Grid>-->
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
-                                 PlaceholderText="Enter Command" VerticalAlignment="Stretch"
-                                 IsSpellCheckEnabled="False" AcceptsReturn="True"
-                                 FontFamily="Consolas" IsColorFontEnabled="True" AllowDrop="True" Drop="XTextBox_OnDrop">
+                                 PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus" VerticalAlignment="Stretch"
+                                 TextChanged="XTextBox_OnTextChanged" IsSpellCheckEnabled="False" AcceptsReturn="True"
+                                 FontFamily="Consolas" IsColorFontEnabled="True">
             </local:ActionTextBox>
             <!--<local:DocumentView x:Name="xDocCaption" x:FieldModifier="public" Grid.Row="1" Height="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Visibility="Collapsed" />-->
         </Grid>
@@ -74,13 +74,12 @@
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="40" />
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
             <Rectangle Grid.Row="0" Fill="{StaticResource AccentGreenLight}"/>
-            <TextBlock Grid.Row="0" Foreground="White" FontSize="16">Documents:</TextBlock>
+            <TextBlock Grid.Row="0" Foreground="White" FontSize="20">Documents:</TextBlock>
             <ListView
                 Grid.Row="1"
                 x:Name="xThumbs" 
@@ -109,17 +108,14 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
+
                         <Grid PointerPressed="xThumbs_PointerPressed">
                             <local:DocumentView IsHitTestVisible="False"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle Grid.Row="2" Fill="{StaticResource AccentGreenLight}" />
-            <TextBlock
-                CanDrag="True" Grid.Row="2" FontSize="16" HorizontalAlignment="Stretch"
-                TextAlignment="Center" VerticalAlignment="Center" Foreground="White"
-                DragStarting="ApplyScript_OnDragStarting">Apply Script</TextBlock>
         </Grid>
+
     </Grid>
 </UserControl>

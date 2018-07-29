@@ -115,23 +115,24 @@
                 <Grid Margin="0, 0, 0, 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="1"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <local:ActionTextBox
                         x:Name="xKeyBox"
-                        Margin="7, 0, 3, 0"
+                        Margin="7, 0, 3.5, 0"
                         Padding="7, 3, 0, 0"
-                        MaxLength="30"
+                        MaxLength="20"
                         Grid.Column="0"
+                        Width="Auto"
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         Height="25"/>
                     <local:ActionTextBox
                         x:Name="xValueBox"
-                        Margin="3, 0, 7, 0"
+                        Margin="3.5, 0, 7, 0"
                         Padding="7, 3, 0, 0"
-                        Grid.Column="2"
+                        Grid.Column="1"
+                        Width="Auto"
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         PlaceholderText="Value..."

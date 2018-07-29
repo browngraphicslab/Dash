@@ -1528,6 +1528,8 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
 
+
+
             <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
                 <Setter Property="Fill" Value="{StaticResource LinkHandleColor}" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>

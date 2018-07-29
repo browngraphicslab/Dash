@@ -6,13 +6,12 @@ namespace Dash
 {
     public class KeyStore
     {
-        //NOTE: Underscore prefacing registers the field as invisible
         public static KeyController DocumentContextKey = new KeyController("_DocumentContext", "17D4CFDE-9146-47E9-8AF0-0F9D546E94EC");
         public static KeyController AbstractInterfaceKey = new KeyController("_AbstractInterface", "E579C81B-EE13-4B16-BB96-80688D30A73A");
         public static KeyController LayoutListKey = new KeyController("_LayoutList", "6546DD08-C753-4C34-924E-3C4016C4B95B");
         public static KeyController RegionsKey = new KeyController("Regions", "1B958E26-624B-4E9A-82C9-2E18609D6A39");
-        public static KeyController RegionDefinitionKey = new KeyController("RegionDefinition", "6EEDCB86-76F4-4937-AE0D-9C4BC6744310");
-        public static KeyController RegionTypeKey = new KeyController("RegionType", "8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC");
+        public static KeyController RegionDefinitionKey = new KeyController("Region Definition", "6EEDCB86-76F4-4937-AE0D-9C4BC6744310");
+        public static KeyController RegionTypeKey = new KeyController("Region Type", "8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC");
         public static KeyController ActiveLayoutKey = new KeyController("ActiveLayout", "BEBEC91F-F85A-4F72-A7D2-E2912571FBDA");
         public static KeyController TitleKey = new KeyController("Title", "0C074CB4-6D05-4363-A867-C0A061C1573F");
         public static KeyController CaptionKey = new KeyController("Caption", "D01D6702-A3AD-4546-9BFB-C5263F8D5599");
@@ -26,47 +25,47 @@ namespace Dash
         public static KeyController DataKey = new KeyController("Data", "3B1BD1C3-1BCD-469D-B847-835B565B53EB");
         public static KeyController SnapshotsKey = new KeyController("Snaphshots", "94358B4F-83DD-41A6-8440-BA5973DC9E97");
         public static KeyController SourceUriKey = new KeyController("SourceUriKeys", "26594498-FF15-438D-A577-2C8506F4ECEF");
-        public static KeyController SourceTitleKey = new KeyController("SourceTitle", "E16A6779-2F91-4660-8510-E1FD906A6A5E");
-        public static KeyController IsAdornmentKey = new KeyController("IsAdornment", "FF3329BD-AA78-46E4-9A42-47CAB1E62123");
-        public static KeyController DocumentTextKey = new KeyController("DocumentText", "D5156A8F-9093-420B-96B7-507DD949360D");
-        public static KeyController TextWrappingKey = new KeyController("TextWrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");
-        public static KeyController BackgroundColorKey = new KeyController("BackgroundColor", "6B597D2A-1A52-446F-901A-B9ED0BBE33E1");
-        public static KeyController SavedColorsKey = new KeyController("_SavedColorsFromPicker", "70AB09AE-F88D-45EC-B20E-721635DC20C4");
-        public static KeyController OpacitySliderValueKey = new KeyController("OpacitySliderValue", "3FD448B7-8AEE-4FBD-B68C-514E098D8D31");
-	    public static KeyController GroupBackgroundColorKey = new KeyController("GroupBackgroundColor", "E1FA9844-6B13-4BE2-BAAA-F06B9D6672A6");
+        public static KeyController SourceTitleKey = new KeyController("Source Title", "E16A6779-2F91-4660-8510-E1FD906A6A5E");
+        public static KeyController IsAdornmentKey = new KeyController("Is Adornment", "FF3329BD-AA78-46E4-9A42-47CAB1E62123");
+        public static KeyController DocumentTextKey = new KeyController("Document Text", "D5156A8F-9093-420B-96B7-507DD949360D");
+        public static KeyController TextWrappingKey = new KeyController("Text Wrapping", "FF488D09-BBB7-4158-A5E4-0C4530DF2F56");
+        public static KeyController BackgroundColorKey = new KeyController("Background Color", "6B597D2A-1A52-446F-901A-B9ED0BBE33E1");
+        public static KeyController SavedColorsKey = new KeyController("_Saved Colors from Picker", "70AB09AE-F88D-45EC-B20E-721635DC20C4");
+        public static KeyController OpacitySliderValueKey = new KeyController("Opacity Slider Value", "3FD448B7-8AEE-4FBD-B68C-514E098D8D31");
+	    public static KeyController GroupBackgroundColorKey = new KeyController("Group Background Color", "E1FA9844-6B13-4BE2-BAAA-F06B9D6672A6");
         public static KeyController AdornmentShapeKey = new KeyController("Adornment Shape", "5DEBC829-A68B-4D2E-BC29-549DEB910EC6");
         public static KeyController PositionFieldKey = new KeyController("Position", "E2AB7D27-FA81-4D88-B2FA-42B7888525AF");
-        public static KeyController LinkFromKey = new KeyController("LinkFrom", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
-        public static KeyController LinkToKey = new KeyController("LinkTo", "649A7F35-C428-49EC-B914-5746E2590DAC");
-        public static KeyController LinkDestinationKey = new KeyController("LinkDestination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
-        public static KeyController LinkSourceKey = new KeyController("LinkSource", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
+        public static KeyController LinkFromKey = new KeyController("Link From", "9A3191FF-C8E6-472F-ABE5-B5A250D49D59");
+        public static KeyController LinkToKey = new KeyController("Link To", "649A7F35-C428-49EC-B914-5746E2590DAC");
+        public static KeyController LinkDestinationKey = new KeyController("Link Destination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
+        public static KeyController LinkSourceKey = new KeyController("Link Source", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
         public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
         public static KeyController ScaleAmountFieldKey = new KeyController("_Scale Amount", "AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE");
         public static KeyController IconTypeFieldKey = new KeyController("_IconType", "ICON7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController SystemUriKey = new KeyController("File Path", "CA740B60-10D5-4B2C-9C9A-E6E4A7D2CA4E");
         public static KeyController ThumbnailFieldKey = new KeyController("_ThumbnailField", "67D3BD61-43EC-4BDE-913A-E459F9D15E76");
         public static KeyController HeaderKey = new KeyController("Header", "93CF85C8-5522-4B00-927A-943982250729");
-        public static KeyController CollectionOutputKey = new KeyController("CollectionOutput", "D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850");
+        public static KeyController CollectionOutputKey = new KeyController("Collection Output", "D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850");
         public static KeyController OperatorKey = new KeyController("_Operator", "F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A");
-        public static KeyController OperatorCacheKey = new KeyController("_OperatorCache", "1B1409DE-4BA5-4515-9BB4-B15AE8CC0041");
+        public static KeyController OperatorCacheKey = new KeyController("_Operator Cache", "1B1409DE-4BA5-4515-9BB4-B15AE8CC0041");
         public static KeyController CollectionViewTypeKey = new KeyController("Collection View Type", "EFC44F1C-3EB0-4111-8840-E694AB9DCB80");
         public static KeyController InkDataKey = new KeyController("_InkData", "1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6");
-        public static KeyController ParsedFieldsKey = new KeyController("_ParsedFields", "385D06F3-96A7-4ADF-B806-50DAB4488FD6");
+        public static KeyController ParsedFieldsKey = new KeyController("_Parsed Fields", "385D06F3-96A7-4ADF-B806-50DAB4488FD6");
         public static KeyController WebContextKey = new KeyController("_WebContext", "EFD56382-F8BA-45D2-86D3-085974EF4D9D");
-        public static KeyController DateModifiedKey = new KeyController("DateModified", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
-        public static KeyController DateCreatedKey = new KeyController("DateCreated", "1F322339-3FB0-4F70-918E-580D70F961EC");
+        public static KeyController DateModifiedKey = new KeyController("Date Modified", "CAAD33A3-DE94-42CF-A54A-F85C5F04940E");
+        public static KeyController DateCreatedKey = new KeyController("Date Created", "1F322339-3FB0-4F70-918E-580D70F961EC");
         public static KeyController AuthorKey = new KeyController("Author", "930E9E5F-06F5-4D61-A56A-8759FC4CC8DC");
         public static KeyController VisibleTypeKey = new KeyController("Type", "B0150ECC-900E-42C4-9B86-824438647C12");
-        public static KeyController LastWorkspaceKey = new KeyController("_LastWorkspace", "66F05DB2-2F68-4E37-985D-36303A1AF4E4");
-        public static KeyController WorkspaceHistoryKey = new KeyController("_WorkspaceHistory", "D0630828-1488-4F7B-B0D7-9E89EF05497F");
-        public static KeyController PanPositionKey = new KeyController("_PanPosition", "8778D978-AEA2-470C-8DBD-C684131BA9B4");
-        public static KeyController PanZoomKey = new KeyController("_PanZoomLevel", "4C4C676B-EEC8-4682-B15C-57866BF4933C");
+        public static KeyController LastWorkspaceKey = new KeyController("_Last Workspace", "66F05DB2-2F68-4E37-985D-36303A1AF4E4");
+        public static KeyController WorkspaceHistoryKey = new KeyController("_Workspace History", "D0630828-1488-4F7B-B0D7-9E89EF05497F");
+        public static KeyController PanPositionKey = new KeyController("_Pan Position", "8778D978-AEA2-470C-8DBD-C684131BA9B4");
+        public static KeyController PanZoomKey = new KeyController("_Pan Zoom Level", "4C4C676B-EEC8-4682-B15C-57866BF4933C");
         public static KeyController ActualSizeKey = new KeyController("ActualSize", "529D7312-9A33-4A6E-80AF-FA173293DC36");
         public static KeyController DocumentTypeKey = new KeyController("_DocumentType", "B1DE8ABE-5C04-49C6-913C-A2428ED566F8");
         public static KeyController SelectedKey = new KeyController("_Selected", "86009EF6-7D77-4D67-8C7A-C5EA5704432F");
-        public static KeyController OriginalImageKey = new KeyController("_OriginalImage", "6226CC11-3616-4521-9C9E-731245FA1F4C");
-        public static KeyController SideCountKey = new KeyController("SideCount", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
-        public static KeyController SettingsDocKey = new KeyController("_SettingsDoc", "EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70");
+        public static KeyController OriginalImageKey = new KeyController("_Original Image", "6226CC11-3616-4521-9C9E-731245FA1F4C");
+        public static KeyController SideCountKey = new KeyController("Side Count", "276302FF-0E5F-4009-A308-A4EE8B4224F7");
+        public static KeyController SettingsDocKey = new KeyController("_Settings Doc", "EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70");
         public static KeyController SettingsNightModeKey = new KeyController("_Settings Night Mode", "7AA22643-3D28-433E-83E9-ECD6A7475270");
         public static KeyController SettingsFontSizeKey = new KeyController("_Settings Font Size", "BD720922-FAD9-4821-9877-F62E3273DED8");
         public static KeyController SettingsMouseFuncKey = new KeyController("_Settings Mouse Functionality", "867225EC-F9C7-4B14-9A5F-22B7BB71DCCB");
@@ -77,9 +76,9 @@ namespace Dash
         public static KeyController CustomBackgroundImagePathKey = new KeyController("Custom Path to Background Image", "DA719660-D5CE-40CE-9BDE-D57B764CA6BF");
         public static KeyController BackgroundImageOpacityKey = new KeyController("_Background Image Opacity", "0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC");
         public static KeyController SettingsUpwardPanningKey = new KeyController("_Infinite Upward Panning Enabled", "3B354602-794D-4FC0-A289-1EBA7EC23FD1");
-        public static KeyController SettingsMarkdownModeKey = new KeyController("_Markdown vs RTF", "2575EAFA-2689-40DD-A0A8-9EE0EC0720ED");
+        public static KeyController SettingsMarkdownModeKey = new KeyController("Markdown vs RTF", "2575EAFA-2689-40DD-A0A8-9EE0EC0720ED");
         public static KeyController TemplateEditorKey = new KeyController("_Template Document", "35624019-4C59-45AD-B44D-77830FD41EA3");
-        public static KeyController ActivationKey = new KeyController("_Document Template activation phase", "9BA4DB7E-304A-4F0F-8704-C4E4B970C7B9");
+        public static KeyController ActivationKey = new KeyController("Document Template activation phase", "9BA4DB7E-304A-4F0F-8704-C4E4B970C7B9");
         public static KeyController UseVerticalAlignmentKey = new KeyController("Use Vertical Alignment for TemplateBox View", "3F94F0DD-9412-4571-A89B-4694F83AF534");
         public static KeyController UseHorizontalAlignmentKey = new KeyController("Use Horizontal Alignment for TemplateBox View", "D58E7E8E-D1C1-476F-ADC3-DF61B1F62239");
         public static KeyController TemplateStyleKey = new KeyController("Style of Template View", "54FFT93A-D1C1-476F-ADC3-DF61B1F62239");
@@ -87,10 +86,10 @@ namespace Dash
         public static KeyController TemplateListKey = new KeyController("List of templates for the Mainpage", "8AC168A0-F540-455F-8DB7-553B58E8E11E");
         public static KeyController RowInfoKey = new KeyController("List of grid row sizes", "70F35A73-89D3-40D0-941D-D964F6CB5A8D");
         public static KeyController ColumnInfoKey = new KeyController("List of grid column sizes", "CC243D8B-8150-4C48-8DE7-F1E5EB59E3DC");
-        public static KeyController RowKey = new KeyController("GridRowNumber", "213520CB-3EE9-4948-A063-61E3B9D76953");
-        public static KeyController ColumnKey = new KeyController("GridColumnNumber", "37889D8E-86EB-4DCC-A30C-B3306E423AF2");
-        public static KeyController FontWeightKey = new KeyController("FontWeight", "02095FC5-6F49-46C1-A2DB-06FF894A5235");
-        public static KeyController FontSizeKey = new KeyController("FontSize", "75902765-7F0E-4AA6-A98B-3C8790DBF7CE");
+        public static KeyController RowKey = new KeyController("Grid row number", "213520CB-3EE9-4948-A063-61E3B9D76953");
+        public static KeyController ColumnKey = new KeyController("Grid column number", "37889D8E-86EB-4DCC-A30C-B3306E423AF2");
+        public static KeyController FontWeightKey = new KeyController("Font weight", "02095FC5-6F49-46C1-A2DB-06FF894A5235");
+        public static KeyController FontSizeKey = new KeyController("Font size", "75902765-7F0E-4AA6-A98B-3C8790DBF7CE");
         public static KeyController PresentationItemsKey = new KeyController("_Presentation Items", "5AB85A0A-7983-4E08-8E51-2D53BBFB30FF");
         public static KeyController DockedDocumentsLeftKey = new KeyController("_Documents docked on the left", "0CCFCC20-DAF7-4329-B615-605A54A86014");
         public static KeyController DockedDocumentsTopKey = new KeyController("_Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
@@ -115,23 +114,18 @@ namespace Dash
         public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
-        public static readonly KeyController SnapshotImage = new KeyController("SnapshotImage", "1D3D649D-A29D-41DF-8608-3822D8546EEA");
+        public static readonly KeyController SnapshotImage = new KeyController("Snapshot Image", "1D3D649D-A29D-41DF-8608-3822D8546EEA");
         public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
         public static KeyController AnnotationsKey = new KeyController("TopAnnotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
-        public static KeyController GoToRegionKey = new KeyController("GotoRegion", "5A19BC33-4A83-4961-A230-4A0F8C949022");
-        public static KeyController GoToRegionLinkKey = new KeyController("GotoRegionLink", "150C5291-0830-4095-9C18-FAE1F315599F");
+        public static KeyController GoToRegionKey = new KeyController("Goto Region", "5A19BC33-4A83-4961-A230-4A0F8C949022");
+        public static KeyController GoToRegionLinkKey = new KeyController("Goto Region Link", "150C5291-0830-4095-9C18-FAE1F315599F");
         public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
-        public static KeyController PresentationTitleKey = new KeyController("PresTitle", "3A153DAA-C2E1-40D9-9EE8-18CB09439EDD");
-        public static KeyController PresentationViewVisibleKey = new KeyController("_Presentation Active", "7D999F66-A6A9-4A74-B2B3-AD12812FAAB6");
-        public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
-        public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
-        public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
         public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
-        public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
+        public static KeyController SelectedSchemaRow = new KeyController("Selected Element", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
             TypeRenderer[type] = makeViewFunc;

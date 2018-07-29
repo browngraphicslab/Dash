@@ -335,7 +335,7 @@ namespace Dash
             }
 
             var first = vmGroups 
-                .Where(doc => /*doc?.DocumentCollection != null && */doc.DocumentCollection != MainPage.Instance.MainDocument)
+                .Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument)
                 .Take(MaxSearchResultSize).ToArray();
 
             foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
@@ -419,8 +419,6 @@ namespace Dash
         {
             if (!((sender as Grid)?.DataContext is SearchResultViewModel resultVm)) return;
 
-            var navigated = false;
-
             if (resultVm.DocumentCollection != null)
             {
                 var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
@@ -429,15 +427,8 @@ namespace Dash
                     MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
                 }
             }
-            else
-            {
-                navigated = MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
-            }
 
-            if (!navigated)
-            {
-                MainPage.Instance.DockManager.Dock(resultVm.ViewDocument, DockDirection.Right);
-            }
+            MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
         }
     }
 }

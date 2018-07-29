@@ -53,7 +53,7 @@ namespace Dash
             var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
             var fieldValue = inputs[FieldValueKey];
 
-            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.Name, fieldValue.GetValue(null).ToString()));
+            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.GetName(), fieldValue.GetValue(null).ToString()));
 
             var success = inputDoc.SetField(new KeyController(keyName), fieldValue, true);
 

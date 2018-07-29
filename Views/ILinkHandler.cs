@@ -11,14 +11,6 @@ namespace Dash
         ToSource,
         ToDestination
     }
-
-    public enum LinkHandledResult
-    {
-        Unhandled,
-        HandledClose,
-        HandledRemainOpen
-    }
-
     public interface ILinkHandler
     {
         /// <summary>
@@ -27,7 +19,6 @@ namespace Dash
         /// <param name="linkDoc">The link doc to try to follow</param>
         /// <param name="direction">The direction to follow the link in</param>
         /// <returns></returns>
-
-        LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction);
+        bool HandleLink(DocumentController linkDoc, LinkDirection direction);
     }
 }

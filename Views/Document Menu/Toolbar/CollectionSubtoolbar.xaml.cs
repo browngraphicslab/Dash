@@ -138,7 +138,7 @@ namespace Dash
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-	            _collection?.GetFirstAncestorOfType<DocumentView>().SetBackgroundColor(e);
+		    _collection?.GetFirstAncestorOfType<DocumentView>().SetBackgroundColor(e);
 	    }
     }
 }

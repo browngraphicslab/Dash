@@ -103,6 +103,7 @@ namespace Dash
                 copiedView.Loaded += PDFView_Loaded;
                 copiedView.Unloaded -= PDFView_Loaded;
             }
+
             DockedView dockedView = new DockedView(dir, toDock);
             dockedView.NestedLengthChanged += OnNestedLengthChanged;
             dockedView.ChangeView(copiedView);
@@ -116,9 +117,7 @@ namespace Dash
                 double length = 500;
 
                 if (toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null) == null)
-                {
                     toDock.SetField(KeyStore.DockedLength, new NumberController(length), true);
-                }
                 else
                     length = toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data;
 

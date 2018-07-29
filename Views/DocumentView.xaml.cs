@@ -1,7 +1,6 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -320,38 +319,9 @@ namespace Dash
             Tapped += DocumentView_OnTapped;
             // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
 
-            void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, true, true); }
-            void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, true); }
-            void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, true); }
-            void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, true); }
-            void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, false); }
-            void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, false); }
-            void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, false); }
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
-                if (this.IsRightBtnPressed())
-                    return;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
-                (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-
-                xTopLeftResizeControl.ManipulationDelta += ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta += ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta += ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta += ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta += ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta += ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta += ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta += ResizeBRunconstrained;
                 ResizeManipulationStarted?.Invoke(sender, null);
                 UndoManager.StartBatch();
 
@@ -377,15 +347,6 @@ namespace Dash
 
             void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
             {
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
                 ResizeHandles_restorePointerTracking();
                 this.GetDescendantsOfType<CustomPdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
@@ -394,6 +355,16 @@ namespace Dash
 
                 ResizeManipulationCompleted?.Invoke(sender, null);
             }
+
+            xTopLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true, true);
+            xTopRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, true);
+            xBottomLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, true);
+            xBottomRightResizeControl.ManipulationDelta +=
+                (s, e) => Resize(s as FrameworkElement, e, false, false, true);
+            xTopResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false, false);
+            xLeftResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, true, false);
+            xRightResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
+            xBottomResizeControl.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false, false);
 
             foreach (var handle in new Rectangle[]
             {
@@ -404,6 +375,7 @@ namespace Dash
             {
                 handle.Tag = handle.ManipulationMode;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+                handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
                 handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
                 handle.PointerPressed += (s, e) =>
                 {
@@ -605,11 +577,7 @@ namespace Dash
 
             //xValueBox.GotFocus += XValueBoxOnGotFocus;
 
-            LostFocus += (sender, args) =>
-            {
-                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
-                MainPage.Instance.xPresentationView.ClearHighlightedMatch();
-            };
+            LostFocus += (sender, args) => { if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry(); };
 
             MenuFlyout = xMenuFlyout;
 
@@ -618,15 +586,13 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
-
-            ToFront();
         }
 
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
         {
-            if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
+            if (!_clearByClose && e.NewText.Length < xKeyBox.Text.Length)
             {
-                if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
+                if (xKeyBox.Text.Length <= 2)
                 {
                     e.Cancel = true;
                 }
@@ -639,10 +605,6 @@ namespace Dash
                         xKeyBox.Focus(FocusState.Keyboard);
                     }
                 }
-            }
-            else
-            {
-                if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
             }
             _clearByClose = false;
         }
@@ -1180,10 +1142,8 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-            if (this.IsRightBtnPressed())
-                return;
             e.Handled = true;
-            if (PreventManipulation)
+            if (this.IsRightBtnPressed() || PreventManipulation)
             {
                 return;
             }
@@ -1470,6 +1430,7 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
+
             DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
             UndoManager.EndBatch();
         }
@@ -1537,8 +1498,6 @@ namespace Dash
             }
             //if (!Equals(MainPage.Instance.MainDocView)) Focus(FocusState.Programmatic);
 
-            MainPage.Instance.xPresentationView.TryHighlightMatches(this);
-
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1576,6 +1535,7 @@ namespace Dash
                 }
             }
         }
+
 		public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
 		{
 			//if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
@@ -1599,9 +1559,12 @@ namespace Dash
 			//}
 		}
 
-        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e) => DocumentView_PointerEntered();
+        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            DocumentView_PointerEntered();
+        }
 
-        public void DocumentView_PointerEntered()
+		public void DocumentView_PointerEntered()
 		{
 			//if (ViewModel != null)
 			//{
@@ -1878,40 +1841,7 @@ namespace Dash
                 if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
-                ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
-
-                Point where = e.GetPosition(MainPage.Instance.xCanvas);
-
-                inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
-
-                inputBox.AddKeyHandler(VirtualKey.Enter, args =>
-                {
-                    string entry = inputBox.Text.Trim();
-                    if (string.IsNullOrEmpty(entry)) return;
-
-                    inputBox.ClearHandlers(VirtualKey.Enter);
-
-                    void FadeOutOnCompleted(object sender2, object o1)
-                    {
-                        fadeOut.Completed -= FadeOutOnCompleted;
-
-                        inputBox.Text = "";
-                        inputBox.Visibility = Visibility.Collapsed;
-                        dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                    }
-
-                    fadeOut.Completed += FadeOutOnCompleted;
-                    fadeOut.Begin();
-
-                    args.Handled = true;
-                });
-
-                inputBox.Visibility = Visibility.Visible;
-                fadeIn.Begin();
-                inputBox.Focus(FocusState.Programmatic);
-                dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                dragDoc.Link(dropDoc, LinkContexts.None);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
@@ -2064,8 +1994,6 @@ namespace Dash
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (Equals(MainPage.Instance.MainDocView)) return;
-            
             MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
             if (ViewModel.LayoutDocument == null)
             {
@@ -2278,6 +2206,8 @@ namespace Dash
 
         private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
         {
+            if (xKeyBox.Text.Length < 2) return;
+
             var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
             if (split == null || split.Length != 2) return;
 
@@ -2295,6 +2225,7 @@ namespace Dash
                 xValueBox.Text = _lastValueInput;
                 return;
             }
+
 
             _articialChange = true;
             xValueBox.Text = val.GetValue(null).ToString();
@@ -2361,10 +2292,7 @@ namespace Dash
                 computedValue = new TextController(xValueBox.Text.Trim());
                 xValueErrorFailure.Begin();
             }
-
-            string key = components[1].Replace("_", " ");
-
-            target.SetField(new KeyController(key), computedValue, true);
+            target.SetField(new KeyController(components[1].Replace("_", " ")), computedValue, true);
 
             _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
             xKeyEditSuccess.Begin();

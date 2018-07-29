@@ -1,12 +1,10 @@
 ﻿using Dash.Models.DragModels;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -56,11 +54,19 @@ namespace Dash
                     OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 OldViewModel = null;
             };
+            Loaded += CollectionPageView_Loaded;
+
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
             this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
+        }
+
+        private void CollectionPageView_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<CollectionView>().xOuterGrid.BorderBrush =
+                Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
         }
 
         private void EnterPressed(KeyRoutedEventArgs obj)
@@ -76,14 +82,7 @@ namespace Dash
                 try
                 {
                     var result = _dsl.Run(keyString.Substring(1));
-                    if (result == null)
-                    {
-                        SetHackCaptionText(new TextController("Field not found, make sure the key name is correct and that you're accessing the right document!"));
-                    }
-                    else
-                    {
-                        SetHackCaptionText(result);
-                    }
+                    SetHackCaptionText(result);
                 }
                 catch (DSLException)
                 {
@@ -525,62 +524,14 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XTextBox_OnDrop(object sender, DragEventArgs e)
+        private void XTextBox_OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-            {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var showField = dragModel.DraggedKey;
 
-                if (xTextBox.Text.Length == 0)
-                {
-                    xTextBox.Text = "=this";
-                }
-
-                var fieldName = "";
-                foreach (var letter in showField.Name)
-                {
-                    if (!char.IsWhiteSpace(letter))
-                    {
-                        fieldName += letter;
-                    }
-                }
-                xTextBox.Text += "." + fieldName;
-
-                e.Handled = true;
-            }
         }
 
-        private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var docs = new List<DocumentController>();
-            int i = 0;
-            foreach (var docViewModel in ViewModel.DocumentViewModels)
-            {
-                var doc = docViewModel.DocumentController;
-                _scope = new OuterReplScope();
-                _scope.DeclareVariable("this", doc);
-                _dsl = new DSL(_scope);
-                var keyString = xTextBox.Text;
-                if (keyString?.StartsWith("=") ?? false)
-                {
-                    try
-                    {
-                        var result = _dsl.Run(keyString.Substring(1));
-                        var db = new DataBox(result, i * 50, i * 50);
-                        docs.Add(db.Document);
-                    }
-                    catch (DSLException)
-                    {
-                        continue;
-                    }
-                }
 
-                i++;
-            }
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document, true);
-            // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }

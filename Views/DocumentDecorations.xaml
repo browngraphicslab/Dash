@@ -34,7 +34,21 @@
         <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" />
 
-        <StackPanel x:Name="xStackPanel" Grid.Row="0" Grid.Column="2" Background="Transparent" Height="40" VerticalAlignment="Top">
+        <StackPanel Grid.Row="0" Grid.Column="2" Background="Transparent" Height="90" VerticalAlignment="Top">
+            <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" PointerReleased="AllEllipses_OnPointerReleased"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" PointerPressed="XOperatorEllipseBorder_OnPointerPressed" DragStarting="XOperatorEllipseBorder_OnDragStarting">
+                <Grid  >
+                    <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}" Width="25" Height="25"/>
+
+                    <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}" Width="25" Height="25"
+                         Visibility="Collapsed"/>
+                    <TextBlock x:Name="xOperatorEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Make Copy" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
+                        />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </Border>
             <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
@@ -43,15 +57,11 @@
                     <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" Visibility="Collapsed" Width="25" Height="25"/>
                     <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
+                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
                     />
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-
-            </StackPanel>
-            <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
             <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
@@ -62,13 +72,12 @@
                     <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
 
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
+                        <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="40" VerticalOffset="0"
                        />
                     </ToolTipService.ToolTip>
 
                 </Grid>
-                </Border>
-            </Grid>
+            </Border>
         </StackPanel>
     </Grid>
 </UserControl>

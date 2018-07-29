@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.System;
+﻿using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -11,36 +10,12 @@ namespace Dash
 {
     public sealed partial class PresentationViewTextBox : UserControl
     {
-        public bool HasBeenCustomRenamed
-        {
-            get => ((DocumentController)DataContext).GetField<BoolController>(KeyStore.PresTextRenamedKey)?.Data ?? false;
-            set => ((DocumentController)DataContext).SetField<BoolController>(KeyStore.PresTextRenamedKey, value, true);
-        }
+        public bool HasBeenCustomRenamed;
 
         public PresentationViewTextBox()
         {
             InitializeComponent();
-            KeyDown += (sender, args) =>
-            {
-                if (args.Key == VirtualKey.Enter)
-                {
-                    UpdateName();
-                    args.Handled = true;
-                }
-            };
-            Loaded += AddPresTitleListener;
-            Unloaded -= AddPresTitleListener;
-        }
-
-        private void AddPresTitleListener(object sender, RoutedEventArgs e)
-        {
-            ((DocumentController) DataContext)?.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
-        }
-
-        private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs, Context context)
-        {
-            if (dArgs.OldValue == null && dArgs.NewValue != null) SetCustomTitleBinding(dc);
-            else if (dArgs.NewValue == null) SetTitleBinding(dc);
+            KeyDown += (sender, args) => { if (args.Key == VirtualKey.Enter) UpdateName(); };
         }
 
         private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => TriggerEdit();
@@ -49,20 +24,12 @@ namespace Dash
 
         private void UpdateName()
         {
-            if (Textblock.Text.Equals(Textbox.Text))
-            {
-                Textblock.Visibility = Visibility.Visible;
-                Textbox.Visibility = Visibility.Collapsed;
-                return;
-            }
-
             Textblock.Text = Textbox.Text;
             if (!HasBeenCustomRenamed)
             {
                 HasBeenCustomRenamed = true;
-                var dc = (DocumentController) DataContext;
-                dc.SetField<TextController>(KeyStore.PresentationTitleKey, Textbox.Text, true);
-                SetCustomTitleBinding(dc);
+                Textblock.AddFieldBinding(TextBlock.TextProperty, null);
+                Textbox.AddFieldBinding(TextBox.TextProperty, null);
             }
             Textblock.Visibility = Visibility.Visible;
             Textbox.Visibility = Visibility.Collapsed;
@@ -78,17 +45,13 @@ namespace Dash
         // binding to the title of the corresponding document
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (!(args.NewValue is DocumentController dc)) return;
-
-            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null).GetValue(null).ToString();
-
-            if (string.IsNullOrEmpty(currentTitle))
+            if (args.NewValue is DocumentController dc)
             {
-                dc.SetField(KeyStore.TitleKey, new TextController("<untitled>"), true);
+                string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null).GetValue(null).ToString();
+                if (string.IsNullOrEmpty(currentTitle))
+                    dc.SetField(KeyStore.TitleKey, new TextController("<untitled>"), true);
+                SetTitleBinding(dc);
             }
-
-            if (HasBeenCustomRenamed || dc.GetField(KeyStore.PresentationTitleKey) != null) SetCustomTitleBinding(dc);
-            else SetTitleBinding(dc);
         }
 
         public void ResetTitle()
@@ -99,27 +62,14 @@ namespace Dash
 
         private void SetTitleBinding(DocumentController dc)
         {
-            dc.SetField(KeyStore.PresentationTitleKey, null, true);
-            var initialBinding = new FieldBinding<TextController>
+            var binding = new FieldBinding<TextController>
             {
                 Document = dc,
                 Key = KeyStore.TitleKey,
                 Mode = BindingMode.OneWay
             };
-            Textbox.AddFieldBinding(TextBox.TextProperty, initialBinding);
-            Textblock.AddFieldBinding(TextBlock.TextProperty, initialBinding);
-        }
-
-        private void SetCustomTitleBinding(DocumentController dc)
-        {
-            var renamedBinding = new FieldBinding<TextController>
-            {
-                Document = dc,
-                Key = KeyStore.PresentationTitleKey,
-                Mode = BindingMode.TwoWay
-            };
-            Textblock.AddFieldBinding(TextBlock.TextProperty, renamedBinding);
-            Textbox.AddFieldBinding(TextBox.TextProperty, renamedBinding);
+            Textbox.AddFieldBinding(TextBox.TextProperty, binding);
+            Textblock.AddFieldBinding(TextBlock.TextProperty, binding);
         }
     }
 }
