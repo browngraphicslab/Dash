@@ -1562,8 +1562,8 @@ namespace Dash
                     if (!deselect)
                     {
                         SelectionManager.DeselectAll();
-                        SelectionManager.Select(this);
                     }
+                    SelectionManager.Select(this);
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)
