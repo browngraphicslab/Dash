@@ -30,7 +30,6 @@ namespace Dash
 
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
-            SelectionManager.RefreshSelected(this.GetDescendantsOfType<DocumentView>());
             var selected = SelectionManager.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {

@@ -293,7 +293,7 @@ namespace Dash
                 //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
                 //if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
             };
-            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
+            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; SelectionManager.Deselect(this);  };
 
             PointerPressed += (sender, e) =>
             {
@@ -1871,7 +1871,7 @@ namespace Dash
         #endregion
 
 
-        void This_Drop(object sender, DragEventArgs e)
+        public void This_Drop(object sender, DragEventArgs e)
         {
             //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
@@ -1881,9 +1881,6 @@ namespace Dash
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 
-                var dropDoc = ViewModel.DocumentController;
-                if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                    dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
                 ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
                 Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
@@ -1891,34 +1888,49 @@ namespace Dash
 
                 Point where = e.GetPosition(MainPage.Instance.xCanvas);
 
-                inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
-
-                inputBox.AddKeyHandler(VirtualKey.Enter, args =>
+                if (dragModel.LinkType != null)
                 {
-                    string entry = inputBox.Text.Trim();
-                    if (string.IsNullOrEmpty(entry)) return;
+                    var dropDoc = ViewModel.DocumentController;
+                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                    dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+                    dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                }
+                else
+                {
 
-                    inputBox.ClearHandlers(VirtualKey.Enter);
+                    inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
 
-                    void FadeOutOnCompleted(object sender2, object o1)
+                    inputBox.AddKeyHandler(VirtualKey.Enter, args =>
                     {
-                        fadeOut.Completed -= FadeOutOnCompleted;
+                        string entry = inputBox.Text.Trim();
+                        if (string.IsNullOrEmpty(entry)) return;
 
-                        inputBox.Text = "";
-                        inputBox.Visibility = Visibility.Collapsed;
-                        dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                    }
+                        inputBox.ClearHandlers(VirtualKey.Enter);
 
-                    fadeOut.Completed += FadeOutOnCompleted;
-                    fadeOut.Begin();
+                        void FadeOutOnCompleted(object sender2, object o1)
+                        {
+                            fadeOut.Completed -= FadeOutOnCompleted;
 
-                    args.Handled = true;
-                });
+                            inputBox.Text = "";
+                            inputBox.Visibility = Visibility.Collapsed;
+                            var dropDoc = ViewModel.DocumentController;
+                            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                            dragDoc.Link(dropDoc, LinkContexts.None, entry);
+                            dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                        }
 
-                inputBox.Visibility = Visibility.Visible;
-                fadeIn.Begin();
-                inputBox.Focus(FocusState.Programmatic);
-                dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                        fadeOut.Completed += FadeOutOnCompleted;
+                        fadeOut.Begin();
+
+                        args.Handled = true;
+                    });
+
+                    inputBox.Visibility = Visibility.Visible;
+                    fadeIn.Begin();
+                    inputBox.Focus(FocusState.Programmatic);
+                }
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
