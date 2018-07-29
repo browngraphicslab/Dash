@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
@@ -962,7 +962,6 @@ namespace Dash
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
             
-
             if (this.IsCtrlPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);

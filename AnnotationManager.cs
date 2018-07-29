@@ -38,7 +38,6 @@ namespace Dash
         //TODO This can be made static and can take in a framework element instead of IEnumerable<ILinkHandler>
 	    public void FollowRegion(DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
         {
-          
             _linkFlyout.Items?.Clear();
             var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData.ToList() ?? new List<DocumentController>();
 	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData.ToList() ?? new List<DocumentController>();
