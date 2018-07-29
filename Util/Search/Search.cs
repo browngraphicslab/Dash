@@ -15,7 +15,7 @@ namespace Dash
         // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.Select(node =>
+            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
             {
                 var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
                 int matchLength = stringSearchModel == null ? 0 : (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
@@ -29,7 +29,7 @@ namespace Dash
         // Searches the ViewDocument and DataDocuments of all DocumentControllers in the Dash View for a given query string
         public static IEnumerable<SearchResult> SearchByQuery(string query, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.Select(node =>
+            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
             {
                 var relatedFields = new List<string>();
                 var relatedStrings = new List<string>();
@@ -177,7 +177,7 @@ namespace Dash
                 var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
                 if (resultDocs is BaseListController resultList)
                 {
-                    var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument) ||
+                    var res = DocumentTree.MainPageTree.GetAllNodes().Where(node => resultList.Data.Contains(node.ViewDocument) ||
                     resultList.Data.Contains(node.DataDocument));
                     //return resultList.Data.Select(fcb => new SearchResult(fcb));
 
@@ -396,7 +396,7 @@ namespace Dash
 
         private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search, string term)
         {
-            var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
+            var results = DocumentTree.MainPageTree.GetAllNodes().Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
             return results.Select(res => new SearchResult(res, new List<string>().Append(" >> N/A").ToList(), new List<string>().Append($"Negation Search: \"{term}\"").ToList())).ToList();
         }
 
@@ -479,7 +479,7 @@ namespace Dash
         {
             var doc = SearchIndividualById(id);
             var dataDoc = doc.GetDataDocument();
-            var filteredNodes = DocumentTree.MainPageTree.Where(node => node.DataDocument.Equals(dataDoc));
+            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Where(node => node.DataDocument.Equals(dataDoc));
             if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
             return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
         }

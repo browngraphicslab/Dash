@@ -107,7 +107,7 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    if (!MainPage.Instance.IsShiftPressed())
+                    if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsRightBtnPressed())
                     {
                         SelectionManager.DeselectAll();
                         SelectionManager.Select(docView);
@@ -335,6 +335,8 @@ namespace Dash
                 {
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                     {
+                        // get region doc
+                        var region = theDoc.GetDataDocument().GetRegionDefinition();
                         _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
@@ -415,7 +417,7 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var dragDoc = dragModel.DraggedDocument;
 
-                if (dragModel.LinkSourceView != null)
+                if (dragModel.LinkSourceView != null && !MainPage.Instance.IsShiftPressed())
                 {
                     e.Handled = false;
                     return;

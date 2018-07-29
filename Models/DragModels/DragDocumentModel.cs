@@ -21,6 +21,8 @@ namespace Dash.Models.DragModels
         /// </summary>
         public bool ShowViewCopy;
 
+        public string LinkType = null;
+
         /// <summary>
         /// The XAML view that originated the drag operation
         /// </summary>
@@ -79,29 +81,29 @@ namespace Dash.Models.DragModels
                 return dbox;
             }
 
-            // create an instance with the same view
+            // create a key value pane
             var ctrlState = MainPage.Instance.IsCtrlPressed();
             if (ctrlState) return DraggedDocument.GetDataInstance(where);
-
-            // create a view copy
-            var shiftState = MainPage.Instance.IsShiftPressed() || ShowViewCopy || forceShowViewCopy;
-            if (shiftState)
+            
+            var altState = MainPage.Instance.IsAltPressed();
+            if (altState)
             {
-                var vcopy = DraggedDocument.GetViewCopy(where);
-                // when we drop a collection that has no bounds (e.g., a workspace), then we create
-                // an arbitrary size for it and zero out its pan position so that it will FitToParent
-                if (vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType) &&
-                    double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data))
-                {
-                    vcopy.SetWidth(500);
-                    vcopy.SetHeight(300);
-                    vcopy.SetFitToParent(true);
-                }
-                return vcopy;
+                // create a key value pane
+                return DraggedDocument.GetKeyValueAlias(where);
             }
 
-            // create a key value pane
-            return DraggedDocument.GetKeyValueAlias(where);
+            // create a view copy
+            var vcopy = DraggedDocument.GetViewCopy(where);
+            // when we drop a collection that has no bounds (e.g., a workspace), then we create
+            // an arbitrary size for it and zero out its pan position so that it will FitToParent
+            if (vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType) &&
+                double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data))
+            {
+                vcopy.SetWidth(500);
+                vcopy.SetHeight(300);
+                vcopy.SetFitToParent(true);
+            }
+            return vcopy;
         }
     }
 }
