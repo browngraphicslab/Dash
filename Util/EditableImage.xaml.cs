@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -414,6 +415,11 @@ namespace Dash
             {
                 _annotationOverlay.EndAnnotation(point.Position);
                 e.Handled = true;
+                if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+                {
+                    SelectionManager.DeselectAll();
+                    SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+                }
             }
         }
 

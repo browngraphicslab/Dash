@@ -51,7 +51,7 @@ namespace Dash
 
         private readonly DocumentController _mainDocument;
         public readonly RegionGetter _regionGetter;
-        private readonly ListController<DocumentController> _regionList;
+        public readonly ListController<DocumentController> RegionDocsList;
         private readonly InkController _inkController;
 
         public delegate DocumentController RegionGetter(AnnotationType type);
@@ -91,9 +91,13 @@ namespace Dash
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)
         {
+            // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = this.GetAncestorsOfType<ILinkHandler>().ToList();
+            // NewAnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, this);
             _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
+
+            // we still want to follow the region even if it's already selected, so this code's position matters
             if (_selectedRegion == selectable)
             {
                 return;
@@ -119,12 +123,12 @@ namespace Dash
 
             _annotationManager = new AnnotationManager(this);
 
-            _regionList =
+            RegionDocsList =
                 _mainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
             _inkController = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
-            foreach (var documentController in _regionList)
+            foreach (var documentController in RegionDocsList)
             {
                 RenderAnnotation(documentController);
             }
@@ -143,6 +147,7 @@ namespace Dash
         {
             switch (documentController.GetAnnotationType())
             {
+                // regions and selectons follow the same functionality
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
                     RenderRegion(documentController);
@@ -159,17 +164,17 @@ namespace Dash
 
         private void OnUnloaded(object o, RoutedEventArgs routedEventArgs)
         {
-            _regionList.FieldModelUpdated -= RegionListOnFieldModelUpdated;
+            RegionDocsList.FieldModelUpdated -= RegionDocsListOnFieldModelUpdated;
             _inkController.FieldModelUpdated -= _inkController_FieldModelUpdated;
         }
 
         private void OnLoaded(object o, RoutedEventArgs routedEventArgs)
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
-            _regionList.FieldModelUpdated += RegionListOnFieldModelUpdated;
+            RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
         }
 
-        private void RegionListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
             var listArgs = fieldUpdatedEventArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
             if (listArgs == null)
@@ -315,7 +320,7 @@ namespace Dash
                 "If returning the main document, return it immediately, don't fall through to here");
             annotation.SetRegionDefinition(_mainDocument);
             annotation.SetAnnotationType(_currentAnnotationType);
-            _regionList.Add(annotation);
+            RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
 
             return annotation;
@@ -474,7 +479,7 @@ namespace Dash
             annotation.GetDataDocument()
                 .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
             annotation.Link(richText.Document, LinkContexts.PushPin);
-            _regionList.Add(annotation);
+            RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation);
         }
@@ -484,7 +489,13 @@ namespace Dash
             var point = region.GetPosition() ?? new Point(0, 0);
             point.X -= 10;
             point.Y -= 10;
-            var pin = new Ellipse {Width = 10, Height = 10, Fill = new SolidColorBrush(Colors.OrangeRed)};
+            var pin = new Ellipse
+            {
+                Width = 10,
+                Height = 10,
+                Fill = new SolidColorBrush(Colors.OrangeRed),
+                IsDoubleTapEnabled = false
+            };
             Canvas.SetLeft(pin, point.X - pin.Width / 2);
             Canvas.SetTop(pin, point.Y - pin.Height / 2);
             XAnnotationCanvas.Children.Add(pin);
@@ -559,16 +570,23 @@ namespace Dash
             {
                 return;
             }
+
             _annotatingRegion = false;
 
             if (_regionRectangles.Count > 0)
             {
-            _regionRectangles[_regionRectangles.Count - 1] =
-                new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
-                    XPreviewRect.Height);
+                _regionRectangles[_regionRectangles.Count - 1] =
+                    new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
+                        XPreviewRect.Height);
 
             }
-            var viewRect = new Rectangle {Width = XPreviewRect.Width, Height = XPreviewRect.Height, Fill = XPreviewRect.Fill};
+
+            var viewRect = new Rectangle
+            {
+                Width = XPreviewRect.Width,
+                Height = XPreviewRect.Height,
+                Fill = XPreviewRect.Fill
+            };
             XAnnotationCanvas.Children.Add(viewRect);
             Canvas.SetLeft(viewRect, Canvas.GetLeft(XPreviewRect));
             Canvas.SetTop(viewRect, Canvas.GetTop(XPreviewRect));
@@ -585,7 +603,6 @@ namespace Dash
             r.Visibility = Visibility.Visible;
             r.Background = new SolidColorBrush(Colors.Goldenrod);
             Canvas.SetTop(r, region.GetPosition().Value.Y);
-            Canvas.SetZIndex(r, 1000000);
             //r.SetBinding(VisibilityProperty, new Binding
             //{
             //    Source = this,
@@ -694,6 +711,13 @@ namespace Dash
 
         public void StartTextSelection(Point p)
         {
+            if (!this.IsCtrlPressed())
+            {
+                if (_currentSelections.Any() || _regionRectangles.Any())
+                {
+                    ClearSelection();
+                }
+            }
             _selectionStartPoint = p;
         }
 
@@ -855,13 +879,6 @@ namespace Dash
 
         private void SelectElements(int startIndex, int endIndex)
         {// if control isn't pressed, reset the selection
-            if (!this.IsCtrlPressed())
-            {
-                if (_currentSelections.Count > 1 || _regionRectangles.Any())
-                {
-                    ClearSelection();
-                }
-            }
 
             // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
             if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
@@ -910,18 +927,19 @@ namespace Dash
 
         #endregion
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false) &&
-                _regionList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data
+                     .Equals(nameof(LinkContexts.PushPin)) ?? false) &&
+                RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
                 var docView = new DocumentView
                 {
-                    DataContext = new DocumentViewModel(dest) {Undecorated = true, DecorationState = false},
-                    BindRenderTransform = true
+                    DataContext = new DocumentViewModel(dest) {Undecorated = true},
+                    BindRenderTransform = true,
+                    Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)}
                 };
-                docView.Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)};
                 XAnnotationCanvas.Children.Add(docView);
                 SelectionManager.DeselectAll();
                 SelectionManager.Select(docView);
@@ -932,10 +950,10 @@ namespace Dash
                         XAnnotationCanvas.Children.Remove(docView);
                     }
                 };
-                return true;
+                return LinkHandledResult.HandledClose;
             }
 
-            return false;
+            return LinkHandledResult.Unhandled;
         }
     }
 }

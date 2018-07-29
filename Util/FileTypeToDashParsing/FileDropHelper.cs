@@ -86,6 +86,8 @@ namespace Dash
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
                 {
+                    documentController.SetTitle(files[0].Name);
+                    documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.GetPositionField().Data = where;
                     documentController.GetDataDocument()?
                         .SetField<TextController>(KeyStore.WebContextKey, fileType.FileUri?.AbsoluteUri, true);
@@ -181,7 +183,7 @@ namespace Dash
         private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
-            if (storageItem.FileType.EndsWith(".url"))
+            if (storageItem.FileType.EndsWith(".url") && dataView.Contains(StandardDataFormats.WebLink))
             {
                 var link = await dataView.GetWebLinkAsync();
                 // if the link does not have a filetype assume its a web link

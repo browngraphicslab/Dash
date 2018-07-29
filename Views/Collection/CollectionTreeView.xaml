@@ -31,11 +31,37 @@
         <TextBox x:Name="XFilterBox" FontSize="12" Grid.Row="1" Margin="10" BorderThickness="1.5" PlaceholderText="filter notes"/>
         <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"/>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3" Padding="20, 0">
+            <StackPanel.Resources>
+                <Storyboard x:Name="xLinkInputIn" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xLinkInputBox"
+                        Storyboard.TargetProperty="MinHeight"
+                        To="50"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xLinkInputOut" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xLinkInputBox"
+                        Storyboard.TargetProperty="MinHeight"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+            </StackPanel.Resources>
             <Button x:Name="MakePdf" HorizontalAlignment="Stretch" TabIndex="-1" Margin="0, 0, 0, 5" Padding="10, 5" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
             <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="TogglePresentationMode">Presentation Mode</Button>
             <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="AddWorkspace_OnTapped">Add Workspace</Button>
             <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 20" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="Snapshot_OnTapped">Snapshot Workspace</Button>
+            <local:ActionTextBox 
+                x:Name="xLinkInputBox"
+                Height="0"
+                Margin="0, 0, 0, 19"
+                PlaceholderText="Link title..."
+                Visibility="Collapsed"
+                Padding="12, 12"
+                x:FieldModifier="public"/>
         </StackPanel>
 
     </Grid>

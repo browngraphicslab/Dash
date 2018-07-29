@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Dash.Models.DragModels;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -234,12 +235,12 @@ namespace Dash
             //    UpdateEllipses(_newpoint);
             //}
         }
-
+        static HashSet<string> LinkNames = new HashSet<string>();
         private void SetPositionAndSize()
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
-
+            
             foreach (var doc in SelectedDocs)
             {
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
@@ -249,6 +250,22 @@ namespace Dash
 
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
+
+                GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
+            }
+
+
+            rebuildMenuIfNeeded();
+
+            // update menu items to point to the currently selected document
+            foreach (var item in xButtonsPanel.Children.OfType<ContentPresenter>())
+            {
+                var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
+                var names = new HashSet<string>();
+                GetLinkTypes(target, names);
+                var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
+                item.Background = names.Contains(menuLinkName) ? new SolidColorBrush(new Windows.UI.Color() { A = 0x10, R = 0, G = 0xff, B = 0 }) : null;
+                item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
             }
 
             if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) || double.IsNegativeInfinity(botRight.X) || double.IsNegativeInfinity(botRight.Y))
@@ -263,7 +280,79 @@ namespace Dash
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            // xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+        }
+
+        private void rebuildMenuIfNeeded()
+        {
+            if (xButtonsPanel.Children.Count == LinkNames.Count)
+                return;
+            xButtonsPanel.Children.Clear();
+            xStackPanel.Height = 40;
+            foreach (var linkName in LinkNames)
+            {
+                var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                var g = new Grid();
+                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
+                g.Children.Add(tb);
+                var button = new ContentPresenter() { Content = g, Width = 22, Height = 22, CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
+                button.DragStarting += (s, args) =>
+                {
+                    var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView,string>).Item1;
+                    if (doq != null)
+                    {
+                        args.Data.Properties[nameof(DragDocumentModel)] =
+                            new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName };
+                        args.AllowedOperations =
+                            DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                        args.Data.RequestedOperation =
+                            DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                        doq.ViewModel.DecorationState = false;
+                    }
+                };
+                ToolTip toolTip = new ToolTip();
+                toolTip.Content = linkName;
+                toolTip.HorizontalOffset = 5;
+                toolTip.Placement = PlacementMode.Right;
+                ToolTipService.SetToolTip(button, toolTip);
+                xButtonsPanel.Children.Add(button);
+                button.PointerEntered += (s, e) => toolTip.IsOpen = true;
+                button.PointerExited += (s, e) => toolTip.IsOpen = false;
+                xStackPanel.Height += 22;
+
+                button.Tapped += (s, e) =>
+                {
+                    var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
+                    if (doq != null)
+                        new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController, doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
+                };
+                button.Tag = new Tuple<DocumentView, string>(null, linkName);
+            }
+        }
+
+        private static void GetLinkTypes(DocumentController doc, HashSet<string> linknames)
+        {
+            if (doc == null)
+                return;
+            var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
+            if (linkedTo != null)
+                foreach (var l in linkedTo) { 
+                    if (doc.GetLinks(KeyStore.LinkToKey) != null)
+                        linknames.Add(l.Title);
+                }
+            var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
+            if (linkedFrom != null)
+                foreach (var l in linkedFrom)
+                {
+                    if (doc.GetLinks(KeyStore.LinkFromKey) != null)
+                        linknames.Add(l.Title);
+                }
+            var regions = doc.GetDataDocument().GetRegions();
+            if (regions != null)
+                foreach (var region in regions.TypedData)
+                {
+                    GetLinkTypes(region.GetDataDocument(), linknames);
+                }
         }
 
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -326,42 +415,11 @@ namespace Dash
             }
         }
 
-        private void XOperatorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-            }
-
-            e.Handled = false;
-        }
-
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             foreach (var doc in SelectedDocs)
             {
                 doc.ManipulationMode = ManipulationModes.All;
-            }
-        }
-
-        private void XOperatorEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                //var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-                //if (selected?.Count() > 0)
-                //{
-                //    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-                //            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-                //}
-                //else
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false);
-                args.AllowedOperations =
-                    DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation =
-                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                doc.ViewModel.DecorationState = false;
             }
         }
 

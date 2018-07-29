@@ -132,31 +132,34 @@ namespace Dash
          */
         private void ShapeOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var switchList = new List<string>
+            using (UndoManager.GetBatchHandle())
             {
-                BackgroundShape.AdornmentShape.Rectangular.ToString(),
-                BackgroundShape.AdornmentShape.Elliptical.ToString(),
-                BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
-                BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
-                BackgroundShape.AdornmentShape.Pentagonal.ToString(),
-                BackgroundShape.AdornmentShape.Hexagonal.ToString(),
-                BackgroundShape.AdornmentShape.Octagonal.ToString(),
-                BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
-                BackgroundShape.AdornmentShape.CustomStar.ToString(),
-                BackgroundShape.AdornmentShape.Clover.ToString(),
-            };
+                var switchList = new List<string>
+                {
+                    BackgroundShape.AdornmentShape.Rectangular.ToString(),
+                    BackgroundShape.AdornmentShape.Elliptical.ToString(),
+                    BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
+                    BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
+                    BackgroundShape.AdornmentShape.Pentagonal.ToString(),
+                    BackgroundShape.AdornmentShape.Hexagonal.ToString(),
+                    BackgroundShape.AdornmentShape.Octagonal.ToString(),
+                    BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                    BackgroundShape.AdornmentShape.CustomStar.ToString(),
+                    BackgroundShape.AdornmentShape.Clover.ToString(),
+                };
 
-            CheckForCustom();
+                CheckForCustom();
 
-            var index = xShapeOptionsDropdown.SelectedIndex;
-            var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
+                var index = xShapeOptionsDropdown.SelectedIndex;
+                var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
+                _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
 
-            if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
+                if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
             
-            var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
-            xSideCounter.Text = safeSideCount.ToString("G");
+                var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
+                _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
+                xSideCounter.Text = safeSideCount.ToString("G");
+            }
         }
 
         private void CheckForCustom()

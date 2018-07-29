@@ -887,6 +887,7 @@ namespace Dash
 
                                 foreach (DocumentView v in views)
                                 {
+                                    v.ViewModel.LayoutDocument.IsMovingCollections = true;
                                     v.DeleteDocument();
                                 }
                             });
@@ -947,16 +948,22 @@ namespace Dash
                 rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
         }
 
-        public void RenderPreviewTextbox(Point where)
+        DocumentController _linkDoc = null;
+        string _linkTypeString = "";
+        public void RenderPreviewTextbox(Point where, DocumentController linkDoc = null, string typeString="", string defaultString="")
         {
-            previewTextBuffer = "";
+            _linkDoc = linkDoc;
+            _linkTypeString = typeString;
+
+            previewTextBuffer = defaultString;
             if (previewTextbox != null)
             {
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                previewTextbox.Visibility = Visibility.Visible;
                 AddHandler(KeyDownEvent, previewTextHandler, false);
-                previewTextbox.Text = string.Empty;
+                previewTextbox.Text = defaultString;
+                previewTextbox.SelectAll();
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
                 previewTextbox.LostFocus += PreviewTextbox_LostFocus;
                 previewTextbox.Focus(FocusState.Pointer);
@@ -1013,6 +1020,7 @@ namespace Dash
                 RemoveHandler(KeyDownEvent, previewTextHandler);
                 previewTextbox.Visibility = Visibility.Collapsed;
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+                _linkDoc = null;
             }
         }
 
@@ -1046,6 +1054,14 @@ namespace Dash
                     ViewModel.Paste(Clipboard.GetContent(), where);
                     
                     previewTextbox.Visibility = Visibility.Collapsed;
+
+                    _linkDoc = null;
+                }
+                else if (this.IsCtrlPressed())
+                {
+                    //if we can access rich text view here, we can actually respond to these events
+                    //either call the key down event in richtextbox or handle diff control cases here
+                    LoadNewActiveTextBox("", where);
                 }
                 else
                 {
@@ -1067,12 +1083,22 @@ namespace Dash
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
                     var postitNote = new MarkdownNote(text: text).Document;
-                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                     Actions.DisplayDocument(ViewModel, postitNote, where);
+                    if (_linkDoc != null)
+                    {
+                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                    }
                 }
                 else
                 {
                     var postitNote = new RichTextNote(text: text).Document;
                     Actions.DisplayDocument(ViewModel, postitNote, where);
+                    if (_linkDoc != null)
+                    {
+                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                    }
                 }
             }
         }
@@ -1255,6 +1281,7 @@ namespace Dash
         {
             RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
+            _linkDoc = null;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             var richEditBox = sender as RichEditBox;
@@ -1271,6 +1298,7 @@ namespace Dash
 
             RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
+            _linkDoc = null;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             textBox.GotFocus -= TextBox_GotFocus;
