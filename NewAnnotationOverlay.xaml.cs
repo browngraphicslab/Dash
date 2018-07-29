@@ -82,6 +82,24 @@ namespace Dash
         {
             if (region.Equals(_selectedRegion?.RegionDocument))
             {
+                if (_selectedRegion.Selected)
+                {
+                    _selectedRegion.Deselect();
+                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
+                    if (vm != null)
+                    {
+                        vm.SearchHighlightState = new Thickness(0);
+                    }
+                }
+                else
+                {
+                    _selectedRegion.Select();
+                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
+                    if (vm != null)
+                    {
+                        vm.SearchHighlightState = new Thickness(8);
+                    };
+                }
                 return;
             }
             _selectedRegion?.Deselect();

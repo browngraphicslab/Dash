@@ -98,6 +98,25 @@ namespace Dash
                         },
 				ShowResize = false
             };
+
+            if (toDock.DocumentType.Equals(PdfBox.DocumentType) || toDock.DocumentType.Equals(ImageBox.DocumentType))
+            {
+                toDock.AddFieldUpdatedListener(KeyStore.GoToRegionKey,
+                    delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+                        Context context)
+                    {
+                        if (args.NewValue == null)
+                        {
+                            return;
+                        }
+
+                        copiedView.GetDescendantsOfType<NewAnnotationOverlay>().ToList()
+                            .ForEach(i => i.SelectRegion(args.NewValue as DocumentController));
+
+                        sender.RemoveField(KeyStore.GoToRegionKey);
+                    });
+            }
+
             if (toDock.DocumentType.Equals(PdfBox.DocumentType))
             {
                 copiedView.Loaded += PDFView_Loaded;
