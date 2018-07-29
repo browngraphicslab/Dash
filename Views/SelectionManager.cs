@@ -51,6 +51,7 @@ namespace Dash
 
         public static void Select(DocumentView doc)
         {
+            // any reason why we don't already check for this? I had to add it in recently
             if (!SelectedDocs.Contains(doc))
             {
                 var args = new DocumentSelectionChangedEventArgs();
