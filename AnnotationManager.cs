@@ -65,8 +65,9 @@ namespace Dash
 
 	        if (linkCount == 1)
 	        {
-
-                FollowLink(linkToCount == 0 ? linksFrom?[0] : linksTo?[0], linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
+                var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
+                if (link.Title == linkType)
+                    FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {

@@ -1229,7 +1229,9 @@ namespace Dash
                             if (dragModel.LinkType != null)
                             {
                                 var noteLocation = e.GetPosition(freebase2?.GetCanvas());
-                                freebase2.RenderPreviewTextbox(noteLocation, dragDoc, dragModel.LinkType, "");
+                                if (freebase2 != null)
+                                    freebase2.RenderPreviewTextbox(noteLocation, dragDoc, dragModel.LinkType, "");
+                                else e.Handled = false;
                                 return;
                             }
 							// note is the new annotation textbox that is created
@@ -1266,10 +1268,12 @@ namespace Dash
                                     }
                                     else
                                     {
-                                        var note = new RichTextNote("<annotation>", where).Document;
-                                        note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
-                                        dragDoc.Link(note, LinkContexts.None, entry);
-                                        AddDocument(note);
+                                        dragModel.LinkType = entry;
+                                        (senderView as FrameworkElement).GetFirstAncestorOfType<DocumentView>().This_Drop(sender, e);
+                                        //var note = new RichTextNote("<annotation>", where).Document;
+                                        //note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                                        //dragDoc.Link(note, LinkContexts.None, entry);
+                                        //AddDocument(note);
                                     }
                                     inputBox.Visibility = Visibility.Collapsed;
                                 }
