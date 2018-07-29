@@ -34,6 +34,12 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
+        public enum PresentationViewState
+        {
+            Expanded,
+            Collapsed
+        }
+
         public static MainPage Instance { get; private set; }
 
         public BrowserView WebContext => BrowserView.Current;
@@ -44,20 +50,24 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
 
-        private bool IsPresentationModeToggled = false;
+        public PresentationViewState CurrPresViewState
+        {
+            get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
+            set
+            {
+                bool state = value == PresentationViewState.Expanded;
+                MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
+            }
+        }
 
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
 
         public Popup LayoutPopup => xLayoutPopup;
-
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
-
-
-
 
         public MainPage()
         {
@@ -101,6 +111,19 @@ namespace Dash
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
+            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
+            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
+        }
+
+        private void HideLinkInputBox()
+        {
+            xLinkInputBox.ClearHandlers(new[] { VirtualKey.Enter });
+            xLinkInputOut.Begin();
+            xLinkInputOut.Completed += (o, o1) =>
+            {
+                xLinkInputBox.Text = "";
+                xLinkInputBox.Visibility = Visibility.Collapsed;
+            };
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -129,12 +152,8 @@ namespace Dash
                 }
                 LoadSettings();
 
-                var presentationItems =
-                    MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                if (presentationItems != null)
-                {
-                    xPresentationView.DataContext = new PresentationViewModel(presentationItems);
-                }
+                var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -167,6 +186,8 @@ namespace Dash
                 xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
+
+                if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
 
             await DotNetRPC.Init();
@@ -773,31 +794,71 @@ namespace Dash
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
 
-        public void TogglePresentationMode()
+        public void SetPresentationState(bool expand, bool animate = true)
         {
-            IsPresentationModeToggled = !IsPresentationModeToggled;
-            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            if (IsPresentationModeToggled)
+            xMainTreeView.TogglePresentationMode(expand);
+
+            if (expand)
             {
-                xUtilTabColumn.Width = new GridLength(330);
+                CurrPresViewState = PresentationViewState.Expanded;
+                if (animate)
+                {
+                    xPresentationExpand.Begin();
+                    xPresentationExpand.Completed += (sender, o) =>
+                    {
+                        xPresentationView.xContentIn.Begin();
+                        xPresentationView.xHelpIn.Begin();
+                    };
+                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
+                    xPresentationView.xSettingsIn.Completed += (sender, o) =>
+                    {
+                        var isChecked = xPresentationView.xShowLinesButton.IsChecked;
+                        if (isChecked != null && (bool) isChecked) xPresentationView.ShowLines();
+                    };
+                }
+                else
+                {
+                    xUtilTabColumn.MinWidth = 300;
+                    xPresentationView.xTransportControls.Height = 60;
+                    xPresentationView.SimulateAnimation(true);
+                }
+                
             }
             else
             {
-                //close presentation
-                xUtilTabColumn.Width = new GridLength(0);
-                var presView = Instance.xPresentationView;
-                presView.ShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                CurrPresViewState = PresentationViewState.Collapsed;
+                //open presentation
+                if (animate)
+                {
+                    xPresentationView.TryPlayStopClick();
+                    xPresentationView.xSettingsOut.Begin();
+                    xPresentationView.xContentOut.Begin();
+                    xPresentationView.xHelpOut.Begin();
+                    xPresentationRetract.Begin();
+                }
+                else
+                {
+                    xUtilTabColumn.MinWidth = 0;
+                    xPresentationView.xTransportControls.Height = 0;
+                    xPresentationView.SimulateAnimation(false);
+                }
+
+                PresentationView presView = Instance.xPresentationView;
+                presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
-
         }
 
         public void PinToPresentation(DocumentController dc)
         {
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
-            if (!IsPresentationModeToggled)
-                TogglePresentationMode();
-
+            if (CurrPresViewState == PresentationViewState.Collapsed)
+            {
+                TextBlock help = xPresentationView.xHelpPrompt;
+                help.Opacity = 0;
+                help.Visibility = Visibility.Collapsed;
+                SetPresentationState(true);
+            }
             xPresentationView.DrawLinesWithNewDocs();
         }
 
@@ -812,8 +873,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Collapsed;
         }
-
-
 
         public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
@@ -887,7 +946,8 @@ namespace Dash
 
         public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
         {
-            var parent = docOrRegion.GetRegionDefinition();
+            DocumentController parent = docOrRegion.GetRegionDefinition();
+            (parent ?? docOrRegion).SetHidden(false);
             NavigateToDocument(parent ?? docOrRegion);
             if (parent != null)
             {
@@ -897,7 +957,7 @@ namespace Dash
 
         #region Annotation logic
 
-        public bool HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -906,38 +966,50 @@ namespace Dash
             if (this.IsCtrlPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
+                return LinkHandledResult.HandledClose;
             }
-            else
+
+            var onScreenView = GetTargetDocumentView(xDockFrame, target);
+            if (onScreenView != null)
             {
-                var onScreenView = GetTargetDocumentView(target);
-                if (onScreenView != null)
+                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
-                    if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
-                    {
-                        target.ToggleHidden();
-                    }
-                    else
-                    {
-                        target.SetHidden(false);
-                    }
+                    target.ToggleHidden();
                 }
                 else
                 {
-                    var docked = DockManager.GetDockedView(target);
-                    if (docked != null)
+                    target.SetHidden(false);
+                }
+            }
+            else
+            {
+                DockedView docked = DockManager.GetDockedView(target);
+                if (docked != null)
+                {
+                    DockManager.Undock(docked);
+                }
+                else
+                {
+                    var tree = DocumentTree.MainPageTree;
+                    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
+                    var collection = node?.Parent.ViewDocument;
+
+
+                    if (collection == null)
                     {
-                        DockManager.Undock(docked);
+                        DockManager.Dock(target, DockDirection.Right);
                     }
                     else
                     {
-                        var tree = DocumentTree.MainPageTree;
-                        var node = tree.Where(n => n.ViewDocument.Equals(target)).First();
-                        var collection = node.Parent.ViewDocument;
-
-
-                        if (collection == null)
+                        DockedView dockedCollection = DockManager.GetDockedView(collection);
+                        if (dockedCollection != null)
                         {
-                            DockManager.Dock(target, DockDirection.Right);
+                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                           else  DockManager.Undock(dockedCollection);
                         }
                         else
                         {
@@ -952,7 +1024,7 @@ namespace Dash
                             //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
                             double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
                             double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-
+                            
                             double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
                             
                             col.SetField<PointController>(KeyStore.PanPositionKey,
@@ -961,22 +1033,27 @@ namespace Dash
                             col.SetField<PointController>(KeyStore.PanZoomKey,
                                 new Point(zoom, zoom), true);
                         }
-
-                       
                     }
-                }
 
-                target.GotoRegion(region, linkDoc);
+
+                }
             }
 
+            target.GotoRegion(region, linkDoc);
 
-            return true;
+            void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+            {
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+            }
+
+            return LinkHandledResult.HandledRemainOpen;
         }
 
-        public DocumentView GetTargetDocumentView(DocumentController target)
+        public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
@@ -985,7 +1062,8 @@ namespace Dash
             if (docViews.Count > 1)
             {
                 //Should this happen?
-                //Debug.Fail("I don't think there should be more than 2 found doc views");
+               // Debug.Fail("I don't think there should be more than 2 found doc views");
+               // choose the document view that's in the same collection, but need to think about other issues as well...
             }
 
             DocumentView view = docViews.First();
@@ -997,7 +1075,9 @@ namespace Dash
                 var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
                 bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
                 bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                if (!(containsTL && containsBR))
+                bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
+                bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
+                if (!(containsTL || containsBR || containsBL || containsTR))
                 {
                     return null;
                 }

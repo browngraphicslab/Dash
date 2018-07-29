@@ -182,13 +182,13 @@ namespace Dash
         {
            
             const double maxDim = 250;
-            double pictureHeight;
-            double pictureWidth;
+            double pictureHeight = 0;
+            double pictureWidth = 0;
             using (var stream = await streamRef.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-                pictureHeight = (double)Convert.ToInt32(decoder.OrientedPixelHeight);
-                pictureWidth = (double)Convert.ToInt32(decoder.OrientedPixelWidth);
+                pictureHeight = (double) Convert.ToInt32(decoder.OrientedPixelHeight);
+                pictureWidth = (double) Convert.ToInt32(decoder.OrientedPixelWidth);
 
                 if (pictureHeight > pictureWidth && pictureHeight > maxDim)
                 {

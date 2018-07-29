@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -76,7 +77,7 @@ namespace Dash
         
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.TogglePresentationMode();
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
         public void TogglePresentationMode(bool on)

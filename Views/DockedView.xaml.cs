@@ -53,7 +53,7 @@ namespace Dash
         {
             Grid.SetColumn(view, 0);
             Grid.SetColumnSpan(view, 1);
-           Grid.SetRow(view, 0);
+            Grid.SetRow(view, 0);
             //view.Margin = new Thickness(5);
 	        ContainedDocumentView = view;
 	        //view.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -61,9 +61,20 @@ namespace Dash
 
             xMainDockedView.Children.Clear();
 	        xContentGrid.Children.Clear();
+            view.Loaded += View_Loaded;
             xContentGrid.Children.Add(view);
-			//xMainDockedView.Children.Add(view);
+            //xMainDockedView.Children.Add(view);
             xMainDockedView.Children.Add(xCloseButton);
+        }
+
+        private void View_Loaded(object sender, RoutedEventArgs e)
+        {
+            //var view = sender as DocumentView;
+            //if (view.GetFirstDescendantOfType<WebView>() != null)
+            //{
+            //    var webBoxView = view.GetFirstDescendantOfType<WebBoxView>();
+            //    webBoxView.GetFirstDescendantOfType<WebView>().Height = 1008 - webBoxView.TextBlock.ActualHeight;
+            //}
         }
 
         public void SetNestedViewSize(double dim)
