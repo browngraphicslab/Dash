@@ -647,7 +647,7 @@ namespace Dash
 
         public void TryHighlightMatches(DocumentView viewRef)
         {
-            DocumentController viewRefDoc = viewRef.ViewModel.LayoutDocument;
+            DocumentController viewRefDoc = viewRef.ViewModel?.LayoutDocument;
 
             var ind = 0;
             foreach (DocumentController viewDoc in ViewModel.PinnedNodes)

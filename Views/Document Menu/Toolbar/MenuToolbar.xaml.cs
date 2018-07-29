@@ -673,6 +673,7 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
+                    docController.GetDataDocument().SetTitle(file.Name);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
 
@@ -710,6 +711,7 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
+                    docController.GetDataDocument().SetTitle(file.Name);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
                 //add error message for null file?
@@ -913,6 +915,7 @@ namespace Dash
             xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
             xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
            // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+            xToolbar.IsOpen = true;
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }

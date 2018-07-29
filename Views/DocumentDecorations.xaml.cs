@@ -275,7 +275,7 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value-3,
+                X = topLeft.X - xLeftColumn.Width.Value,
                 Y = topLeft.Y
             };
 
@@ -288,7 +288,6 @@ namespace Dash
             if (xButtonsPanel.Children.Count == LinkNames.Count)
                 return;
             xButtonsPanel.Children.Clear();
-            xStackPanel.Height = 40;
             foreach (var linkName in LinkNames)
             {
                 var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
@@ -318,7 +317,6 @@ namespace Dash
                 xButtonsPanel.Children.Add(button);
                 button.PointerEntered += (s, e) => toolTip.IsOpen = true;
                 button.PointerExited += (s, e) => toolTip.IsOpen = false;
-                xStackPanel.Height += 22;
 
                 button.Tapped += (s, e) =>
                 {
