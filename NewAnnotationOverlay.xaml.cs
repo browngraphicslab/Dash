@@ -82,6 +82,24 @@ namespace Dash
         {
             if (region.Equals(_selectedRegion?.RegionDocument))
             {
+                if (_selectedRegion.Selected)
+                {
+                    _selectedRegion.Deselect();
+                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
+                    if (vm != null)
+                    {
+                        vm.SearchHighlightState = new Thickness(0);
+                    }
+                }
+                else
+                {
+                    _selectedRegion.Select();
+                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
+                    if (vm != null)
+                    {
+                        vm.SearchHighlightState = new Thickness(8);
+                    };
+                }
                 return;
             }
             _selectedRegion?.Deselect();
@@ -316,7 +334,7 @@ namespace Dash
             }
 
             Debug.Assert(annotation != null, "Annotation must be assigned in the switch statement");
-            Debug.Assert(!(annotation.Equals(_mainDocument)),
+            Debug.Assert(!annotation.Equals(_mainDocument),
                 "If returning the main document, return it immediately, don't fall through to here");
             annotation.SetRegionDefinition(_mainDocument);
             annotation.SetAnnotationType(_currentAnnotationType);
