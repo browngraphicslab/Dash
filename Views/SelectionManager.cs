@@ -54,6 +54,7 @@ namespace Dash
             var args = new DocumentSelectionChangedEventArgs();
             SelectHelper(doc);
             args.SelectedViews.Add(doc);
+            SelectionChanged?.Invoke(args);
             var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
             if (pdf != null)
             {
@@ -118,7 +119,7 @@ namespace Dash
 
         private static void SelectHelper(DocumentView doc)
         {
-            if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion)) { }
+            if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
                 SelectRegion(null);
             _selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
