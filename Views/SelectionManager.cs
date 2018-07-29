@@ -51,10 +51,13 @@ namespace Dash
 
         public static void Select(DocumentView doc)
         {
-            var args = new DocumentSelectionChangedEventArgs();
-            SelectHelper(doc);
-            args.SelectedViews.Add(doc);
-            SelectionChanged?.Invoke(args);
+            if (!SelectedDocs.Contains(doc))
+            {
+                var args = new DocumentSelectionChangedEventArgs();
+                SelectHelper(doc);
+                args.SelectedViews.Add(doc);
+                SelectionChanged?.Invoke(args);
+            }
         }
 
         public static void SelectRegion(DocumentController region)
