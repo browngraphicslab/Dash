@@ -603,7 +603,7 @@ namespace Dash
             xKeyBox.BeforeTextChanging += XKeyBoxOnBeforeTextChanging;
             xValueBox.TextChanged += XValueBoxOnTextChanged;
 
-            //xValueBox.GotFocus += XValueBoxOnGotFocus;
+            xValueBox.GotFocus += XValueBoxOnGotFocus;
 
             LostFocus += (sender, args) =>
             {
@@ -2232,7 +2232,7 @@ namespace Dash
                     Context = new Context(),
                     FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
                 };
-                xDocumentBackground.AddFieldBinding(Rectangle.FillProperty, backgroundBinding);
+                xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
         }
 
@@ -2244,15 +2244,32 @@ namespace Dash
 
         private void ToggleQuickEntry()
         {
-            if (_animationBusy || Equals(MainPage.Instance.MainDocView)) return;
+            if (_animationBusy || Equals(MainPage.Instance.MainDocView) || Equals(MainPage.Instance.xMapDocumentView)) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
 
+            if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
+
             _animationBusy = true;
             animation.Begin();
-            animation.Completed += (o, o1) => { _animationBusy = false; };
-        }
+            animation.Completed += AnimationCompleted;
+
+            void AnimationCompleted(object sender, object e)
+            {
+                animation.Completed -= AnimationCompleted;
+                if (animation == xQuickEntryOut)
+                {
+                    xKeyValueBorder.Width = 0;
+                    Focus(FocusState.Programmatic);
+                }
+                else
+                {
+                    xKeyBox.Focus(FocusState.Programmatic);
+                }
+                _animationBusy = false;
+            }
+        } 
 
         private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
         {
@@ -2311,18 +2328,18 @@ namespace Dash
             }
         }
 
-        //private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
-        //{
-        //    if (xValueBox.Text.StartsWith("="))
-        //    {
-        //        xValueBox.SelectionStart = 1;
-        //        xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-        //    }
-        //    else
-        //    {
-        //        xValueBox.SelectAll();
-        //    }
-        //   }
+        private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
+        {
+            if (xValueBox.Text.StartsWith("="))
+            {
+                xValueBox.SelectionStart = 1;
+                xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+            }
+            else
+            {
+                xValueBox.SelectAll();
+            }
+        }
 
         private void ProcessInput()
         {

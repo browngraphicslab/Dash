@@ -1,9 +1,13 @@
 ﻿using System;
-using Windows.UI;
+using System.Drawing;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
+using Windows.UI.Xaml.Media.Animation;
 using static Dash.DocumentController;
+using Color = Windows.UI.Color;
+using Point = Windows.Foundation.Point;
 
 namespace Dash
 {
@@ -20,7 +24,7 @@ namespace Dash
         private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
         Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
-        
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
@@ -31,12 +35,16 @@ namespace Dash
             _isDeletedTemplate = false;
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
             InteractiveManipulationScale = Scale;
-            
+
+            SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
+            IsSearchHighlighted = false;
+
             if (IconTypeController == null)
             {
                 LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
         }
+
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
@@ -59,6 +67,8 @@ namespace Dash
         /// When not interacting, use Scale instead
         /// </summary>
         public Point InteractiveManipulationScale;
+
+        private SolidColorBrush _searchHighlightBrush;
 
         public bool IsAdornmentGroup
         {
@@ -121,8 +131,6 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        
-        
         public FrameworkElement Content
         {
             get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
@@ -136,17 +144,21 @@ namespace Dash
         public bool DecorationState
         {
             get => _decorationState;
-            set
-            {
-                SetProperty(ref _decorationState, value);
-            }
+            set => SetProperty(ref _decorationState, value);
         }
 
-
-        public Thickness SearchHighlightState
+        public Thickness SearchHighlightWidth
         {
             get => _searchHighlightState;
-            set { SetProperty(ref _searchHighlightState, value); }
+            set => SetProperty(ref _searchHighlightState, value);
+        }
+
+        public bool IsSearchHighlighted { get; set; }
+
+        public SolidColorBrush SearchHighlightBrush
+        {
+            get => _searchHighlightBrush;
+            set => SetProperty(ref _searchHighlightBrush, value);
         }
 
         public CollectionViewModel.StandardViewLevel ViewLevel
@@ -155,6 +167,27 @@ namespace Dash
             set => SetProperty(ref _standardViewLevel, value);
         }
 
+        public async void ExpandBorder()
+        {
+            while (SearchHighlightWidth.Bottom <= 7.5)
+            {
+                SearchHighlightWidth = new Thickness(SearchHighlightWidth.Bottom + 0.5);
+                await Task.Delay(TimeSpan.FromMilliseconds(7));
+            }
+
+            IsSearchHighlighted = true;
+        }
+
+        public async void RetractBorder()
+        {
+            while (SearchHighlightWidth.Bottom >= 0.5)
+            {
+                SearchHighlightWidth = new Thickness(SearchHighlightWidth.Bottom - 0.5);
+                await Task.Delay(TimeSpan.FromMilliseconds(7));
+            }
+
+            IsSearchHighlighted = false;
+        }
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update

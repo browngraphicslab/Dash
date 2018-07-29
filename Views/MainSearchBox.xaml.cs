@@ -341,7 +341,7 @@ namespace Dash
             foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
         }
 
-        public static void HighlightSearchResults(List<DocumentController> docs)
+        public static void HighlightSearchResults(List<DocumentController> docs, bool animate = false)
         {
             //highlight new search results
             foreach (var doc in docs)
@@ -351,7 +351,7 @@ namespace Dash
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
-                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1, animate);
             }
         }
 
