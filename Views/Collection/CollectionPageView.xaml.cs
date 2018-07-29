@@ -76,14 +76,10 @@ namespace Dash
                 try
                 {
                     var result = _dsl.Run(keyString.Substring(1));
-                    if (result == null)
-                    {
-                        SetHackCaptionText(new TextController("Field not found, make sure the key name is correct and that you're accessing the right document!"));
-                    }
-                    else
-                    {
-                        SetHackCaptionText(result);
-                    }
+                    SetHackCaptionText(result == null
+                        ? new TextController(
+                            "Field not found, make sure the key name is correct and that you're accessing the right document!")
+                        : result);
                 }
                 catch (DSLException)
                 {
@@ -272,7 +268,7 @@ namespace Dash
             {
                 xDocView.DataContext = value;
                 _scope = new OuterReplScope();
-                _scope.DeclareVariable("this", value.DocumentController);
+                _scope.DeclareVariable("this", value?.DocumentController);
                 _dsl = new DSL(_scope);
 
                 //SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc

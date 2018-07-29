@@ -69,6 +69,9 @@
                         <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
                             <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
                         </Button>
+                        <Button Name="xForwardButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </local:DockingFrame.DocumentContent>

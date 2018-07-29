@@ -489,7 +489,7 @@ namespace Dash
 
             var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
                 new Size(150, 75));
-            richText .Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
             var annotation = _regionGetter(_currentAnnotationType);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);

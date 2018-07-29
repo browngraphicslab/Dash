@@ -59,6 +59,7 @@ namespace Dash
         public static KeyController VisibleTypeKey = new KeyController("Type", "B0150ECC-900E-42C4-9B86-824438647C12");
         public static KeyController LastWorkspaceKey = new KeyController("_LastWorkspace", "66F05DB2-2F68-4E37-985D-36303A1AF4E4");
         public static KeyController WorkspaceHistoryKey = new KeyController("_WorkspaceHistory", "D0630828-1488-4F7B-B0D7-9E89EF05497F");
+        public static KeyController WorkspaceFutureKey = new KeyController("_WorkspaceFuture", "A9CC973F-A2E1-4A21-8D0C-EE1EF503C333");
         public static KeyController PanPositionKey = new KeyController("_PanPosition", "8778D978-AEA2-470C-8DBD-C684131BA9B4");
         public static KeyController PanZoomKey = new KeyController("_PanZoomLevel", "4C4C676B-EEC8-4682-B15C-57866BF4933C");
         public static KeyController ActualSizeKey = new KeyController("ActualSize", "529D7312-9A33-4A6E-80AF-FA173293DC36");

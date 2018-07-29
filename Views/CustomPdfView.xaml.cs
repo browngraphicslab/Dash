@@ -709,7 +709,7 @@ namespace Dash
             BottomPages.View_SizeChanged();
         }
 
-        public void ScrollToRegion(DocumentController target, bool scrollBottom = true)
+        public void ScrollToRegion(DocumentController target)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
             if (ratioOffsets == null) return;
@@ -737,7 +737,7 @@ namespace Dash
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
-                if (!scrollBottom) BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
+                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
             }
             else
             {
@@ -1129,7 +1129,7 @@ namespace Dash
             if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
-                ScrollToRegion(src, false);
+                ScrollToRegion(src);
                 return LinkHandledResult.Unhandled;
             }
 
