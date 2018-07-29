@@ -40,8 +40,8 @@ namespace Dash
         {
           
             _linkFlyout.Items?.Clear();
-            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey) ?? new ListController<DocumentController>();
-	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey) ?? new ListController<DocumentController>();
+            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData.ToList() ?? new List<DocumentController>();
+	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData.ToList() ?? new List<DocumentController>();
             var subregions = region.GetDataDocument().GetRegions()?.TypedData;
             if (subregions != null)
             {

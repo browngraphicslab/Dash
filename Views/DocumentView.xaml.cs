@@ -293,7 +293,7 @@ namespace Dash
                 //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
                 //if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
             };
-            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; };
+            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; SelectionManager.Deselect(this);  };
 
             PointerPressed += (sender, e) =>
             {

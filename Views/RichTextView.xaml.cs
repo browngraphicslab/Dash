@@ -109,8 +109,11 @@ namespace Dash
                 {
                     if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsRightBtnPressed())
                     {
-                        SelectionManager.DeselectAll();
-                        SelectionManager.Select(docView);
+                        if (SelectionManager.SelectedDocs.Count() != 1 || !SelectionManager.SelectedDocs.Contains(docView))
+                        {
+                            SelectionManager.DeselectAll();
+                            SelectionManager.Select(docView);
+                        }
                     }
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;

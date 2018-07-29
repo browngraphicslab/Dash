@@ -972,11 +972,14 @@ namespace Dash
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
             if (onScreenView != null)
             {
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)
                 {
-                    target.ToggleHidden();
+                    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>())
+                        target.ToggleHidden();
+                    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>());
                 }
                 else
                 {
@@ -999,41 +1002,32 @@ namespace Dash
 
                     if (collection == null)
                     {
-                        DockManager.Dock(target, DockDirection.Right);
+                        var docview = DockManager.Dock(target, DockDirection.Right);
                     }
                     else
                     {
-                        DockedView dockedCollection = DockManager.GetDockedView(collection);
-                        if (dockedCollection != null)
-                        {
-                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
-                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                           else  DockManager.Undock(dockedCollection);
-                        }
-                        else
-                        {
-                            var docView = DockManager.Dock(collection, DockDirection.Right);
-                            var col = docView.ViewModel.DocumentController;
+                        target.SetHidden(false);
+                        var docView = DockManager.Dock(collection, DockDirection.Right);
+                        var cview = docView.ViewModel.Content;
+                        cview.Tag = target;
+                        cview.Loaded += Docview_Loaded;
+                        var col = docView.ViewModel.DocumentController;
 
-                            var pos = node.ViewDocument.GetPosition() ?? new Point();
-                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                            double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                            //col.SetField<PointController>(KeyStore.PanPositionKey,
-                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
-                            col.SetField<PointController>(KeyStore.PanPositionKey,
-                                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+                        var pos = node.ViewDocument.GetPosition() ?? new Point();
+                        double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                        double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                        var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                        //col.SetField<PointController>(KeyStore.PanPositionKey,
+                        //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                        double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                        double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                        double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                        col.SetField<PointController>(KeyStore.PanPositionKey,
+                            new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
 
-                            col.SetField<PointController>(KeyStore.PanZoomKey,
-                                new Point(zoom, zoom), true);
-                        }
+                        col.SetField<PointController>(KeyStore.PanZoomKey,
+                            new Point(zoom, zoom), true);
                     }
-
-
                 }
             }
 
@@ -1048,6 +1042,16 @@ namespace Dash
             return LinkHandledResult.HandledRemainOpen;
         }
 
+        private void Docview_Loaded(object sender, RoutedEventArgs e)
+        {
+            var cview = (sender as CollectionView);
+            foreach (var doc in cview.ViewModel.DocumentViewModels)
+                if (doc.DocumentController.Equals(cview.Tag as DocumentController))
+                    doc.SearchHighlightState = new Thickness(8);
+
+            cview.Loaded -= Docview_Loaded;
+        }
+
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
@@ -1057,31 +1061,30 @@ namespace Dash
                 return null;
             }
 
-            if (docViews.Count > 1)
-            {
-                //Should this happen?
-               // Debug.Fail("I don't think there should be more than 2 found doc views");
-               // choose the document view that's in the same collection, but need to think about other issues as well...
-            }
+            DocumentView found = null;
 
-            DocumentView view = docViews.First();
-
-            foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
+            foreach (var view in docViews)
             {
-                var transformedBounds = view.TransformToVisual(parentView)
-                    .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
-                var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
-                bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
-                bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
-                bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
-                bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
-                if (!(containsTL || containsBR || containsBL || containsTR))
+                found = view;
+                foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
                 {
-                    return null;
+                    var transformedBounds = view.TransformToVisual(parentView)
+                        .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                    var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
+                    bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
+                    bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
+                    bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
+                    bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
+                    if (!(containsTL || containsBR || containsBL || containsTR))
+                    {
+                        found = null;
+                    }
                 }
+                if (found != null)
+                    return found;
             }
 
-            return view;
+            return null;
         }
 
         #endregion
