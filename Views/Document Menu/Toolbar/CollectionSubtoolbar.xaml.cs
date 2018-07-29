@@ -85,14 +85,26 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 //get list of doc views in the collection
-                var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                var mainPageCollectionView = _collection.GetFirstAncestorOfType<CollectionView>();
                 var vms = _collection.ViewModel.DocumentViewModels.ToList();
 
-                //add them each to the main canvas
-                foreach (DocumentViewModel vm in vms)
+	            var offsetX = _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.XPos ?? 0;
+	            var offsetY = _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.YPos ?? 0;
+
+				DocumentViewModel mostTopLeft = vms.First();
+
+	            foreach (DocumentViewModel vm in vms)
+	            {
+		            if (vm.XPos < mostTopLeft.XPos && vm.YPos < mostTopLeft.YPos)
+			            mostTopLeft = vm;
+	            }
+
+				//add them each to the main canvas
+				foreach (DocumentViewModel vm in vms)
                 {
-                    vm.XPos += _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.XPos ?? 0;
-	                vm.YPos += _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.YPos ?? 0;
+		            vm.XPos = offsetX + (vm.XPos - mostTopLeft.XPos) * vm.Scale.X;
+		            vm.YPos = offsetY + (vm.YPos - mostTopLeft.YPos) * vm.Scale.Y;
+					
                     mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
                 }
 
