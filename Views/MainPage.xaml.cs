@@ -1046,7 +1046,17 @@ namespace Dash
             var cview = (sender as CollectionView);
             foreach (var doc in cview.ViewModel.DocumentViewModels)
                 if (doc.DocumentController.Equals(cview.Tag as DocumentController))
+                {
+                    SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                    SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
                     doc.SearchHighlightState = new Thickness(8);
+                    void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+                    {
+                        doc.SearchHighlightState = new Thickness(0);
+                        SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                    }
+                }
+
 
             cview.Loaded -= Docview_Loaded;
         }
