@@ -145,6 +145,19 @@ namespace Dash
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
+            _docCtrl.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+        }
+
+        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        {
+            if (args.NewValue == null)
+            {
+                return;
+            }
+
+            _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
+
+            sender.RemoveField(KeyStore.GoToRegionKey);
         }
 
         public async Task Rotate()
