@@ -189,7 +189,7 @@
             Width="150"
             Height="50"
             Opacity="0"
-            PlaceholderText="Link title..."
+            PlaceholderText="Link tag..."
             Visibility="Collapsed"
             Padding="12, 12"
             VerticalAlignment="Top"
