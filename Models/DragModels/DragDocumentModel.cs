@@ -21,6 +21,8 @@ namespace Dash.Models.DragModels
         /// </summary>
         public bool ShowViewCopy;
 
+        public string LinkType = null;
+
         /// <summary>
         /// The XAML view that originated the drag operation
         /// </summary>
@@ -81,11 +83,14 @@ namespace Dash.Models.DragModels
 
             // create a key value pane
             var ctrlState = MainPage.Instance.IsCtrlPressed();
-            if (ctrlState) return DraggedDocument.GetKeyValueAlias(where);
-
-            // create an instance with the same view
-            var shiftState = MainPage.Instance.IsShiftPressed() || ShowViewCopy || forceShowViewCopy;
-            if (shiftState) return DraggedDocument.GetDataInstance(where);
+            if (ctrlState) return DraggedDocument.GetDataInstance(where);
+            
+            var altState = MainPage.Instance.IsAltPressed();
+            if (altState)
+            {
+                // create a key value pane
+                return DraggedDocument.GetKeyValueAlias(where);
+            }
 
             // create a view copy
             var vcopy = DraggedDocument.GetViewCopy(where);

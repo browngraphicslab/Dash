@@ -961,6 +961,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
+            
 
             if (this.IsCtrlPressed())
             {
@@ -968,7 +969,7 @@ namespace Dash
                 return LinkHandledResult.HandledClose;
             }
 
-            var onScreenView = GetTargetDocumentView(target);
+            var onScreenView = GetTargetDocumentView(xDockFrame, target);
             if (onScreenView != null)
             {
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
@@ -991,7 +992,49 @@ namespace Dash
                 }
                 else
                 {
-                    DockManager.Dock(target, DockDirection.Right);
+                    var tree = DocumentTree.MainPageTree;
+                    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
+                    var collection = node?.Parent.ViewDocument;
+
+
+                    if (collection == null)
+                    {
+                        DockManager.Dock(target, DockDirection.Right);
+                    }
+                    else
+                    {
+                        DockedView dockedCollection = DockManager.GetDockedView(collection);
+                        if (dockedCollection != null)
+                        {
+                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                           else  DockManager.Undock(dockedCollection);
+                        }
+                        else
+                        {
+                            var docView = DockManager.Dock(collection, DockDirection.Right);
+                            var col = docView.ViewModel.DocumentController;
+
+                            var pos = node.ViewDocument.GetPosition() ?? new Point();
+                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                            double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                            //col.SetField<PointController>(KeyStore.PanPositionKey,
+                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+
+
+                            col.SetField<PointController>(KeyStore.PanPositionKey,
+                                new Point(-pos.X * zoom + 0.2 * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+
+                            col.SetField<PointController>(KeyStore.PanZoomKey,
+                                new Point(zoom, zoom), true);
+                        }
+                    }
+
+
                 }
             }
 
@@ -1006,10 +1049,10 @@ namespace Dash
             return LinkHandledResult.HandledRemainOpen;
         }
 
-        public DocumentView GetTargetDocumentView(DocumentController target)
+        public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.DocumentController.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;

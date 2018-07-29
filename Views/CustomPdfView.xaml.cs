@@ -148,6 +148,9 @@ namespace Dash
         private DispatcherTimer _topTimer;
         private DispatcherTimer _bottomTimer;
 
+        public Grid TopAnnotationBox => xTopAnnotationBox;
+        public Grid BottomAnnotationBox => xBottomAnnotationBox;
+
 
         public WPdf.PdfDocument PDFdoc => _wPdfDocument;
 
@@ -1126,7 +1129,7 @@ namespace Dash
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
                 ScrollToRegion(src, false);
-                return LinkHandledResult.HandledClose;
+                return LinkHandledResult.Unhandled;
             }
 
             return LinkHandledResult.Unhandled;
