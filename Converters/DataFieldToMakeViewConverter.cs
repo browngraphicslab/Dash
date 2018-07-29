@@ -65,6 +65,11 @@ namespace Dash.Converters
             }
             else if (data is ListController<DocumentController> docList)
             {
+                if (double.IsNaN( _docController.GetWidth()))
+                { // if we're going to show a CollectionBox, give it initial dimensions, otherwise it has no default size
+                    _docController.SetWidth(400);
+                    _docController.SetHeight(400);
+                }
                 currView = CollectionBox.MakeView(_docController, _context);
             }
             else if (data is DocumentController dc)
