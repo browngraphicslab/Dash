@@ -608,6 +608,11 @@ namespace Dash
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.HidePdfControls();
+                }
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -1553,6 +1558,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
+                    
                 }
                 else
                 {
@@ -1561,6 +1567,7 @@ namespace Dash
                     //               ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
                     SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
+                   
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)

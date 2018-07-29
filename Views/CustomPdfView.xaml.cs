@@ -1158,6 +1158,21 @@ namespace Dash
         {
 
         }
+
+        public void HidePdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Collapsed;
+            xBottomButtonPanel.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowPdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Visible;
+            xBottomButtonPanel.Visibility = Visibility.Visible;
+
+            xFadeAnimation.Begin();
+            xFadeAnimation2.Begin();
+        }
     }
 }
 
