@@ -74,7 +74,7 @@ namespace Dash
 
                 if (ind < 0)
                 {
-                    outList.Add("IndexOf call = -1");
+                    outList.Add("No Helptext Available");
                     continue;
                 }
 
