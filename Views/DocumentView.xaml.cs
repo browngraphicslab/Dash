@@ -312,6 +312,11 @@ namespace Dash
                 if (false)  // bcz: set to 'true' for drag/Drop interactions
                     SetupDragDropDragging(e);
                 e.Handled = true;
+
+	            if (parentParentFreeform != null && !this.IsShiftPressed())
+	            {
+		            e.Handled = false;
+	            }
             };
 
             PointerEntered += DocumentView_PointerEntered;
