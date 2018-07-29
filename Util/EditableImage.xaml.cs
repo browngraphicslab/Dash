@@ -48,6 +48,7 @@ namespace Dash
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
+            Image.Unloaded += Image_Unloaded;
             Image.ImageOpened += (sender, args) =>
             {
                 var source = Image.Source as BitmapSource;
@@ -62,6 +63,11 @@ namespace Dash
             XAnnotationGrid.Children.Add(_annotationOverlay);
 
             // existing annotated regions are loaded with the VisualAnnotationManager
+        }
+
+        private void Image_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _docCtrl.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
 
         private DocumentController RegionGetter(AnnotationType type)
