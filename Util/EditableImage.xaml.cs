@@ -62,7 +62,13 @@ namespace Dash
             _annotationOverlay.SetAnnotationType(AnnotationType.Region);
             XAnnotationGrid.Children.Add(_annotationOverlay);
 
+            Loaded += EditableImage_Loaded;
             // existing annotated regions are loaded with the VisualAnnotationManager
+        }
+
+        private void EditableImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            _docCtrl.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
 
         private void Image_Unloaded(object sender, RoutedEventArgs e)
@@ -151,7 +157,6 @@ namespace Dash
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
-            _docCtrl.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
 
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
