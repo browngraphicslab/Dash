@@ -581,6 +581,7 @@ namespace Dash
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
+        public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
 
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -597,7 +598,7 @@ namespace Dash
             {
                 documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
                 documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
-                this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+                this.xRichEditBox.Document.Selection.FindText(HyperlinkText, this.getRtfText().Length, FindOptions.Case);
                 if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
                 {
                     var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
@@ -606,9 +607,11 @@ namespace Dash
                     //this does better formatting/ parsing than the regex stuff can
                     var link = title ?? CollectionViewModel.GetTitlesUrl(url);
 
+                    this.xRichEditBox.Document.Selection.CharacterFormat.Size = 9;
+                    this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
+                    this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
                     this.xRichEditBox.Document.Selection.Text = link;
                     this.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
-                    this.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
                     this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
                 }
