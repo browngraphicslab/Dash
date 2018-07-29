@@ -370,7 +370,8 @@ namespace Dash
             }
             CurrentView.Loaded -= CurrentView_Loaded;
             CurrentView.Loaded += CurrentView_Loaded;
-            
+            SelectionManager.DeselectAll();
+
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
                 ViewModel.ViewType = viewType;
