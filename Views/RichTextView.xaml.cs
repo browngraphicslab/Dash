@@ -147,7 +147,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView.ViewModel?.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }
@@ -846,13 +846,11 @@ namespace Dash
         /// </summary>
         private void MatchQuery(List<TextController> queries)
         {
-            if (getDocView() == null || queries == null || queries.Count == 0
-                ) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
+            if (getDocView() == null) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;
             ClearSearchHighlights();
             _originalRtfFormat = getRtfText();
-            // note to self- save format before clear search highlights to maintain formatting
-
+                                             
             //_nextMatch = 0;
             //_prevQueryLength = queries?.FirstOrDefault() == null ? 0 : queries.First().Data.Length;
             //string text;
@@ -863,17 +861,32 @@ namespace Dash
             //int i = 1;
             // find and highlight all matches
 
-            if (queries == null)
+            if (queries == null || queries.Count == 0 || string.IsNullOrEmpty(queries?.First()?.Data))
                 return;
 
-            string currentRtf = _originalRtfFormat;
-            string newRtf = "";
+            xRichEditBox.Document.GetText(TextGetOptions.None, out string actualText);
 
-            foreach (var query in queries.Select(t => t.Data))
+            var regList = queries.Select(t => new Regex((t.Data.Length - t.Data.TrimEnd('\\').Length) % 2 == 0 ? t.Data : t.Data.Substring(0, t.Data.Length - 1)));
+            var matches = new List<string>();
+            foreach (var reg in regList)
             {
-                if (string.IsNullOrEmpty(query))
-                    return;
+                MatchCollection matchCol = reg.Matches(actualText);
+                foreach (Match match in reg.Matches(actualText))
+                {
+                    if (match.Success && !string.IsNullOrEmpty(match.Value) && !matches.Contains(match.Value))
+                    {
+                        matches.Add(match.Value);
+                    }
+                }
+            }
+            
 
+
+            string currentRtf = _originalRtfFormat;
+            string newRtf = currentRtf;
+
+            foreach (var query in matches)
+            {
                 // Last field of Rtf format is font size specification
                 int fs = currentRtf.IndexOf("\\fs");
                 int textStart = currentRtf.IndexOf(" ", fs);
@@ -886,8 +899,15 @@ namespace Dash
                 string text = currentRtf.Substring(textStart + 1);
 
                 int defaultHighlight = rtfFormatting.IndexOf("\\highlight");
-                if (defaultHighlight> 0)
-                    _highlightNum = rtfFormatting[defaultHighlight + 10] - '0';
+                if (defaultHighlight > 0)
+                {
+                    int secondDig = rtfFormatting[defaultHighlight + 11] - '0';
+                    if (secondDig >= 0 && secondDig < 10)
+                    {
+                        _highlightNum = (_highlightNum = rtfFormatting[defaultHighlight + 10] - '0') * 10 + secondDig;
+                    } else
+                        _highlightNum = rtfFormatting[defaultHighlight + 10] - '0';
+                }
                 else
                     _highlightNum = 0;
                 string highlightedText = rtfFormatting + InsertHighlight(text, query.ToLower());
@@ -915,7 +935,7 @@ namespace Dash
                        // _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
                     }
                 }
-                newRtf += split[split.Length - 1];
+                newRtf += " " + split[split.Length - 1];
                 currentRtf = newRtf;
 
                 //    while (i > 0 && !string.IsNullOrEmpty(query))
@@ -939,7 +959,7 @@ namespace Dash
                 //    i = 1;
 
                 }
-            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
+           xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
         }
 
         /// <summary>
@@ -951,9 +971,21 @@ namespace Dash
             int[] modIndex = ModIndexOf(rtf.ToLower(), query);
             int i = modIndex[0];
             int len = modIndex[1];
+
             if (i >= 0)
             {
-                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + rtf.Substring(i, len) + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);;
+            string toHighlight = rtf.Substring(i, len);
+            if (toHighlight.IndexOf("\\highlight") > 0)
+            {
+                int highlightEnd = 12;
+                int secondDig = rtf[11] - '0';
+                if (secondDig >= 0 && secondDig < 10)
+                {
+                    highlightEnd += 1;
+                }
+                toHighlight = toHighlight.Substring(0, i + 1) + toHighlight.Substring(highlightEnd);
+            }
+                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + toHighlight + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);;
             }
             return rtf;
         }
@@ -990,7 +1022,13 @@ namespace Dash
                     }
                     else if (highlightIndex == 9)
                     {
-                        _highlightNum = text[i] - '0';
+                        int secondDig = text[i + 1] - '0';
+                        if (secondDig >= 0 && secondDig < 10)
+                        {
+                            _highlightNum = (text[i] - '0') * 10 + secondDig;
+                        }
+                        else
+                            _highlightNum = text[i] - '0';
                         highlightIndex = 0;
                     }
                     else if ("highlight"[highlightIndex] == text[i])
@@ -1016,6 +1054,11 @@ namespace Dash
                     {
                         matchCount += 1;
                         matchWithFormat += 1;
+                    }
+                    else if (text[i] == query[0])
+                    {
+                        matchCount = 1;
+                        matchWithFormat = 1;
                     }
                     else
                     {

@@ -25,6 +25,7 @@ using Size = Windows.Foundation.Size;
 using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI.Xaml.Media.Animation;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -412,7 +413,7 @@ namespace Dash
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString());
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
@@ -589,7 +590,7 @@ namespace Dash
             return showField;
         }
 
-        public async void Paste(DataPackageView dvp, Point where)
+        public async Task<DocumentController> Paste(DataPackageView dvp, Point where)
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -597,10 +598,11 @@ namespace Dash
                 {
                     var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
                     AddDocument(droppedDoc);
+                    return droppedDoc;
                 }
                 else if (dvp.Contains(StandardDataFormats.Bitmap))
                 {
-                    PasteBitmap(dvp, where);
+                    return await PasteBitmap(dvp, where);
                 }
                 else if (dvp.Contains(StandardDataFormats.Rtf))
                 {
@@ -611,11 +613,13 @@ namespace Dash
                         {
                             var postitNote = new MarkdownNote(text: text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+                            return postitNote;
                         }
                         else
                         {
                             var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+                            return postitNote;
                         }
                     }
                 }
@@ -651,6 +655,7 @@ namespace Dash
                         {
                             var postitNote = new MarkdownNote(text: text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
+                            return postitNote;
                         }
                         else
                         {
@@ -695,16 +700,17 @@ namespace Dash
 
                             
                             Actions.DisplayDocument(this, postitNote, where);
-
+                            return postitNote;
                             
 
                         }
                     }
                 }
             }
+            return null;
         }
 
-        private async void PasteBitmap(DataPackageView dvp, Point where)
+        private async Task<DocumentController> PasteBitmap(DataPackageView dvp, Point where)
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -729,6 +735,7 @@ namespace Dash
                 dp.SetStorageItems(new IStorageItem[] { savefile });
                 var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
                 AddDocument(droppedDoc);
+                return droppedDoc;
             }
         }
 

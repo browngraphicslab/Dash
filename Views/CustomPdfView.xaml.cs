@@ -815,8 +815,8 @@ namespace Dash
                 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, topOffset, null);
-                BottomScrollViewer.ChangeView(null, botOffset, null);
+                TopScrollViewer.ChangeView(null, offsets.First(), null);
+                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First(), null);
             }
             else
             {
@@ -837,7 +837,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, botOffset, null);
+                BottomScrollViewer.ChangeView(null, offsets.First(), null);
             }
         }
 

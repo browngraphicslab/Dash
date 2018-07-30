@@ -93,7 +93,7 @@ namespace Dash
 
                 if (ind < 0)
                 {
-                    outList.Add("IndexOf call = -1");
+                    outList.Add("No Helptext Available");
                     continue;
                 }
 
@@ -354,7 +354,7 @@ namespace Dash
 
             if (negate >= 0 && negate % 2 == 1)
             {
-                var searchResultsList = NegateSearch(searchResults);
+                var searchResultsList = NegateSearch(searchResults, modifiedSearchTerm);
                 foreach (var res in searchResultsList)
                 {
                     var list = new List<SearchTerm>();
@@ -412,108 +412,11 @@ namespace Dash
                 return list;
             }
         }
-        // Breaks down inputstring into a list of separate string queries- mainly for highlighting in RichTextView
-        private static List<SearchTerm> ParseToSearchTerms(string inputString)
-        {
-            if (string.IsNullOrEmpty(inputString))
-            {
-                return new List<SearchTerm>();
-            }
-            int dividerIndex = FindNextDivider(inputString);
-            string searchTerm = inputString.Substring(0, dividerIndex);
-            int negate = 0;
-            for (int i = 0; i < searchTerm.Length; i++)
-            {
-                if (searchTerm[i] != '!')
-                {
-                    negate = i;
-                    break;
-                }
-            }
 
-            string modifiedSearchTerm = searchTerm.TrimStart('!');
-
-            if (modifiedSearchTerm.Length > 2 && modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
-            {
-                modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
-            }
-
-            string modInput = inputString.TrimStart('!');
-
-            int endParenthesis = -2;
-
-            // Making sure parenthesis doesn't clash with regex
-            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")))
-            {
-                endParenthesis = FindEndParenthesis(inputString);
-            }
-
-
-            List<SearchTerm> searchResults = new List<SearchTerm>();
-            if (endParenthesis > 0 || (inputString.TrimStart('!').StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
-            {
-                string newInput = modInput.Substring(1, modInput.Length - 2);
-                searchResults.AddRange(ParseToSearchTerms(newInput));
-            }
-            else
-            {
-                searchResults.Add(new SearchTerm(modifiedSearchTerm));
-            }
-
-            if (negate >= 0 && negate % 2 == 1)
-            {
-                // This is probably the wrong way to do it
-                var list = new List<SearchTerm>();
-                foreach (var term in searchResults)
-                {
-                    list.Add(new SearchTerm(term._term, !term.Negate));
-                }
-                searchResults = list;
-            }
-
-            int len = inputString.Length;
-
-            if (dividerIndex == len)
-            {
-                return searchResults;
-            }
-
-            char divider = inputString[dividerIndex];
-            string rest = inputString.Substring(dividerIndex + 1);
-
-            switch (divider)
-            {
-                case ' ':
-                    searchResults.AddRange(ParseToSearchTerms(rest));
-                    break;
-                case '|':
-                    searchResults.AddRange(ParseToSearchTerms(rest));
-                    break;
-                default:
-                    throw new Exception("Unknown Divider");
-            }
-            return searchResults;
-        }
-
-        public static ListController<TextController> ConvertSearchTerms(string inputString)
-        {
-            var searchTerms = ParseToSearchTerms(inputString);
-            var list = new ListController<TextController>();
-            foreach (var term in searchTerms)
-            {
-                if (!term.Negate)
-                {
-                    list.Add(new TextController(term._term));
-                }
-            }
-            return list;
-        }
-
-
-        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
+        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search, string term)
         {
             var results = DocumentTree.MainPageTree.GetAllNodes().Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
-            return results.Select(res => new SearchResult(res, new List<string>(), new List<string>())).ToList();
+            return results.Select(res => new SearchResult(res, new List<string>().Append(" >> N/A").ToList(), new List<string>().Append($"Negation Search: \"{term}\"").ToList())).ToList();
         }
 
         private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
@@ -529,6 +432,8 @@ namespace Dash
                     if (res2.ViewDocument == res.ViewDocument)
                     {
                         res.RtfHighlight.AddRange(res2.RtfHighlight);
+                        res.FormattedKeyRef.AddRange(res2.FormattedKeyRef);
+                        res.RelevantText.AddRange(res2.RelevantText);
                         break;
                     }
                 }
@@ -555,22 +460,36 @@ namespace Dash
             var joined = new List<SearchResult>();
             foreach (var result in search2List)
             {
-                if (search1.Any(node => node.ViewDocument == result.ViewDocument))
+                foreach (var res in search1)
                 {
-                    result.RtfHighlight.Add(new SearchTerm(searchTerm));
-                    joined.Add(result);
+                    if (res.ViewDocument == result.ViewDocument)
+                    {
+                        result.FormattedKeyRef.AddRange(res.FormattedKeyRef);
+                        result.RelevantText.AddRange(res.RelevantText);
+                        result.RtfHighlight.Add(new SearchTerm(searchTerm));
+                        joined.Add(result);
+                        break;
+                    }
                 }
             }
 
             foreach (var result in search1)
             {
-                if (search2List.Any(node => node.ViewDocument == result.ViewDocument) &&
-                    !joined.Any((node => node.ViewDocument == result.ViewDocument)))
+                if (joined.Any((node => node.ViewDocument == result.ViewDocument)))
                 {
-                    result.RtfHighlight.Add(new SearchTerm(searchTerm));
-                    joined.Add(result);
+                    continue;
                 }
-                //TODO: combine information from the repeated results
+                foreach (var res in search2List)
+                {
+                    if (result.ViewDocument == res.ViewDocument)
+                    {
+                        result.RtfHighlight.Add(new SearchTerm(searchTerm));
+                        result.FormattedKeyRef.AddRange(res.FormattedKeyRef);
+                        result.RelevantText.AddRange(res.RelevantText);
+                        joined.Add(result);
+                        break;
+                    }
+                }
             }
             return joined;
         }
