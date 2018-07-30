@@ -45,11 +45,7 @@ namespace Dash
                //}
         }
 
-        private static void OnSelectionChanged()
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
@@ -67,16 +63,7 @@ namespace Dash
                 SelectHelper(doc);
                 args.SelectedViews.Add(doc);
                 SelectionChanged?.Invoke(args);
-<<<<<<< HEAD
-              
-=======
-                var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
-                //TODO Have pdfs listen for selection changed, don't show controls here
-                if (pdf != null)
-                {
-                    pdf.ShowPdfControls();
-                }
->>>>>>> cbf45c8314a7a5e23107e876a3439394a1249656
+
             }
         }
 

@@ -273,7 +273,7 @@ namespace Dash
             //AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
-            //SelectionManager.OnSelectionChanged += OnSelectionChanged;
+            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
             _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
             _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
@@ -336,6 +336,19 @@ namespace Dash
             _bottomTimer.Start();
 
             SetAnnotationType(AnnotationType.Pin);
+        }
+
+        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (SelectionManager.SelectedDocs.Contains(docview))
+            {
+                ShowPdfControls();
+            }
+            else
+            {
+                HidePdfControls();
+            }
         }
 
         private void TimerTick(object sender, object o)
@@ -1250,14 +1263,7 @@ namespace Dash
 
         }
 
-        public void OnSelectionChanged()
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.SelectedDocs.Contains(docview))
-            {
-                
-            }
-        }
+        
 
         public void HidePdfControls()
         {
