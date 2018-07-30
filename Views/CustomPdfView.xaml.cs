@@ -580,7 +580,15 @@ namespace Dash
             if (CurrentAnnotationType.Equals(AnnotationType.Pin))
             {
                 var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                overlay.StartAnnotation(e.GetPosition(overlay));
+                overlay.StartAnnotation(e.GetPosition(overlay), true);
+            }
+
+            if (CurrentAnnotationType.Equals(AnnotationType.Region))
+            {
+                SetAnnotationType(AnnotationType.Pin);
+                var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+                overlay.StartAnnotation(e.GetPosition(overlay), true);
+                SetAnnotationType(AnnotationType.Region);
             }
             //    if (AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
             //    {

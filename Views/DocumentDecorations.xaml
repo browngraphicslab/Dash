@@ -58,7 +58,7 @@
                 </StackPanel>
             </ScrollViewer>
            
-            <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
+            <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Visible">
             <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
