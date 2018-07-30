@@ -650,7 +650,7 @@ namespace Dash
             DocumentController viewRefDoc = viewRef.ViewModel?.LayoutDocument;
 
             var ind = 0;
-            foreach (DocumentController viewDoc in ViewModel.PinnedNodes)
+            foreach (DocumentController viewDoc in ViewModel?.PinnedNodes)
             {
                 if (viewDoc == viewRefDoc) break;
                 ind++;

@@ -1001,14 +1001,17 @@ namespace Dash
                 NavigateToDocumentOrRegion(region, linkDoc);
                 return LinkHandledResult.HandledClose;
             }
+            var onScreenView = GetTargetDocumentView(xDockFrame, target);
 
-            if (target.GetField<TextController>(KeyStore.LinkContextKey).Data.Equals(nameof(LinkContexts.PushPin)))
+            if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
             {
                 target.GotoRegion(region, linkDoc);
+                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
+                if (onScreenView != null) onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 return LinkHandledResult.HandledRemainOpen;
             }
 
-            var onScreenView = GetTargetDocumentView(xDockFrame, target);
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
