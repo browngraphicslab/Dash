@@ -158,6 +158,9 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
         }
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
@@ -270,6 +273,7 @@ namespace Dash
             //AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
+            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
             _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
             _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
@@ -332,6 +336,19 @@ namespace Dash
             _bottomTimer.Start();
 
             SetAnnotationType(AnnotationType.Pin);
+        }
+
+        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (SelectionManager.SelectedDocs.Contains(docview))
+            {
+                ShowPdfControls();
+            }
+            else
+            {
+                HidePdfControls();
+            }
         }
 
         private void TimerTick(object sender, object o)
@@ -504,7 +521,9 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-		}
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
+        }
 
         public BoundsExtractionStrategy Strategy { get; set; }
 
@@ -576,6 +595,14 @@ namespace Dash
             {
                 var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
                 overlay.StartAnnotation(e.GetPosition(overlay));
+            }
+
+            if (CurrentAnnotationType.Equals(AnnotationType.Region))
+            {
+                SetAnnotationType(AnnotationType.Pin);
+                var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+                overlay.StartAnnotation(e.GetPosition(overlay));
+                SetAnnotationType(AnnotationType.Region);
             }
             //    if (AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
             //    {
@@ -710,6 +737,27 @@ namespace Dash
             BottomPages.View_SizeChanged();
         }
 
+        public void ScrollToPosition(double pos)
+        {
+            var sizes = _bottomPages.PageSizes;
+            var botOffset = 0.0;
+            var annoWidth = xBottomAnnotationBox.ActualWidth;
+            foreach (var size in sizes)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                if (botOffset + (size.Height * scale) - pos > 1)
+                {
+                    break;
+                }
+
+                botOffset += (size.Height * scale) + 15;
+            }
+
+            xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+            xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+            BottomScrollViewer.ChangeView(null, botOffset, null);
+        }
+
         public void ScrollToRegion(DocumentController target)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
@@ -732,19 +780,64 @@ namespace Dash
             
             Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
+            var sizes = _bottomPages.PageSizes;
             // TODO: functionality for more than one split maybe?
             if (splits.Any())
             {
+                var botOffset = 0.0;
+                var annoWidth = xBottomAnnotationBox.ActualWidth;
+                foreach (var size in sizes)
+                {
+                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (botOffset + (size.Height * scale) + 15 - splits[0] >= -1)
+
+                    {
+                        break;
+                    }
+
+                    botOffset += (size.Height * scale) + 15;
+                }
+
+                var topOffset = 0.0;
+                annoWidth = xTopAnnotationBox.ActualWidth;
+                foreach (var size in sizes)
+                {
+                    var scale = (TopScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (topOffset + (size.Height * scale) + 15 - firstOffset >= -1)
+                    {
+                        break;
+                    }
+
+                    topOffset += size.Height * scale + 15;
+                }
+                
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
-                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
+                TopScrollViewer.ChangeView(null, offsets.First(), null);
+                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First(), null);
             }
             else
             {
+                var annoWidth = xBottomAnnotationBox.ActualWidth;
+                var botOffset = 0.0;
+                foreach (var size in sizes)
+                {
+                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (botOffset + (size.Height * scale) + 15 - firstOffset >= -1)
+
+                    {
+                        break;
+                    }
+
+                    botOffset += (size.Height * scale) + 15;
+                }
+
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, firstOffset, null);
+                BottomScrollViewer.ChangeView(null, offsets.First(), null);
             }
         }
 
@@ -982,13 +1075,13 @@ namespace Dash
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
-                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= -1)
+                if (currOffset + (size.Height + 10) * scale - scroller.VerticalOffset >= -1)
 
                 {
                     break;
                 }
 
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
             }
 
             scroller.ChangeView(null, currOffset, 1);
@@ -1027,7 +1120,7 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
                 if (currOffset - scroller.VerticalOffset > 1)
                 {
                     break;
@@ -1046,7 +1139,24 @@ namespace Dash
             }
 
         }
-        
+
+        public void GoToPage(double pageNum)
+        {
+            
+            var sizes = BottomPages.PageSizes;
+            var currOffset = 0.0;
+
+            for (var i = 0; i < pageNum - 1; i++)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - xBottomAnnotationBox.Width) / sizes[i].Width;
+                currOffset += (sizes[i].Height + 10) * scale;
+            }
+
+            BottomScrollViewer.ChangeView(null, currOffset, 1);
+            TopScrollViewer.ChangeView(null, currOffset, 1);
+
+        }
+
         private void AddToStack(Stack<double> stack, ScrollViewer viewer)
         {
             if (!stack.Count().Equals(0))
@@ -1159,6 +1269,23 @@ namespace Dash
         private void Test(object sender, KeyRoutedEventArgs e)
         {
 
+        }
+
+        
+
+        public void HidePdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Collapsed;
+            xBottomButtonPanel.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowPdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Visible;
+            xBottomButtonPanel.Visibility = Visibility.Visible;
+
+            xFadeAnimation.Begin();
+            xFadeAnimation2.Begin();
         }
     }
 }

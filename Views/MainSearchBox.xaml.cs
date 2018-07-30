@@ -17,6 +17,8 @@ namespace Dash
 {
     public sealed partial class MainSearchBox
     {
+        private int _selectedIndex = -1;
+
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -56,7 +58,14 @@ namespace Dash
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
 
+            MainPage.Instance.HighlightDoc(resultVm.ViewDocument, false);
+
+            NavigateToSearchResult(resultVm);
+            MainPage.Instance.Focus(FocusState.Programmatic);
+            xAutoSuggestBox.Focus(FocusState.Programmatic);
+            _selectedIndex = -1;
         }
 
         private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
@@ -71,6 +80,7 @@ namespace Dash
         {
             //xAutoSuggestBox.Text = "";
             UnHighlightAllDocs();
+            _selectedIndex = -1;
         }
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
@@ -115,6 +125,12 @@ namespace Dash
         {
             var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
             DocumentController docTapped = viewModel?.ViewDocument;
+
+            foreach (object res in xAutoSuggestBox.Items)
+            {
+                MainPage.Instance.HighlightDoc(((SearchResultViewModel) res).ViewDocument, false);
+            }
+
             MainPage.Instance.HighlightDoc(docTapped, true);
         }
 
@@ -124,7 +140,7 @@ namespace Dash
             DocumentController docTapped = viewModel?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
-
+        
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
             //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
@@ -148,11 +164,9 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = Search.Parse(xAutoSuggestBox.Text)
-                .Select(sr => sr.ViewDocument.GetViewCopy());
+            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.Properties[nameof(DragCollectionFieldModel)] =
-                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Page);
+            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs, null, null, CollectionView.CollectionViewType.Page);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -348,13 +362,13 @@ namespace Dash
             }
 
             var first = vmGroups 
-                .Where(doc => /*doc?.DocumentCollection != null && */doc.DocumentCollection != MainPage.Instance.MainDocument)
+                .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
             foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
         }
 
-        public static void HighlightSearchResults(List<DocumentController> docs)
+        public static void HighlightSearchResults(List<DocumentController> docs, bool animate = false)
         {
             //highlight new search results
             foreach (var doc in docs)
@@ -364,7 +378,7 @@ namespace Dash
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
-                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1, animate);
             }
         }
 
@@ -431,7 +445,12 @@ namespace Dash
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (!((sender as Grid)?.DataContext is SearchResultViewModel resultVm)) return;
+            MainPage.Instance.HighlightDoc(resultVm.ViewDocument, false);
+            NavigateToSearchResult(resultVm);
+        }
 
+        private void NavigateToSearchResult(SearchResultViewModel resultVm)
+        {
             var navigated = false;
 
             if (resultVm.DocumentCollection != null)
@@ -440,6 +459,10 @@ namespace Dash
                 if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
                 {
                     MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
+                }
+                else
+                {
+                    navigated = MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
                 }
             }
             else
@@ -450,6 +473,54 @@ namespace Dash
             if (!navigated)
             {
                 MainPage.Instance.DockManager.Dock(resultVm.ViewDocument, DockDirection.Right);
+            }
+        }
+
+        private void XAutoSuggestBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            
+        }
+
+        private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case VirtualKey.Down:
+                    foreach (object res in xAutoSuggestBox.Items)
+                    {
+                        MainPage.Instance.HighlightDoc(((SearchResultViewModel)res).ViewDocument, false);
+                    }
+
+                    if (_selectedIndex + 1 == xAutoSuggestBox.Items?.Count) _selectedIndex = -1;
+                    else _selectedIndex++;
+
+                    if (_selectedIndex != -1)
+                    {
+                        DocumentController docTappedDown = (xAutoSuggestBox.Items?[_selectedIndex] as SearchResultViewModel)?.ViewDocument;
+                        if (docTappedDown == null) return;
+
+                        MainPage.Instance.HighlightDoc(docTappedDown, true);
+                    }
+
+                    break;
+                case VirtualKey.Up:
+                    foreach (object res in xAutoSuggestBox.Items)
+                    {
+                        MainPage.Instance.HighlightDoc(((SearchResultViewModel)res).ViewDocument, false);
+                    }
+
+                    if (_selectedIndex == -1) _selectedIndex = xAutoSuggestBox.Items.Count - 1;
+                    else _selectedIndex--;
+
+                    if (_selectedIndex != -1)
+                    {
+                        DocumentController docTappedUp = (xAutoSuggestBox.Items?[_selectedIndex] as SearchResultViewModel)?.ViewDocument;
+                        if (docTappedUp == null) return;
+
+                        MainPage.Instance.HighlightDoc(docTappedUp, true);
+                    }
+
+                    break;
             }
         }
     }

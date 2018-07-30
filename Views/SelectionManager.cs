@@ -38,9 +38,14 @@ namespace Dash
 
         static SelectionManager()
         {
-            //SelectionChanged += e => DeselectRegion();
+            
+               //OnSelectionChanged += (s, e) =>
+               //{
+                   
+               //}
         }
 
+       
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
@@ -58,6 +63,7 @@ namespace Dash
                 SelectHelper(doc);
                 args.SelectedViews.Add(doc);
                 SelectionChanged?.Invoke(args);
+
             }
         }
 
@@ -104,6 +110,7 @@ namespace Dash
                 {
                     SelectHelper(doc);
                     args.SelectedViews.Add(doc);
+                   
                 }
             }
             SelectionChanged?.Invoke(args);
@@ -115,6 +122,7 @@ namespace Dash
                 SelectRegion(null);
             _selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
+
         }
 
         public static void Deselect(DocumentView doc)
@@ -123,6 +131,7 @@ namespace Dash
             {
                 SelectionChanged?.Invoke(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
             }
+          
         }
 
         /*
@@ -143,6 +152,7 @@ namespace Dash
             foreach (var documentView in _selectedDocs)
             {
                 documentView.SetSelectionBorder(false);
+               
             }
             _selectedDocs.Clear();
         }
