@@ -17,6 +17,26 @@
             <AppBarToggleButton x:Name="xTextToggle" Label="Selection" Icon="Font"  Checked="XTextToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xRegionToggle" Label="Region" Icon="SelectAll" Checked="XRegionToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xPinToggle" Label="Pin" Icon="Message" Checked="XPinToggle_OnChecked_"  Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
+            <TextBox Name="xToPageBox" Height="30" FontSize="12"  Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Margin="10,0,45,0" BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown"/>
+            <TextBlock x:Name="xErrorMessage" Foreground="Red" FontSize="10" Text="ERROR! Invalid page #" Opacity="0" Margin="-212,38,0,0"></TextBlock>
+
+            <StackPanel.Resources>
+                <Storyboard x:Name="xFadeAnimationIn">
+                    <DoubleAnimation
+                        Storyboard.TargetName="xErrorMessage"
+                        Storyboard.TargetProperty="Opacity"
+                        From="0.6" To="1.0" Duration="0:0:.01"
+                    />
+                </Storyboard>
+
+                <Storyboard x:Name="xFadeAnimationOut">
+                <DoubleAnimation
+                    Storyboard.TargetName="xErrorMessage"
+                    Storyboard.TargetProperty="Opacity"
+                    From="1.0" To="0" Duration="0:0:1"
+                />
+                </Storyboard>
+            </StackPanel.Resources>
         </StackPanel>
     </Grid>
 </UserControl>

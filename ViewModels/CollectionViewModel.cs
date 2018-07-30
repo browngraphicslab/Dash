@@ -842,7 +842,7 @@ namespace Dash
                     if (!string.IsNullOrEmpty(titlesUrl))
                     {
                         //try to get website and article title
-                        var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
+                        var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
 
 
                         //update html length in intro - the way that word reads HTML is kinda funny

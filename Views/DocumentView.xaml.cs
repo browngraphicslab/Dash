@@ -528,6 +528,16 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
+
+                if (SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.ShowPdfControls();
+                    }
+                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -552,9 +562,21 @@ namespace Dash
                             ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
+                            
                         }
                     }
                 }
+
+                if (!SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.HidePdfControls();
+                    }
+                }
+               
             };
 
             KeyDown += (sender, args) =>
@@ -608,6 +630,11 @@ namespace Dash
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.HidePdfControls();
+                }
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -913,7 +940,15 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
+            if (SelectionManager.SelectedDocs.Contains(this))
+            {
 
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.ShowPdfControls();
+                }
+            }
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1180,8 +1215,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+
+           
+
             if (this.IsRightBtnPressed())
+            {
+               
                 return;
+            }
             e.Handled = true;
             if (PreventManipulation)
             {
@@ -1553,6 +1594,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
+                    
                 }
                 else
                 {
@@ -1564,6 +1606,7 @@ namespace Dash
                         SelectionManager.DeselectAll();
                     }
                     SelectionManager.Select(this);
+                   
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)
@@ -1890,7 +1933,7 @@ namespace Dash
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-                    dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                    dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
                 }
                 else
                 {
