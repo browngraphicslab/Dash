@@ -2140,6 +2140,8 @@ namespace Dash
             var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
             _newpoint = newpoint;
 
+            if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
+                _newpoint = newpoint = new Point();
 
             xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
             xTopRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
