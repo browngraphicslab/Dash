@@ -832,6 +832,8 @@ namespace Dash
 
                     //get url of where this html is coming from
                     var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
+                    if (htmlStartIndex == -1)
+                        htmlStartIndex = html.IndexOf("<HTML", StringComparison.Ordinal);
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.Last().Substring(10);
@@ -1011,16 +1013,22 @@ namespace Dash
                             ? new Regex(":").Split(matches[0].Value)[0]
                             : "";
                         htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        if (title == "")
-                            foreach (var match in matches)
-                            {
-                                var pair = new Regex(":").Split(match.ToString());
-                                htmlNote.GetDataDocument()
-                                    .SetField<TextController>(new KeyController(pair[0], pair[0]),
-                                        pair[1].Trim(), true);
-                            }
-                        else
-                            htmlNote.SetTitle(title);
+                        try
+                        {
+                            if (title == "")
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    htmlNote.GetDataDocument()
+                                        .SetField<TextController>(new KeyController(pair[0], pair[0]),
+                                            pair[1].Trim(), true);
+                                }
+                            else
+                                htmlNote.SetTitle(title);
+                        } catch (Exception)
+                        {
+
+                        }
                     }
                     else
                     {
