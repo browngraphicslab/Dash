@@ -158,6 +158,9 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
         }
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
@@ -504,7 +507,9 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-		}
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
+        }
 
         public BoundsExtractionStrategy Strategy { get; set; }
 
@@ -710,6 +715,27 @@ namespace Dash
             BottomPages.View_SizeChanged();
         }
 
+        public void ScrollToPosition(double pos)
+        {
+            var sizes = _bottomPages.PageSizes;
+            var botOffset = 0.0;
+            var annoWidth = xBottomAnnotationBox.ActualWidth;
+            foreach (var size in sizes)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                if (botOffset + (size.Height * scale) - pos > 1)
+                {
+                    break;
+                }
+
+                botOffset += (size.Height * scale) + 15;
+            }
+
+            xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+            xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+            BottomScrollViewer.ChangeView(null, botOffset, null);
+        }
+
         public void ScrollToRegion(DocumentController target)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
@@ -732,19 +758,64 @@ namespace Dash
             
             Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
+            var sizes = _bottomPages.PageSizes;
             // TODO: functionality for more than one split maybe?
             if (splits.Any())
             {
+                var botOffset = 0.0;
+                var annoWidth = xBottomAnnotationBox.ActualWidth;
+                foreach (var size in sizes)
+                {
+                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (botOffset + (size.Height * scale) + 15 - splits[0] >= -1)
+
+                    {
+                        break;
+                    }
+
+                    botOffset += (size.Height * scale) + 15;
+                }
+
+                var topOffset = 0.0;
+                annoWidth = xTopAnnotationBox.ActualWidth;
+                foreach (var size in sizes)
+                {
+                    var scale = (TopScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (topOffset + (size.Height * scale) + 15 - firstOffset >= -1)
+                    {
+                        break;
+                    }
+
+                    topOffset += size.Height * scale + 15;
+                }
+                
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, firstOffset - Height / 4, null);
-                BottomScrollViewer.ChangeView(null, splits[0] - Height / 4, null);
+                TopScrollViewer.ChangeView(null, topOffset, null);
+                BottomScrollViewer.ChangeView(null, botOffset, null);
             }
             else
             {
+                var annoWidth = xBottomAnnotationBox.ActualWidth;
+                var botOffset = 0.0;
+                foreach (var size in sizes)
+                {
+                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                    if (botOffset + (size.Height * scale) + 15 - firstOffset >= -1)
+
+                    {
+                        break;
+                    }
+
+                    botOffset += (size.Height * scale) + 15;
+                }
+
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, firstOffset, null);
+                BottomScrollViewer.ChangeView(null, botOffset, null);
             }
         }
 
