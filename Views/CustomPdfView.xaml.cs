@@ -981,13 +981,13 @@ namespace Dash
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
-                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= -1)
+                if (currOffset + (size.Height + 10) * scale - scroller.VerticalOffset >= -1)
 
                 {
                     break;
                 }
 
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
             }
 
             scroller.ChangeView(null, currOffset, 1);
@@ -1026,7 +1026,7 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
                 if (currOffset - scroller.VerticalOffset > 1)
                 {
                     break;
@@ -1055,7 +1055,7 @@ namespace Dash
             for (var i = 0; i < pageNum - 1; i++)
             {
                 var scale = (BottomScrollViewer.ViewportWidth - xBottomAnnotationBox.Width) / sizes[i].Width;
-                currOffset += (sizes[i].Height * scale) + 15;
+                currOffset += (sizes[i].Height + 10) * scale;
             }
 
             BottomScrollViewer.ChangeView(null, currOffset, 1);
