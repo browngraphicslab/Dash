@@ -1890,7 +1890,7 @@ namespace Dash
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-                    dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                    dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
                 }
                 else
                 {
@@ -2394,6 +2394,11 @@ namespace Dash
             xKeyBox.Text = _mostRecentPrefix;
             xKeyBox.SelectionStart = 2;
             xKeyBox.Focus(FocusState.Keyboard);
+        }
+
+        private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
         }
     }
 }
