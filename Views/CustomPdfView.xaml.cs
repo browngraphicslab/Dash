@@ -710,6 +710,29 @@ namespace Dash
             BottomPages.View_SizeChanged();
         }
 
+        public void ScrollToPosition(double pos)
+        {
+            var sizes = _bottomPages.PageSizes;
+            var botOffset = 0.0;
+            var annoWidth = xBottomAnnotationBox.ActualWidth;
+            foreach (var size in sizes)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+                botOffset += (size.Height * scale) + 15;
+
+                if (botOffset - pos >= -1)
+
+                {
+                    break;
+                }
+            }
+
+            xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+            xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+            BottomScrollViewer.ChangeView(null, botOffset, null);
+        }
+
         public void ScrollToRegion(DocumentController target)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);

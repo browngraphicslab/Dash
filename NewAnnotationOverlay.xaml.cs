@@ -495,6 +495,7 @@ namespace Dash
             var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
                 new Size(150, 75));
             richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
             var annotation = _regionGetter(_currentAnnotationType);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);
@@ -514,6 +515,22 @@ namespace Dash
             };
             XAnnotationCanvas.Children.Add(docView);
             _pinAnnotations.Add(docView);
+
+            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+                    Context context)
+                {
+                    if (args.NewValue == null) return;
+
+                    var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
+                    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+                        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+                    var pos = regionDef.GetPosition().Value;
+                    var newpos = Util.PointTransformFromVisual(pos, pdfview);
+                    pdfview.ScrollToPosition(newpos.Y);
+                    docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                });
+
             SelectionManager.DeselectAll();
             SelectionManager.Select(docView);
         }
