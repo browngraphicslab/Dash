@@ -17,6 +17,7 @@
             <AppBarToggleButton x:Name="xTextToggle" Label="Selection" Icon="Font"  Checked="XTextToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xRegionToggle" Label="Region" Icon="SelectAll" Checked="XRegionToggle_OnChecked" Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
             <AppBarToggleButton x:Name="xPinToggle" Label="Pin" Icon="Message" Checked="XPinToggle_OnChecked_"  Unchecked="Toggle_OnUnchecked"></AppBarToggleButton>
+            <TextBox Name="xToPageBox" Height="38" Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Margin="10,0,45,0" BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" TextChanged="XToPage_OnTextChanged"/>
         </StackPanel>
     </Grid>
 </UserControl>

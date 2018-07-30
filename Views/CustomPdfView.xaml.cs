@@ -1045,7 +1045,23 @@ namespace Dash
             }
 
         }
-        
+
+        public void GoToPage(double pageNum)
+        {
+            
+            var sizes = BottomPages.PageSizes;
+            var currOffset = 0.0;
+
+            for (var i = 0; i < pageNum - 1; i++)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - xBottomAnnotationBox.Width) / sizes[i].Width;
+                currOffset += (sizes[i].Height * scale) + 15;
+            }
+
+            BottomScrollViewer.ChangeView(null, currOffset, 1);
+
+        }
+
         private void AddToStack(Stack<double> stack, ScrollViewer viewer)
         {
             if (!stack.Count().Equals(0))
