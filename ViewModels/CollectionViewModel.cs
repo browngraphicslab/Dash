@@ -1135,9 +1135,9 @@ namespace Dash
                             .Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
                         var filteredDocs = dragData.DraggedItems.Where((d) =>
                             !parentDocs.Contains(d.GetDataDocument()) &&
-                            d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
-
-                        var payloadLayoutDelegates = filteredDocs.Select((p) =>
+                            d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false).ToList();
+                        
+                        var payloadLayoutDelegates = filteredDocs.Select(p =>
                         {
                             if (p.GetActiveLayout() == null &&
                                 p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
@@ -1150,9 +1150,8 @@ namespace Dash
                             if (double.IsNaN(newDoc.GetHeightField().Data))
                                 newDoc.SetHeight(dragData.Height ?? double.NaN);
                             return newDoc;
-                        });
-                        AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300,
-                            payloadLayoutDelegates.ToList()).Document);
+                        }).ToList();
+                        AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
                     }
                 }
                 // if the user drags a data document

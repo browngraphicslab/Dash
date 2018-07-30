@@ -93,8 +93,8 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch,
                 ViewModel =
                         {
-                            Width = Double.NaN,
-                            Height = Double.NaN,
+                            Width = double.NaN,
+                            Height = double.NaN,
                             Undecorated = true
                         },
 				ShowResize = false
@@ -117,6 +117,8 @@ namespace Dash
                         sender.RemoveField(KeyStore.GoToRegionKey);
                     });
             }
+
+            if (toDock.DocumentType.Equals(RichTextBox.DocumentType)) toDock.SetField<NumberController>(KeyStore.TextWrappingKey, (int) TextWrapping.Wrap, true);
 
             if (toDock.DocumentType.Equals(PdfBox.DocumentType))
             {
@@ -240,6 +242,13 @@ namespace Dash
         public void Undock(DockedView undock)
         {
             _dockControllers[(int)undock.Direction].Remove(undock.ContainedDocumentController);
+
+            //If any rich text boxes have been set to wrap when docked, revert to previous unwrapped state
+            foreach (DocumentController doc in _dockControllers[(int)undock.Direction])
+            {
+                doc.SetField<NumberController>(KeyStore.TextWrappingKey, (int) TextWrapping.NoWrap, true);
+            }
+
             // means it's the last NestedView
             if (undock.NestedView == null)
             {
