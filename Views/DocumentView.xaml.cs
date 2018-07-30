@@ -528,6 +528,16 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
+
+                if (SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.ShowPdfControls();
+                    }
+                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -552,9 +562,21 @@ namespace Dash
                             ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
+                            
                         }
                     }
                 }
+
+                if (!SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.HidePdfControls();
+                    }
+                }
+               
             };
 
             KeyDown += (sender, args) =>
@@ -918,13 +940,15 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-
-            var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-            if (pdf != null)
+            if (SelectionManager.SelectedDocs.Contains(this))
             {
-                pdf.ShowPdfControls();
-            }
 
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.ShowPdfControls();
+                }
+            }
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1192,11 +1216,7 @@ namespace Dash
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
 
-            var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-            if (pdf != null)
-            {
-                pdf.ShowPdfControls();
-            }
+           
 
             if (this.IsRightBtnPressed())
             {
