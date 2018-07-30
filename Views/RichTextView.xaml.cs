@@ -147,7 +147,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView.ViewModel?.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }
