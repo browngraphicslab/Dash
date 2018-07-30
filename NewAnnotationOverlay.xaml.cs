@@ -507,7 +507,7 @@ namespace Dash
 
         private void CreatePin(Point point)
         {
-            if (_currentAnnotationType != AnnotationType.Pin)
+            if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
             {
                 return;
             }
@@ -524,7 +524,7 @@ namespace Dash
                 new Size(150, 75));
             richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
             richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-            var annotation = _regionGetter(_currentAnnotationType);
+            var annotation = _regionGetter(AnnotationType.Pin);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);
             annotation.SetHeight(10);
