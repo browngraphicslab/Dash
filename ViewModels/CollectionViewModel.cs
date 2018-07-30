@@ -735,8 +735,8 @@ namespace Dash
         public static string GetTitlesUrl(string uri)
         {
             //try to get website title
-            var uriParts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-            if (uriParts.Count < 2)
+            var uriParts = uri?.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (uriParts == null || uriParts.Count < 2)
                 return "";
             var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
             var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
@@ -836,10 +836,12 @@ namespace Dash
                         htmlStartIndex = html.IndexOf("<HTML", StringComparison.Ordinal);
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-                    var uri = introParts.Last().Substring(10);
+                    var uri = introParts.LastOrDefault()?.Substring(10);
+                    if (uri?.IndexOf("HTML>") != -1)
+                        uri = introParts[introParts.Count - 2]?.Substring(10);
                     var titlesUrl = GetTitlesUrl(uri);
 
-                    if (!string.IsNullOrEmpty(titlesUrl))
+                    if (!string.IsNullOrEmpty(titlesUrl) || uri.StartsWith("HTML"))
                     {
                         //try to get website and article title
                         var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
@@ -866,7 +868,7 @@ namespace Dash
 
 
                         //combine all parts
-                        html = newHtmlStart + mainHtml + addition + htmlClose;
+                        html =  newHtmlStart + mainHtml + addition + htmlClose;
                     }
 
                     //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
@@ -1016,13 +1018,14 @@ namespace Dash
                         try
                         {
                             if (title == "")
-                                foreach (var match in matches)
-                                {
-                                    var pair = new Regex(":").Split(match.ToString());
-                                    htmlNote.GetDataDocument()
-                                        .SetField<TextController>(new KeyController(pair[0], pair[0]),
-                                            pair[1].Trim(), true);
-                                }
+                                ;
+                            //foreach (var match in matches)
+                            //{
+                            //    var pair = new Regex(":").Split(match.ToString());
+                            //    htmlNote.GetDataDocument()
+                            //        .SetField<TextController>(new KeyController(pair[0], pair[0]),
+                            //            pair[1].Trim(), true);
+                            //}
                             else
                                 htmlNote.SetTitle(title);
                         } catch (Exception)
