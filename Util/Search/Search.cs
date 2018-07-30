@@ -388,6 +388,82 @@ namespace Dash
             }
         }
 
+        //// Parse but adapted to richtextview search
+        //public static IEnumerable<SearchTerm> RtfParse(string inputString)
+        //{
+        //    if (string.IsNullOrEmpty(inputString))
+        //    {
+        //        return new List<SearchTerm>();
+        //    }
+        //    int dividerIndex = FindNextDivider(inputString);
+        //    string searchTerm = inputString.Substring(0, dividerIndex);
+        //    int negate = 0;
+        //    for (int i = 0; i < searchTerm.Length; i++)
+        //    {
+        //        if (searchTerm[i] != '!')
+        //        {
+        //            negate = i;
+        //            break;
+        //        }
+        //    }
+
+        //    string modifiedSearchTerm = searchTerm.TrimStart('!');
+
+        //    if (modifiedSearchTerm.Length > 2 && modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
+        //    {
+        //        modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
+        //    }
+
+        //    string modInput = inputString.TrimStart('!');
+
+        //    int endParenthesis = -2;
+
+        //    // Making sure parenthesis doesn't clash with regex
+        //    if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")))
+        //    {
+        //        endParenthesis = FindEndParenthesis(inputString);
+        //    }
+
+
+        //    IEnumerable<SearchTerm> searchResults;
+        //    if (endParenthesis > 0 || (inputString.TrimStart('!').StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
+        //    {
+        //        string newInput = modInput.Substring(1, modInput.Length - 2);
+        //        searchResults = RtfParse(newInput);
+        //    }
+        //    else
+        //    {
+        //        var searchResultsList = new List<SearchTerm>();
+        //        searchResultsList.Add(new SearchTerm(modifiedSearchTerm));
+        //        searchResults = searchResultsList.AsEnumerable();
+        //    }
+
+        //    if (negate >= 0 && negate % 2 == 1)
+        //    {
+        //        searchResults = searchResults.Select(res => new SearchTerm(res._term, !res.Negate));
+        //    }
+
+        //    int len = inputString.Length;
+
+        //    if (dividerIndex == len)
+        //    {
+        //        return searchResults;
+        //    }
+
+        //    char divider = inputString[dividerIndex];
+        //    string rest = inputString.Substring(dividerIndex + 1);
+
+        //    switch (divider)
+        //    {
+        //        case ' ':
+        //            return JoinTwoSearchesWithIntersection(searchResults, RtfParse(rest), modifiedSearchTerm);
+        //        case '|':
+        //            return JoinTwoSearchesWithUnion(searchResults, RtfParse(rest));
+        //        default:
+        //            throw new Exception("Unknown Divider");
+        //    }
+        //}
+
 
         public struct SearchTerm {
 
