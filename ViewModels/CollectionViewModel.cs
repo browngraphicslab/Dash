@@ -1271,6 +1271,11 @@ namespace Dash
 
                                 inputBox.ClearHandlers(VirtualKey.Enter);
 
+                                fadeOut.Completed += FadeOutOnCompleted;
+                                fadeOut.Begin();
+
+                                args.Handled = true;
+
                                 void FadeOutOnCompleted(object sender2, object o1)
                                 {
                                     fadeOut.Completed -= FadeOutOnCompleted;
@@ -1291,11 +1296,6 @@ namespace Dash
                                     }
                                     inputBox.Visibility = Visibility.Collapsed;
                                 }
-
-                                fadeOut.Completed += FadeOutOnCompleted;
-                                fadeOut.Begin();
-
-                                args.Handled = true;
                             });
 
                             inputBox.Visibility = Visibility.Visible;
