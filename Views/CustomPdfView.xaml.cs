@@ -329,7 +329,7 @@ namespace Dash
             _topTimer.Start();
             _bottomTimer.Start();
 
-            SetAnnotationType(AnnotationType.Region);
+            SetAnnotationType(AnnotationType.Ink);
         }
 
         private void TimerTick(object sender, object o)
