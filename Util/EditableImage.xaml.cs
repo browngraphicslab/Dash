@@ -166,10 +166,6 @@ namespace Dash
                 return;
             }
 
-            if (this.GetFirstAncestorOfType<DocumentView>().Visibility.Equals(Visibility.Collapsed))
-            {
-                this.GetFirstAncestorOfType<DocumentView>().Visibility = Visibility.Visible;
-            }
             _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
 
             sender.RemoveField(KeyStore.GoToRegionKey);

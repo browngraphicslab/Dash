@@ -82,6 +82,11 @@ namespace Dash
         {
             if (region.Equals(_selectedRegion?.RegionDocument))
             {
+                if (this.GetFirstAncestorOfType<DocumentView>().Visibility.Equals(Visibility.Collapsed))
+                {
+                    this.GetFirstAncestorOfType<DocumentView>().Visibility = Visibility.Visible;
+                }
+
                 if (_selectedRegion.Selected)
                 {
                     _selectedRegion.Deselect();
