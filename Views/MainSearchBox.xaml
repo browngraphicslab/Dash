@@ -43,6 +43,8 @@
                     TextBoxStyle="{StaticResource AutoFontSize}"
                     VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
+                    KeyDown="XAutoSuggestBox_OnKeyDown"
+                    KeyUp="XAutoSuggestBox_OnKeyUp"
                     DragEnter="XAutoSuggestBox_OnDragEnter"
                     Drop="XAutoSuggestBox_OnDrop"
                     Grid.Column="2"

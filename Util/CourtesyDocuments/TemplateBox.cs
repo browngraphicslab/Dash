@@ -210,11 +210,11 @@ namespace Dash
             {
                 // create the view for the document controller
                 var layoutView = layoutDoc.MakeViewUI(context);
-                if (double.IsNaN(layoutView.Width) || double.IsNaN(layoutView.Height))
-                {
-                    layoutView.Width = layoutView.ActualWidth;
-                    layoutView.Height = layoutView.ActualHeight;
-                }
+                //if (double.IsNaN(layoutView.Width) || double.IsNaN(layoutView.Height))
+                //{
+                //    layoutView.Width = layoutView.ActualWidth;
+                //    layoutView.Height = layoutView.ActualHeight;
+                //}
                 // creates a multibinding to figure out to figure out if we should use vertical alignment
                 var vertBinding = new FieldMultiBinding<VerticalAlignment>(
                     new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),

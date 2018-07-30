@@ -17,10 +17,29 @@ namespace Dash
         {
             var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
             {
-                var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
-                int matchLength = stringSearchModel == null ? 0 : (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
+                var relatedFields = new List<string>();
+                var relatedStrings = new List<string>();
 
-                return new SearchResult(node, new List<string> { $" >> {key}" }, new List<string> { $"\" {stringSearchModel?.RelatedString} \"" }, matchLength);
+                StringSearchModel dataStringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+                StringSearchModel layoutStringSearchModel = node.ViewDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+
+                var numMatchedFields = 0;
+
+                if (layoutStringSearchModel != null && layoutStringSearchModel != StringSearchModel.False)
+                {
+                    relatedFields.Add($" >> v.{key}");
+                    relatedStrings.Add($"\" {layoutStringSearchModel?.RelatedString} \"");
+                    numMatchedFields++;
+                }
+
+                if (dataStringSearchModel != null && dataStringSearchModel != StringSearchModel.False)
+                {
+                    relatedFields.Add($" >> d.{key}");
+                    relatedStrings.Add($"\" {dataStringSearchModel?.RelatedString} \"");
+                    numMatchedFields++;
+                }
+
+                return new SearchResult(node, relatedFields, relatedStrings, numMatchedFields);
             }).OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);

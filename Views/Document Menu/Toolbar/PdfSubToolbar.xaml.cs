@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -27,9 +28,12 @@ namespace Dash
         {
             this.InitializeComponent();
             Visibility = Visibility.Collapsed;
+            
         }
 
-	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
+      
+
+        private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
             // xPdfCommandbar.IsOpen = true;
             _currentPdfView?.ShowRegions();
@@ -131,6 +135,67 @@ namespace Dash
             xRegionToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Pin);
+        }
+
+        //private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        //{
+        //    
+        //        var selectedFontSize = xFontSizeTextBox.Text;
+
+        //        if (!double.TryParse(selectedFontSize, out double fontSize))
+        //        {
+        //            return;
+        //        }
+        //        if (fontSize > 1600)
+        //        {
+        //            return;
+        //        }
+        //        using (UndoManager.GetBatchHandle())
+        //        {
+        //            if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+        //                xRichEditBox.Document.Selection.EndPosition)
+        //            {
+        //                xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+        //                var end = text.Length;
+        //                xRichEditBox.Document.Selection.SetRange(0, end);
+        //                xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+        //                xRichEditBox.Document.Selection.SetRange(end, end);
+        //            }
+        //            else
+        //            {
+        //                xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+        //            }
+
+        //            richTextView.UpdateDocumentFromXaml();
+        //        }
+        //    
+        //}
+      
+
+        private void XToPageBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                var desiredPage = xToPageBox.Text;
+
+                if (!double.TryParse(desiredPage, out double pageNum))
+                {
+                    xFadeAnimationIn.Begin();
+                    xFadeAnimationOut.Begin();
+                    return;
+                }
+                if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+                {
+
+                    xFadeAnimationIn.Begin();
+                    xFadeAnimationOut.Begin();
+                    return;
+                }
+
+                _currentPdfView.GoToPage(pageNum);
+            }
+
+
         }
     }
 }

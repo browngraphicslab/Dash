@@ -197,6 +197,34 @@ namespace Dash
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
         }
 
+        public void LoadPinAnnotations()
+        {
+            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
+            foreach (var olddoc in currentDocViews)
+            {
+                XAnnotationCanvas.Children.Remove(olddoc);
+            }
+
+            var pinAnnotations = _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
+            foreach (var doc in pinAnnotations)
+            {
+                var dvm = new DocumentViewModel(doc) { Undecorated = true };
+                var docView = new DocumentView
+                {
+                    DataContext = dvm,
+                    BindRenderTransform = true,
+                    Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                    BindVisibility = true,
+                    ResizersVisible = true
+                };
+                XAnnotationCanvas.Children.Add(docView);
+            }
+        }
+
         private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
             var listArgs = fieldUpdatedEventArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
@@ -479,7 +507,7 @@ namespace Dash
 
         private void CreatePin(Point point)
         {
-            if (_currentAnnotationType != AnnotationType.Pin)
+            if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
             {
                 return;
             }
@@ -495,7 +523,8 @@ namespace Dash
             var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
                 new Size(150, 75));
             richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-            var annotation = _regionGetter(_currentAnnotationType);
+            richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+            var annotation = _regionGetter(AnnotationType.Pin);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);
             annotation.SetHeight(10);
@@ -505,15 +534,37 @@ namespace Dash
             RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation, richText.Document);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
                 BindRenderTransform = true,
-                Bounds = new RectangleGeometry { Rect = this.GetBoundingRect(this) },
-                BindVisibility = true
+                Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                BindVisibility = true,
+                ResizersVisible = true
             };
             XAnnotationCanvas.Children.Add(docView);
             _pinAnnotations.Add(docView);
+
+            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+                    Context context)
+                {
+                    if (args.NewValue == null) return;
+
+                    var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
+                    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+                        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+                    var pos = regionDef.GetPosition().Value;
+                    pdfview.ScrollToPosition(pos.Y);
+                    docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                });
+            _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                .Add(docView.ViewModel.DocumentController);
+
             SelectionManager.DeselectAll();
             SelectionManager.Select(docView);
         }

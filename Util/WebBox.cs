@@ -77,10 +77,12 @@ namespace Dash
             else
             {
                 string correctedHtml;
-                if (html.Contains("<html"))
+                var htmlIndex = html.ToLower().IndexOf("<html");
+                if (htmlIndex != -1 )
                 {
-                    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+                    var modHtml = html.Substring(htmlIndex, html.Length - htmlIndex);
                     correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                    correctedHtml = modHtml.Replace("<HTML>", "<HTML><head><style>img {height: auto !important;}</style></head>");
                     correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
                 }
                 else
@@ -93,7 +95,7 @@ namespace Dash
 
             web.LoadCompleted += Web_LoadCompleted;
 
-            SetupBindings(web, docController, context);
+            SetupBindings(webView, docController, context);
             
             return webView;
         }

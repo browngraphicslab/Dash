@@ -75,7 +75,8 @@ namespace Dash
                 computedTitle = shortenedTitle.Length <= 1 ? computedTitle.Substring(0, maxTitleLength) + "..." : shortenedTitle.Substring(1) + "...";
             }
 
-            outputs[ComputedTitle] = new TextController(computedTitle ?? "");
+            computedTitle = (computedTitle ?? "").Replace((char)160, ' ');
+            outputs[ComputedTitle] = new TextController(computedTitle);
         }
 
         public override FieldControllerBase GetDefaultController()
