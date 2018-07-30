@@ -413,7 +413,7 @@ namespace Dash
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString());
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
@@ -824,6 +824,7 @@ namespace Dash
                         var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
                         if (droppedDoc != null)
                             AddDocument(droppedDoc);
+                        droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                         return;
                     }
                     catch (Exception exception)
@@ -902,6 +903,7 @@ namespace Dash
                         var src = srcMatch.Substring(6, srcMatch.Length - 6);
                         var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
                         AddDocument(imgNote.Document);
+                        imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                         return;
                     }
 
@@ -1080,6 +1082,7 @@ namespace Dash
                     htmlNote.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(uri), true);
 
                     AddDocument(htmlNote);
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                 }
 
                 else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
@@ -1088,6 +1091,7 @@ namespace Dash
 
                     var t = new RichTextNote(text, where, new Size(300, double.NaN));
                     AddDocument(t.Document);
+                    t.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                 }
 
 

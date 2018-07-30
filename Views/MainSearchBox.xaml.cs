@@ -452,7 +452,7 @@ namespace Dash
         private void NavigateToSearchResult(SearchResultViewModel resultVm)
         {
             var navigated = false;
-
+            resultVm.ViewDocument.SetHidden(false);
             if (resultVm.DocumentCollection != null)
             {
                 var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
