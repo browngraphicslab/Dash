@@ -1033,7 +1033,7 @@ namespace Dash
             }
         }
 
-        void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -1053,9 +1053,17 @@ namespace Dash
                 {
                     if (text == "v")
                     {
-                        ViewModel.Paste(Clipboard.GetContent(), where);
+                        var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
+
+                        if (_linkDoc != null)
+                        {
+                          
+                            postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                            _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                        }
 
                         previewTextbox.Visibility = Visibility.Collapsed;
+                        
                     } else
                     {
                         LoadNewActiveTextBox("", where);

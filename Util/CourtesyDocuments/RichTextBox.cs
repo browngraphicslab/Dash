@@ -35,7 +35,7 @@ namespace Dash
                     }
                 }
                 double width = (double)data[1];
-                return Windows.UI.Xaml.TextWrapping.Wrap; // double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
+                return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
             }
 
             public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
