@@ -1571,7 +1571,7 @@ namespace Dash
                 else
                 {
                     //if it is webview, don't completely deselect
-                    var deselect = sender?.GetType().Name != "WebView" &&
+                    bool deselect = sender?.GetType().Name != "WebView" &&
                                    ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
                     if (!deselect)
                     {
@@ -1839,13 +1839,13 @@ namespace Dash
 
             var docs = new List<ListController<DocumentController>>
             {
-                MainPage.Instance.DockManager.DocController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey,
-                    null)
+                MainPage.Instance.DockManager.DocController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey, null)
             };
 
             using (UndoManager.GetBatchHandle())
             {
                 var dockedView = this.GetFirstAncestorOfType<DockedView>();
+                ViewModel.DocumentController.SetField<NumberController>(KeyStore.TextWrappingKey, (int)DashShared.TextWrapping.Wrap, true);
                 if (dockedView != null)
                 {
                     dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(ViewModel.DocumentController)});
@@ -2342,7 +2342,7 @@ namespace Dash
             if (val == null)
             {
                 xValueBox.SelectionLength = 0;
-                xValueBox.Text = _lastValueInput;
+                xValueBox.Text = "";
                 return;
             }
 
