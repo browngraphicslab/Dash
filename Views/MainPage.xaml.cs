@@ -1002,7 +1002,7 @@ namespace Dash
                 return LinkHandledResult.HandledClose;
             }
 
-            if (target.GetField<TextController>(KeyStore.LinkContextKey).Data.Equals(nameof(LinkContexts.PushPin)))
+            if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
             {
                 target.GotoRegion(region, linkDoc);
                 return LinkHandledResult.HandledRemainOpen;
