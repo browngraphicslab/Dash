@@ -360,7 +360,7 @@ namespace Dash
             {
                 // gets all the docs that are at the other endpoint of each incident link
                 var endDocs = link.GetDataDocument()
-                                  .GetField<ListController<DocumentController>>(startKey).TypedData ??
+                                  .GetField<ListController<DocumentController>>(startKey)?.TypedData ??
                               new List<DocumentController>();
                 foreach (var endDoc in endDocs)
                 {

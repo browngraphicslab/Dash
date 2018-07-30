@@ -312,6 +312,8 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
+
+            var a = DocumentTree.MainPageTree;
             
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
@@ -328,13 +330,26 @@ namespace Dash
             {
                 searchRes = new List<SearchResult>();
             }
+            foreach (var res in searchRes)
+            {
+                for (int i = 0; i < res.FormattedKeyRef.Count; i++)
+                {
+                    for (int j = 0; j < res.FormattedKeyRef.Count; j++)
+                    {
+                        if (i != j && res.FormattedKeyRef.ElementAt(i) == res.FormattedKeyRef.ElementAt(j) && res.RelevantText.ElementAt(i) == res.RelevantText.ElementAt(j))
+                        {
+                            res.FormattedKeyRef.RemoveAt(j);
+                            res.RelevantText.RemoveAt(j);
+                            j--;
+                        }
+                    }
+                }
+            }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return;
             //highlight doc results
             HighlightSearchResults(docs);
 
-
-            var searchTerms = Search.ConvertSearchTerms(text);
             var vmGroups = new List<SearchResultViewModel>();
             foreach (SearchResult res in searchRes)
             {

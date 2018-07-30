@@ -1033,7 +1033,7 @@ namespace Dash
             }
         }
 
-        void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -1049,20 +1049,33 @@ namespace Dash
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                if (text == "v" && this.IsCtrlPressed())
+                if (this.IsCtrlPressed())
                 {
-                    ViewModel.Paste(Clipboard.GetContent(), where);
-                    
-                    previewTextbox.Visibility = Visibility.Collapsed;
+                    if (text == "v")
+                    {
+                        var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
 
+                        if (_linkDoc != null)
+                        {
+                          
+                            postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                            _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                        }
+
+                        previewTextbox.Visibility = Visibility.Collapsed;
+                        
+                    } else
+                    {
+                        LoadNewActiveTextBox("", where);
+                    }
                     _linkDoc = null;
                 }
-                else if (this.IsCtrlPressed())
-                {
-                    //if we can access rich text view here, we can actually respond to these events
-                    //either call the key down event in richtextbox or handle diff control cases here
-                    LoadNewActiveTextBox("", where);
-                }
+                //else if (this.IsCtrlPressed())
+                //{
+                //    //if we can access rich text view here, we can actually respond to these events
+                //    //either call the key down event in richtextbox or handle diff control cases here
+                //    LoadNewActiveTextBox("", where);
+                //}
                 else
                 {
                     previewTextBuffer += text;
