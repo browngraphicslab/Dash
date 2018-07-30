@@ -195,9 +195,21 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+        }
+
+        public void LoadPinAnnotations()
+        {
+            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
+            foreach (var olddoc in currentDocViews)
+            {
+                XAnnotationCanvas.Children.Remove(olddoc);
+            }
 
             var pinAnnotations = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
             foreach (var doc in pinAnnotations)
             {
                 var dvm = new DocumentViewModel(doc) { Undecorated = true };
@@ -205,8 +217,9 @@ namespace Dash
                 {
                     DataContext = dvm,
                     BindRenderTransform = true,
-                    Bounds = new RectangleGeometry { Rect = this.GetBoundingRect(this) },
-                    BindVisibility = true
+                    Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                    BindVisibility = true,
+                    ResizersVisible = true
                 };
                 XAnnotationCanvas.Children.Add(docView);
             }
@@ -521,12 +534,16 @@ namespace Dash
             RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation, richText.Document);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
                 BindRenderTransform = true,
-                Bounds = new RectangleGeometry { Rect = this.GetBoundingRect(this) },
-                BindVisibility = true
+                Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                BindVisibility = true,
+                ResizersVisible = true
             };
             XAnnotationCanvas.Children.Add(docView);
             _pinAnnotations.Add(docView);

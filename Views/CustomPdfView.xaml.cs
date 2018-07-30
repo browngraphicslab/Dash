@@ -158,6 +158,9 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
         }
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
@@ -504,7 +507,9 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-		}
+            _bottomAnnotationOverlay.LoadPinAnnotations();
+            _topAnnotationOverlay.LoadPinAnnotations();
+        }
 
         public BoundsExtractionStrategy Strategy { get; set; }
 
