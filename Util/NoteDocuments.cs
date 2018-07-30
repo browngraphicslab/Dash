@@ -50,7 +50,7 @@ namespace Dash
             dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
             dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, dataDocument.DocumentType.Type, true);
-            dataDocument.SetField<TextController>(KeyStore.AuthorKey, "User", true);
+            dataDocument.SetField<TextController>(KeyStore.AuthorKey, "avd", true);
             
             return dataDocument;
         }
