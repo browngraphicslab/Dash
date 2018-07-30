@@ -59,12 +59,21 @@ namespace Dash
             // any reason why we don't already check for this? I had to add it in recently
             if (!SelectedDocs.Contains(doc))
             {
+
+                // shouldn't be able to select regions and docs at the same time
+                var isRegion = doc.ViewModel.DocumentController.GetField<BoolController>(KeyStore.PushPinKey);
+                var toClear = SelectedDocs.Any(selected => selected.ViewModel.DocumentController.GetField<BoolController>(KeyStore.PushPinKey) != isRegion);
+                if (toClear) DeselectAll();
+
+
                 var args = new DocumentSelectionChangedEventArgs();
                 SelectHelper(doc);
                 args.SelectedViews.Add(doc);
                 SelectionChanged?.Invoke(args);
 
             }
+
+          
         }
 
         public static void SelectRegion(DocumentController region)
