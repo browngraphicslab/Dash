@@ -919,6 +919,12 @@ namespace Dash
         public void TransformDelta(TransformGroupData delta)
         {
 
+            var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+            if (pdf != null)
+            {
+                pdf.ShowPdfControls();
+            }
+
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1185,8 +1191,18 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+
+            var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+            if (pdf != null)
+            {
+                pdf.ShowPdfControls();
+            }
+
             if (this.IsRightBtnPressed())
+            {
+               
                 return;
+            }
             e.Handled = true;
             if (PreventManipulation)
             {
