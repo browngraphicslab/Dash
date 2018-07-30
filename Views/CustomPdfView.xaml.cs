@@ -231,8 +231,8 @@ namespace Dash
         private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
         {
             LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-            _bottomAnnotationOverlay._textSelectableElements.Clear();
-            _topAnnotationOverlay._textSelectableElements.Clear();
+            _bottomAnnotationOverlay._textSelectableElements?.Clear();
+            _topAnnotationOverlay._textSelectableElements?.Clear();
             Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
         }
 
