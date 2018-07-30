@@ -1002,6 +1002,12 @@ namespace Dash
                 return LinkHandledResult.HandledClose;
             }
 
+            if (target.GetField<TextController>(KeyStore.LinkContextKey).Data.Equals(nameof(LinkContexts.PushPin)))
+            {
+                target.GotoRegion(region, linkDoc);
+                return LinkHandledResult.HandledRemainOpen;
+            }
+
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
