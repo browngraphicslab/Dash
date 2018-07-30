@@ -1059,6 +1059,7 @@ namespace Dash
             }
 
             BottomScrollViewer.ChangeView(null, currOffset, 1);
+            TopScrollViewer.ChangeView(null, currOffset, 1);
 
         }
 

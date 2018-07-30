@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,17 +23,12 @@ namespace Dash
         private DocumentView _currentDocView;
         private CustomPdfView _currentPdfView;
         private DocumentController _currentDocController;
-        private DispatcherTimer _textboxTimer;
 
         public PdfSubToolbar()
         {
             this.InitializeComponent();
             Visibility = Visibility.Collapsed;
-            _textboxTimer = new DispatcherTimer()
-            {
-                Interval = new TimeSpan(0, 0, 0, 0, 700)
-            };
-            _textboxTimer.Tick += TimerTick;
+            
         }
 
       
@@ -174,32 +170,32 @@ namespace Dash
         //        }
         //    
         //}
-        private void XToPage_OnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
+      
+
+        private void XToPageBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-
-
-            _textboxTimer.Stop();
-            _textboxTimer.Start();
-
-
-        }
-
-        private void TimerTick(object sender, object e)
-        {
-
-            _textboxTimer.Stop();
-            var desiredPage = xToPageBox.Text;
-
-            if (!double.TryParse(desiredPage, out double pageNum))
+            if (e.Key == VirtualKey.Enter)
             {
-                return;
-            }
-            if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
-            {
-                return;
+                var desiredPage = xToPageBox.Text;
+
+                if (!double.TryParse(desiredPage, out double pageNum))
+                {
+                    xFadeAnimationIn.Begin();
+                    xFadeAnimationOut.Begin();
+                    return;
+                }
+                if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+                {
+
+                    xFadeAnimationIn.Begin();
+                    xFadeAnimationOut.Begin();
+                    return;
+                }
+
+                _currentPdfView.GoToPage(pageNum);
             }
 
-            _currentPdfView.GoToPage(pageNum);
+
         }
     }
 }
