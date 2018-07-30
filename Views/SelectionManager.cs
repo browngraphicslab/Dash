@@ -51,10 +51,14 @@ namespace Dash
 
         public static void Select(DocumentView doc)
         {
-            var args = new DocumentSelectionChangedEventArgs();
-            SelectHelper(doc);
-            args.SelectedViews.Add(doc);
-            SelectionChanged?.Invoke(args);
+            // any reason why we don't already check for this? I had to add it in recently
+            if (!SelectedDocs.Contains(doc))
+            {
+                var args = new DocumentSelectionChangedEventArgs();
+                SelectHelper(doc);
+                args.SelectedViews.Add(doc);
+                SelectionChanged?.Invoke(args);
+            }
         }
 
         public static void SelectRegion(DocumentController region)
