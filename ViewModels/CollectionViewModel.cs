@@ -832,6 +832,8 @@ namespace Dash
 
                     //get url of where this html is coming from
                     var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
+                    if (htmlStartIndex == -1)
+                        htmlStartIndex = html.IndexOf("<HTML", StringComparison.Ordinal);
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.Last().Substring(10);
@@ -840,7 +842,7 @@ namespace Dash
                     if (!string.IsNullOrEmpty(titlesUrl))
                     {
                         //try to get website and article title
-                        var addition = "<br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
+                        var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
 
 
                         //update html length in intro - the way that word reads HTML is kinda funny
@@ -1011,16 +1013,22 @@ namespace Dash
                             ? new Regex(":").Split(matches[0].Value)[0]
                             : "";
                         htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        if (title == "")
-                            foreach (var match in matches)
-                            {
-                                var pair = new Regex(":").Split(match.ToString());
-                                htmlNote.GetDataDocument()
-                                    .SetField<TextController>(new KeyController(pair[0], pair[0]),
-                                        pair[1].Trim(), true);
-                            }
-                        else
-                            htmlNote.SetTitle(title);
+                        try
+                        {
+                            if (title == "")
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    htmlNote.GetDataDocument()
+                                        .SetField<TextController>(new KeyController(pair[0], pair[0]),
+                                            pair[1].Trim(), true);
+                                }
+                            else
+                                htmlNote.SetTitle(title);
+                        } catch (Exception)
+                        {
+
+                        }
                     }
                     else
                     {
@@ -1262,6 +1270,11 @@ namespace Dash
 
                                 inputBox.ClearHandlers(VirtualKey.Enter);
 
+                                fadeOut.Completed += FadeOutOnCompleted;
+                                fadeOut.Begin();
+
+                                args.Handled = true;
+
                                 void FadeOutOnCompleted(object sender2, object o1)
                                 {
                                     fadeOut.Completed -= FadeOutOnCompleted;
@@ -1282,11 +1295,6 @@ namespace Dash
                                     }
                                     inputBox.Visibility = Visibility.Collapsed;
                                 }
-
-                                fadeOut.Completed += FadeOutOnCompleted;
-                                fadeOut.Begin();
-
-                                args.Handled = true;
                             });
 
                             inputBox.Visibility = Visibility.Visible;

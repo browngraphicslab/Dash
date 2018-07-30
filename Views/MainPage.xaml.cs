@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
@@ -23,6 +24,8 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 using iText.Layout.Element;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using Color = Windows.UI.Color;
+using Point = Windows.Foundation.Point;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -420,17 +423,17 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag, int search = 0)
+        public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (collection != null && document != null)
             {
-                highlightDoc(collection, document, flag, search);
+                highlightDoc(collection, document, flag, search, animate);
             }
         }
 
-        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag, int search)
+        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag, int search, bool animate = false)
         {
             if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
             foreach (var dm in collection.ViewModel.DocumentViewModels)
@@ -440,21 +443,43 @@ namespace Dash
                     if (search == 0)
                     {
                         if (flag == null)
+                        {
                             dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
+                        }
                         else if (flag == true)
+                        {
                             dm.DecorationState = (dm.Undecorated == false);
+                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
+                        }
                         else if (flag == false)
+                        {
                             dm.DecorationState = false;
+                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
+                        }
                     }
                     else if (search == 1)
                     {
                         //highlight doc
-                        dm.SearchHighlightState = new Thickness(8);
+                        if (animate)
+                        {
+                            dm.ExpandBorder();
+                        }
+                        else
+                        {
+                            dm.SearchHighlightState = new Thickness(8);
+                        }
                     }
                     else
                     {
                         //unhighlight doc
-                        dm.SearchHighlightState = new Thickness(0);
+                        if (animate)
+                        {
+                            dm.RetractBorder();
+                        }
+                        else
+                        {
+                            dm.SearchHighlightState = new Thickness(0);
+                        }
                     }
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
@@ -996,10 +1021,16 @@ namespace Dash
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
             
-            if (this.IsCtrlPressed())
+            if (this.IsCtrlPressed() && !this.IsAltPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
                 return LinkHandledResult.HandledClose;
+            }
+
+            if (target.GetField<TextController>(KeyStore.LinkContextKey).Data.Equals(nameof(LinkContexts.PushPin)))
+            {
+                target.GotoRegion(region, linkDoc);
+                return LinkHandledResult.HandledRemainOpen;
             }
 
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
@@ -1007,6 +1038,7 @@ namespace Dash
             {
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
+
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
                 {
@@ -1038,27 +1070,42 @@ namespace Dash
                     }
                     else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
                     {
-                        target.SetHidden(false);
-                        var docView = DockManager.Dock(collection, DockDirection.Right);
-                        var cview = docView.ViewModel.Content;
-                        cview.Tag = target;
-                        cview.Loaded += Docview_Loaded;
-                        var col = docView.ViewModel.DocumentController;
 
-                        var pos = node.ViewDocument.GetPosition() ?? new Point();
-                        double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                        double YZoom = MainDocView.ActualHeight / (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                        var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                        //col.SetField<PointController>(KeyStore.PanPositionKey,
-                        //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                        double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                        double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                        double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
-                        col.SetField<PointController>(KeyStore.PanPositionKey,
-                            new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+                        DockedView dockedCollection = DockManager.GetDockedView(collection);
+                        if (dockedCollection != null)
+                        {
+                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
+                                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                            else DockManager.Undock(dockedCollection);
+                        }
+                        else
+                        {
 
-                        col.SetField<PointController>(KeyStore.PanZoomKey,
-                            new Point(zoom, zoom), true);
+                            target.SetHidden(false);
+                            var docView = DockManager.Dock(collection, DockDirection.Right);
+                            var cview = docView.ViewModel.Content;
+                            cview.Tag = target;
+                            cview.Loaded += Docview_Loaded;
+                            var col = docView.ViewModel.DocumentController;
+
+                            var pos = node.ViewDocument.GetPosition() ?? new Point();
+                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                            double YZoom = MainDocView.ActualHeight /
+                                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                            //col.SetField<PointController>(KeyStore.PanPositionKey,
+                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                            col.SetField<PointController>(KeyStore.PanPositionKey,
+                                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+
+                            col.SetField<PointController>(KeyStore.PanZoomKey,
+                                new Point(zoom, zoom), true);
+                        }
                     }
                 }
             }
@@ -1067,7 +1114,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                onScreenView.ViewModel.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 

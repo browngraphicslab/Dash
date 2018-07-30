@@ -82,6 +82,11 @@ namespace Dash
         {
             if (region.Equals(_selectedRegion?.RegionDocument))
             {
+                if (this.GetFirstAncestorOfType<DocumentView>().Visibility.Equals(Visibility.Collapsed))
+                {
+                    this.GetFirstAncestorOfType<DocumentView>().Visibility = Visibility.Visible;
+                }
+
                 if (_selectedRegion.Selected)
                 {
                     _selectedRegion.Deselect();
@@ -190,6 +195,34 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+        }
+
+        public void LoadPinAnnotations()
+        {
+            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
+            foreach (var olddoc in currentDocViews)
+            {
+                XAnnotationCanvas.Children.Remove(olddoc);
+            }
+
+            var pinAnnotations = _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
+            foreach (var doc in pinAnnotations)
+            {
+                var dvm = new DocumentViewModel(doc) { Undecorated = true };
+                var docView = new DocumentView
+                {
+                    DataContext = dvm,
+                    BindRenderTransform = true,
+                    Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                    BindVisibility = true,
+                    ResizersVisible = true
+                };
+                XAnnotationCanvas.Children.Add(docView);
+            }
         }
 
         private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
@@ -490,6 +523,7 @@ namespace Dash
             var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
                 new Size(150, 75));
             richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
             var annotation = _regionGetter(_currentAnnotationType);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);
@@ -499,10 +533,43 @@ namespace Dash
             annotation.Link(richText.Document, LinkContexts.PushPin);
             RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
-            RenderPin(annotation);
+            RenderPin(annotation, richText.Document);
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
+                BindRenderTransform = true,
+                Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                BindVisibility = true,
+                ResizersVisible = true
+            };
+            XAnnotationCanvas.Children.Add(docView);
+            _pinAnnotations.Add(docView);
+
+            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+                    Context context)
+                {
+                    if (args.NewValue == null) return;
+
+                    var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
+                    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+                        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+                    var pos = regionDef.GetPosition().Value;
+                    pdfview.ScrollToPosition(pos.Y);
+                    docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                });
+            _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                .Add(docView.ViewModel.DocumentController);
+
+            SelectionManager.DeselectAll();
+            SelectionManager.Select(docView);
         }
 
-        private void RenderPin(DocumentController region)
+        private void RenderPin(DocumentController region, DocumentController dest = null)
         {
             var point = region.GetPosition() ?? new Point(0, 0);
             point.X -= 10;
@@ -527,6 +594,16 @@ namespace Dash
             
             pin.Tapped += (sender, args) =>
             {
+                if (this.IsCtrlPressed() && this.IsAltPressed())
+                {
+                    XAnnotationCanvas.Children.Remove(pin);
+                    var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
+                    if (docView != null)
+                    {
+                        if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
+                        _pinAnnotations.Remove(docView);
+                    }
+                }
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
@@ -803,6 +880,10 @@ namespace Dash
             Canvas.SetTop(r, pos.Y);
             r.Tapped += (sender, args) =>
             {
+                if (this.IsCtrlPressed() && this.IsAltPressed())
+                {
+                    XAnnotationCanvas.Children.Remove(r);
+                }
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
@@ -952,26 +1033,14 @@ namespace Dash
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-                var docView = new DocumentView
-                {
-                    DataContext = new DocumentViewModel(dest) {Undecorated = true},
-                    BindRenderTransform = true,
-                    Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)}
-                };
-                XAnnotationCanvas.Children.Add(docView);
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(docView);
-                SelectionManager.SelectionChanged += (args) =>
-                {
-                    if (args.SelectedViews.Any() && !args.SelectedViews.Contains(docView))
-                    {
-                        XAnnotationCanvas.Children.Remove(docView);
-                    }
-                };
+                dest.ToggleHidden();
+
                 return LinkHandledResult.HandledClose;
             }
 
             return LinkHandledResult.Unhandled;
         }
+        private List<DocumentView> _pinAnnotations = new List<DocumentView>();
     }
+
 }

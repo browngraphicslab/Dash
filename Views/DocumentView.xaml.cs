@@ -528,6 +528,12 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
+
+                if (SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    
+                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -552,9 +558,13 @@ namespace Dash
                             ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
+                            
                         }
                     }
                 }
+
+              
+               
             };
 
             KeyDown += (sender, args) =>
@@ -603,11 +613,12 @@ namespace Dash
             xKeyBox.BeforeTextChanging += XKeyBoxOnBeforeTextChanging;
             xValueBox.TextChanged += XValueBoxOnTextChanged;
 
-            //xValueBox.GotFocus += XValueBoxOnGotFocus;
+            xValueBox.GotFocus += XValueBoxOnGotFocus;
 
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+              
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -913,7 +924,7 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-
+            
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1181,7 +1192,9 @@ namespace Dash
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
             if (this.IsRightBtnPressed())
+            {
                 return;
+            }
             e.Handled = true;
             if (PreventManipulation)
             {
@@ -1553,6 +1566,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
+                    
                 }
                 else
                 {
@@ -1564,6 +1578,7 @@ namespace Dash
                         SelectionManager.DeselectAll();
                     }
                     SelectionManager.Select(this);
+                   
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)
@@ -1890,7 +1905,7 @@ namespace Dash
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-                    dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                    dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
                 }
                 else
                 {
@@ -2126,10 +2141,10 @@ namespace Dash
             _newpoint = newpoint;
 
 
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
+            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
             //xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
             //xTopRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
             //xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
@@ -2137,6 +2152,8 @@ namespace Dash
 
             UpdateEllipses(newpoint);
         }
+
+        public bool ResizersVisible = false;
 
 		private void UpdateEllipses(Point newpoint)
 		{
@@ -2248,7 +2265,7 @@ namespace Dash
                     Context = new Context(),
                     FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
                 };
-                xDocumentBackground.AddFieldBinding(Rectangle.FillProperty, backgroundBinding);
+                xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
         }
 
@@ -2260,15 +2277,32 @@ namespace Dash
 
         private void ToggleQuickEntry()
         {
-            if (_animationBusy || Equals(MainPage.Instance.MainDocView)) return;
+            if (_animationBusy || Equals(MainPage.Instance.MainDocView) || Equals(MainPage.Instance.xMapDocumentView)) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
 
+            if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
+
             _animationBusy = true;
             animation.Begin();
-            animation.Completed += (o, o1) => { _animationBusy = false; };
-        }
+            animation.Completed += AnimationCompleted;
+
+            void AnimationCompleted(object sender, object e)
+            {
+                animation.Completed -= AnimationCompleted;
+                if (animation == xQuickEntryOut)
+                {
+                    xKeyValueBorder.Width = 0;
+                    Focus(FocusState.Programmatic);
+                }
+                else
+                {
+                    xKeyBox.Focus(FocusState.Programmatic);
+                }
+                _animationBusy = false;
+            }
+        } 
 
         private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
         {
@@ -2327,18 +2361,18 @@ namespace Dash
             }
         }
 
-        //private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
-        //{
-        //    if (xValueBox.Text.StartsWith("="))
-        //    {
-        //        xValueBox.SelectionStart = 1;
-        //        xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-        //    }
-        //    else
-        //    {
-        //        xValueBox.SelectAll();
-        //    }
-        //   }
+        private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
+        {
+            if (xValueBox.Text.StartsWith("="))
+            {
+                xValueBox.SelectionStart = 1;
+                xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+            }
+            else
+            {
+                xValueBox.SelectAll();
+            }
+        }
 
         private void ProcessInput()
         {
@@ -2394,6 +2428,11 @@ namespace Dash
             xKeyBox.Text = _mostRecentPrefix;
             xKeyBox.SelectionStart = 2;
             xKeyBox.Focus(FocusState.Keyboard);
+        }
+
+        private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
         }
     }
 }

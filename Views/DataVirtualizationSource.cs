@@ -198,8 +198,9 @@ namespace Dash
             var options = new Windows.Data.Pdf.PdfPageRenderOptions();
             var stream = new InMemoryRandomAccessStream();
             var widthRatio = _view.ActualWidth == 0 ? 1 : _view.ActualWidth / _view.PdfMaxWidth;
-            options.DestinationWidth = (uint)(widthRatio * _view.PDFdoc.GetPage(page).Dimensions.MediaBox.Width);
-            options.DestinationHeight = (uint)(widthRatio * _view.PDFdoc.GetPage(page).Dimensions.MediaBox.Height);
+            var box = _view.PDFdoc.GetPage(page).Dimensions.MediaBox;
+            options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, 1000);
+            options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, 1000 * box.Height / box.Width);
             await _view.PDFdoc.GetPage(page).RenderToStreamAsync(stream, options);
             var source = new BitmapImage();
             await source.SetSourceAsync(stream);

@@ -40,7 +40,9 @@
             x:Name="xKeyValueBorder"
             Grid.Column="0"
             Grid.Row="0"
+           
             Height="0"
+            Width="0"
             Visibility="Visible">
             <Border.Resources>
                 <Storyboard x:Name="xQuickEntryIn">
@@ -143,12 +145,30 @@
 
         <!-- border to highlight search results-->
         <Border 
-            Name="DocHighlight" 
+            Name="xDocHighlight" 
             x:FieldModifier="public" 
-            BorderBrush="#fffc84"
+            BorderBrush="{Binding SearchHighlightBrush}"
             BorderThickness="{Binding SearchHighlightState}" 
             Grid.Row="1" 
             Grid.Column="0">
+            <Border.Resources>
+                <Storyboard x:Name="xToRed">
+                    <ColorAnimation 
+                        Storyboard.TargetName="xDocHighlight"
+                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                        To="DarkRed"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xToYellow">
+                    <ColorAnimation 
+                        Storyboard.TargetName="xDocHighlight"
+                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                        To="Yellow"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+            </Border.Resources>
             <Border x:Name="xTargetBorder" x:FieldModifier="public">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
@@ -172,6 +192,7 @@
 
                             <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
                             <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
+                            <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
                             <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
