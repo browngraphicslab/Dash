@@ -982,13 +982,13 @@ namespace Dash
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
-                if (currOffset + (size.Height * scale) + 15 - scroller.VerticalOffset >= -1)
+                if (currOffset + (size.Height + 10) * scale - scroller.VerticalOffset >= -1)
 
                 {
                     break;
                 }
 
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
             }
 
             scroller.ChangeView(null, currOffset, 1);
@@ -1027,7 +1027,7 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                currOffset += (size.Height * scale) + 15;
+                currOffset += (size.Height + 10) * scale;
                 if (currOffset - scroller.VerticalOffset > 1)
                 {
                     break;
@@ -1046,7 +1046,24 @@ namespace Dash
             }
 
         }
-        
+
+        public void GoToPage(double pageNum)
+        {
+            
+            var sizes = BottomPages.PageSizes;
+            var currOffset = 0.0;
+
+            for (var i = 0; i < pageNum - 1; i++)
+            {
+                var scale = (BottomScrollViewer.ViewportWidth - xBottomAnnotationBox.Width) / sizes[i].Width;
+                currOffset += (sizes[i].Height + 10) * scale;
+            }
+
+            BottomScrollViewer.ChangeView(null, currOffset, 1);
+            TopScrollViewer.ChangeView(null, currOffset, 1);
+
+        }
+
         private void AddToStack(Stack<double> stack, ScrollViewer viewer)
         {
             if (!stack.Count().Equals(0))
@@ -1159,6 +1176,21 @@ namespace Dash
         private void Test(object sender, KeyRoutedEventArgs e)
         {
 
+        }
+
+        public void HidePdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Collapsed;
+            xBottomButtonPanel.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowPdfControls()
+        {
+            xTopButtonPanel.Visibility = Visibility.Visible;
+            xBottomButtonPanel.Visibility = Visibility.Visible;
+
+            xFadeAnimation.Begin();
+            xFadeAnimation2.Begin();
         }
     }
 }
