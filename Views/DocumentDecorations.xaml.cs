@@ -275,7 +275,7 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value,
+                X = topLeft.X - xLeftColumn.Width.Value - 3, // bcz: -3 is needed for some reason to place buttons directly next to documentView.  Otherwise there's a gap that can cause the buttons to flicker or go away when you're trying to click them.
                 Y = topLeft.Y
             };
 
