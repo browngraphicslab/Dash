@@ -231,6 +231,8 @@ namespace Dash
         private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
         {
             LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            _bottomAnnotationOverlay._textSelectableElements.Clear();
+            _topAnnotationOverlay._textSelectableElements.Clear();
             Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
         }
 
@@ -329,7 +331,7 @@ namespace Dash
             _topTimer.Start();
             _bottomTimer.Start();
 
-            SetAnnotationType(AnnotationType.Ink);
+            SetAnnotationType(AnnotationType.Pin);
         }
 
         private void TimerTick(object sender, object o)
@@ -462,7 +464,6 @@ namespace Dash
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
-            Strategy = strategy;
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
             double maxWidth = 0;
