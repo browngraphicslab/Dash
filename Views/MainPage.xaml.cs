@@ -996,7 +996,7 @@ namespace Dash
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
             
-            if (this.IsCtrlPressed())
+            if (this.IsCtrlPressed() && !this.IsAltPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
                 return LinkHandledResult.HandledClose;

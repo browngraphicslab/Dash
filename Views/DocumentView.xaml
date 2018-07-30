@@ -172,6 +172,7 @@
 
                             <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
                             <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
+                            <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
                             <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
