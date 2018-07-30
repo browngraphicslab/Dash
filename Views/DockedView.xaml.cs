@@ -54,17 +54,21 @@ namespace Dash
             Grid.SetColumn(view, 0);
             Grid.SetColumnSpan(view, 1);
             Grid.SetRow(view, 0);
-            //view.Margin = new Thickness(5);
-	        ContainedDocumentView = view;
-	        //view.HorizontalAlignment = HorizontalAlignment.Stretch;
-	        //view.VerticalAlignment = VerticalAlignment.Stretch;
 
+	        ContainedDocumentView = view;
             xMainDockedView.Children.Clear();
 	        xContentGrid.Children.Clear();
             view.Loaded += View_Loaded;
             xContentGrid.Children.Add(view);
-            //xMainDockedView.Children.Add(view);
-            xMainDockedView.Children.Add(xCloseButton);
+
+			//change column/row span so it fills the entire available space
+			Grid.SetColumn(view.xContentGrid, 0);
+	        Grid.SetRow(view.xContentGrid, 0);
+			Grid.SetColumnSpan(view.xContentGrid, 3);
+			Grid.SetRowSpan(view.xContentGrid, 3);
+
+			//re-add close button
+			xMainDockedView.Children.Add(xCloseButton);
         }
 
         private void View_Loaded(object sender, RoutedEventArgs e)

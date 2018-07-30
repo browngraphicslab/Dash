@@ -152,14 +152,14 @@
             <Border x:Name="xTargetBorder" x:FieldModifier="public">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="xLeftColumn" Width="15" />
+                        <ColumnDefinition x:Name="xLeftColumn" Width="0" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition x:Name="xRightColumn" Width="15" />
+                        <ColumnDefinition x:Name="xRightColumn" Width="0" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xTopRow" Height="15" />
+                        <RowDefinition x:Name="xTopRow" Height="0" />
                         <RowDefinition Height="*" />
-                        <RowDefinition x:Name="xBottomRow" Height="15" />
+                        <RowDefinition x:Name="xBottomRow" Height="0" />
                     </Grid.RowDefinitions>
 
                     <!--Main document view 
@@ -228,7 +228,7 @@
                                Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
 
-                    <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid">
+                    <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid" x:FieldModifier="public">
 
                         <!--Used to render the drop shadow and provide a background to the document-->
 
