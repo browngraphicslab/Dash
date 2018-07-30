@@ -143,6 +143,155 @@
 
         </Border>
 
+       
+        
+        
+
+        <Border x:Name="xTargetBorder" x:FieldModifier="public"  Grid.Row="1"  Grid.Column="0">
+            <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="xLeftColumn" Width="0" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition x:Name="xRightColumn" Width="0" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="xTopRow" Height="0" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition x:Name="xBottomRow" Height="0" />
+                </Grid.RowDefinitions>
+
+                <!--Main document view 
+ 
+                     Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+                <Grid.ContextFlyout>
+                    <MenuFlyout x:Name="xMenuFlyout">
+
+                        <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+
+                        <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
+                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
+                        <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
+                        <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Fields" Icon="ShowResults" Click="MenuFlyoutItemFields_Click" />
+                        <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click" />
+                        <MenuFlyoutSeparator />
+
+                        <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
+                        <MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder"
+                                            Click="MenuFlyoutItemApplyTemplate_Click" />
+                        <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim"
+                                            Click="MenuFlyoutItemToggleAsAdornment_Click" />
+                        <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click" />
+                        <MenuFlyoutItem Text="Launch App" Icon="Go" Click="MenuFlyoutLaunch_Click" />
+                        <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste"
+                                            Click="MenuFlyoutItemCopyHistory_Click" />
+
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+
+                <!--New resize handler controls-->
+
+                <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
+                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
+                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
+                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateX"
+                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateX"
+                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
+                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               Grid.Row="2" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
+                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
+                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
+                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
+                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
+
+                <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid" x:FieldModifier="public">
+
+                    <!--Used to render the drop shadow and provide a background to the document-->
+
+                    <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch" Fill="Transparent" />
+
+
+                    <!--TODO this relative panel no longer needs to exist its original reason for existing is gone
+
+
+                     border to allow document to be highlighted when selected
+                     Container for document fields view-->
+
+                    <Grid x:Name="MainContent">
+                        <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public"
+                                              Content="{Binding Content}" />
+                        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center"
+                                  VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
+                                <Grid>
+                                    <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
+                                               Source="ms-appx:///Assets/Icons/doc-icon.png">
+                                        <ToolTipService.ToolTip>
+                                            <Image x:Name="xToolTipPreview" Height="200"
+                                                       Source="ms-appx:///Assets/Icons/Unavailable.png">
+                                            </Image>
+                                        </ToolTipService.ToolTip>
+                                    </Image>
+                                    <Image x:Name="xSmallIconImage" Height="35" Width="35"
+                                               HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                               Source="ms-appx:///Assets/Icons/doc-icon.png" />
+                                </Grid>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+                                <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"
+                                             Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center"
+                                             TextAlignment="Center" Background="Transparent"
+                                             Text="{Binding DocumentController.Title}" BorderThickness="0" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+
+                    <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <HyperlinkButton
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Foreground="CornflowerBlue"
+                                Content=""
+                                VerticalContentAlignment="Center"
+                                x:Name="xContextTitle"
+                                Margin="0, 0, 15, 0"
+                                Visibility="Collapsed" />
+                    </Canvas>
+                </Grid>
+
+            </Grid>
+        </Border>
+
         <!-- border to highlight search results-->
         <Border 
             Name="xDocHighlight" 
@@ -169,153 +318,7 @@
                         EnableDependentAnimation="True"/>
                 </Storyboard>
             </Border.Resources>
-            <Border x:Name="xTargetBorder" x:FieldModifier="public">
-                <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition x:Name="xLeftColumn" Width="0" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition x:Name="xRightColumn" Width="0" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xTopRow" Height="0" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition x:Name="xBottomRow" Height="0" />
-                    </Grid.RowDefinitions>
-
-                    <!--Main document view 
- 
-                     Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
-                    <Grid.ContextFlyout>
-                        <MenuFlyout x:Name="xMenuFlyout">
-
-                            <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-
-                            <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
-                            <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
-                            <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
-                            <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Fields" Icon="ShowResults" Click="MenuFlyoutItemFields_Click" />
-                            <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click" />
-                            <MenuFlyoutSeparator />
-
-                            <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
-                            <MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder"
-                                            Click="MenuFlyoutItemApplyTemplate_Click" />
-                            <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim"
-                                            Click="MenuFlyoutItemToggleAsAdornment_Click" />
-                            <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click" />
-                            <MenuFlyoutItem Text="Launch App" Icon="Go" Click="MenuFlyoutLaunch_Click" />
-                            <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste"
-                                            Click="MenuFlyoutItemCopyHistory_Click" />
-
-                        </MenuFlyout>
-                    </Grid.ContextFlyout>
-
-                    <!--New resize handler controls-->
-
-                    <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
-                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch"
-                               VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateX"
-                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateX"
-                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch"
-                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="2" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
-                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                    <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch"
-                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
-
-                    <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid" x:FieldModifier="public">
-
-                        <!--Used to render the drop shadow and provide a background to the document-->
-
-                        <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch" Fill="Transparent" />
-
-
-                        <!--TODO this relative panel no longer needs to exist its original reason for existing is gone
-
-
-                     border to allow document to be highlighted when selected
-                     Container for document fields view-->
-
-                        <Grid x:Name="MainContent">
-                            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public"
-                                              Content="{Binding Content}" />
-                            <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center"
-                                  VerticalAlignment="Center">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                    <RowDefinition Height="Auto"></RowDefinition>
-                                </Grid.RowDefinitions>
-
-                                <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
-                                    <Grid>
-                                        <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
-                                               Source="ms-appx:///Assets/Icons/doc-icon.png">
-                                            <ToolTipService.ToolTip>
-                                                <Image x:Name="xToolTipPreview" Height="200"
-                                                       Source="ms-appx:///Assets/Icons/Unavailable.png">
-                                                </Image>
-                                            </ToolTipService.ToolTip>
-                                        </Image>
-                                        <Image x:Name="xSmallIconImage" Height="35" Width="35"
-                                               HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                               Source="ms-appx:///Assets/Icons/doc-icon.png" />
-                                    </Grid>
-                                </Border>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                                    <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"
-                                             Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center"
-                                             TextAlignment="Center" Background="Transparent"
-                                             Text="{Binding DocumentController.Title}" BorderThickness="0" />
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-
-
-                        <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
-                            <HyperlinkButton
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Foreground="CornflowerBlue"
-                                Content=""
-                                VerticalContentAlignment="Center"
-                                x:Name="xContextTitle"
-                                Margin="0, 0, 15, 0"
-                                Visibility="Collapsed" />
-                        </Canvas>
-                    </Grid>
-
-                </Grid>
-            </Border>
         </Border>
-
 
         <!--<Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32, 0, 0, 0" VerticalAlignment="Top" >
             <TextBlock x:Name="xTitleIcon" 

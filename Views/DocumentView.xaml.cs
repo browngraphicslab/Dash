@@ -935,16 +935,7 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X,
                 currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-
-
-
-
-
-
-
-
-
-
+			
 
             if (Bounds != null && (!Bounds.Rect.Contains(translate) ||
                                    !Bounds.Rect.Contains(new Point(translate.X + ActualWidth,
