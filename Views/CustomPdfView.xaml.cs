@@ -602,7 +602,7 @@ namespace Dash
                 SetAnnotationType(AnnotationType.Pin);
                 var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
                 overlay.StartAnnotation(e.GetPosition(overlay));
-                SetAnnotationType(AnnotationType.Region);
+                //SetAnnotationType(AnnotationType.Region);
             }
             //    if (AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
             //    {
