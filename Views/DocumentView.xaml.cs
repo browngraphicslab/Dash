@@ -528,6 +528,16 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
+
+                if (SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.ShowPdfControls();
+                    }
+                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -552,9 +562,21 @@ namespace Dash
                             ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
+                            
                         }
                     }
                 }
+
+                if (!SelectionManager.SelectedDocs.Contains(this))
+                {
+
+                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                    if (pdf != null)
+                    {
+                        pdf.HidePdfControls();
+                    }
+                }
+               
             };
 
             KeyDown += (sender, args) =>
@@ -608,6 +630,11 @@ namespace Dash
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.HidePdfControls();
+                }
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -913,7 +940,15 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
+            if (SelectionManager.SelectedDocs.Contains(this))
+            {
 
+                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.ShowPdfControls();
+                }
+            }
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1180,8 +1215,14 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
+
+           
+
             if (this.IsRightBtnPressed())
+            {
+               
                 return;
+            }
             e.Handled = true;
             if (PreventManipulation)
             {
@@ -1553,6 +1594,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
+                    
                 }
                 else
                 {
@@ -1564,6 +1606,7 @@ namespace Dash
                         SelectionManager.DeselectAll();
                     }
                     SelectionManager.Select(this);
+                   
                 }
 
                 if (SelectionManager.SelectedDocs.Count() > 1)
@@ -2126,10 +2169,10 @@ namespace Dash
             _newpoint = newpoint;
 
 
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.Y * 15);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true ? 0 : newpoint.X * 15);
+            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
             //xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
             //xTopRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
             //xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
@@ -2137,6 +2180,8 @@ namespace Dash
 
             UpdateEllipses(newpoint);
         }
+
+        public bool ResizersVisible = false;
 
 		private void UpdateEllipses(Point newpoint)
 		{

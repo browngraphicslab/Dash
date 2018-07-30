@@ -26,7 +26,7 @@
 
 
         <Grid Grid.Row="0" >
-            <StackPanel x:Name="xTopButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+            <StackPanel x:Name="xTopButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0" Visibility="Collapsed">
 
 
                 <Grid x:Name="xTopControlsToggleButton" PointerPressed="XTopControlsToggleButton_OnPointerPressed">
@@ -122,7 +122,7 @@
         </Grid>
 
         <Grid Grid.Row="2">
-            <StackPanel x:Name="xBottomButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0">
+            <StackPanel x:Name="xBottomButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0" Visibility="Collapsed">
 
                 <Grid x:Name="xBottomControlsToggleButton" PointerPressed="XBottomControlsToggleButton_OnPointerPressed">
                     <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
