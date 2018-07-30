@@ -128,6 +128,7 @@ namespace Dash
         public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
         public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
         public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
+        public static KeyController PinAnnotationsKey = new KeyController("_Pin Annotations", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
 
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller

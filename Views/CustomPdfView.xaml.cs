@@ -718,14 +718,12 @@ namespace Dash
             foreach (var size in sizes)
             {
                 var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-                botOffset += (size.Height * scale) + 15;
-
-                if (botOffset - pos >= -1)
-
+                if (botOffset + (size.Height * scale) - pos > 1)
                 {
                     break;
                 }
+
+                botOffset += (size.Height * scale) + 15;
             }
 
             xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);

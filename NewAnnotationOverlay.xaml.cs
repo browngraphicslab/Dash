@@ -195,6 +195,21 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+
+            var pinAnnotations = _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
+            foreach (var doc in pinAnnotations)
+            {
+                var dvm = new DocumentViewModel(doc) { Undecorated = true };
+                var docView = new DocumentView
+                {
+                    DataContext = dvm,
+                    BindRenderTransform = true,
+                    Bounds = new RectangleGeometry { Rect = this.GetBoundingRect(this) },
+                    BindVisibility = true
+                };
+                XAnnotationCanvas.Children.Add(docView);
+            }
         }
 
         private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
@@ -526,10 +541,12 @@ namespace Dash
                     var regionDef = (args.NewValue as DocumentController).GetDataDocument()
                         .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
                     var pos = regionDef.GetPosition().Value;
-                    var newpos = Util.PointTransformFromVisual(pos, pdfview);
-                    pdfview.ScrollToPosition(newpos.Y);
+                    pdfview.ScrollToPosition(pos.Y);
                     docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
                 });
+            _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                .Add(docView.ViewModel.DocumentController);
 
             SelectionManager.DeselectAll();
             SelectionManager.Select(docView);
