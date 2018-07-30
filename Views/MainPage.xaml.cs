@@ -1117,7 +1117,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                onScreenView.ViewModel.RetractBorder();
+                onScreenView?.ViewModel.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 
