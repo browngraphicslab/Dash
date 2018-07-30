@@ -51,17 +51,19 @@ namespace Dash
 
         public static void Select(DocumentView doc)
         {
-            var args = new DocumentSelectionChangedEventArgs();
-            SelectHelper(doc);
-            args.SelectedViews.Add(doc);
-            SelectionChanged?.Invoke(args);
-            var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
-            if (pdf != null)
+            // any reason why we don't already check for this? I had to add it in recently
+            if (!SelectedDocs.Contains(doc))
             {
-                pdf.ShowPdfControls();
+                var args = new DocumentSelectionChangedEventArgs();
+                SelectHelper(doc);
+                args.SelectedViews.Add(doc);
+                SelectionChanged?.Invoke(args);
+                var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
+                if (pdf != null)
+                {
+                    pdf.ShowPdfControls();
+                }
             }
-
-
         }
 
         public static void SelectRegion(DocumentController region)

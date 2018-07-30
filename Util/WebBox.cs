@@ -93,7 +93,7 @@ namespace Dash
 
             web.LoadCompleted += Web_LoadCompleted;
 
-            SetupBindings(web, docController, context);
+            SetupBindings(webView, docController, context);
             
             return webView;
         }

@@ -251,7 +251,8 @@ namespace Dash
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
 
-                GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
+                if (doc.ViewModel != null)
+                    GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
             }
 
 
@@ -275,7 +276,7 @@ namespace Dash
 
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value,
+                X = topLeft.X - xLeftColumn.Width.Value - 3, // bcz: -3 is needed for some reason to place buttons directly next to documentView.  Otherwise there's a gap that can cause the buttons to flicker or go away when you're trying to click them.
                 Y = topLeft.Y
             };
 
