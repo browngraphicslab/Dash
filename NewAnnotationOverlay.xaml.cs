@@ -133,7 +133,7 @@ namespace Dash
 
         private void DeselectRegion()
         {
-            _selectedRegion?.Deselect();
+           
             _selectedRegion = null;
         }
 
@@ -548,6 +548,10 @@ namespace Dash
                 BindVisibility = true,
                 ResizersVisible = true
             };
+
+            docView.ViewModel.DocumentController.SetField<BoolController>(KeyStore.PushPinKey, true, true);
+
+           
             XAnnotationCanvas.Children.Add(docView);
             _pinAnnotations.Add(docView);
 
@@ -608,6 +612,19 @@ namespace Dash
                     }
                 }
                 SelectRegion(vm, args.GetPosition(this));
+                //var view = this.GetFirstAncestorOfType<DocumentView>();
+                //if (view != null)
+                //{
+                //    view.HandleShiftEnter();
+                //}
+
+                //if (!SelectionManager.SelectedDocs.Count().Equals(0))
+                //{
+
+                //    SelectionManager.DeselectAll();
+                //    SelectRegion(vm, args.GetPosition(this));
+                //}
+
                 args.Handled = true;
             };
             pin.SetBinding(Shape.FillProperty, new Binding
