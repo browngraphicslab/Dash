@@ -251,7 +251,8 @@ namespace Dash
                 botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
                 botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
 
-                GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
+                if (doc.ViewModel != null)
+                    GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
             }
 
 
