@@ -532,11 +532,7 @@ namespace Dash
                 if (SelectionManager.SelectedDocs.Contains(this))
                 {
 
-                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-                    if (pdf != null)
-                    {
-                        pdf.ShowPdfControls();
-                    }
+                    
                 }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
@@ -567,15 +563,7 @@ namespace Dash
                     }
                 }
 
-                if (!SelectionManager.SelectedDocs.Contains(this))
-                {
-
-                    var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-                    if (pdf != null)
-                    {
-                        pdf.HidePdfControls();
-                    }
-                }
+              
                
             };
 
@@ -630,11 +618,7 @@ namespace Dash
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
-                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-                if (pdf != null)
-                {
-                    pdf.HidePdfControls();
-                }
+              
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -940,15 +924,7 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-            if (SelectionManager.SelectedDocs.Contains(this))
-            {
-
-                var pdf = this.GetFirstDescendantOfType<CustomPdfView>();
-                if (pdf != null)
-                {
-                    pdf.ShowPdfControls();
-                }
-            }
+            
             if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
@@ -1215,12 +1191,8 @@ namespace Dash
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-
-           
-
             if (this.IsRightBtnPressed())
             {
-               
                 return;
             }
             e.Handled = true;

@@ -40,6 +40,7 @@
             x:Name="xKeyValueBorder"
             Grid.Column="0"
             Grid.Row="0"
+           
             Height="0"
             Visibility="Visible">
             <Border.Resources>

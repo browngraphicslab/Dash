@@ -38,9 +38,14 @@ namespace Dash
 
         static SelectionManager()
         {
-            //SelectionChanged += e => DeselectRegion();
+            
+               //OnSelectionChanged += (s, e) =>
+               //{
+                   
+               //}
         }
 
+       
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
@@ -58,12 +63,7 @@ namespace Dash
                 SelectHelper(doc);
                 args.SelectedViews.Add(doc);
                 SelectionChanged?.Invoke(args);
-                var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
-                //TODO Have pdfs listen for selection changed, don't show controls here
-                if (pdf != null)
-                {
-                    pdf.ShowPdfControls();
-                }
+
             }
         }
 
@@ -110,11 +110,7 @@ namespace Dash
                 {
                     SelectHelper(doc);
                     args.SelectedViews.Add(doc);
-                    var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
-                    if (pdf != null)
-                    {
-                        pdf.ShowPdfControls();
-                    }
+                   
                 }
             }
             SelectionChanged?.Invoke(args);
@@ -135,11 +131,7 @@ namespace Dash
             {
                 SelectionChanged?.Invoke(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
             }
-            var pdf = doc.GetFirstDescendantOfType<CustomPdfView>();
-            if (pdf != null)
-            {
-                pdf.HidePdfControls();
-            }
+          
         }
 
         /*
@@ -160,11 +152,7 @@ namespace Dash
             foreach (var documentView in _selectedDocs)
             {
                 documentView.SetSelectionBorder(false);
-                var pdf = documentView.GetFirstDescendantOfType<CustomPdfView>();
-                if (pdf != null)
-                {
-                    pdf.HidePdfControls();
-                }
+               
             }
             _selectedDocs.Clear();
         }
