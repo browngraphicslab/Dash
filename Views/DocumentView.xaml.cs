@@ -2395,5 +2395,10 @@ namespace Dash
             xKeyBox.SelectionStart = 2;
             xKeyBox.Focus(FocusState.Keyboard);
         }
+
+        private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
     }
 }

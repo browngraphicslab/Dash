@@ -500,6 +500,17 @@ namespace Dash
             RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation);
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
+                BindRenderTransform = true,
+                Bounds = new RectangleGeometry { Rect = this.GetBoundingRect(this) },
+                BindVisibility = true
+            };
+            XAnnotationCanvas.Children.Add(docView);
+            _pinAnnotations.Add(docView);
+            SelectionManager.DeselectAll();
+            SelectionManager.Select(docView);
         }
 
         private void RenderPin(DocumentController region)
@@ -952,26 +963,14 @@ namespace Dash
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-                var docView = new DocumentView
-                {
-                    DataContext = new DocumentViewModel(dest) {Undecorated = true},
-                    BindRenderTransform = true,
-                    Bounds = new RectangleGeometry {Rect = this.GetBoundingRect(this)}
-                };
-                XAnnotationCanvas.Children.Add(docView);
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(docView);
-                SelectionManager.SelectionChanged += (args) =>
-                {
-                    if (args.SelectedViews.Any() && !args.SelectedViews.Contains(docView))
-                    {
-                        XAnnotationCanvas.Children.Remove(docView);
-                    }
-                };
+                dest.ToggleHidden();
+
                 return LinkHandledResult.HandledClose;
             }
 
             return LinkHandledResult.Unhandled;
         }
+        private List<DocumentView> _pinAnnotations = new List<DocumentView>();
     }
+
 }
