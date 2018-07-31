@@ -34,6 +34,16 @@
             <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
             <!-- COLORS -->
+
+
+            <Color x:Key="DashLightBlue">#A0C5E8</Color>
+            <Color x:Key="DashMediumBlue">#6DA8DE</Color>
+            <Color x:Key="DashDarkBlue">#407BB1</Color>
+            <Color x:Key="AccentGreenColorDark">#46685b</Color>
+
+
+
+
             <Color x:Key="WindowsBlueColor">#3c3836</Color>
             <Color x:Key="AccentGreenColor">#537769</Color>
             <Color x:Key="AccentGreenColorLight">#6a9383</Color>
