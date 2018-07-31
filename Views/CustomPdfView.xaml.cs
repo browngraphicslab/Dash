@@ -840,7 +840,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, offsets.First() - BottomScrollViewer.ViewportHeight / 2, null);
+                BottomScrollViewer.ChangeView(null, offsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
             }
         }
 
