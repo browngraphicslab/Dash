@@ -43,8 +43,8 @@
                     PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                 <Grid  >
-                    <Ellipse x:Name="AnnotateEllipseUnhighlight" Fill="{StaticResource DashMediumBlue}"  Width="25" Height="25"/>
-                    <Ellipse x:Name="AnnotateEllipseHighlight"  Fill="{StaticResource DashMediumBlue}" Visibility="Collapsed" Width="25" Height="25"/>
+                    <Ellipse x:Name="AnnotateEllipseUnhighlight" />
+                    <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
                     <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
                     <ToolTipService.ToolTip>
                         <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
