@@ -36,10 +36,16 @@
             <!-- COLORS -->
 
 
-            <Color x:Key="DashLightBlue">#A0C5E8</Color>
-            <Color x:Key="DashMediumBlue">#6DA8DE</Color>
-            <Color x:Key="DashDarkBlue">#407BB1</Color>
-            <Color x:Key="AccentGreenColorDark">#46685b</Color>
+            <!-- NEW COLOR PALETTE -->
+            <Color x:Key="DashLightBlueColor">#A0C5E8</Color>
+            <Color x:Key="DashMediumBlueColor">#6DA8DE</Color>
+            <Color x:Key="DashDarkBlueColor">#407BB1</Color>
+            <Color x:Key="DashOverlayColor">#D4E0F7</Color>
+
+            <SolidColorBrush x:Key="DashLightBlue" Color="{StaticResource DashLightBlueColor}"/>
+            <SolidColorBrush x:Key="DashMediumBlue" Color="{StaticResource DashMediumBlueColor}"/>
+            <SolidColorBrush x:Key="DashDarkBlue" Color="{StaticResource DashDarkBlueColor}"/>
+            <SolidColorBrush x:Key="DashOverlay" Color="{StaticResource DashOverlayColor}"/>
 
 
 
@@ -157,6 +163,8 @@
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
                 <Setter Property="BorderThickness" Value="0"></Setter>
             </Style>
+            
+            
 
             <!-- change to default appl-->
             <Style TargetType="RichTextBlock">
