@@ -1536,7 +1536,7 @@ namespace Dash
         /// <summary>
         /// Handles left and right tapped events on DocumentViews
         /// </summary>
-        /// <param name="wasHandled">Whether the tapped event was previously handled</param>//TODO this is always false currently so it probably isn't needed
+        /// <param name="wasHandled">Whether the tapped event was previously handled</param>//this is always false currently so it probably isn't needed
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
