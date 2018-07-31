@@ -117,7 +117,7 @@ namespace Dash
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
             if (dist < 100 && _numMovements < 10)
             {
-                _manipulationDocumentTarget?.DocumentView_OnTapped(null, new TappedRoutedEventArgs());
+                _manipulationDocumentTarget?.TappedHandler(false);
                 if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
                 _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);
