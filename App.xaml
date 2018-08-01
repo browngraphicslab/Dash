@@ -39,7 +39,6 @@
             <Color x:Key="DashLightBlue">#A0C5E8</Color>
             <Color x:Key="DashMediumBlue">#6DA8DE</Color>
             <Color x:Key="DashDarkBlue">#407BB1</Color>
-            <Color x:Key="AccentGreenColorDark">#46685b</Color>
 
 
 
@@ -61,9 +60,12 @@
 
             <!-- SOLID COLOR BRUSHES -->
             <!-- general colors -->
-            <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
+            <SolidColorBrush x:Key="DashLightBlueBrush" Color="{StaticResource DashLightBlue}"/>
+            <SolidColorBrush x:Key="DashMediumBlueBrush" Color="{StaticResource DashMediumBlue}"/>
+            <SolidColorBrush x:Key="DashDarkBlueBrush" Color="{StaticResource DashDarkBlue}"/>
             <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
             <SolidColorBrush x:Key="DarkWindowsBlue" Color="#cc103a6a"/>
+            <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
             <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
             <SolidColorBrush x:Key="AccentGreenLight" Color="{StaticResource AccentGreenColorLight}"/>
             <SolidColorBrush x:Key="AccentGreenDark" Color="{StaticResource AccentGreenColorDark}"/>
