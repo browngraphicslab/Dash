@@ -237,9 +237,9 @@
                     <StackPanel Orientation="Vertical">
 
 
-                        <Rectangle Fill="{StaticResource AccentGreenLight}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                        <Rectangle Fill="{StaticResource DashDarkBlue}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
 
-                        <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                        <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlue}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>
