@@ -439,10 +439,9 @@ namespace Dash
             {
                 _annotationOverlay.EndAnnotation(point.Position);
                 e.Handled = true;
-                if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+                if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
                 {
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+                    SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
                 }
             }
         }

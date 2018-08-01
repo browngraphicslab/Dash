@@ -638,7 +638,7 @@ namespace Dash
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     using (UndoManager.GetBatchHandle())
-                        foreach (var doc in SelectionManager.SelectedDocs)
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
                         {
                             doc.DeleteDocument();
                         }

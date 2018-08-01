@@ -30,11 +30,12 @@ namespace Dash
 
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
-            var selected = SelectionManager.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            var selectedDocControllers =
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;
-                if (selected.Contains(d))
+                if (selectedDocControllers.Contains(d))
                     xGridView.SelectedItem = i;
             }
             xGridView.SelectionChanged += XGridView_SelectionChanged;
@@ -44,9 +45,7 @@ namespace Dash
         {
             if (e.AddedItems.Count > 0)
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
-
+                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)), false);
             }
 
         }

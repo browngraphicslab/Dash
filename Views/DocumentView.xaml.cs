@@ -516,7 +516,7 @@ namespace Dash
                     adornmentGroups.ForEach((dv) =>
                     {
                         SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
-                            new Size(dv.ActualWidth, dv.ActualHeight))));
+                            new Size(dv.ActualWidth, dv.ActualHeight))), false);
                     });
 
                     SetSelectionBorder(false);
@@ -529,11 +529,6 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
 
-                if (SelectionManager.SelectedDocs.Contains(this))
-                {
-
-                    
-                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -1565,19 +1560,9 @@ namespace Dash
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
-                if (this.IsShiftPressed())
-                {
-                    SelectionManager.ToggleSelection(this);
-                    
-                }
-                else
-                {
-                    SelectionManager.DeselectAll();
-                    SelectionManager.Select(this);
-                   
-                }
+                SelectionManager.Select(this, this.IsShiftPressed());
 
-                if (SelectionManager.SelectedDocs.Count() > 1)
+                if (SelectionManager.GetSelectedDocs().Count > 1)
                 {
                     // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     cfview?.Focus(FocusState.Programmatic);

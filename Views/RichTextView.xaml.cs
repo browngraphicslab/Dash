@@ -109,10 +109,9 @@ namespace Dash
                 {
                     if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsRightBtnPressed())
                     {
-                        if (SelectionManager.SelectedDocs.Count() != 1 || !SelectionManager.SelectedDocs.Contains(docView))
+                        if (SelectionManager.GetSelectedDocs().Count != 1 || !SelectionManager.IsSelected(docView))
                         {
-                            SelectionManager.DeselectAll();
-                            SelectionManager.Select(docView);
+                            SelectionManager.Select(docView, false);
                         }
                     }
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
@@ -147,7 +146,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.SelectedDocs.Contains(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.IsSelected(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }

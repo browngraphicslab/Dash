@@ -97,7 +97,7 @@ namespace Dash
                 }
 
                 //delete the sellected collection
-                foreach (DocumentView d in SelectionManager.SelectedDocs)
+                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
                 {
                     d.DeleteDocument();
                 }

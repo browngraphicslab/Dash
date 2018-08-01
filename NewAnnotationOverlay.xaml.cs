@@ -568,8 +568,7 @@ namespace Dash
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
                 .Add(docView.ViewModel.DocumentController);
 
-            SelectionManager.DeselectAll();
-            SelectionManager.Select(docView);
+            SelectionManager.Select(docView, false);
         }
 
         private void RenderPin(DocumentController region, DocumentController dest = null)
