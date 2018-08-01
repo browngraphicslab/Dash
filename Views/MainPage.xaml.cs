@@ -933,6 +933,49 @@ namespace Dash
             xOverlay.Visibility = Visibility.Collapsed;
         }
 
+	    public Task<PushpinType> GetPushpinType()
+	    {
+		    var tcs = new TaskCompletionSource<PushpinType>();
+
+		    xPushpinPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+		    xPushpinPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+
+		    xPushpinPopup.IsOpen = true;
+		    xPushpinConfirmButton.Tapped += xPushpinConfirmButton_OnClick;
+
+			void xPushpinConfirmButton_OnClick(object sender, RoutedEventArgs e)
+		    {
+			    xOverlay.Visibility = Visibility.Collapsed;
+			    xPushpinPopup.IsOpen = false;
+			    xPushpinErrorMessageIcon.Visibility = Visibility.Collapsed;
+			    xPushpinErrorMessageText.Visibility = Visibility.Collapsed;
+			    switch (xPushpinComboBox.SelectedIndex)
+			    {
+					case 0:
+						tcs.SetResult(PushpinType.Text);
+						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
+						break;
+					case 1:
+						tcs.SetResult(PushpinType.Image);
+						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
+						break;
+					case 2:
+						tcs.SetResult(PushpinType.Video);
+						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
+						break;
+					// if nothing was chosen, then we don't want to close the popup
+					default:
+						xOverlay.Visibility = Visibility.Visible;
+						xPushpinPopup.IsOpen = true;
+						xPushpinErrorMessageIcon.Visibility = Visibility.Visible;
+						xPushpinErrorMessageText.Visibility = Visibility.Visible;
+						break;
+				}
+		    }
+
+			return tcs.Task;
+	    }
+
         public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
             var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();

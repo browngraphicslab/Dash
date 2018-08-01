@@ -11,7 +11,13 @@
 
     <Grid>
         <Canvas x:Name="XAnnotationCanvas">
-            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+            <Rectangle x:Name="XPreviewRect" Fill="#33FFFF00" PointerPressed="XPreviewRect_OnPointerPressed" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed">
+                <Rectangle.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Test"/>
+                    </MenuFlyout>
+                </Rectangle.ContextFlyout>                
+            </Rectangle>
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>
