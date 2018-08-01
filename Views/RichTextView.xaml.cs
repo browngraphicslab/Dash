@@ -129,6 +129,11 @@ namespace Dash
                 }
             };
 
+            xSearchBox.GotFocus += (s, e) =>
+            {
+                MatchQuery(getSelected());
+            };
+
             xRichEditBox.LostFocus += delegate
             {
                 if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
@@ -137,7 +142,7 @@ namespace Dash
             xSearchBox.LostFocus += (s, e) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
@@ -485,7 +490,7 @@ namespace Dash
                 xRichEditBox.IsEnabled = true;
                 xRichEditBox.IsTabStop = tab;
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             }
 
