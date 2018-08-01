@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Dash.Models.DragModels;
 using System.Diagnostics;
+using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -291,11 +292,11 @@ namespace Dash
             xButtonsPanel.Children.Clear();
             foreach (var linkName in LinkNames)
             {
-                var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                var tb = new TextBlock() { Text = linkName.Substring(0, 1), Foreground = new SolidColorBrush(Colors.White), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 var g = new Grid();
-                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
+                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse(){ Width = 22, Height = 22 });
                 g.Children.Add(tb);
-                var button = new ContentPresenter() { Content = g, Width = 22, Height = 22, CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
+                var button = new ContentPresenter() { Content = g,  CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
                 button.DragStarting += (s, args) =>
                 {
                     var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView,string>).Item1;
