@@ -717,7 +717,7 @@ namespace Dash
                     args.Handled = true;
 
                     Canvas.SetLeft(mInfo, newAnchor.X);
-                    Canvas.SetTop(mInfo, newAnchor.Y);
+                    Canvas.SetTop(mInfo, newAnchor.Y - 32);
                 }
             }
         }

@@ -32,37 +32,66 @@
                 <Grid x:Name="xTopControlsToggleButton" PointerPressed="XTopControlsToggleButton_OnPointerPressed">
                     <Ellipse/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Toggle Controls" Placement="Bottom" VerticalOffset="20"
+                        />
+                    </ToolTipService.ToolTip>
                 </Grid>
 
                 <StackPanel x:Name="xTopToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                     <Grid x:Name="xTopAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Open Annotations" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xTopNextPageButton" PointerPressed="XTopNextPageButton_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xTopPreviousPageButton" PointerPressed="XTopPreviousPageButton_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xTopScrollToTop" PointerPressed="XTopScrollToTop_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll To Top" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xTopScrollBack" PointerPressed="XTopScrollBack_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xTopScrollForward" PointerPressed="XTopScrollForward_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
                 </StackPanel>
 
@@ -127,36 +156,64 @@
                 <Grid x:Name="xBottomControlsToggleButton" PointerPressed="XBottomControlsToggleButton_OnPointerPressed">
                     <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Toggle Controls" Placement="Bottom" VerticalOffset="20"
+                        />
+                    </ToolTipService.ToolTip>
                 </Grid>
                 <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                     <Grid x:Name="xBottomAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
                         <Ellipse  />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Open Annotations" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xBottomNextPageButton" PointerPressed="XBottomNextPageButton_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xBottomPreviousPageButton" PointerPressed="XBottomPreviousPageButton_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollToTop" PointerPressed="XBottomScrollToTop_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll To Top" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollBack" PointerPressed="XBottomScrollBack_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollForward" PointerPressed="XBottomScrollForward_OnPointerPressed">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="20"
+                            />
+                        </ToolTipService.ToolTip>
                     </Grid>
                 </StackPanel>
 
