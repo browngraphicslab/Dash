@@ -137,7 +137,7 @@ namespace Dash
         {
             xFormulaColumn.Width = new GridLength(0);
             xValueColumn.Width = new GridLength(1, GridUnitType.Star);
-            xBackground.Height = 60;
+            xBackground.Height = 50;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
             kvp?.Collapse_Value(this);

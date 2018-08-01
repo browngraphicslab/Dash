@@ -1428,6 +1428,9 @@
     <PackageReference Include="Flurl.Http">
       <Version>2.3.1</Version>
     </PackageReference>
+    <PackageReference Include="FontAwesome.UWP">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
     </PackageReference>
