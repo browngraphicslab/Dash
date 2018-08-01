@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Casting;
@@ -29,138 +30,147 @@ namespace Dash
 
     public static class SelectionManager
     {
-        public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
-        private static List<DocumentView> _selectedDocs = new List<DocumentView>();
-        public static DocumentController SelectedRegion;
+        private static IList<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
+
+
+        public static IList<DocumentView> GetSelectedDocs()
+        {
+            return new List<DocumentView>(SelectedDocs);
+        }
+
+        public static bool IsSelected(DocumentView doc)
+        {
+            return SelectedDocs.Contains(doc);
+        }
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
 
-        static SelectionManager()
+        /// <summary>
+        /// Selects the given document
+        /// </summary>
+        /// <param name="doc">The document to select</param>
+        /// <param name="toggle">Whether or not to toggle the selection of the given document.
+        /// This is roughly equivalent to whether Shift is pressed when selecting.</param>
+        public static void Select(DocumentView doc, bool toggle)
         {
-            
-               //OnSelectionChanged += (s, e) =>
-               //{
-                   
-               //}
-        }
-
-       
-        public static void ToggleSelection(DocumentView doc)
-        {
-            if (_selectedDocs.Contains(doc))
-                Deselect(doc);
-            else
-                Select(doc);
-        }
-
-        public static void Select(DocumentView doc)
-        {
-            // any reason why we don't already check for this? I had to add it in recently
-            if (!SelectedDocs.Contains(doc))
+            if (!toggle)
             {
-                var args = new DocumentSelectionChangedEventArgs();
-                SelectHelper(doc);
-                args.SelectedViews.Add(doc);
-                SelectionChanged?.Invoke(args);
-
-            }
-        }
-
-        public static void SelectRegion(DocumentController region)
-        {
-            // todo: this is a hack, should refactor elsewhere later
-            if (SelectedRegion != null)
-            {
-                var toLinks = SelectedRegion.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-                if (toLinks != null)
+                bool alreadySelected = false;
+                var deselected = new List<DocumentView>();
+                foreach (var documentView in SelectedDocs)
                 {
-                    foreach (var dc in toLinks)
+                    if (documentView == doc)
                     {
-                        var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
-                        if (docCtrl == null) return;
-                        docCtrl.ToggleHidden();
-                        MainPage.Instance.HighlightDoc(docCtrl, false, 2);
+                        alreadySelected = true;
+                    }
+                    else
+                    {
+                        DeselectHelper(documentView);
+                        deselected.Add(documentView);
                     }
                 }
-            }
 
-            SelectedRegion = region;
+                var args = new DocumentSelectionChangedEventArgs(deselected, alreadySelected ? new List<DocumentView>() : new List<DocumentView>{doc});
 
-            if (region != null)
-            {
-                var newToLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-                if (newToLinks == null) return;
-                foreach (var dc in newToLinks)
-                {
-                    var docCtrl = dc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.TypedData.First();
-                    if (docCtrl == null) return;
-                    docCtrl.ToggleHidden();
-                    MainPage.Instance.HighlightDoc(docCtrl, false, 1);
-                }
-            }
-        }
-
-        public static void SelectDocuments(List<DocumentView> docs)
-        {
-            var args = new DocumentSelectionChangedEventArgs();
-            foreach (var doc in docs)
-            {
-                if (!_selectedDocs.Contains(doc))
+                SelectedDocs = new List<DocumentView>{doc};
+                if (!alreadySelected)
                 {
                     SelectHelper(doc);
-                    args.SelectedViews.Add(doc);
-                   
+                }
+
+                OnSelectionChanged(args);
+            }
+            else
+            {
+                if (SelectedDocs.Contains(doc))
+                {
+                    DeselectHelper(doc);
+                    SelectedDocs.Remove(doc);
+                    OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>{doc}, new List<DocumentView>()));
+                }
+                else
+                {
+                    SelectHelper(doc);
+                    SelectedDocs.Add(doc);
+                    OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new List<DocumentView>{doc}));
                 }
             }
-            SelectionChanged?.Invoke(args);
         }
 
-        private static void SelectHelper(DocumentView doc)
+        /// <summary>
+        /// Selects the given documents
+        /// </summary>
+        /// <param name="views">The documents to select</param>
+        /// <param name="keepPrevious">Whether or not to deselect the previously selected documents. 
+        /// False to deselect previous documents, true to keep them selected. 
+        /// This will often be roughly equivalent to whether Shift is pressed</param>
+        public static void SelectDocuments(IEnumerable<DocumentView> views, bool keepPrevious)
         {
-            if (SelectedRegion != null && !doc.ViewModel.LayoutDocument.Equals(SelectedRegion.GetRegionDefinition()) && !doc.ViewModel.DataDocument.Equals(SelectedRegion))
-                SelectRegion(null);
-            _selectedDocs.Add(doc);
-            doc.SetSelectionBorder(true);
-
-        }
-
-        public static void Deselect(DocumentView doc)
-        {
-            if (DeselectHelper(doc))
+            var selectedDocs = new List<DocumentView>();
+            var documentViews = views.ToList();
+            foreach (var documentView in documentViews)
             {
-                SelectionChanged?.Invoke(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
+                if (SelectedDocs.Contains(documentView))
+                {
+                    continue;
+                }
+
+                SelectHelper(documentView);
+                selectedDocs.Add(documentView);
+                if (keepPrevious)
+                {
+                    SelectedDocs.Add(documentView);
+                }
             }
-          
+
+            var deselectedDocs = new List<DocumentView>();
+            if (!keepPrevious)
+            {
+                foreach (var documentView in SelectedDocs)
+                {
+                    if (!documentViews.Contains(documentView))
+                    {
+                        DeselectHelper(documentView);
+                        deselectedDocs.Add(documentView);
+                    }
+                }
+
+                SelectedDocs = documentViews;
+            }
+
+            OnSelectionChanged(new DocumentSelectionChangedEventArgs(deselectedDocs, selectedDocs));
         }
 
-        /*
-         * This method deselects everything that's currently selected.
-         */
+        public static void Deselect(DocumentView view)
+        {
+            if (SelectedDocs.Contains(view))
+            {
+                SelectedDocs.Remove(view);
+                DeselectHelper(view);
+                OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>{view}, new List<DocumentView>()));
+            }
+        }
+
         public static void DeselectAll()
         {
-            if (_selectedDocs.Count > 0)
+            foreach (var documentView in SelectedDocs)
             {
-                DeselectAllHelper();
-                var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocs), new List<DocumentView>());
-                SelectionChanged?.Invoke(args);
+                DeselectHelper(documentView);
             }
+            var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(SelectedDocs), new List<DocumentView>());
+            SelectedDocs.Clear();
+            OnSelectionChanged(args);
         }
 
-        private static void DeselectAllHelper()
+        private static void SelectHelper(DocumentView view)
         {
-            foreach (var documentView in _selectedDocs)
-            {
-                documentView.SetSelectionBorder(false);
-               
-            }
-            _selectedDocs.Clear();
+            view.SetSelectionBorder(true);
         }
 
-        private static bool DeselectHelper(DocumentView doc)
+        private static void DeselectHelper(DocumentView view)
         {
-            doc.SetSelectionBorder(false);
-            return _selectedDocs.Remove(doc);
+            view.SetSelectionBorder(false);
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
@@ -180,6 +190,15 @@ namespace Dash
                     return marqueeDocs;
             }
             return new List<DocumentView>(new[] { view });
+        }
+
+        private static void OnSelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            if (args.DeselectedViews.Count == 0 && args.SelectedViews.Count == 0)
+            {
+                return;
+            }
+            SelectionChanged?.Invoke(args);
         }
     }
 }

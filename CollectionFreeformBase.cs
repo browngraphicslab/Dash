@@ -652,7 +652,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
                 GetSelectionCanvas().Children.Remove(_marquee);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
@@ -799,7 +799,7 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectionManager.SelectedDocs)
+            foreach (DocumentView doc in SelectionManager.GetSelectedDocs())
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
@@ -851,7 +851,7 @@ namespace Dash
                         Height = bounds.Height,
                         Width = bounds.Width
                     };
-                    viewsToSelectFrom = SelectionManager.SelectedDocs;
+                    viewsToSelectFrom = SelectionManager.GetSelectedDocs();
                 }
 
                 var toSelectFrom = viewsToSelectFrom.ToList();
