@@ -442,9 +442,24 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController GetRegionDocument()
+        public DocumentController GetRegionDocument(Point? point = null)
         {
-            return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
+	        if (point == null)
+	        {
+				return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
+			}
+
+			//if point !null & region is selected, return region 
+	        if (_bottomAnnotationOverlay.GetRegionDoc() != null) return _bottomAnnotationOverlay.GetRegionDoc();
+
+			//else, make a new push pin region closest to given point
+	        var xPos = point?.X;
+	        var yPos = point?.Y;
+
+			//calculate closest point & make a push pin
+	        var pdfX = this.GetFirstAncestorOfType<DocumentView>().ViewModel;
+
+	        //_bottomAnnotationOverlay.StartRegion(point);
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
