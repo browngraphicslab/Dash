@@ -63,7 +63,7 @@
             Grid.Column="1" Width="7" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch" ManipulationStarted="xSplitter_ManipulationStarted" ManipulationCompleted="xSplitter_ManipulationCompleted" ManipulationDelta="xSplitter_ManipulationDelta" 
                 ResizeDirection="Auto"
                 Background="LightGray"
-                Foreground="{StaticResource AccentGreenLight}" 
+                Foreground="{StaticResource DashLightBlueBrush}" 
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
                 <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">

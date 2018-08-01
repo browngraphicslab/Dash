@@ -13,7 +13,7 @@
 
     <Grid>
         <Border x:Name="xScriptRepl" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="1">
-            <Grid VerticalAlignment="Stretch">
+            <Grid VerticalAlignment="Stretch" Background="White">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -60,9 +60,9 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
-                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Consolas"/>
+                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Lucida Sans Typewriter"/>
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
-                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Consolas" />
+                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Lucida Sans Typewriter" />
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
@@ -76,8 +76,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="18"
-                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Consolas"
+                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="16" Margin="5 0 5 5" Padding="5"
+                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Lucida Sans Typewriter"
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
                 </local:ActionTextBox>
                 <Popup x:Name="xSuggestionsPopup" Grid.Row="3" Canvas.ZIndex="-1">
@@ -90,7 +90,7 @@
                                         <Grid>
                                             <Border Height="40">
                                                 <TextBlock Text="{x:Bind Name}" 
-                                                FontSize="15" Foreground="Black" FontFamily="Consolas"/>
+                                                FontSize="15" Foreground="Black" FontFamily="Lucida Sans Typewriter"/>
                                             </Border>
                                         </Grid>
                                     </DataTemplate>
