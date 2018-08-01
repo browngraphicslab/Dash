@@ -1496,23 +1496,23 @@ namespace Dash
             xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
             xTopLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xTopResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xTopRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
             xBottomLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xBottomResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xBottomRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
             xRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
 		}
 
