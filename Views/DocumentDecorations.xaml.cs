@@ -294,7 +294,7 @@ namespace Dash
             {
                 var tb = new TextBlock() { Text = linkName.Substring(0, 1), Foreground = new SolidColorBrush(Colors.White), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 var g = new Grid();
-                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse(){ Width = 22, Height = 22 });
+                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse(){ Width = 22, Height = 22, Opacity = 0.6 });
                 g.Children.Add(tb);
                 var button = new ContentPresenter() { Content = g,  CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
                 button.DragStarting += (s, args) =>
