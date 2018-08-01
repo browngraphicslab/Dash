@@ -84,5 +84,10 @@ namespace Dash.Popups
 	    {
 		    xLayoutPopup.VerticalOffset = offset;
 	    }
+
+	    public FrameworkElement Self()
+	    {
+		    return this;
+	    }
     }
 }

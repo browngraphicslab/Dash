@@ -17,7 +17,8 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
-using Windows.UI;
+ using Windows.Storage;
+ using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
  using Dash.Popups;
@@ -110,8 +111,11 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-                ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-	            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+	            if (ActivePopup != null)
+	            {
+		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+				}
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -921,74 +925,78 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
+		
 
-
-        private void Popup_OnOpened(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Visible;
-        }
-
-        private void Popup_OnClosed(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Collapsed;
-        }
-
-	    public Task<PushpinType> GetPushpinType()
+	    public async Task<PushpinType> GetPushpinType()
 	    {
-		    var tcs = new TaskCompletionSource<PushpinType>();
+		    var typePopup = new PushpinTypePopup();
+			SetUpPopup(typePopup);
 
-		    xPushpinPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-		    xPushpinPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+		    var mode = await typePopup.GetPushpinType();
+		    UnsetPopup();
 
-		    xPushpinPopup.IsOpen = true;
-		    xPushpinConfirmButton.Tapped += xPushpinConfirmButton_OnClick;
-
-			void xPushpinConfirmButton_OnClick(object sender, RoutedEventArgs e)
-		    {
-			    xOverlay.Visibility = Visibility.Collapsed;
-			    xPushpinPopup.IsOpen = false;
-			    xPushpinErrorMessageIcon.Visibility = Visibility.Collapsed;
-			    xPushpinErrorMessageText.Visibility = Visibility.Collapsed;
-			    switch (xPushpinComboBox.SelectedIndex)
-			    {
-					case 0:
-						tcs.SetResult(PushpinType.Text);
-						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
-						break;
-					case 1:
-						tcs.SetResult(PushpinType.Image);
-						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
-						break;
-					case 2:
-						tcs.SetResult(PushpinType.Video);
-						xPushpinConfirmButton.Tapped -= xPushpinConfirmButton_OnClick;
-						break;
-					// if nothing was chosen, then we don't want to close the popup
-					default:
-						xOverlay.Visibility = Visibility.Visible;
-						xPushpinPopup.IsOpen = true;
-						xPushpinErrorMessageIcon.Visibility = Visibility.Visible;
-						xPushpinErrorMessageText.Visibility = Visibility.Visible;
-						break;
-				}
-		    }
-
-			return tcs.Task;
+		    return mode;
 	    }
 
-        public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
+        public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-	        xOverlay.Visibility = Visibility.Visible;
 	        var importPopup = new HTMLRTFPopup();
-			importPopup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
-			importPopup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
-			xOuterGrid.Children.Add(importPopup);
+			SetUpPopup(importPopup);
 
-	        var mode = importPopup.GetLayoutMode();
-	        xOverlay.Visibility = Visibility.Collapsed;
+	        var mode = await importPopup.GetLayoutMode();
+	        UnsetPopup();
 
-            return mode;
+			return mode;
         }
+
+	    public async Task<StorageFile> GetVideoFile()
+	    {
+		    var videoPopup = new ImportVideoPopup();
+		    SetUpPopup(videoPopup);
+
+		    var video = await videoPopup.GetVideoFile();
+			UnsetPopup();
+
+		    return video;
+	    }
+
+	    public async Task<StorageFile> GetImageFile()
+	    {
+		    var imagePopup = new ImportImagePopup();
+			SetUpPopup(imagePopup);
+
+		    var image = await imagePopup.GetImageFile();
+		    UnsetPopup();
+
+		    return image;
+	    }
+
+		/// <summary>
+		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+		/// </summary>
+		/// <param name="popup"></param>
+	    private void SetUpPopup(DashPopup popup)
+		{
+			ActivePopup = popup;
+			xOverlay.Visibility = Visibility.Visible;
+			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+			Grid.SetColumn(popup.Self(), 2);
+			xOuterGrid.Children.Add(popup.Self());
+		}
+
+		/// <summary>
+		/// This method is called after a popup closes, to remove it from the page.
+		/// </summary>
+	    private void UnsetPopup()
+		{
+			xOverlay.Visibility = Visibility.Collapsed;
+			if (ActivePopup != null)
+		    {
+			    xOuterGrid.Children.Remove(ActivePopup.Self());
+			    ActivePopup = null;
+		    }
+	    }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {

@@ -300,14 +300,15 @@ namespace Dash
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
-                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode =
-                    right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
-                MainPage.Instance.Focus(FocusState.Programmatic);
+                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+				ManipulationMode = ManipulationModes.All;
+				//var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+				//var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+				ManipulationMode =
+					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+						? ManipulationModes.All
+						: ManipulationModes.None;
+				MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 if (false)  // bcz: set to 'true' for drag/Drop interactions
                     SetupDragDropDragging(e);

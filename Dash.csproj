@@ -214,6 +214,15 @@
     <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
       <DependentUpon>HTMLRTFPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\ImportImagePopup.xaml.cs">
+      <DependentUpon>ImportImagePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ImportVideoPopup.xaml.cs">
+      <DependentUpon>ImportVideoPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\PushpinTypePopup.xaml.cs">
+      <DependentUpon>PushpinTypePopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RegionAnnotation.xaml.cs">
       <DependentUpon>RegionAnnotation.xaml</DependentUpon>
     </Compile>
@@ -998,6 +1007,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\HTMLRTFPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportImagePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportVideoPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\PushpinTypePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

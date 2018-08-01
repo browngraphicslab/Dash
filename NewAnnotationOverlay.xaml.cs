@@ -6,8 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Playback;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -205,11 +207,13 @@ namespace Dash
 
         public void LoadPinAnnotations()
         {
-            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
-            foreach (var olddoc in currentDocViews)
-            {
-                XAnnotationCanvas.Children.Remove(olddoc);
-            }
+			//var currentDocViews = XAnnotationCanvas.Children.Where(child => child is DocumentView);
+			
+	        foreach (var child in XAnnotationCanvas.Children.ToList())
+	        {
+		        if (child is DocumentView dv)
+			        XAnnotationCanvas.Children.Remove(dv);
+	        }
 
             var pinAnnotations = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
@@ -220,12 +224,12 @@ namespace Dash
 
                 foreach (var doc in pinAnnotations)
                 {
-                    var dvm = new DocumentViewModel(doc) { Undecorated = true };
+                    var dvm = new DocumentViewModel(doc) { DecorationState = false, Undecorated = false };
                     var docView = new DocumentView
                     {
                         DataContext = dvm,
                         BindRenderTransform = true,
-                        Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                        //Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
                         BindVisibility = true,
                         ResizersVisible = true
                     };
@@ -551,10 +555,10 @@ namespace Dash
 						annotationController = CreateTextPin(point);
 						break;
 					case PushpinType.Video:
-						annotationController = CreateVideoPin(point);
+						annotationController = await CreateVideoPin(point);
 						break;
 					case PushpinType.Image:
-						annotationController = CreateImagePin(point);
+						annotationController = await CreateImagePin(point);
 						break;
 					default:
 						throw new ArgumentOutOfRangeException();
@@ -568,9 +572,9 @@ namespace Dash
 
 	        var docView = new DocumentView
 	        {
-		        DataContext = new DocumentViewModel(annotationController) { Undecorated = true },
+		        DataContext = new DocumentViewModel(annotationController) { DecorationState = false, Undecorated = false },
 		        BindRenderTransform = true,
-		        Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+		        //Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
 		        BindVisibility = true,
 		        ResizersVisible = true
 	        };
@@ -603,15 +607,30 @@ namespace Dash
 	        RenderPin(annotation, annotationController);
 		}
 
-	    private DocumentController CreateVideoPin(Point point)
+	    private async Task<DocumentController> CreateVideoPin(Point point)
 	    {
-		    return null;
+		    var file = await MainPage.Instance.GetVideoFile();
+
+		    var videoNote = await new VideoToDashUtil().ParseFileAsync(file);
+			videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    videoNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
+			videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+		    videoNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
+
+			return videoNote;
 	    }
 
-	    private DocumentController CreateImagePin(Point point)
+	    private async Task<DocumentController> CreateImagePin(Point point)
 	    {
-		    //todo do this
-		    return null;
+		    var file = await MainPage.Instance.GetImageFile();
+
+		    var imageNote = await new ImageToDashUtil().ParseFileAsync(file);
+		    imageNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    imageNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
+		    imageNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+		    imageNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
+
+		    return imageNote;
 	    }
 
 		/// <summary>
@@ -1100,14 +1119,7 @@ namespace Dash
             return LinkHandledResult.Unhandled;
         }
         private List<DocumentView> _pinAnnotations = new List<DocumentView>();
-
-	    private void XPreviewRect_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-	    {
-		    if (e.IsRightPressed())
-		    {
-			    e.Handled = true;
-		    }
-	    }
+		
     }
 
 }

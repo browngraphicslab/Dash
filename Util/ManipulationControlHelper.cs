@@ -41,9 +41,8 @@ namespace Dash
             _collection = _eventElement as CollectionView;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.None;
-
-            var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
+			
+            if (_manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
 
             _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
@@ -81,8 +80,7 @@ namespace Dash
             if (e?.Pointer != null)
                 _eventElement.CapturePointer(e.Pointer);
             _numMovements++;
-            var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
+            if (_manipulationDocumentTarget.ManipulationControls == null) return;
             
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
