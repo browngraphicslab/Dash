@@ -341,7 +341,7 @@ namespace Dash
         private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.SelectedDocs.Contains(docview))
+            if (SelectionManager.IsSelected(docview))
             {
                 ShowPdfControls();
             }
@@ -660,10 +660,9 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
-            if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
             }
         }
 
@@ -959,7 +958,7 @@ namespace Dash
                 DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
                 DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
             }
-            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)

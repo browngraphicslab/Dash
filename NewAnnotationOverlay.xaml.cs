@@ -528,7 +528,7 @@ namespace Dash
                     return;
                 }
             }
-
+			
 	        DocumentController annotationController;
 
 	        var annotation = _regionGetter(AnnotationType.Pin);
@@ -595,7 +595,7 @@ namespace Dash
 		        .Add(docView.ViewModel.DocumentController);
 
 	        SelectionManager.DeselectAll();
-	        SelectionManager.Select(docView);
+	        SelectionManager.Select(docView, false);
 
 			annotation.Link(annotationController, LinkContexts.PushPin);
 	        RegionDocsList.Add(annotation);
@@ -620,7 +620,7 @@ namespace Dash
 		/// <param name="point"></param>
 		private DocumentController CreateTextPin(Point point)
 	    {
-			var richText = new RichTextNote("<annotation>", new Point(point.X + 5, point.Y + 5),
+			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
 				new Size(150, 75));
 			richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
 			richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);

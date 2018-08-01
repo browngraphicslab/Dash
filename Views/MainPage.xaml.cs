@@ -20,7 +20,8 @@ using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
-using Visibility = Windows.UI.Xaml.Visibility;
+ using Dash.Popups;
+ using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 using iText.Layout.Element;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -67,7 +68,7 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
-        public Popup LayoutPopup => xLayoutPopup;
+        public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
@@ -109,8 +110,8 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
-                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+                ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+	            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -638,7 +639,7 @@ namespace Dash
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     using (UndoManager.GetBatchHandle())
-                        foreach (var doc in SelectionManager.SelectedDocs)
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
                         {
                             doc.DeleteDocument();
                         }
@@ -925,7 +926,6 @@ namespace Dash
         private void Popup_OnOpened(object sender, object e)
         {
             xOverlay.Visibility = Visibility.Visible;
-            xComboBox.SelectedItem = null;
         }
 
         private void Popup_OnClosed(object sender, object e)
@@ -978,51 +978,16 @@ namespace Dash
 
         public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
-            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
-            {
-                xOverlay.Visibility = Visibility.Collapsed;
-                xLayoutPopup.IsOpen = false;
-                xErrorMessageIcon.Visibility = Visibility.Collapsed;
-                xErrorMessageText.Visibility = Visibility.Collapsed;
+	        xOverlay.Visibility = Visibility.Visible;
+	        var importPopup = new HTMLRTFPopup();
+			importPopup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+			importPopup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+			xOuterGrid.Children.Add(importPopup);
 
-                var remember = xSaveHtmlType.IsChecked ?? false;
+	        var mode = importPopup.GetLayoutMode();
+	        xOverlay.Visibility = Visibility.Collapsed;
 
-                if (xComboBox.SelectedIndex == 0)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else if (xComboBox.SelectedIndex == 1)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else
-                {
-                    xOverlay.Visibility = Visibility.Visible;
-                    xLayoutPopup.IsOpen = true;
-                    xErrorMessageIcon.Visibility = Visibility.Visible;
-                    xErrorMessageText.Visibility = Visibility.Visible;
-                }
-            }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
-
-            LayoutPopup.IsOpen = true;
-            xConfirmButton.Tapped += XConfirmButton_OnClick;
-
-            return tcs.Task;
+            return mode;
         }
 
         public void NavigateToDocument(DocumentController doc)//More options

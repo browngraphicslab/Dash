@@ -210,6 +210,10 @@
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\DashPopup.cs" />
+    <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
+      <DependentUpon>HTMLRTFPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RegionAnnotation.xaml.cs">
       <DependentUpon>RegionAnnotation.xaml</DependentUpon>
     </Compile>
@@ -990,6 +994,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="NewAnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\HTMLRTFPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

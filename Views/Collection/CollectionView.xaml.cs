@@ -370,9 +370,10 @@ namespace Dash
             }
             CurrentView.Loaded -= CurrentView_Loaded;
             CurrentView.Loaded += CurrentView_Loaded;
-            var selected = SelectionManager.SelectedDocs.ToArray();
-            SelectionManager.DeselectAll();
-            SelectionManager.SelectDocuments(selected.ToList());
+            // tfs - I don't think these three lines are actually doing anything...
+            //var selected = SelectionManager.SelectedDocs.ToArray();
+            //SelectionManager.DeselectAll();
+            //SelectionManager.SelectDocuments(selected.ToList());
 
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
