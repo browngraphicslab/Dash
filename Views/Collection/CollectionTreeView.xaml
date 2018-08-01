@@ -11,8 +11,8 @@
     Background="White"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource DashDarkBlue}"/>
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource DashDarkBlue}"/>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource DashDarkBlueBrush}"/>
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource DashDarkBlueBrush}"/>
         <SolidColorBrush x:Key="ButtonForegroundPointerOver">#DDEEFFFF</SolidColorBrush>
         <SolidColorBrush x:Key="ButtonForegroundPressed">#DDEEFFFF</SolidColorBrush>
     </UserControl.Resources>
