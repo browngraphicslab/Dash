@@ -79,7 +79,7 @@
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
-            <Rectangle Grid.Row="0" Fill="{StaticResource AccentGreenLight}"/>
+            <Rectangle Grid.Row="0" Fill="{StaticResource DashDarkBlueBrush}"/>
             <TextBlock Grid.Row="0" Foreground="White" FontSize="16">Documents:</TextBlock>
             <ListView
                 Grid.Row="1"
@@ -115,7 +115,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle Grid.Row="2" Fill="{StaticResource AccentGreenLight}" />
+            <Rectangle Grid.Row="2" Fill="{StaticResource DashDarkBlueBrush}" />
             <TextBlock
                 CanDrag="True" Grid.Row="2" FontSize="16" HorizontalAlignment="Stretch"
                 TextAlignment="Center" VerticalAlignment="Center" Foreground="White"
