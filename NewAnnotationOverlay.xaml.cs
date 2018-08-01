@@ -603,11 +603,22 @@ namespace Dash
 	        RenderPin(annotation, annotationController);
 		}
 
+	    private DocumentController CreateVideoPin(Point point)
+	    {
+		    return null;
+	    }
+
+	    private DocumentController CreateImagePin(Point point)
+	    {
+		    //todo do this
+		    return null;
+	    }
+
 		/// <summary>
 		/// Creates a pushpin annotation with a text note, and returns its DocumentController for CreatePin to finish the process.
 		/// </summary>
 		/// <param name="point"></param>
-	    private DocumentController CreateTextPin(Point point)
+		private DocumentController CreateTextPin(Point point)
 	    {
 			var richText = new RichTextNote("<annotation>", new Point(point.X + 5, point.Y + 5),
 				new Size(150, 75));
