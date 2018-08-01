@@ -771,17 +771,19 @@ namespace Dash
             Toolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
+                xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
                 xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }

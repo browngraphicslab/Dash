@@ -63,15 +63,58 @@
                         <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                             <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                         </Grid>
-                        <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xForwardButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
+                        <Grid  Name="xSearchButton" Tapped="xSearchButton_Tapped">
+                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <Grid Name="xBackButton">
+                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <Grid Name="xForwardButton">
+                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationIn">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="xSearchBoxGrid"
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0.0" To="1.0" Duration="0:0:.5"
+                                />
+                            </Storyboard>
+
+                            <Storyboard x:Name="xFadeAnimationOut">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="xSearchBoxGrid"
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="1.0" To="0.0" Duration="0:0:.5"
+                                />
+                            </Storyboard>
+                        </StackPanel.Resources>
+
+
                     </StackPanel>
                 </Grid>
             </local:DockingFrame.DocumentContent>
