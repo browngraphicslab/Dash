@@ -11,20 +11,20 @@
     Background="White"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource DashDarkBlue}"/>
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource DashDarkBlue}"/>
-        <SolidColorBrush x:Key="ButtonForegroundPointerOver">#DDEEFFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource DashMediumBlueColor}"/>
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource DashMediumBlueColor}"/>
+        <SolidColorBrush x:Key="ButtonForegroundPointerOver">#FFFFFF</SolidColorBrush>
         <SolidColorBrush x:Key="ButtonForegroundPressed">#DDEEFFFF</SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid x:Name="xTreeGrid" Background="{StaticResource DashMediumBlueBrush}">
+    <Grid x:Name="xTreeGrid" Background="{StaticResource DashDarkBlueBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Background="{StaticResource DashMediumBlueBrush}">
+        <Grid Grid.Row="0" Background="{StaticResource DashDarkBlueBrush}">
             <TextBlock Foreground="White"  x:Name="Textblock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" Text="TreeView" DoubleTapped="Textblock_OnDoubleTapped"/>
             <TextBox x:Name="Textbox" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Text="TreeView" Visibility="Collapsed" Padding="0,7" LostFocus="Textbox_OnLostFocus"/>
         </Grid>
@@ -49,11 +49,11 @@
                         EnableDependentAnimation="True"/>
                 </Storyboard>
             </StackPanel.Resources>
-            <Button x:Name="MakePdf" HorizontalAlignment="Stretch" TabIndex="-1" Margin="0, 0, 0, 5" Padding="10, 5" Background="WhiteSmoke" Foreground="Black" Tapped="MakePdf_OnTapped">Export to HTML
+            <Button x:Name="MakePdf" HorizontalAlignment="Stretch" TabIndex="-1" Margin="0, 0, 0, 5" Padding="10, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
-            <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="WhiteSmoke" Foreground="Black" Padding="10, 5" Tapped="TogglePresentationMode">Presentation Mode</Button>
-            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="WhiteSmoke" Foreground="Black" Padding="10, 5" Tapped="AddWorkspace_OnTapped">Add Workspace</Button>
-            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 20" Background="WhiteSmoke" Foreground="Black" Padding="10, 5" Tapped="Snapshot_OnTapped">Snapshot Workspace</Button>
+            <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="TogglePresentationMode">Presentation Mode</Button>
+            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="AddWorkspace_OnTapped">Add Workspace</Button>
+            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 20" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="Snapshot_OnTapped">Snapshot Workspace</Button>
             <local:ActionTextBox 
                 x:Name="xLinkInputBox"
                 Height="0"
