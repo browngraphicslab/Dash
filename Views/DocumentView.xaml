@@ -275,20 +275,7 @@
                             </StackPanel>
                         </Grid>
                     </Grid>
-
-                    <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <HyperlinkButton
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                Foreground="CornflowerBlue"
-                                Content=""
-                                VerticalContentAlignment="Center"
-                                x:Name="xContextTitle"
-                                Margin="0, 0, 15, 0"
-                                Visibility="Collapsed" />
-                    </Canvas>
                 </Grid>
-
             </Grid>
         </Border>
 

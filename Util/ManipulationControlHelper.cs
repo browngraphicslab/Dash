@@ -66,7 +66,6 @@ namespace Dash
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
-            _manipulationDocumentTarget.DocumentView_PointerEntered();
             if (_useCache) _eventElement.CacheMode = null;
             //MainPage.Instance.Focus(FocusState.Programmatic);
         }
