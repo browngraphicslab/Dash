@@ -683,7 +683,8 @@ namespace Dash
             {
                 Width = XPreviewRect.Width,
                 Height = XPreviewRect.Height,
-                Fill = XPreviewRect.Fill
+                Fill = XPreviewRect.Fill,
+                Opacity = XPreviewRect.Opacity
             };
             XAnnotationCanvas.Children.Add(viewRect);
             Canvas.SetLeft(viewRect, Canvas.GetLeft(XPreviewRect));

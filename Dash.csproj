@@ -149,6 +149,7 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
+    <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="win32\Office.Interop.exe">

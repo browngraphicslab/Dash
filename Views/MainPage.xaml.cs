@@ -1,31 +1,25 @@
-﻿ using System;
+﻿using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using DashShared;
-using Windows.UI.ViewManagement;
-using Windows.ApplicationModel.Core;
-using Windows.UI;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Views;
-using iText.Layout.Element;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Color = Windows.UI.Color;
+using Windows.UI.Xaml.Navigation;
 using Point = Windows.Foundation.Point;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -1187,6 +1181,32 @@ namespace Dash
         public void Timeline_OnCompleted(object sender, object e)
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void XLoadingPopup_OnClosed(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void XLoadingPopup_OnOpened(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void TogglePopup()
+        {
+            xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+            xLoadingPopup.IsOpen = true;
+            Load.Begin();
+        }
+
+        public void ClosePopup()
+        {
+            Load.Stop();
+            xLoadingPopup.HorizontalOffset = 0;
+            xLoadingPopup.VerticalOffset = 0;
+            xLoadingPopup.IsOpen = false;
         }
     }
 }

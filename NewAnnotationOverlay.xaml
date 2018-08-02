@@ -11,7 +11,8 @@
 
     <Grid>
         <Canvas x:Name="XAnnotationCanvas">
-            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00"
+                       Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>

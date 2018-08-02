@@ -230,61 +230,73 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
+                FadeIn.Begin();
                 updateBindings();
                 DataContextChanged += (s, a) => updateBindings();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+
+                var maxZ = int.MinValue;
+                var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new
+                    Canvas();
+                foreach (var item in parentCanvas.Children)
+                {
+                    maxZ = Math.Max(Canvas.GetZIndex(item), maxZ);
+                }
+
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+
                 SetZLayer();
 
-				//var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
-				//if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
+                //var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
+                //if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
 
 
 
-    //            switch (type)
-    //            {
-    //                case DashShared.TypeInfo.Image:
-    //                    xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Audio:
-    //                    xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Video:
-    //                    xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.RichText:
-    //                case DashShared.TypeInfo.Text:
-    //                    xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Document:
-    //                    xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Template:
-    //                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-    //                    break;
-    //                default:
-    //                    xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
-    //                    break;
+                //            switch (type)
+                //            {
+                //                case DashShared.TypeInfo.Image:
+                //                    xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
+                //                    break;
+                //                case DashShared.TypeInfo.Audio:
+                //                    xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
+                //                    break;
+                //                case DashShared.TypeInfo.Video:
+                //                    xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
+                //                    break;
+                //                case DashShared.TypeInfo.RichText:
+                //                case DashShared.TypeInfo.Text:
+                //                    xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
+                //                    break;
+                //                case DashShared.TypeInfo.Document:
+                //                    xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
+                //                    break;
+                //                case DashShared.TypeInfo.Template:
+                //                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+                //                    break;
+                //                default:
+                //                    xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
+                //                    break;
 
-				//}
+                //}
 
-    //            if (type.Equals(DashShared.TypeInfo.Template))
-    //            {
-    //                xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-    //            }
+                //            if (type.Equals(DashShared.TypeInfo.Template))
+                //            {
+                //                xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+                //            }
 
-				//if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0)) 
-				//{
-				//	xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-				//	xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
-				//	xTemplateEditorEllipseBorder.Margin =
-				//		new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
-				//}
-				//else
-				//{
-				//	UpdateEllipses(_newpoint);
-				//}
+                //if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0)) 
+                //{
+                //	xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
+                //	xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
+                //	xTemplateEditorEllipseBorder.Margin =
+                //		new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
+                //}
+                //else
+                //{
+                //	UpdateEllipses(_newpoint);
+                //}
 
                 UpdateResizers();
 
