@@ -1117,8 +1117,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                if (onScreenView?.ViewModel == null) return;
-                onScreenView.ViewModel.SearchHighlightState = new Thickness(0);
+                onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 
