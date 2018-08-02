@@ -14,6 +14,7 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()

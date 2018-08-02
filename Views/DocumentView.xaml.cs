@@ -1804,8 +1804,8 @@ namespace Dash
                 var collectionView = this.GetFirstDescendantOfType<CollectionView>();
                 if (collectionView != null)
                 {
-                    collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-                    if (collectionView.ViewModel.FitToParent)
+                    collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel.ContainerDocument.GetFitToParent());
+                    if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
                         collectionView.ViewModel.FitContents(collectionView);
                 }
             }

@@ -40,7 +40,7 @@ namespace Dash
                 n.ManipulationMode = ManipulationModes.None;
             _collection = _eventElement as CollectionView;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.None;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
@@ -109,7 +109,7 @@ namespace Dash
             foreach (var n in _ancestorDocs)
                 n.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.All;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
 

@@ -42,6 +42,7 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Panel _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
+        public UserControl UserControl => this;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }

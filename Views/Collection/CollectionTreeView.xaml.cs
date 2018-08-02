@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Models.DragModels;
+using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,6 +17,7 @@ namespace Dash
 {
    public sealed partial class CollectionTreeView : ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public List<TreeViewNode> TreeViewNodes = new List<TreeViewNode>();
@@ -146,5 +148,7 @@ namespace Dash
             }
             
         }
+
+        public void SetDropIndicationFill(Brush fill) { }
     }
 }
