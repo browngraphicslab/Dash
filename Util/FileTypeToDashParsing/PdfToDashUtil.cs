@@ -42,7 +42,7 @@ namespace Dash
             });
 
             // return a new pdf box
-            var layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
+            DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
             layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
             return layout;
         }

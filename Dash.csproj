@@ -198,6 +198,7 @@
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFToReferencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />

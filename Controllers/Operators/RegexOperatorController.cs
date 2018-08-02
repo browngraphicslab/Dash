@@ -4,80 +4,61 @@ using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public class RegexOperatorController : OperatorController
+    [OperatorType(Op.Name.regex)]
+    public sealed class RegexOperatorController : OperatorController
     {
-        public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
+        public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-
-        }
+        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Regex", "434B2CBC-003A-4DAD-8E8B-7F759A39B37C");
+        private static readonly KeyController TypeKey = new KeyController("Regex", "DF48D210-40A9-46A2-B32A-8F3C96C6CDD7");
 
         //Input keys
-        public static readonly KeyController ExpressionKey      = new KeyController("Expression");
-        public static readonly KeyController SplitExpressionKey = new KeyController("SplitExpression");
-        public static readonly KeyController TextKey            = new KeyController("Text");
+        public static readonly KeyController ExpressionKey = new KeyController("Expression");
+        public static readonly KeyController TextKey       = new KeyController("Text");
 
         //Output keys
-        public static readonly KeyController MatchesKey = new KeyController("Matches");
+        public static readonly KeyController MatchDocsKey = new KeyController("Matches");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
             new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(SplitExpressionKey, new IOInfo(TypeInfo.Text, true))
+            new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [MatchesKey] = TypeInfo.List,
+            [MatchDocsKey] = TypeInfo.List,
         };
 
-        static DocumentController _prototype = null;
-        
-        void initProto()
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            if (_prototype == null)
+            string text = (inputs[TextKey] as TextController)?.Data;
+            string expr = (inputs[ExpressionKey] as TextController)?.Data;
+
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return;
+
+            var reg = new Regex($@"{expr}");
+            var matches = reg.Matches(text).ToList();
+
+            var matchDocs = new ListController<DocumentController>();
+            foreach (Match match in matches)
             {
-                _prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                    new DocumentType(UtilShared.GetDeterministicGuid("RegexOutput"), "RegexOutput"));
-                _prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(_prototype.DocumentType.Type + "API"), true);
-            }
-        }
+                var groups = match.Groups.ToList();
+                var infoDoc = new DocumentController();
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
-        {
-            initProto();
-            var text = (inputs[TextKey] is ListController<TextController>) ? (inputs[TextKey] as ListController<TextController>).Data.Aggregate("", (init, fm) => init + " " + (fm as TextController).Data ) :
-                (inputs[TextKey] as TextController).Data;
-            var expr = (inputs[ExpressionKey] as TextController).Data;
-            var split = (inputs[SplitExpressionKey] as TextController).Data;
-            var rsplit = new Regex(split);
-            var ematch = new Regex(expr);
-            var splits = rsplit.Split(text);
-
-            var collected = new List<TextController>();
-            foreach (var s in splits)
-                if (ematch.IsMatch(s))
+                foreach (Group group in groups)
                 {
-                    collected.Add(new TextController(s));
+                    infoDoc.SetField<TextController>(new KeyController(group.Name), group.Value, true);
                 }
-            outputs[MatchesKey] = new ListController<TextController>(collected);
+            }
+            outputs[MatchDocsKey] = new ListController<DocumentController>();
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new RegexOperatorController(OperatorFieldModel);
-        }
+        public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);
     }
 }

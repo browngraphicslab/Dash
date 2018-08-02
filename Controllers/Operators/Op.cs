@@ -109,6 +109,10 @@ namespace Dash
                 set_template,
                 templates,
 
+                // PDFs
+                references,
+                regex,
+
             // COMMANDS
 
                 // search
