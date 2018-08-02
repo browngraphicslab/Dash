@@ -516,7 +516,7 @@ namespace Dash
             collView.CurrentViewLoaded += async delegate
             {
                 var bitmap = new RenderTargetBitmap();
-                await bitmap.RenderAsync(collView.CurrentView);
+                await bitmap.RenderAsync(collView.CurrentView.UserControl);
                
                 var file = await folder.CreateFileAsync($"{colTitle}.png", CreationCollisionOption.ReplaceExisting);
 

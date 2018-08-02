@@ -224,6 +224,10 @@ namespace Dash
             Grid.SetRowSpan(e, rowSpan);
         }
 
+        public void HighlightDock(Point pt)
+        {
+            HighlightDock(GetDockIntersection(new Rect(pt, new Size(10, 10))));
+        }
         public void HighlightDock(DockDirection dir)
         {
             if (dir != DockDirection.None)

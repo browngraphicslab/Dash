@@ -316,8 +316,8 @@ namespace Dash
 
             PointerEntered += DocumentView_PointerEntered;
             PointerExited += DocumentView_PointerExited;
-            RightTapped += (s, e) => DocumentView_OnTapped(null, null);
-            Tapped += DocumentView_OnTapped;
+            RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
+            Tapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
 
             void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, true, true); }
@@ -516,7 +516,7 @@ namespace Dash
                     adornmentGroups.ForEach((dv) =>
                     {
                         SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
-                            new Size(dv.ActualWidth, dv.ActualHeight))));
+                            new Size(dv.ActualWidth, dv.ActualHeight))), false);
                     });
 
                     SetSelectionBorder(false);
@@ -529,11 +529,6 @@ namespace Dash
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
 
-                if (SelectionManager.SelectedDocs.Contains(this))
-                {
-
-                    
-                }
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
@@ -1389,9 +1384,7 @@ namespace Dash
         /// </summary>
         public void ForceLeftTapped()
         {
-            //since this is only used by webBox, a web view is being sent in so 
-            //links and other selection features are still active inside a web box
-            this.DocumentView_OnTapped(new WebView(), null);
+            TappedHandler(false);
         }
 
         // this action is used to remove template editor in sync with document
@@ -1526,10 +1519,15 @@ namespace Dash
 
         #endregion
 
-        public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
+        /// <summary>
+        /// Handles left and right tapped events on DocumentViews
+        /// </summary>
+        /// <param name="wasHandled">Whether the tapped event was previously handled</param>//this is always false currently so it probably isn't needed
+        /// <returns>Whether the calling tapped event should be handled</returns>
+        public bool TappedHandler(bool wasHandled)
         {
             DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
-            if (e != null && !e.Handled)
+            if (!wasHandled)
             {
                 FocusedDocument = this;
             }
@@ -1550,40 +1548,21 @@ namespace Dash
             }
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
-            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) &&
-                (e == null || !e.Handled))
+            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
-                if (this.IsShiftPressed())
-                {
-                    SelectionManager.ToggleSelection(this);
-                    
-                }
-                else
-                {
-                    //if it is webview, don't completely deselect
-                    bool deselect = sender?.GetType().Name != "WebView" &&
-                                   ((sender as DocumentView)?.DataContext as DocumentViewModel)?.Content.GetType().Name != "WebBoxView";
-                    if (!deselect)
-                    {
-                        SelectionManager.DeselectAll();
-                    }
-                    SelectionManager.Select(this);
-                   
-                }
+                SelectionManager.Select(this, this.IsShiftPressed());
 
-                if (SelectionManager.SelectedDocs.Count() > 1)
+                if (SelectionManager.GetSelectedDocs().Count > 1)
                 {
                     // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     cfview?.Focus(FocusState.Programmatic);
                 }
 
-                //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
-                if (e != null)
-                {
-                    e.Handled = true;
-                }
+                return true;
             }
+
+            return false;
         }
 		public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
 		{
@@ -1816,8 +1795,8 @@ namespace Dash
                 var collectionView = this.GetFirstDescendantOfType<CollectionView>();
                 if (collectionView != null)
                 {
-                    collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-                    if (collectionView.ViewModel.FitToParent)
+                    collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel.ContainerDocument.GetFitToParent());
+                    if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
                         collectionView.ViewModel.FitContents(collectionView);
                 }
             }

@@ -341,7 +341,7 @@ namespace Dash
         private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.SelectedDocs.Contains(docview))
+            if (SelectionManager.IsSelected(docview))
             {
                 ShowPdfControls();
             }
@@ -660,10 +660,9 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
-            if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
             }
         }
 
@@ -815,8 +814,8 @@ namespace Dash
                 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, topOffset, null);
-                BottomScrollViewer.ChangeView(null, botOffset, null);
+                TopScrollViewer.ChangeView(null, offsets.First(), null);
+                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First(), null);
             }
             else
             {
@@ -837,7 +836,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, botOffset, null);
+                BottomScrollViewer.ChangeView(null, offsets.First(), null);
             }
         }
 
@@ -959,7 +958,7 @@ namespace Dash
                 DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
                 DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
             }
-            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)

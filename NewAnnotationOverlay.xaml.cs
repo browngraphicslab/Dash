@@ -211,20 +211,23 @@ namespace Dash
             var pinAnnotations = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-            var scale = pdfView.Width / pdfView.PdfMaxWidth;
-
-            foreach (var doc in pinAnnotations)
+            if (pdfView != null)
             {
-                var dvm = new DocumentViewModel(doc) { Undecorated = true };
-                var docView = new DocumentView
+                var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
+                foreach (var doc in pinAnnotations)
                 {
-                    DataContext = dvm,
-                    BindRenderTransform = true,
-                    Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                    BindVisibility = true,
-                    ResizersVisible = true
-                };
-                XAnnotationCanvas.Children.Add(docView);
+                    var dvm = new DocumentViewModel(doc) { Undecorated = true };
+                    var docView = new DocumentView
+                    {
+                        DataContext = dvm,
+                        BindRenderTransform = true,
+                        Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+                        BindVisibility = true,
+                        ResizersVisible = true
+                    };
+                    XAnnotationCanvas.Children.Add(docView);
+                }
             }
         }
 
@@ -568,10 +571,8 @@ namespace Dash
             _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
                 .Add(docView.ViewModel.DocumentController);
-
-            SelectionManager.DeselectAll();
-            SelectionManager.Select(docView);
-
+            
+            SelectionManager.Select(docView, false);
 	        _makingPin = false;
         }
 

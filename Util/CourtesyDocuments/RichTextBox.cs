@@ -33,7 +33,6 @@ namespace Dash
                         case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
                             return Windows.UI.Xaml.TextWrapping.NoWrap;
                     }
-
                 }
                 double width = (double)data[1];
                 return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;

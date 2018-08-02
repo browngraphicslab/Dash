@@ -40,7 +40,7 @@ namespace Dash
                 n.ManipulationMode = ManipulationModes.None;
             _collection = _eventElement as CollectionView;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.None;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
@@ -109,7 +109,7 @@ namespace Dash
             foreach (var n in _ancestorDocs)
                 n.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.All;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
 
@@ -117,7 +117,7 @@ namespace Dash
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
             if (dist < 100 && _numMovements < 10)
             {
-                _manipulationDocumentTarget?.DocumentView_OnTapped(null, new TappedRoutedEventArgs());
+                _manipulationDocumentTarget?.TappedHandler(false);
                 if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
                 _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);

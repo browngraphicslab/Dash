@@ -160,7 +160,7 @@ namespace Dash
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            SelectedDocs = SelectionManager.SelectedDocs.ToList();
+            SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
             {
                 xMultiSelectBorder.BorderThickness = new Thickness(2);

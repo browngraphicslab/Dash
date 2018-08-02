@@ -638,7 +638,7 @@ namespace Dash
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     using (UndoManager.GetBatchHandle())
-                        foreach (var doc in SelectionManager.SelectedDocs)
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
                         {
                             doc.DeleteDocument();
                         }
@@ -1117,7 +1117,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                onScreenView?.ViewModel.RetractBorder();
+                onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 
@@ -1146,9 +1146,8 @@ namespace Dash
 
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
-            var list = frame.GetDescendantsOfType<DocumentView>().Select((dv) => dv.ViewModel.DocumentController).ToList();
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.LayoutDocument.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;

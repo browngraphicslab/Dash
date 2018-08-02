@@ -42,6 +42,7 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Panel _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
+        public UserControl UserControl => this;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }
@@ -652,7 +653,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
                 GetSelectionCanvas().Children.Remove(_marquee);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
@@ -799,7 +800,7 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectionManager.SelectedDocs)
+            foreach (DocumentView doc in SelectionManager.GetSelectedDocs())
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
@@ -851,7 +852,7 @@ namespace Dash
                         Height = bounds.Height,
                         Width = bounds.Width
                     };
-                    viewsToSelectFrom = SelectionManager.SelectedDocs;
+                    viewsToSelectFrom = SelectionManager.GetSelectedDocs();
                 }
 
                 var toSelectFrom = viewsToSelectFrom.ToList();
@@ -1033,7 +1034,7 @@ namespace Dash
             }
         }
 
-        void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -1049,20 +1050,33 @@ namespace Dash
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                if (text == "v" && this.IsCtrlPressed())
+                if (this.IsCtrlPressed())
                 {
-                    ViewModel.Paste(Clipboard.GetContent(), where);
-                    
-                    previewTextbox.Visibility = Visibility.Collapsed;
+                    if (text == "v")
+                    {
+                        var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
 
+                        if (_linkDoc != null)
+                        {
+                          
+                            postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                            _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                        }
+
+                        previewTextbox.Visibility = Visibility.Collapsed;
+                        
+                    } else
+                    {
+                        LoadNewActiveTextBox("", where);
+                    }
                     _linkDoc = null;
                 }
-                else if (this.IsCtrlPressed())
-                {
-                    //if we can access rich text view here, we can actually respond to these events
-                    //either call the key down event in richtextbox or handle diff control cases here
-                    LoadNewActiveTextBox("", where);
-                }
+                //else if (this.IsCtrlPressed())
+                //{
+                //    //if we can access rich text view here, we can actually respond to these events
+                //    //either call the key down event in richtextbox or handle diff control cases here
+                //    LoadNewActiveTextBox("", where);
+                //}
                 else
                 {
                     previewTextBuffer += text;
