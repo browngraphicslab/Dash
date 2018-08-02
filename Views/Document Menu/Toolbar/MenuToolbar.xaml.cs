@@ -203,14 +203,14 @@ namespace Dash
 
             //List of all button separators
             //ADD NEW SEPARATORS HERE!!!
-            AppBarSeparator[] tempSeparators =
-            {
-                xSepOne,
-                xSepTwo,
-                xSepThree,
-                xSepFour
-            };
-            allSeparators = tempSeparators;
+            //AppBarSeparator[] tempSeparators =
+            //{
+            //    xSepOne,
+            //    xSepTwo,
+            //    xSepThree,
+            //    xSepFour
+            //};
+            //allSeparators = tempSeparators;
 
             AddSecondaryButtonEventHandlers();
         }
@@ -222,7 +222,7 @@ namespace Dash
         {
             foreach (var b in allButtons) { b.PointerPressed += TopBarHoverBehavior; }
             xCollapse.PointerPressed += TopBarHoverBehavior;
-            foreach (var s in allSeparators) { s.PointerPressed += TopBarHoverBehavior; }
+            //foreach (var s in allSeparators) { s.PointerPressed += TopBarHoverBehavior; }
             xToolbar.PointerPressed += TopBarHoverBehavior;
         }
 
@@ -763,19 +763,19 @@ namespace Dash
                         if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
                     }
                 } //do same for separators
-                foreach (var s in allSeparators)
-                {
-                    s.Visibility = status;
-                }
+                //foreach (var s in allSeparators)
+                //{
+                //    s.Visibility = status;
+                //}
 				
             }
             else
             {
                 //otherwise, it is about to expand. In this case, update visibility of separators before buttons
-                foreach (var s in allSeparators)
-                {
-                    s.Visibility = status;
-                }
+                //foreach (var s in allSeparators)
+                //{
+                //    s.Visibility = status;
+                //}
                 foreach (var b in allButtons)
                 {
                     if (b != xPin)
@@ -867,11 +867,23 @@ namespace Dash
         {
             //toggle state enum and update label & icon
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
-            xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
-            xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
+            //xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
+            //xCollapseIcon.Text = (state == State.Expanded) ? "&#xE1D8;" : "&#xE1D9;";
 
-            //
-            var backgroundBinding = new Binding
+            if (xOpenIcon.Visibility == Visibility.Visible)
+            {
+                xOpenIcon.Visibility = Visibility.Collapsed;
+                xCollapseIcon.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                xOpenIcon.Visibility = Visibility.Visible;
+                xCollapseIcon.Visibility = Visibility.Collapsed;
+            }
+            
+
+                        //
+                        var backgroundBinding = new Binding
             {
                 Source = this,
                 Mode = BindingMode.OneWay,
@@ -899,7 +911,7 @@ namespace Dash
         public void SwitchTheme(bool nightModeOn)
         {
             //toggle night mode styles
-            xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
+            //xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
         }
 
@@ -912,9 +924,24 @@ namespace Dash
             //disables movement by updating Floating's boolean
             xFloating.ShouldManipulateChild = (pinned == Pinned.Unpinned);
             //update label & icon accordingly
-            xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
-            xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
-           // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+            //xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
+            
+            // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+
+            if (pinned == Pinned.Pinned)
+            {
+                var centX = (float) xLockIcon.ActualWidth / 2;
+                var centY = (float) xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: -45.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
+            else
+            {
+                var centX = (float)xLockIcon.ActualWidth / 2;
+                var centY = (float)xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
             xToolbar.IsOpen = true;
         }
 

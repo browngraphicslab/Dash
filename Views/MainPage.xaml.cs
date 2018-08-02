@@ -845,15 +845,15 @@ namespace Dash
             Toolbar.ChangeVisibility(!changeToVisible);
         }
 
-        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
-        }
+        //private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
+        //}
 
-        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-        }
+        //private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+        //}
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
@@ -1187,6 +1187,19 @@ namespace Dash
         public void Timeline_OnCompleted(object sender, object e)
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
+        }
+
+       
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+           
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
         }
     }
 }

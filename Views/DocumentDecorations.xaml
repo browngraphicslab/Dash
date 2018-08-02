@@ -41,7 +41,7 @@
             </Grid.RowDefinitions>
             <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
                     PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
+                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                 <Grid  >
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                     <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
