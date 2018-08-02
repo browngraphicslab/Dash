@@ -505,7 +505,7 @@ namespace Dash
             // create a collectionview off the screen
             var collView = col.MakeViewUI(null) as CollectionView;
             Debug.Assert(collView != null);    
-            MainPage.Instance.xCanvas.Children.Add(collView);
+            MainPage.Instance.xTabCanvas.Children.Add(collView);
             Canvas.SetLeft(collView, -10000);
             Canvas.SetTop(collView, -10000);
 
@@ -539,7 +539,7 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
-                MainPage.Instance.xCanvas.Children.Remove(collView); // remove the collection from the canvas (cleanup)
+                MainPage.Instance.xTabCanvas.Children.Remove(collView); // remove the collection from the canvas (cleanup)
             };
 
             //return link to the image you just created
