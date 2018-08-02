@@ -79,8 +79,6 @@ namespace Dash
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             SetCollectionRef(containerDocument, fieldKey);
-
-            CellSize = 250; // TODO figure out where this should be set
                                 //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
 
         }
@@ -348,18 +346,6 @@ namespace Dash
                 if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document)) pres.FullPinDelete(document);
             }
         }
-
-        #endregion
-
-        #region Grid or List Specific Variables I want to Remove
-
-        // todo: this should be tied to a field on the collection so that it will be persisted
-        public double CellSize
-        {
-            get { return _cellSize; }
-            set { SetProperty(ref _cellSize, value); }
-        }
-
 
         #endregion
 

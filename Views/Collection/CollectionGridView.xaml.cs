@@ -14,6 +14,7 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
+        int CellSize = 250;
         public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
@@ -78,19 +79,13 @@ namespace Dash
 
                 // get the scale amount
                 var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
-                if (ViewModel.CellSize + scaleAmount > 10 && ViewModel.CellSize + scaleAmount < 1000)
+                if (CellSize + scaleAmount > 10 && CellSize + scaleAmount < 1000)
                 {
                     
-                    ViewModel.CellSize += scaleAmount;
+                    CellSize += scaleAmount;
 
-                    ((ItemsWrapGrid) xGridView.ItemsPanelRoot).ItemWidth = ViewModel.CellSize;
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = ViewModel.CellSize;
-
-                    //var style = new Style(typeof(GridViewItem));
-                    
-                    //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-                    //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-                    //xGridView.ItemContainerStyle = style;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = CellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = CellSize;
                     e.Handled = true;
                 }
                 
@@ -104,10 +99,6 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            //var style = new Style(typeof(GridViewItem));
-            //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-            //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-            //xGridView.ItemContainerStyle = style;
         }
 
         #region DragAndDrop
