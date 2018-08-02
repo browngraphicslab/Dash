@@ -14,17 +14,14 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
-        int CellSize = 250;
-        public UserControl UserControl => this;
+        int _cellSize = 250;
+        public UserControl         UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
         {
             this.InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
             AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
-
-
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
             Loaded += CollectionGridView_Loaded;
@@ -49,7 +46,6 @@ namespace Dash
             {
                 SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)), false);
             }
-
         }
 
         private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -63,12 +59,9 @@ namespace Dash
             {
                 docview.ManipulationMode = ManipulationModes.None;
                 //SelectionManager.Select(docview);
-                
             }
 
             e.Handled = true;
-
-
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -79,26 +72,17 @@ namespace Dash
 
                 // get the scale amount
                 var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
-                if (CellSize + scaleAmount > 10 && CellSize + scaleAmount < 1000)
+                if (_cellSize + scaleAmount > 10 && _cellSize + scaleAmount < 1000)
                 {
                     
-                    CellSize += scaleAmount;
+                    _cellSize += scaleAmount;
 
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = CellSize;
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = CellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = _cellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = _cellSize;
                     e.Handled = true;
                 }
                 
             }
-        }
-
-        public CollectionGridView(CollectionViewModel viewModel) : this()
-        {
-            DataContext = viewModel;
-        }
-
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
         }
 
         #region DragAndDrop
@@ -121,10 +105,6 @@ namespace Dash
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            if (args.DropResult == DataPackageOperation.None)
-            {
-                return;
-            }
             if (args.DropResult == DataPackageOperation.Move)
             {
                 var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
@@ -139,7 +119,6 @@ namespace Dash
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
             MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
-          
         }
     }
 }
