@@ -477,7 +477,7 @@ namespace Dash
                     return;
                 }
             }
-
+;
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
@@ -501,19 +501,16 @@ namespace Dash
                 _currentPageCount = (int)_wPdfDocument.PageCount;
             }
 
-            await Task.Run(() =>
+            for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
-                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-                {
-                    var page = pdfDocument.GetPage(i);
-                    var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size);
-                    offset += page.GetPageSize().GetHeight() + 10;
-                    processor.ProcessPageContent(page);
-                }
-            });
+                var page = pdfDocument.GetPage(i);
+                var size = page.GetPageSize();
+                strategy.SetPage(i - 1, offset, size);
+                offset += page.GetPageSize().GetHeight() + 10;
+                processor.ProcessPageContent(page);
+            }
             
-            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            var selectableElements = await strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.SetSelectableElements(selectableElements);
             _bottomAnnotationOverlay.SetSelectableElements(selectableElements);
 
@@ -523,6 +520,7 @@ namespace Dash
             DocumentLoaded?.Invoke(this, new EventArgs());
             _bottomAnnotationOverlay.LoadPinAnnotations();
             _topAnnotationOverlay.LoadPinAnnotations();
+            MainPage.Instance.ClosePopup();
         }
 
         public BoundsExtractionStrategy Strategy { get; set; }

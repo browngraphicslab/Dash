@@ -169,8 +169,40 @@
             </Grid>
 
         </Grid>
-        
-        
+
+        <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Popup x:Name="xLoadingPopup" LightDismissOverlayMode="On" Opened="XLoadingPopup_OnOpened" Closed="XLoadingPopup_OnClosed">
+                <Border BorderBrush="{StaticResource DashDarkBlueBrush}"
+                        Background="White"
+                        BorderThickness="2 40 2 2"
+                        Width="400" Height="150">
+                    <Grid>
+                        <Grid.Resources>
+                            <Storyboard x:Name="Load">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="xLoadingRotate"
+                                    Storyboard.TargetProperty="Angle"
+                                    From="0.0" To="-360" Duration="0:0:5"
+                                    RepeatBehavior="Forever"/>
+                            </Storyboard>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="60"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0">
+                            <TextBlock x:Name="xLoadingTextblock" FontSize="18" Margin="0 0 0 0">Please wait while we load this file</TextBlock>
+                        </StackPanel>
+                        <Image x:Name="LoadingCircle" Source="../Assets/loading.png"  Width="50" Height="50" Grid.Row="1">
+                            <Image.RenderTransform>
+                                <RotateTransform x:Name="xLoadingRotate" CenterX="25" CenterY="25">
+                                </RotateTransform>
+                            </Image.RenderTransform>
+                        </Image>
+                    </Grid>
+                </Border>
+            </Popup>
+        </Grid>
 
         <!--drag in html popup-->
         <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">

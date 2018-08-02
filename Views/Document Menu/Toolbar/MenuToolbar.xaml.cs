@@ -1,22 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using CsvHelper.Configuration.Attributes;
-using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
-using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
 using System.Threading.Tasks;
 using Windows.System;
@@ -151,6 +143,8 @@ namespace Dash
 		public MenuToolbar()
         {
             InitializeComponent();
+
+            SetUpToolTips();
 
             MenuToolbar.Instance = this;
             //set enum defaults
@@ -947,10 +941,129 @@ namespace Dash
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
 
-       
-		
-      
-		
+        private ToolTip _pin;
+        private ToolTip _collapse;
+        private ToolTip _select;
+        private ToolTip _ink;
+        private ToolTip _quickPan;
+        private ToolTip _addGroup;
+        private ToolTip _addImage;
+        private ToolTip _addVideo;
+        private ToolTip _addAudio;
+        private ToolTip _copy;
+        private ToolTip _delete;
+        private ToolTip _undo;
+        private ToolTip _redo;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Top;
+            const int offset = 5;
+
+            _pin = new ToolTip()
+            {
+                Content = "Pin toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPin, _pin);
+
+            _collapse = new ToolTip()
+            {
+                Content = "Collapse toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCollapse, _collapse);
+
+            _select = new ToolTip()
+            {
+                Content = "Select",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTouch, _select);
+
+            _ink = new ToolTip()
+            {
+                Content = "Ink",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xInk, _ink);
+
+            _quickPan = new ToolTip()
+            {
+                Content = "Quick pan",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _quickPan);
+
+            _addGroup = new ToolTip()
+            {
+                Content = "Add group",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddGroup, _addGroup);
+
+            _addImage = new ToolTip()
+            {
+                Content = "Add image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddImage, _addImage);
+
+            _addVideo = new ToolTip()
+            {
+                Content = "Add video",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddVideo, _addVideo);
+
+            _addAudio = new ToolTip()
+            {
+                Content = "Add audio",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddAudio, _addAudio);
+
+            _copy = new ToolTip()
+            {
+                Content = "Copy",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCopy, _copy);
+
+            _delete = new ToolTip()
+            {
+                Content = "Delete",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xDelete, _delete);
+
+            _undo = new ToolTip()
+            {
+                Content = "Undo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUndo, _undo);
+
+            _redo = new ToolTip()
+            {
+                Content = "Redo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRedo, _redo);
+        }
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
         {
@@ -960,6 +1073,18 @@ namespace Dash
         private void xUndo_Click(object sender, RoutedEventArgs e)
         {
             UndoManager.UndoOccured();
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
     }
 }

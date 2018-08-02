@@ -13,7 +13,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0" x:Name="xLeftColumn"/>            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition Width="30" x:Name="xLeftColumn"/>
+            <ColumnDefinition x:Name="ContentColumn" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>

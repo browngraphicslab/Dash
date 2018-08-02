@@ -460,120 +460,145 @@
             <ctrl:CommandBar x:Name="xToolbar" Height="40" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
 
                 
-                <AppBarButton x:Name="xPin" Style="{StaticResource AppBarButtonStyler}" IsEnabled ="True" Click="XPin_OnClick" >
+                <AppBarButton 
+                    x:Name="xPin" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled ="True" 
+                    Click="XPin_OnClick"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <!--<Image x:Name="xLockIcon" Width="20" Source="ms-appx:///Assets/unpinned.png" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>-->
                     <TextBlock x:Name="xLockIcon" Text="&#xE840;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                   
-                       
-                    
-                 
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Pin Toolbar" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xCollapse" Style="{StaticResource AppBarButtonStyler}" Background="{x:Bind ExpandColor, Mode=OneWay}" Tapped="XCollapse_OnTapped" >
+                <AppBarButton 
+                    x:Name="xCollapse" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Background="{x:Bind ExpandColor, Mode=OneWay}" 
+                    Tapped="XCollapse_OnTapped"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <Grid>
                         <TextBlock x:Name="xOpenIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Visible"/>
                         <TextBlock x:Name="xCollapseIcon" Text="&#xE73F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Collapsed"/>
                     </Grid>
-                   
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Collapsed Toolbar" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
 
                 <!--<AppBarSeparator x:Name="xSepThree"/>-->
 
-                <AppBarToggleButton x:Name="xTouch" Style="{StaticResource AppBarToggleButtonStyler}" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked">
+                <AppBarToggleButton 
+                    x:Name="xTouch"
+                    Style="{StaticResource AppBarToggleButtonStyler}" 
+                    Unchecked="AppBarToggleButton_UnChecked" 
+                    Checked="AppBarToggleButton_Checked"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xTouchIcon" Text="&#xE14E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Select" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarToggleButton>
-                <AppBarToggleButton x:Name="xInk" Style="{StaticResource AppBarToggleButtonStyler}" IsEnabled="False" Opacity="0.5" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked">
+                <AppBarToggleButton 
+                    x:Name="xInk" 
+                    Style="{StaticResource AppBarToggleButtonStyler}" 
+                    IsEnabled="False" 
+                    Opacity="0.5" 
+                    Unchecked="AppBarToggleButton_UnChecked" 
+                    Checked="AppBarToggleButton_Checked"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xInkIcon" Text="&#xE104;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Ink" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarToggleButton>
-                <AppBarToggleButton x:Name="xGroup" Style="{StaticResource AppBarToggleButtonStyler}" Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked">
+                <AppBarToggleButton 
+                    x:Name="xGroup"
+                    Style="{StaticResource AppBarToggleButtonStyler}"
+                    Unchecked="AppBarToggleButton_UnChecked"  
+                    Checked="AppBarToggleButton_Checked"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xPanIcon" Text="&#xE1E3;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Quick Pan" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarToggleButton>
 
                 <!--<AppBarSeparator x:Name="xSepOne"/>-->
 
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton x:Name="xAddGroup" Style="{StaticResource AppBarButtonStyler}" IsEnabled="True" Opacity="1" Click="Add_Group_On_Click">
+                <AppBarButton 
+                    x:Name="xAddGroup" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="True" 
+                    Opacity="1" 
+                    Click="Add_Group_On_Click"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xGroupIcon" Text="&#xE138;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Add Group" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xAddImage" Style="{StaticResource AppBarButtonStyler}" Tapped="AddImage_OnTapped">
+                <AppBarButton 
+                    x:Name="xAddImage"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Tapped="AddImage_OnTapped"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Add Image" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xAddVideo" Style="{StaticResource AppBarButtonStyler}" Click="Add_Video_On_Click">
+                <AppBarButton
+                    x:Name="xAddVideo" 
+                    Style="{StaticResource AppBarButtonStyler}"
+                    Click="Add_Video_On_Click"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xVideoIcon" Text="&#xE116;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Add Video" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xAddAudio" Style="{StaticResource AppBarButtonStyler}" Click="Add_Audio_On_Click">
+                <AppBarButton 
+                    x:Name="xAddAudio" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="Add_Audio_On_Click"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xAudioIcon" Text="&#xE189;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Add Audio" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
 
                 <!--<AppBarSeparator x:Name="xSepTwo"/>-->
 
-                <AppBarButton x:Name="xCopy" Style="{StaticResource AppBarButtonStyler}" IsEnabled="False" Opacity="0.5" Click="Copy">
+                <AppBarButton 
+                    x:Name="xCopy" 
+                    Style="{StaticResource AppBarButtonStyler}"
+                    IsEnabled="False" 
+                    Opacity="0.5" 
+                    Click="Copy"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xCopyIcon" Text="&#xE16F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Copy" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xDelete" Style="{StaticResource AppBarButtonStyler}" IsEnabled="False" Opacity="0.5"  Click="Delete">
+                <AppBarButton 
+                    x:Name="xDelete" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="False"
+                    Opacity="0.5"  
+                    Click="Delete"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xDeleteIcon" Text="&#xE107;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Delete" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
                 <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
                 <!--<AppBarSeparator x:Name="xSepFour"/>-->
 
                 <!-- Bind is enabled-->
-                <AppBarButton x:Name="xUndo" Style="{StaticResource AppBarButtonStyler}" IsEnabled="False" Opacity="0.5" Click="xUndo_Click">
+                <AppBarButton 
+                    x:Name="xUndo" 
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="False" 
+                    Opacity="0.5" 
+                    Click="xUndo_Click"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xUndoIcon" Text="&#xE10E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Undo" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
-                <AppBarButton x:Name="xRedo" Style="{StaticResource AppBarButtonStyler}" IsEnabled="False" Opacity="0.5" Click="xRedo_Click">
+                <AppBarButton 
+                    x:Name="xRedo"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="False" 
+                    Opacity="0.5" 
+                    Click="xRedo_Click"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xRedoIcon" Text="&#xE10D;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Redo" Placement="Top" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>
                 </AppBarButton>
 
             </ctrl:CommandBar>
