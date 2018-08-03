@@ -507,7 +507,7 @@ namespace Dash
                 {
                     var page = pdfDocument.GetPage(i);
                     var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size);
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
                 }

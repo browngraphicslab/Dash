@@ -8,6 +8,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -16,14 +17,16 @@ namespace Dash
         private Rectangle _pageSize;
         private double _pageOffset;
         private int _pageNumber;
+        private double _pageRotation;
         private readonly List<SelectableElement> _elements = new List<SelectableElement>();
         private readonly List<Rectangle> _pages = new List<Rectangle>();
 
-        public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
+        public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize, double rotation)
         {
             _pageNumber = pageNumber;
             _pageSize = pageSize;
             _pageOffset = pageOffset;
+            _pageRotation = rotation;
             _pages.Add(new Rectangle(pageSize.GetX(), (float) (pageSize.GetY() + pageOffset), pageSize.GetWidth(),
                 pageSize.GetHeight()));
         }
@@ -35,15 +38,22 @@ namespace Dash
             {
                 return;
             }
-            
-            var mainData = (TextRenderInfo)data;
+
+            var rotated    = _pageRotation != 0;
+            var mainData   = (TextRenderInfo)data;
+            var pageHeight = _pageSize.GetHeight();
+            var pageWidth  = _pageSize.GetWidth();
+            var aspect     = rotated ? pageWidth / pageHeight : 1;
 
             foreach (var textData in mainData.GetCharacterRenderInfos())
             {
                 // top left corner of the bounding box
-                var start = textData.GetAscentLine().GetStartPoint();
+                var rawStartPt = textData.GetAscentLine().GetStartPoint();
                 // bottom right corner of the bounding box
-                var end = textData.GetDescentLine().GetEndPoint();
+                var rawEndPt = textData.GetDescentLine().GetEndPoint();
+
+                var start = new Point(rawStartPt.Get(rotated ? 1 : 0) * aspect, (rotated ? pageHeight - rawStartPt.Get(0) / aspect : rawStartPt.Get(1)));
+                var end   = new Point(rawEndPt.Get(rotated   ? 1 : 0) * aspect, (rotated ? pageHeight - rawEndPt.Get(0)   / aspect : rawEndPt.Get(1)));
 
                 #region Commented Out Code
 
@@ -76,21 +86,20 @@ namespace Dash
                 /* code to insert spaces into the text when there is too much space between elements */
 
                 // if the space between this and the previous element is greater than or equal to some arbitrary constant space
-                if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
+                if (_elements.Any() && start.X - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
                     textData.GetSingleSpaceWidth() * 0.3)
                 {
                     // insert a space into that index
-                    var width = start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
+                    var width = start.X - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                            _pageSize.GetHeight() - (start.Get(1) + _pageOffset),
-                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                            pageHeight - (start.Y + _pageOffset),
+                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Y - start.Y))));
                 }
 
-                var newBounds = new Rect(start.Get(0),
-                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                    Math.Abs(end.Get(0) - start.Get(0)),
-                    Math.Abs(end.Get(1) - start.Get(1)));
+                var newBounds = new Rect(start.X, pageHeight - start.Y + _pageOffset,
+                    Math.Abs(end.X - start.X),
+                    Math.Abs(end.Y - start.Y));
                 if (!_elements.Any() || _elements.Last().Bounds != newBounds)
                 {
                     _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
