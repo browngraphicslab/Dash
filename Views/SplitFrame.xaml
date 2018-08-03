@@ -1,0 +1,26 @@
+﻿<UserControl
+    x:Class="Dash.SplitFrame"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <local:DocumentView/>
+        <Polygon x:Name="XTopLeftResizer" Fill="Black" Points="0,0,25,0,0,25" HorizontalAlignment="Left" VerticalAlignment="Top"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="TopLeftOnManipulationStarted"
+                 ManipulationDelta="TopLeftOnManipulationDelta"
+                 ManipulationCompleted="TopLeftOnManipulationCompleted"/>
+        <Polygon x:Name="XBottomRightResizer" Fill="Black" Points="0,25,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="BottomRightOnManipulationStarted"
+                 ManipulationDelta="BottomRightOnManipulationDelta"
+                 ManipulationCompleted="BottomRightOnManipulationCompleted"/>
+    </Grid>
+
+</UserControl>

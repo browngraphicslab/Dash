@@ -182,6 +182,7 @@ namespace Dash
 
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
                 MainDocView.RemoveResizeHandlers();
+                XMainSplitter.SetContent(lastWorkspace);
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;

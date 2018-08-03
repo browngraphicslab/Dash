@@ -55,27 +55,30 @@
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
         <!-- MainDocView -->
-        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
             <local:DockingFrame.DocumentContent>
                 <Grid>
                     <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
-                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
-                            <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
-                        </Grid>
-                        <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xForwardButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                    </StackPanel>
                 </Grid>
             </local:DockingFrame.DocumentContent>
         </local:DockingFrame>
+        <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
+
+
+        <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+            <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
+                <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
+            </Grid>
+            <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+            </Button>
+            <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+            </Button>
+            <Button Name="xForwardButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
+                <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+            </Button>
+        </StackPanel>
 
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
@@ -89,16 +92,16 @@
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
             <local:DocumentDecorations />
             <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
-            
+
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
-            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
-            
+                <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
+
             </Grid>
 
             <Grid x:Name="xSnapshotOverlay" Background="White" Height="5000" Width="5000" Visibility="Collapsed">
                 <Grid.Resources>
                     <Storyboard x:Name="xFadeIn">
-                    <DoubleAnimation
+                        <DoubleAnimation
                         Storyboard.TargetName="xSnapshotOverlay"
                         Storyboard.TargetProperty="Opacity"
                         From="0.5" To="0.9" Duration="0:0:.05"
@@ -114,14 +117,14 @@
                         />
                     </Storyboard>
 
-                
+
                 </Grid.Resources>
             </Grid>
 
         </Grid>
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
-        
-        
+
+
 
         <!--drag in html popup-->
         <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
@@ -143,7 +146,7 @@
                                 <CheckBox.RenderTransform>
                                     <CompositeTransform ScaleX="0.7" ScaleY="0.7"/>
                                 </CheckBox.RenderTransform>
-                              </CheckBox>
+                            </CheckBox>
                         </StackPanel>
 
 
@@ -161,7 +164,7 @@
                 </Border>
             </Popup>
         </Grid>
-       
+
 
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -185,7 +188,7 @@
 
         <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
-            <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+        <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
 
         <local:ActionTextBox 
             x:Name="xLinkInputBox"
