@@ -83,11 +83,6 @@ namespace Dash.Converters
                 {
                     currView = dc.GetKeyValueAlias().MakeViewUI(_context);
                 }
-                //bcz: this is odd -- the DocumentViewModel is bound to the DataBox, so we have to transfer the
-                //   "container-like" bindings from the contained data view to the DataBox
-                //TODO: DO I NEED THE NEXT LINE?
-                //SetupBindings(view, _docController, _context);
-                //return view;
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {

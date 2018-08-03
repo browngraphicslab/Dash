@@ -33,7 +33,6 @@ namespace Dash
     {
         static ICollectionView _previousDragEntered;
         bool    _canDragItems = true;
-        double  _cellSize;
         bool    _isLoaded;
         DocumentController _lastContainerDocument = null; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode         WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
@@ -79,7 +78,6 @@ namespace Dash
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             SetCollectionRef(containerDocument, fieldKey);
-                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
 
         }
 
@@ -199,8 +197,7 @@ namespace Dash
         }
 
         #region DocumentModel and DocumentViewModel Data Changes
-
-        public string Tag;
+        
         private Storyboard _lateralAdjustment = new Storyboard();
         private Storyboard _verticalAdjustment = new Storyboard();
 

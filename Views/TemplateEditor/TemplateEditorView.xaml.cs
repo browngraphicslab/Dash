@@ -283,7 +283,7 @@ namespace Dash
 
             //hide resize and ellipse controls for template editor
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.hideControls();
+            docView.ViewModel.DecorationState = false;
             docView.RemoveResizeHandlers();
 
 			// determine if the active layout exists and has information about rows and columns
@@ -1087,7 +1087,6 @@ namespace Dash
 			{
 				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
 				DocumentViews.Add(docView);
-				docView.hideEllipses();
 			}
 
 			var typeInfo = docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo;
@@ -1168,7 +1167,6 @@ namespace Dash
 			{
 				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
 				DocumentViews.Add(docView);
-				docView.hideEllipses();
 			}
 
 			docView.DocumentSelected += DocView_DocumentSelected;
