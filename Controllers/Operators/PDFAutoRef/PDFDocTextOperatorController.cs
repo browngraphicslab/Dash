@@ -35,7 +35,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var doc = (inputs[DocumentKey] as TextController)?.Data;
+            var doc = inputs[DocumentKey] as DocumentController;
 
             if (doc == null)
             {
@@ -43,6 +43,7 @@ namespace Dash
                 return;
             }
 
+            outputs[DocumentTextKey] = new TextController(doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data);
         }
 
         public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);
