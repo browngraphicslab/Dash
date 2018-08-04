@@ -112,6 +112,7 @@ namespace Dash
                 // PDFs
                 references,
                 regex,
+                text,
 
             // COMMANDS
 

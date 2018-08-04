@@ -32,7 +32,7 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [MatchDocsKey] = TypeInfo.List,
+            [MatchDocsKey] = TypeInfo.Document,
         };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
@@ -46,17 +46,28 @@ namespace Dash
             var matches = reg.Matches(text).ToList();
 
             var matchDocs = new ListController<DocumentController>();
+            var i = 0;
+
             foreach (Match match in matches)
             {
                 var groups = match.Groups.ToList();
                 var infoDoc = new DocumentController();
 
+                infoDoc.SetField<TextController>(KeyStore.TitleKey, $"Match #{++i}", true);
+                infoDoc.SetField<NumberController>(new KeyController("Index"), match.Index, true);
+
                 foreach (Group group in groups)
                 {
-                    infoDoc.SetField<TextController>(new KeyController(group.Name), group.Value, true);
+                    if (string.IsNullOrEmpty(group.Value)) continue;
+
+                    var key = new KeyController($"\'{group.Name}\'");
+                    if (group.Name.Equals("0")) key = new KeyController("Full Match");
+
+                    infoDoc.SetField<TextController>(key, $"\'{group.Value}\'", true);
                 }
+                matchDocs.Add(infoDoc);
             }
-            outputs[MatchDocsKey] = new ListController<DocumentController>();
+            outputs[MatchDocsKey] = matchDocs;
         }
 
         public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);
