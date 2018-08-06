@@ -1380,6 +1380,10 @@
                 <Setter Property="FontFamily" Value="Segoe UI" />
             </Style>
 
+            <Style TargetType="AppBarSeparator">
+                <Setter Property="Foreground" Value="Gray" />
+            </Style>
+
             <!-- GLOBAL STYLES -->
             <Style TargetType="TextBox" x:Key="xSearchTextBox">
                 <Setter Property="Background" Value="Transparent"></Setter>
