@@ -10,7 +10,7 @@
     d:DesignWidth="400">
 
     <Grid>
-        <local:DocumentView/>
+        <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>
         <Polygon x:Name="XTopLeftResizer" Fill="Black" Points="0,0,25,0,0,25" HorizontalAlignment="Left" VerticalAlignment="Top"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopLeftOnManipulationStarted"

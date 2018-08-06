@@ -21,6 +21,26 @@ namespace Dash
     public sealed partial class SplitFrame : UserControl
     {
 
+        public static SplitFrame ActiveFrame { get; set; }
+
+        public static void OpenInActiveFrame(DocumentController doc)
+        {
+            if(ActiveFrame.ViewModel.DataDocument.Equals(doc.GetDataDocument()))
+            {
+                return;
+            }
+            if(!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()))
+            {
+                doc = doc.GetViewCopy();
+                doc.SetWidth(double.NaN);
+                doc.SetHeight(double.NaN);
+            }
+            
+            ActiveFrame.DataContext = new DocumentViewModel(doc) { Undecorated = true };
+        }
+
+        private DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+
         public enum SplitDirection
         {
             Left, Right, Up, Down, None
@@ -45,6 +65,7 @@ namespace Dash
         public SplitFrame()
         {
             this.InitializeComponent();
+            XDocView.hideResizers();
         }
 
         private void TopLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -90,8 +111,8 @@ namespace Dash
                 double diff = e.Delta.Translation.X;
                 diff = cols[col].ActualWidth - diff < 0 ? 0 : diff;
                 diff = cols[col - 2].ActualWidth + diff < 0 ? 0 : diff;
-                cols[col].Width = new GridLength(cols[col].ActualWidth - diff);
-                cols[col - 2].Width = new GridLength(cols[col - 2].ActualWidth + diff);
+                cols[col].Width = new GridLength(cols[col].ActualWidth - diff, GridUnitType.Star);
+                cols[col - 2].Width = new GridLength(cols[col - 2].ActualWidth + diff, GridUnitType.Star);
             } else if (XTopLeftResizer.ManipulationMode == ManipulationModes.TranslateY)
             {
                 var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Vertical);
@@ -101,8 +122,8 @@ namespace Dash
                 double diff = e.Delta.Translation.Y;
                 diff = rows[row].ActualHeight - diff < 0 ? rows[row].ActualHeight : diff;
                 diff = rows[row - 2].ActualHeight + diff < 0 ? -rows[row - 2].ActualHeight : diff;
-                rows[row].Height = new GridLength(rows[row].ActualHeight - diff);
-                rows[row - 2].Height = new GridLength(rows[row - 2].ActualHeight + diff);
+                rows[row].Height = new GridLength(rows[row].ActualHeight - diff, GridUnitType.Star);
+                rows[row - 2].Height = new GridLength(rows[row - 2].ActualHeight + diff, GridUnitType.Star);
             }
         }
 
@@ -125,6 +146,11 @@ namespace Dash
         private void BottomRightOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             
+        }
+
+        private void XDocView_DocumentSelected(DocumentView obj)
+        {
+            ActiveFrame = this;
         }
     }
 }

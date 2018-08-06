@@ -35,13 +35,7 @@ using Windows.UI.Xaml.Media.Animation;
 namespace Dash
 {
     public sealed partial class DocumentView
-    {
-        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
-
-        public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentDeletedHandler      DocumentDeleted;
-        
+    {       
         private DocumentController _templateEditor;
         private bool               _isQuickEntryOpen;
         private Flyout             _flyout;
@@ -188,7 +182,6 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 PointerId = e.Pointer.PointerId;
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
@@ -1154,17 +1147,34 @@ namespace Dash
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
+        public event Action<DocumentView> DocumentDeleted;
+
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
+            DocumentDeleted?.Invoke(this);
             UndoManager.EndBatch();
         }
 
         #endregion
 
         #region Activation
+
+        public event Action<DocumentView> DocumentSelected;
+        public event Action<DocumentView> DocumentDeselected;
+
+        public void OnSelected()
+        {
+            SetSelectionBorder(true);
+            DocumentSelected?.Invoke(this);
+        }
+
+        public void OnDeselected()
+        {
+            SetSelectionBorder(false);
+            DocumentDeselected?.Invoke(this);
+        }
 
         public void SetSelectionBorder(bool selected)
         {
@@ -1193,6 +1203,7 @@ namespace Dash
 
 		}
 
+        //TODO Make this either a dependency property or have it use Undecorated
         public void hideResizers()
         {
             xTopLeftResizeControl.Visibility = Visibility.Collapsed;
@@ -1217,7 +1228,6 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
-            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -1254,26 +1264,6 @@ namespace Dash
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewSelectedEventArgs
-        {
-            public DocumentViewSelectedEventArgs()
-            {
-            }
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewDeletedEventArgs
-        {
-            public DocumentViewDeletedEventArgs()
-            {
-            }
         }
 
         #region UtilityFuncions
@@ -1415,6 +1405,8 @@ namespace Dash
                 {
                     MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
                 }
+
+                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
             }
                 
         }

@@ -42,12 +42,11 @@ namespace Dash
             var viewCopy = document.GetViewCopy();
             viewCopy.SetWidth(double.NaN);
             viewCopy.SetHeight(double.NaN);
-            var docView = new SplitFrame
+            var frame = new SplitFrame
             {
-                DataContext = new DocumentViewModel(viewCopy)
+                DataContext = new DocumentViewModel(viewCopy) { Undecorated = true }
             };
-            SetContent(docView);
-
+            SetContent(frame);
         }
 
         private void SetContent(SplitFrame frame)
@@ -80,9 +79,9 @@ namespace Dash
                         {
                             sender.SplitCompleted += WrapFrameInManager;
                         }
-                        CurSplitMode = SplitMode.Vertical;
                         bool up = args.Direction == SplitFrame.SplitDirection.Up;
-                        var row = Grid.GetRow(sender);
+                        var row = CurSplitMode == SplitMode.Content ? 0 : Grid.GetRow(sender.GetFirstAncestorOfType<SplitManager>());
+                        CurSplitMode = SplitMode.Vertical;
                         var splitter = new GridSplitter
                         {
                             ResizeDirection = GridSplitter.GridResizeDirection.Rows,
@@ -98,7 +97,7 @@ namespace Dash
                         if (up)
                         {
                             XContentGrid.RowDefinitions.Insert(row + 1,
-                                new RowDefinition { Height = new GridLength(0) }); //Content row
+                                new RowDefinition { Height = new GridLength(0, GridUnitType.Star) }); //Content row
                             XContentGrid.RowDefinitions.Insert(row + 1,
                                 new RowDefinition { Height = new GridLength(10) }); //Splitter row
                             Grid.SetColumn(splitter, row + 1);
@@ -112,7 +111,7 @@ namespace Dash
                             XContentGrid.RowDefinitions.Insert(row,
                                 new RowDefinition() { Height = new GridLength(10) }); //Splitter row
                             XContentGrid.RowDefinitions.Insert(row,
-                                new RowDefinition { Height = new GridLength(0) }); //Content row
+                                new RowDefinition { Height = new GridLength(0, GridUnitType.Star) }); //Content row
                             Grid.SetRow(newManager, row);
                             Grid.SetRow(splitter, row + 1);
                             UpdateRows(2, row);
@@ -136,9 +135,9 @@ namespace Dash
                             sender.SplitCompleted += WrapFrameInManager;
                         }
 
-                        CurSplitMode = SplitMode.Horizontal;
                         bool left = args.Direction == SplitFrame.SplitDirection.Left;
-                        var col = Grid.GetColumn(sender);
+                        var col = CurSplitMode == SplitMode.Content ? 0 : Grid.GetColumn(sender.GetFirstAncestorOfType<SplitManager>()); 
+                        CurSplitMode = SplitMode.Horizontal;
                         var splitter = new GridSplitter
                         {
                             ResizeDirection = GridSplitter.GridResizeDirection.Columns,
@@ -154,7 +153,7 @@ namespace Dash
                         if (left)
                         {
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition {Width = new GridLength(0)}); //Content col
+                                new ColumnDefinition {Width = new GridLength(0, GridUnitType.Star)}); //Content col
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
                                 new ColumnDefinition {Width = new GridLength(10)}); //Splitter col
                             Grid.SetColumn(splitter, col + 1);
@@ -168,7 +167,7 @@ namespace Dash
                             XContentGrid.ColumnDefinitions.Insert(col,
                                 new ColumnDefinition() {Width = new GridLength(10)}); //Splitter col
                             XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition {Width = new GridLength(0)}); //Content col
+                                new ColumnDefinition {Width = new GridLength(0, GridUnitType.Star)}); //Content col
                             Grid.SetColumn(newManager, col);
                             Grid.SetColumn(splitter, col + 1);
                             UpdateCols(2, col);
