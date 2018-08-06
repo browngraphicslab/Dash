@@ -527,8 +527,8 @@ namespace Dash
                 case SyntaxKind.BinaryExpression:
                     var binaryExpr = node as BinaryExpression;
 
-                    var rightBinExpr = ParseToExpression(binaryExpr.Right);
-                    var leftBinExpr = ParseToExpression(binaryExpr.Left);
+                    ScriptExpression rightBinExpr = ParseToExpression(binaryExpr?.Right);
+                    ScriptExpression leftBinExpr = ParseToExpression(binaryExpr.Left);
 
                     switch (binaryExpr.OperatorToken.Kind)
                     {
@@ -623,16 +623,7 @@ namespace Dash
                                     rightBinExpr
                                 });
                                 case VariableExpression safeBinExpr:
-                                    if (!_undoVar)
-                                    {
-                                        return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
-                                        {
-                                            new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
-                                            rightBinExpr
-                                        });
-                                    }
-
-                                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
+                                    return new VariableAssignmentExpression(safeBinExpr.GetVariableName(), rightBinExpr, _undoVar);
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:
@@ -1002,49 +993,5 @@ namespace Dash
             }
             return null;
         }
-
-        private class VariableDeclarationExpression : ScriptExpression
-        {
-            private readonly string _variableName;
-            private readonly ScriptExpression _value;
-            private readonly bool _unassignVar;
-
-            public VariableDeclarationExpression(string variableName, ScriptExpression value, bool unassignVar)
-            {
-                Debug.Assert(variableName != null);
-                _variableName = variableName;
-                _value = value;
-                _unassignVar = unassignVar;
-                if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
-            }
-
-            public override FieldControllerBase Execute(Scope scope)
-            {
-                if (_unassignVar)
-                {
-                    scope.DeleteVariable(_variableName);
-
-                    return new TextController("");
-                }
-
-                var value = scope.GetVariable(_variableName);
-                if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, value));
-                var val = _value.Execute(scope);
-                scope?.DeclareVariable(_variableName, val);
-
-                return val;
-            }
-
-            public override FieldControllerBase CreateReference(Scope scope)
-            {
-                throw new NotImplementedException();
-                //TODO tfs help with operator/doc stuff
-            }
-
-            //TODO tyler is this correct?
-            public override TypeInfo Type => TypeInfo.Any;
-        }
-
     }
-
 }

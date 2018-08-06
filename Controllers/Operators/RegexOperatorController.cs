@@ -18,16 +18,16 @@ namespace Dash
         private static readonly KeyController TypeKey = new KeyController("Regex", "DF48D210-40A9-46A2-B32A-8F3C96C6CDD7");
 
         //Input keys
+        public static readonly KeyController TextKey = new KeyController("Text");
         public static readonly KeyController ExpressionKey = new KeyController("Expression");
-        public static readonly KeyController TextKey       = new KeyController("Text");
 
         //Output keys
         public static readonly KeyController MatchDocsKey = new KeyController("Matches");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
             new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -60,7 +60,7 @@ namespace Dash
                 {
                     if (string.IsNullOrEmpty(group.Value)) continue;
 
-                    var key = new KeyController($"\'{group.Name}\'");
+                    var key = new KeyController(group.Name);
                     if (group.Name.Equals("0")) key = new KeyController("Full Match");
 
                     infoDoc.SetField<TextController>(key, $"\'{group.Value}\'", true);

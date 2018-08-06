@@ -30,7 +30,7 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [DocumentTextKey] = TypeInfo.Document,
+            [DocumentTextKey] = TypeInfo.Text,
         };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)

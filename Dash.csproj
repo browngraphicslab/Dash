@@ -346,6 +346,8 @@
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\VariableDeclarationExpression.cs" />
     <Compile Include="Util\DSL\VariableSuggestion.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">

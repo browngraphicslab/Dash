@@ -37,8 +37,8 @@ namespace Dash
 #pragma warning disable 4014
             Task.Run(async () =>
             {
-                var text = await GetPdfText(file);
-                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text), true));
+                string text = await GetPdfText(file);
+                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text.Replace("- ", "")), true));
             });
 
             // return a new pdf box

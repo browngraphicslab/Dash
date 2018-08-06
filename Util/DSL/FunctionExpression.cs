@@ -63,7 +63,7 @@ namespace Dash
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
