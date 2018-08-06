@@ -180,7 +180,7 @@ namespace Dash
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 treeContext.Tag = "TreeView VM";
                 xMainTreeView.DataContext = treeContext;
-                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
+                xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);

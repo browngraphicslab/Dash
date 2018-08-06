@@ -14,13 +14,27 @@
     <StackPanel>
         <StackPanel.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Text="Open" Click="Open_OnClick"></MenuFlyoutItem>
-                <MenuFlyoutItem Text="Rename" Click="Rename_OnClick"></MenuFlyoutItem>
+                <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="Open_OnClick"></MenuFlyoutItem>
+                <MenuFlyoutItem Text="Rename" Icon="Rename" Click="Rename_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Delete" Icon="Delete" Click="Delete_OnClick"></MenuFlyoutItem>
             </MenuFlyout>
         </StackPanel.ContextFlyout>
         <StackPanel.Resources>
             <x:Double  x:Key="DataSizing">15</x:Double>
+
+            <Storyboard x:Name="xCollectionIn" x:FieldModifier="public">
+                <DoubleAnimation 
+                    Storyboard.TargetName="CollectionTreeView"
+                    Storyboard.TargetProperty="Opacity"
+                    From="0.0" To="1.0" Duration="0:0:.5"/>
+            </Storyboard>
+
+            <Storyboard x:Name="xCollectionOut" x:FieldModifier="public">
+                <DoubleAnimation 
+                    Storyboard.TargetName="CollectionTreeView"
+                    Storyboard.TargetProperty="Opacity"
+                    From="1.0" To="0.0" Duration="0:0:.5"/>
+            </Storyboard>
         </StackPanel.Resources>
         <Grid x:Name="XHeader">
             <Grid.ColumnDefinitions>
@@ -31,15 +45,17 @@
 
             <Grid Background="{StaticResource DashLightBlue}" Grid.Column="1" Opacity="0.3" Visibility="{Binding DecorationState}" IsHitTestVisible="False"/>
             <Border x:Name="XBlockBorder"  Grid.Column="1">
-            <TextBlock x:Name="XTextBlock" FontSize="{StaticResource DataSizing}" 
+            <TextBlock x:Name="XTextBlock" FontSize="{StaticResource DataSizing}"
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
-                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="{x:Bind Foreground, Mode=OneWay}" />
+                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="White" />
             </Border>
             <Border x:Name="xBorder" Grid.Column="2" Visibility="Collapsed">
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
-            <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
+            <TextBlock x:Name="xArrowBlock" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0" Tapped="XArrowBlock_OnTapped"/>
+
+            
             <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" CanDrag="True"  DragStarting="xControlIcon_DragStarting"  Foreground="{x:Bind Foreground, Mode=OneWay}" Visibility="Collapsed" Margin="5,0,5,0" />
 
             <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0" >
@@ -75,5 +91,6 @@
             </Border>
         </StackPanel>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="YPos" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
+        
     </StackPanel>
 </UserControl>

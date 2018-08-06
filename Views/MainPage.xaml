@@ -123,7 +123,7 @@
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
         <Grid x:Name="xSettingsGrid" Grid.Column="2" Tapped="xSettingsButton_Tapped">
-            <Ellipse x:Name="xSettingsButton" PointerExited="XOnPointerExited" PointerEntered="XOnPointerEntered" Width="34" Height="34" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{StaticResource DashDarkBlue}" ></Ellipse>
+            <Ellipse x:Name="xSettingsButton" PointerExited="XOnPointerExited" PointerEntered="XOnPointerEntered" Width="34" Height="34" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{StaticResource DashDarkDarkBlueBrush}" ></Ellipse>
             <TextBlock x:Name="xSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="28"/>
             <ToolTipService.ToolTip>
                 <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30"
