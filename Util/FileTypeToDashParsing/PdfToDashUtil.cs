@@ -34,12 +34,12 @@ namespace Dash
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
 
-#pragma warning disable 4014
-            Task.Run(async () =>
-            {
-                string text = await GetPdfText(file);
-                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text.Replace("- ", "")), true));
-            });
+//#pragma warning disable 4014
+//            Task.Run(async () =>
+//            {
+//                var text = await GetPdfText(file);
+//                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text), true));
+//            });
 
             // return a new pdf box
             DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
