@@ -42,6 +42,7 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Panel _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
+        public UserControl UserControl => this;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }
@@ -90,7 +91,6 @@ namespace Dash
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
             MakeInkCanvas();
-           // UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;

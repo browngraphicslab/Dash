@@ -59,7 +59,7 @@ namespace Dash.Models.DragModels
         public bool CanDrop(FrameworkElement sender)
         {
             if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() || ShowViewCopy || MainPage.Instance.IsCtrlPressed()))
-                return cview.ViewModel.CanDrop(DraggedDocument);
+                return !cview.ViewModel.CreatesCycle(DraggedDocument);
             return true;
         }
 

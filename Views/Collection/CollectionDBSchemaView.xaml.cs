@@ -30,6 +30,7 @@ namespace Dash
 
         // This list stores the fields added in the schema view (not originally in the documents)
         private List<KeyController> _schemaFieldsNotInDocs;
+        public UserControl UserControl => this;
 
 
         public CollectionDBSchemaView()

@@ -504,7 +504,7 @@ namespace Dash
                 {
                     var page = pdfDocument.GetPage(i);
                     var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size);
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
                 }
@@ -657,9 +657,12 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
-            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
+            var curPt = e.GetCurrentPoint(this).Position;
+            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
+            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
             {
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
             }
         }
 
@@ -681,8 +684,10 @@ namespace Dash
             //e.Handled = true;
         }
 
+        Point _downPt = new Point();
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||

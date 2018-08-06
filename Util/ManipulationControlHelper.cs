@@ -40,22 +40,17 @@ namespace Dash
                 n.ManipulationMode = ManipulationModes.None;
             _collection = _eventElement as CollectionView;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.None;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 			
             if (_manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
 
             _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
-
-            if (false) // bcz: set to 'true' for drag/Drop interactions
-                _manipulationDocumentTarget.SetupDragDropDragging(null);
-            else
-            {
-                _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
-                _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-                if (!_eventElement.IsShiftPressed() && pointer != null)
-                    _eventElement.CapturePointer(pointer);
-            }
+            
+            _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
+            _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
+            if (!_eventElement.IsShiftPressed() && pointer != null)
+                _eventElement.CapturePointer(pointer);
         }
 
 
@@ -65,10 +60,9 @@ namespace Dash
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
-            _manipulationDocumentTarget.DocumentView_PointerEntered();
             if (_useCache) _eventElement.CacheMode = null;
-            //MainPage.Instance.Focus(FocusState.Programmatic);
         }
+        
 
         /// <summary>
         /// Move view around if right mouse button is held down
@@ -89,10 +83,25 @@ namespace Dash
 
             var translationAfterAlignment = _manipulationDocumentTarget.ManipulationControls.SimpleAlign(translationBeforeAlignment);
 
-            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f);
+            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f, null, this, e);
 
             if (e != null)
                 e.Handled = true;
+        }
+
+        public void Abort(PointerRoutedEventArgs e)
+        {
+            foreach (var n in _ancestorDocs)
+                n.ManipulationMode = ManipulationModes.All;
+            if (_collection != null)
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
+            _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
+            _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            if (e!= null)
+                _eventElement.ReleasePointerCapture(e.Pointer);
+            if (_useCache) _eventElement.CacheMode = new BitmapCache();
+            if (_eventElement is WebView web)
+                web.Tag = null;
         }
 
         public void PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -107,7 +116,7 @@ namespace Dash
             foreach (var n in _ancestorDocs)
                 n.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
-                _collection.CurrentView.ManipulationMode = ManipulationModes.All;
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
 
