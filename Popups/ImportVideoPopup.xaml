@@ -25,9 +25,14 @@
                         </Button>
                     </StackPanel>
 
-                    <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
-                        <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
-                    </Button>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 40" >
+                        <Button x:Name="xCancelButton" Height="40" Width="130" Margin="10, 0" Background="#334f43">
+                            <TextBlock FontSize="14" Foreground="White" >Cancel</TextBlock>
+                        </Button>
+                        <Button x:Name="xConfirmButton" Height="40" Width="130" Margin="10, 0" Background="#334f43">
+                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
+                        </Button>
+                    </StackPanel>
 
                     <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
                         <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"

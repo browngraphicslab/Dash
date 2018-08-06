@@ -50,6 +50,7 @@ namespace Dash.Popups
 			xPopup.IsOpen = true;
 			xUploadButton.Tapped += UploadFile_OnTapped;
 			xConfirmButton.Tapped += xConfirmButton_OnTapped;
+			xCancelButton.Tapped += xCancelButton_OnTapped;
 
 			async void UploadFile_OnTapped(object sender, TappedRoutedEventArgs e)
 		    {
@@ -85,6 +86,14 @@ namespace Dash.Popups
 					xErrorMessageIcon.Visibility = Visibility.Visible;
 					xErrorMessageText.Visibility = Visibility.Visible;
 				}
+			}
+
+			// if cancel is pressed, null is returned.
+			void xCancelButton_OnTapped(object sender, RoutedEventArgs e)
+			{
+				xPopup.IsOpen = false;
+				tcs.SetResult(null);
+				xCancelButton.Tapped -= xCancelButton_OnTapped;
 			}
 
 			return tcs.Task;

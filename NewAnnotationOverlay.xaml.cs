@@ -535,13 +535,6 @@ namespace Dash
 			
 	        DocumentController annotationController;
 
-	        var annotation = _regionGetter(AnnotationType.Pin);
-	        annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-	        annotation.SetWidth(10);
-	        annotation.SetHeight(10);
-	        annotation.GetDataDocument()
-		        .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
-
 	        var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
 	        var scale = pdfView.Width / pdfView.PdfMaxWidth;
 
@@ -570,7 +563,20 @@ namespace Dash
 		        annotationController = CreateTextPin(point);
 	        }
 
-	        var docView = new DocumentView
+			// if the user presses back or cancel, return null
+	        if (annotationController == null)
+	        {
+		        return;
+			}
+
+	        var annotation = _regionGetter(AnnotationType.Pin);
+	        annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+	        annotation.SetWidth(10);
+	        annotation.SetHeight(10);
+	        annotation.GetDataDocument()
+		        .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+
+			var docView = new DocumentView
 	        {
 		        DataContext = new DocumentViewModel(annotationController) { DecorationState = false, Undecorated = false },
 		        BindRenderTransform = true,
@@ -610,6 +616,7 @@ namespace Dash
 	    private async Task<DocumentController> CreateVideoPin(Point point)
 	    {
 		    var file = await MainPage.Instance.GetVideoFile();
+		    if (file == null) return null;
 
 		    var videoNote = await new VideoToDashUtil().ParseFileAsync(file);
 			videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
@@ -623,6 +630,7 @@ namespace Dash
 	    private async Task<DocumentController> CreateImagePin(Point point)
 	    {
 		    var file = await MainPage.Instance.GetImageFile();
+		    if (file == null) return null;
 
 		    var imageNote = await new ImageToDashUtil().ParseFileAsync(file);
 		    imageNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
