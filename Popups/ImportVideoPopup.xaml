@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+    <Grid x:Name="xGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
         <Popup x:Name="xPopup" LightDismissOverlayMode="On">
             <Border x:Name="xBorder"
                         BorderBrush="{StaticResource AccentGreenLight}"
@@ -20,9 +20,14 @@
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock FontSize="18" Margin="-10 -70 0 0" TextAlignment="Center" VerticalAlignment="Top">Select video source</TextBlock>
                         <TextBlock x:Name="xCurrentVideoTextBlock" FontSize="12" TextAlignment="Center" TextWrapping="WrapWholeWords"/>
-                        <Button x:Name="xUploadButton" Margin="0 0 0 40" HorizontalAlignment="Center" Height="25" Width="70">
-                            <TextBlock FontSize="13" Foreground="#888888" VerticalAlignment="Center">Upload</TextBlock>
-                        </Button>
+                        <StackPanel HorizontalAlignment="Center" Margin="0 0 0 40">
+                            <Button x:Name="xUploadButton" HorizontalAlignment="Center" Height="25" Margin="10, 5">
+                                <TextBlock FontSize="13" Foreground="#888888" VerticalAlignment="Center">Upload File</TextBlock>
+                            </Button>
+                            <Button x:Name="xYouTubeButton" HorizontalAlignment="Center" Height="25" Margin="10, 0">
+                                <TextBlock FontSize="13" Foreground="#888888" VerticalAlignment="Center">Enter YouTube URL</TextBlock>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0 0 0 40" >

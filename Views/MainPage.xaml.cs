@@ -937,7 +937,7 @@ namespace Dash
 			return mode;
         }
 
-	    public async Task<StorageFile> GetVideoFile()
+	    public async Task<VideoWrapper> GetVideoFile()
 	    {
 		    var videoPopup = new ImportVideoPopup();
 		    SetUpPopup(videoPopup);

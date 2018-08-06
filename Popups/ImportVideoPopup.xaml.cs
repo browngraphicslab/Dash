@@ -42,15 +42,16 @@ namespace Dash.Popups
 		    return this;
 	    }
 
-	    public Task<StorageFile> GetVideoFile()
+	    public Task<VideoWrapper> GetVideoFile()
 		{
-			StorageFile file = null;
+			VideoWrapper file = null;
 
-			var tcs = new TaskCompletionSource<StorageFile>();
+			var tcs = new TaskCompletionSource<VideoWrapper>();
 			xPopup.IsOpen = true;
 			xUploadButton.Tapped += UploadFile_OnTapped;
 			xConfirmButton.Tapped += xConfirmButton_OnTapped;
 			xCancelButton.Tapped += xCancelButton_OnTapped;
+			xYouTubeButton.Tapped += xYouTubeButton_OnTapped;
 
 			async void UploadFile_OnTapped(object sender, TappedRoutedEventArgs e)
 		    {
@@ -64,10 +65,29 @@ namespace Dash.Popups
 			    StorageFile pickedFile = await picker.PickSingleFileAsync();
 			    if (pickedFile != null)
 			    {
-				    file = pickedFile;
+				    file = new VideoWrapper{ Type = VideoType.StorageFile, File = pickedFile };
 				    xCurrentVideoTextBlock.Text = "Currently selected: " + pickedFile.Name;
 			    }
 		    }
+
+			async void xYouTubeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+			{
+				var youtubePopup = new YouTubeLinkPopup();
+
+				youtubePopup.HorizontalOffset = -250;
+				youtubePopup.VerticalOffset = -75;
+
+				xGrid.Children.Add(youtubePopup);
+				var result = await youtubePopup.GetUri();
+
+				if (result != null)
+				{
+					file = new VideoWrapper {Type = VideoType.Uri, Uri = result };
+					xCurrentVideoTextBlock.Text = "Currently selected: " + result;
+				}
+
+				xGrid.Children.Remove(youtubePopup);
+			}
 
 			void xConfirmButton_OnTapped(object sender, RoutedEventArgs e)
 			{

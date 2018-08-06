@@ -6,9 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.UI;
 using Windows.UI.Core;
@@ -22,6 +25,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
+using MyToolkit.Multimedia;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -615,16 +620,52 @@ namespace Dash
 
 	    private async Task<DocumentController> CreateVideoPin(Point point)
 	    {
-		    var file = await MainPage.Instance.GetVideoFile();
-		    if (file == null) return null;
+		    var video = await MainPage.Instance.GetVideoFile();
+		    if (video == null) return null;
 
-		    var videoNote = await new VideoToDashUtil().ParseFileAsync(file);
-			videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    DocumentController videoNote = null;
+
+			// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
+		    switch (video.Type)
+		    {
+				case VideoType.StorageFile:
+					videoNote = await new VideoToDashUtil().ParseFileAsync(video.File);
+					break;
+				case VideoType.Uri:
+					var query = HttpUtility.ParseQueryString(video.Uri.Query);
+					var videoId = string.Empty;
+
+					if (query.AllKeys.Contains("v"))
+					{
+						videoId = query["v"];
+					}
+					else
+					{
+						videoId = video.Uri.Segments.Last();
+					}
+
+					try
+					{
+						var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality480P);
+						var uri = url.Uri;
+						videoNote = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+					}
+					catch (Exception)
+					{
+						// TODO: display error video not found
+					}
+
+					break;
+		    }
+
+		    if (videoNote == null) return null;
+
+		    videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
 		    videoNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
-			videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+		    videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
 		    videoNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
 
-			return videoNote;
+		    return videoNote;
 	    }
 
 	    private async Task<DocumentController> CreateImagePin(Point point)
@@ -688,6 +729,10 @@ namespace Dash
                     {
                         if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
+						var annotations =  _mainDocument.GetDataDocument()
+		                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
+	                    annotations.Remove(docView.ViewModel.DocumentController);
+	                    Debug.WriteLine(annotations.Count);
                     }
                 }
                 SelectRegion(vm, args.GetPosition(this));
