@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -43,6 +44,11 @@ namespace Dash
         bool Selected { get; }
 
         DocumentController RegionDocument { get; }
+    }
+
+    public class NewAnnotationOverlayViewModel : ViewModelBase
+    { 
+        public ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
     }
 
     public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
@@ -195,35 +201,22 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
         public void LoadPinAnnotations()
         {
-            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
-            foreach (var olddoc in currentDocViews)
-            {
-                XAnnotationCanvas.Children.Remove(olddoc);
-            }
+            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Clear();
 
-            var pinAnnotations = _mainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
             if (pdfView != null)
             {
-                var scale = pdfView.Width / pdfView.PdfMaxWidth;
-
+                var pinAnnotations = _mainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
                 foreach (var doc in pinAnnotations)
                 {
-                    var dvm = new DocumentViewModel(doc) { Undecorated = true };
-                    var docView = new DocumentView
-                    {
-                        DataContext = dvm,
-                        BindRenderTransform = true,
-                        Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                        BindVisibility = true,
-                        ResizersVisible = true
-                    };
-                    XAnnotationCanvas.Children.Add(docView);
+                    var dvm = new DocumentViewModel(doc) { Undecorated = true, ResizersVisible = true, DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
                 }
             }
         }
@@ -525,50 +518,40 @@ namespace Dash
 
             var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
                 new Size(150, 75));
-            richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            richText.Document.SetBackgroundColor(Colors.White);
             richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+            richText.Document.SetHidden(true); // hidden flag will be toggled off when annotation is rendered after annotation is added to RegionDocsList-- why??
             var annotation = _regionGetter(AnnotationType.Pin);
             annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
             annotation.SetWidth(10);
             annotation.SetHeight(10);
-            annotation.GetDataDocument()
-                .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+            annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
             annotation.Link(richText.Document, LinkContexts.PushPin);
             RegionDocsList.Add(annotation);
             RegionAdded?.Invoke(this, annotation);
             RenderPin(annotation, richText.Document);
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-            var scale = pdfView.Width / pdfView.PdfMaxWidth;
 
-            var docView = new DocumentView
-            {
-                DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
-                BindRenderTransform = true,
-                Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                BindVisibility = true,
-                ResizersVisible = true
-            };
-            XAnnotationCanvas.Children.Add(docView);
-            _pinAnnotations.Add(docView);
+            var dvm = new DocumentViewModel(richText.Document) { Undecorated = true, ResizersVisible = true,
+                   DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
+            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
 
-            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
-                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-                    Context context)
+            // bcz: should this be called in LoadPinAnnotations as well?
+             dvm.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
                 {
-                    if (args.NewValue == null) return;
-
-                    var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
-                    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
-                        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
-                    var pos = regionDef.GetPosition().Value;
-                    pdfview.ScrollToPosition(pos.Y);
-                    docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                    if (args.NewValue != null)
+                    {
+                        var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+                            .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+                        var pos = regionDef.GetPosition().Value;
+                        pdfView.ScrollToPosition(pos.Y);
+                        dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                    }
                 });
             _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-                .Add(docView.ViewModel.DocumentController);
-
-            SelectionManager.Select(docView, false);
+                .Add(dvm.DocumentController);
         }
 
         private void RenderPin(DocumentController region, DocumentController dest = null)
@@ -598,7 +581,7 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    XAnnotationCanvas.Children.Remove(pin);
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Remove(pin.DataContext as DocumentViewModel);
                     var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
                     if (docView != null)
                     {

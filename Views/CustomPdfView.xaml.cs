@@ -275,8 +275,8 @@ namespace Dash
             Unloaded += CustomPdfView_Unloaded;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
-            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
+            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
