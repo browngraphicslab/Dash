@@ -183,7 +183,7 @@ namespace Dash
         private void SetUpToolTips()
         {
             var placementMode = PlacementMode.Bottom;
-            const int offset = 100;
+            const int offset = 5;
 
             _toggle = new ToolTip()
             {

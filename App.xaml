@@ -1857,6 +1857,7 @@
 
             <Style x:Name="AppBarButtonStyler" TargetType="AppBarButton">
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Margin" Value="0 1 0 0"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
@@ -2013,6 +2014,7 @@
 
             <Style x:Name="AppBarToggleButtonStyler" TargetType="AppBarToggleButton">
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Margin" Value="0 1 0 0"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>

@@ -65,6 +65,8 @@ namespace Dash
 
 			xBackgroundColorPicker.SetOpacity(200);
 	        xBackgroundColorPicker.ParentFlyout = xColorFlyout;
+
+            SetUpToolTips();
         }
 
         /// <summary>
@@ -140,5 +142,45 @@ namespace Dash
 	    {
 	            _collection?.GetFirstAncestorOfType<DocumentView>().SetBackgroundColor(e);
 	    }
+
+        private ToolTip _break;
+        private ToolTip _color;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _break = new ToolTip()
+            {
+                Content = "Break collection",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBreakGroup, _break);
+
+            _color = new ToolTip()
+            {
+                Content = "Background color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackgroundColor, _color);
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
     }
 }
