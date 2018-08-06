@@ -35,23 +35,7 @@
                 
             </Grid>
 
-            <Grid Margin="5">
-                <Ellipse Height="30" Width="30" Fill="{StaticResource DashLightBlueBrush}" VerticalAlignment="Top"/>
-                <TextBlock x:Name="xSnapshot" Text="&#xE722;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-
-            </Grid>
-
-            <Grid Margin="5">
-                <Ellipse Height="30" Width="30" Fill="{StaticResource DashLightBlueBrush}" VerticalAlignment="Top"/>
-                <TextBlock x:Name="xPresentationMode" Text="&#xE768;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-
-            </Grid>
-
-            <Grid Margin="5">
-                <Ellipse Height="30" Width="30" Fill="{StaticResource DashLightBlueBrush}" VerticalAlignment="Top"/>
-                <TextBlock x:Name="xExport" Text="&#xEDE1;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-
-            </Grid>
+            
         </StackPanel>
         
         <TextBox x:Name="XFilterBox" FontSize="14" Grid.Row="1" Margin="10" Style="{StaticResource TextBoxStyler}" BorderBrush="{StaticResource DashBorderColorBrush}"  PlaceholderText="Filter notes"/>

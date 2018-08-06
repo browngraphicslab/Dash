@@ -457,10 +457,11 @@
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
-            <ctrl:CommandBar x:Name="xToolbar" Height="41" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
+            <ctrl:CommandBar x:Name="xToolbar" Height="42" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
 
                 
                 <AppBarButton 
+                    Margin="0 2 0 0"
                     x:Name="xPin" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled ="True" 
