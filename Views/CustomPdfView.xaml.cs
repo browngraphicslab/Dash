@@ -514,8 +514,10 @@ namespace Dash
             });
             
             var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.SetSelectableElements(selectableElements);
-            _bottomAnnotationOverlay.SetSelectableElements(selectableElements);
+            _topAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
+            _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
+
+            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
 
             reader.Close();
             pdfDocument.Close();

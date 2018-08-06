@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Windows.Foundation;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -103,12 +104,12 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
+        public Tuple<List<SelectableElement>, string> GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
             {
-                return new List<SelectableElement>();
+                return Tuple.Create(new List<SelectableElement>(), "");
             }
             
             var pageElements = new List<List<SelectableElement>>();
@@ -147,7 +148,10 @@ namespace Dash
                 elements.AddRange(newElements);
             }
 
-            return elements;
+            StringBuilder sb = new StringBuilder(elements.Count);
+            elements.ForEach(se => sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : ""));
+
+            return Tuple.Create(elements, sb.ToString());
         }
 
         /// <summary>
