@@ -79,7 +79,7 @@ namespace Dash
             Instance = this;
 
             InitializeComponent();
-
+            SetUpToolTips();
 
             Loaded += (s, e) =>
             {
@@ -1188,13 +1188,14 @@ namespace Dash
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-           
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
         }
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
                 new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
         private void XLoadingPopup_OnClosed(object sender, object e)
@@ -1223,5 +1224,44 @@ namespace Dash
             xLoadingPopup.IsOpen = false;
 
         }
+
+        private ToolTip _search;
+        private ToolTip _back;
+        private ToolTip _forward;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _search = new ToolTip()
+            {
+                Content = "Search workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSearchButton, _search);
+
+            _back = new ToolTip()
+            {
+                Content = "Go back",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackButton, _back);
+
+            _forward = new ToolTip()
+            {
+                Content = "Go forward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xForwardButton, _forward);
+
+
+        }
+
+
+       
     }
 }
