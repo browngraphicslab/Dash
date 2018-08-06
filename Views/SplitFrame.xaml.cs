@@ -87,16 +87,22 @@ namespace Dash
                 var parent = sms.First();
                 var cols = splitManager.Columns;
                 var col = splitManager == parent ? Grid.GetColumn(this) : Grid.GetColumn(parent);
-                cols[col].Width = new GridLength(cols[col].ActualWidth - e.Delta.Translation.X);
-                cols[col - 2].Width = new GridLength(cols[col - 2].ActualWidth + e.Delta.Translation.X);
+                double diff = e.Delta.Translation.X;
+                diff = cols[col].ActualWidth - diff < 0 ? 0 : diff;
+                diff = cols[col - 2].ActualWidth + diff < 0 ? 0 : diff;
+                cols[col].Width = new GridLength(cols[col].ActualWidth - diff);
+                cols[col - 2].Width = new GridLength(cols[col - 2].ActualWidth + diff);
             } else if (XTopLeftResizer.ManipulationMode == ManipulationModes.TranslateY)
             {
                 var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Vertical);
                 var parent = sms.First();
                 var rows = splitManager.Rows;
                 var row = splitManager == parent ? Grid.GetRow(this) : Grid.GetRow(parent);
-                rows[row].Height = new GridLength(rows[row].ActualHeight - e.Delta.Translation.Y);
-                rows[row - 2].Height = new GridLength(rows[row - 2].ActualHeight + e.Delta.Translation.Y);
+                double diff = e.Delta.Translation.Y;
+                diff = rows[row].ActualHeight - diff < 0 ? rows[row].ActualHeight : diff;
+                diff = rows[row - 2].ActualHeight + diff < 0 ? -rows[row - 2].ActualHeight : diff;
+                rows[row].Height = new GridLength(rows[row].ActualHeight - diff);
+                rows[row - 2].Height = new GridLength(rows[row - 2].ActualHeight + diff);
             }
         }
 
