@@ -63,7 +63,7 @@ namespace Dash
             xTreeRoot.Highlight(document, flag);
         }
 
-        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        public async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //List of Document Controller - one document controller for each collection
             //so a data file is made for each element in this list
@@ -75,15 +75,15 @@ namespace Dash
            newExport.DashToTxt(collectionDataDocs);
         }
         
-        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        public void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
             MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
-        public void TogglePresentationMode(bool on)
-        {
-            presentationModeButton.Background = on ? (SolidColorBrush) Application.Current.Resources["AccentGreenLight"] : (SolidColorBrush) Application.Current.Resources["AccentGreen"];
-        }
+        //public void TogglePresentationMode(bool on)
+        //{
+        //    presentationModeButton.Background = on ? (SolidColorBrush) Application.Current.Resources["AccentGreenLight"] : (SolidColorBrush) Application.Current.Resources["AccentGreen"];
+        //}
 
         // This does not change the title of the underlying collection.
         public void ChangeTreeViewTitle(string title)
@@ -118,7 +118,7 @@ namespace Dash
                     : (SolidColorBrush) Application.Current.Resources["MainText"];
         }
 
-        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
 
             MainPage.Instance.SnapshotOverlay.Visibility = Visibility.Visible;

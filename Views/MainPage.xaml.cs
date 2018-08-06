@@ -37,6 +37,8 @@ namespace Dash
             Collapsed
         }
 
+
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
         public static MainPage Instance { get; private set; }
 
         public BrowserView WebContext => BrowserView.Current;
@@ -851,7 +853,7 @@ namespace Dash
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
-            xMainTreeView.TogglePresentationMode(expand);
+        //    TogglePresentationMode(expand);
 
             if (expand)
             {
@@ -1228,6 +1230,9 @@ namespace Dash
         private ToolTip _search;
         private ToolTip _back;
         private ToolTip _forward;
+        private ToolTip _snapshot;
+        private ToolTip _presentation;
+        private ToolTip _export;
 
         private void SetUpToolTips()
         {
@@ -1258,10 +1263,49 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xForwardButton, _forward);
 
+            _snapshot = new ToolTip()
+            {
+                Content = "Snapshot workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
+
+            _presentation = new ToolTip()
+            {
+                Content = "Presentation mode",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPresentationModeButton, _presentation);
+
+            _export = new ToolTip()
+            {
+                Content = "Export workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xExportButton, _export);
+
 
         }
 
+        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.MakePdf_OnTapped(sender, e);
+        }
 
-       
+        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.TogglePresentationMode(sender, e);
+        }
+
+        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.Snapshot_OnTapped(sender, e);
+        }
+
+
+
     }
 }
