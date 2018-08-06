@@ -457,7 +457,7 @@
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
-            <ctrl:CommandBar x:Name="xToolbar" Height="40" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
+            <ctrl:CommandBar x:Name="xToolbar" Height="40" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
 
                 
                 <AppBarButton 
@@ -483,7 +483,7 @@
                     </Grid>
                 </AppBarButton>
 
-                <!--<AppBarSeparator x:Name="xSepThree"/>-->
+                <AppBarSeparator x:Name="xSepThree"/>
 
                 <AppBarToggleButton 
                     x:Name="xTouch"
@@ -515,7 +515,7 @@
                     <TextBlock x:Name="xPanIcon" Text="&#xE1E3;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
 
-                <!--<AppBarSeparator x:Name="xSepOne"/>-->
+                <AppBarSeparator x:Name="xSepOne"/>
 
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
                 <AppBarButton 
@@ -553,7 +553,7 @@
                     <TextBlock x:Name="xAudioIcon" Text="&#xE189;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
 
-                <!--<AppBarSeparator x:Name="xSepTwo"/>-->
+                <AppBarSeparator x:Name="xSepTwo"/>
 
                 <AppBarButton 
                     x:Name="xCopy" 
@@ -577,7 +577,7 @@
                 </AppBarButton>
                 <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
-                <!--<AppBarSeparator x:Name="xSepFour"/>-->
+                <AppBarSeparator x:Name="xSepFour"/>
 
                 <!-- Bind is enabled-->
                 <AppBarButton 

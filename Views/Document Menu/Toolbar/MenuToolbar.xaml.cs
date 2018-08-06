@@ -197,14 +197,14 @@ namespace Dash
 
             //List of all button separators
             //ADD NEW SEPARATORS HERE!!!
-            //AppBarSeparator[] tempSeparators =
-            //{
-            //    xSepOne,
-            //    xSepTwo,
-            //    xSepThree,
-            //    xSepFour
-            //};
-            //allSeparators = tempSeparators;
+            AppBarSeparator[] tempSeparators =
+            {
+                xSepOne,
+                xSepTwo,
+                xSepThree,
+                xSepFour
+            };
+            allSeparators = tempSeparators;
 
             AddSecondaryButtonEventHandlers();
         }
@@ -216,7 +216,7 @@ namespace Dash
         {
             foreach (var b in allButtons) { b.PointerPressed += TopBarHoverBehavior; }
             xCollapse.PointerPressed += TopBarHoverBehavior;
-            //foreach (var s in allSeparators) { s.PointerPressed += TopBarHoverBehavior; }
+            foreach (var s in allSeparators) { s.PointerPressed += TopBarHoverBehavior; }
             xToolbar.PointerPressed += TopBarHoverBehavior;
         }
 
@@ -757,19 +757,19 @@ namespace Dash
                         if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
                     }
                 } //do same for separators
-                //foreach (var s in allSeparators)
-                //{
-                //    s.Visibility = status;
-                //}
-				
+                foreach (var s in allSeparators)
+                {
+                    s.Visibility = status;
+                }
+
             }
             else
             {
                 //otherwise, it is about to expand. In this case, update visibility of separators before buttons
-                //foreach (var s in allSeparators)
-                //{
-                //    s.Visibility = status;
-                //}
+                foreach (var s in allSeparators)
+                {
+                    s.Visibility = status;
+                }
                 foreach (var b in allButtons)
                 {
                     if (b != xPin)

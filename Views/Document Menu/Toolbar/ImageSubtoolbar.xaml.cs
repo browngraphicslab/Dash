@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Dash.Views.Document_Menu.Toolbar;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -38,6 +40,7 @@ namespace Dash
         {
             InitializeComponent();
             FormatDropdownMenu();
+            SetUpToolTips();
 	        xToggleAnnotations.IsChecked = false;
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
@@ -169,5 +172,90 @@ namespace Dash
 		    xToggleAnnotations.Label = "Hidden";
 	    }
 
-	}
+        private ToolTip _toggle;
+        private ToolTip _crop;
+        private ToolTip _replace;
+        private ToolTip _rotate;
+        private ToolTip _hoz;
+        private ToolTip _vert;
+        private ToolTip _revert;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 100;
+
+            _toggle = new ToolTip()
+            {
+                Content = "Toggle annotations",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
+
+            _crop = new ToolTip()
+            {
+                Content = "Crop image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCrop, _crop);
+
+            _replace = new ToolTip()
+            {
+                Content = "Replace image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xReplace, _replace);
+
+            _rotate = new ToolTip()
+            {
+                Content = "Rotate",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRotate, _rotate);
+
+            _hoz = new ToolTip()
+            {
+                Content = "Horizontal mirror",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xHorizontalMirror, _hoz);
+
+            _vert = new ToolTip()
+            {
+                Content = "Vertical mirror",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xVerticalMirror, _vert);
+
+            _revert = new ToolTip()
+            {
+                Content = "Revert image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRevert, _revert);
+
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+    }
 }
