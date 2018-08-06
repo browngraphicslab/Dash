@@ -296,19 +296,22 @@ namespace Dash
                     }
 
                     annotation = _regionGetter(_currentAnnotationType);
+
                     var regionPosList = new ListController<PointController>();
                     var regionSizeList = new ListController<PointController>();
+                    var selectionIndexList = new ListController<PointController>();
+
                     var subRegionsOffsets = new List<double>();
-                    var minRegionY = double.PositiveInfinity;
-                    foreach (var rect in _regionRectangles)
+                    double minRegionY = double.PositiveInfinity;
+                    foreach (Rect rect in _regionRectangles)
                     {
                         regionPosList.Add(new PointController(rect.X, rect.Y));
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
                         var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
                         var imgView = this.GetFirstAncestorOfType<EditableImage>();
-                        var scale = pdfView != null ? pdfView.Width / pdfView.PdfMaxWidth : 1;
-                        var vOffset = rect.Y * scale;
-                        var scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
+                        double scale = pdfView?.Width / pdfView?.PdfMaxWidth ?? 1;
+                        double vOffset = rect.Y * scale;
+                        double scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
                         subRegionsOffsets.Add(scrollRatio);
                         minRegionY = Math.Min(rect.Y, minRegionY);
                     }
@@ -320,27 +323,23 @@ namespace Dash
                         for (var i = selection.Key; i <= selection.Value; i++)
                         {
                             // this will avoid double selecting any items
-                            if (!indices.Contains(i))
-                            {
-                                indices.Add(i);
-                            }
+                            if (!indices.Contains(i)) indices.Add(i);
                         }
+                        selectionIndexList.Add(new PointController(selection.Key, selection.Value));
                     }
 
                     int prevIndex = -1; 
-                    foreach (var index in indices)
+                    foreach (int index in indices)
                     {
-                        var elem = _textSelectableElements[index];
+                        SelectableElement elem = _textSelectableElements[index];
                         if (prevIndex + 1 != index)
                         {
                             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-                            var scale = pdfView.Width / pdfView.PdfMaxWidth;
-                            var vOffset = elem.Bounds.Y * scale;
-                            var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
+                            double scale = pdfView.Width / pdfView.PdfMaxWidth;
+                            double vOffset = elem.Bounds.Y * scale;
+                            double scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
                             subRegionsOffsets.Add(scrollRatio);
                         }
-                        regionPosList.Add(new PointController(elem.Bounds.X, elem.Bounds.Y));
-                        regionSizeList.Add(new PointController(elem.Bounds.Width, elem.Bounds.Height));
                         minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
                         prevIndex = index;
                     }
@@ -348,8 +347,11 @@ namespace Dash
                     subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
 
                     //TODO Add ListController.DeferUpdate
+
                     annotation.SetField(KeyStore.SelectionRegionTopLeftKey, regionPosList, true);
                     annotation.SetField(KeyStore.SelectionRegionSizeKey, regionSizeList, true);
+                    annotation.SetField(KeyStore.SelectionIndicesListKey, selectionIndexList, true);
+
                     if ((this.GetFirstAncestorOfType<CustomPdfView>()) != null)
                     {
                         annotation.SetField(KeyStore.PDFSubregionKey,
@@ -852,12 +854,28 @@ namespace Dash
         {
             var posList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+            var indexList = region.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+
             Debug.Assert(posList.Count == sizeList.Count);
 
-            SelectionViewModel vm = new SelectionViewModel(region);
-            for (int i = 0; i < posList.Count; ++i)
+            var vm = new SelectionViewModel(region);
+
+            for (var i = 0; i < posList.Count; ++i)
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
+            }
+
+            if (_textSelectableElements != null)
+            {
+                foreach (PointController t in indexList)
+                {
+                    Point range = t.Data;
+                    for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
+                    {
+                        Rect rect = _textSelectableElements[ind].Bounds;
+                        RenderSubRegion(new Point(rect.X, rect.Y), new Point(rect.Width, rect.Height), vm);
+                    }
+                }
             }
 
             _regions.Add(vm);
@@ -865,7 +883,7 @@ namespace Dash
 
         private void RenderSubRegion(Point pos, Point size, SelectionViewModel vm)
         {
-            Rectangle r = new Rectangle
+            var r = new Rectangle
             {
                 Width = size.X,
                 Height = size.Y,

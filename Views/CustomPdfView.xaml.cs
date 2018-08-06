@@ -242,7 +242,7 @@ namespace Dash
         private readonly NewAnnotationOverlay _topAnnotationOverlay;
         private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
 
-       
+        //public NewAnnotationOverlay 
 
         public CustomPdfView(DocumentController document)
         {

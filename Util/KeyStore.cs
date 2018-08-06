@@ -106,7 +106,8 @@ namespace Dash
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("_Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
         public static KeyController SelectionRegionTopLeftKey = new KeyController("_Selection Top Left", "B42844C8-B80A-4DE9-BFC3-AF3F94A83D2E");
         public static KeyController SelectionRegionSizeKey = new KeyController("_Selection Size", "34E957C1-A0FC-41B0-8862-174224FBE90B");
-	    public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
+        public static KeyController SelectionIndicesListKey = new KeyController("_Selected Indices", "9856A787-23C9-4961-AA53-41AECA20653E");
+        public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
         public static KeyController ReplCurrentIndentKey = new KeyController("_Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
