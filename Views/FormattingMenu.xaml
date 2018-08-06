@@ -48,7 +48,7 @@
             <ComboBox Name="xFontSizeComboBox" Height="38" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center" Canvas.ZIndex="0" 
                       Foreground="White"/>
             <!--Font color button-->
-            <Button x:Name="xFontColor" Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="2">
+            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Grid.Column="2">
                 <Button.Flyout>
                     <Flyout x:Name="xForegroundColorFlyout">
                         <local:DashColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged" />
@@ -58,9 +58,9 @@
                     <TextBlock FontSize="22" HorizontalAlignment="Center" Margin="0,-2,0,0" VerticalAlignment="Center">A</TextBlock>
                     <Rectangle Width="20" Height="4" Fill="Black" Margin="0,22,0,0"/>
                 </Grid>
-            </Button>
+            </AppBarButton>
             <!--Font highlight button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" Grid.Column="3">
 
                 <Button.Flyout >
                     <Flyout x:Name="xBackgroundColorFlyout">
@@ -70,23 +70,23 @@
                 <Grid BorderBrush="DarkSlateGray" Background="#ffe56f" BorderThickness="0" Width="25" Height="25" Margin="0,-5,0,0">
                     <TextBlock FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center">A</TextBlock>
                 </Grid>
-            </Button>
+            </AppBarButton>
 
 
             <!--Superscript button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4" HorizontalAlignment="Center" Margin="7,0,0,0" Tapped="SuperscriptButton_Tapped">
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" Grid.Column="4" HorizontalAlignment="Center" Margin="7,0,0,0" Tapped="SuperscriptButton_Tapped">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
                     <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,-8,20,0">1</TextBlock>
                 </StackPanel>
-            </Button>
+            </AppBarButton>
             <!--Subscript button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="5" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" Grid.Column="5" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
                     <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,8,20,0">1</TextBlock>
                 </StackPanel>
-            </Button>
+            </AppBarButton>
             
 
 

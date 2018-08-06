@@ -22,8 +22,8 @@
             <ColumnDefinition Width="67" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <AppBarButton x:Name="xMoreButton" Icon="Add" Width ="67" Label="More" Background="{StaticResource AccentGreenLight}" Click="XMoreButton_OnClick" ></AppBarButton>
-        <Grid x:Name="xInitialGrid" Height="60" Background="LightGray" Grid.Column="1">
+        <AppBarButton x:Name="xMoreButton" Style="{StaticResource AppBarButtonStyler}" Icon="Add" Background="{StaticResource DashMediumBlueBrush}" Click="XMoreButton_OnClick" ></AppBarButton>
+        <Grid x:Name="xInitialGrid" Height="40" Background="{StaticResource DashToolBarBrush}" Grid.Column="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="70"/>
@@ -31,22 +31,22 @@
             <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
             Visibility="Visible"
-            Background="LightGray" Height="50" Grid.Column="0">
+                Background="{StaticResource DashToolBarBrush}" Height="40" Grid.Column="0">
                 <!--remove Link button from default text toolbar-->
                 <controls:TextToolbar.ButtonModifications >
                     <buttons:DefaultButton Type="Link" IsVisible="False" />
                 </controls:TextToolbar.ButtonModifications>
 
             </controls:TextToolbar>
-            <AppBarButton x:Name="xBackgroundColorButton"  Grid.Column="1" Height="60" Width="70" AllowFocusOnInteraction="True"
-            Background="LightGray" Label="Background" Click="XBackgroundColorButton_OnClick">
+            <AppBarButton x:Name="xBackgroundColorButton" Style="{StaticResource AppBarButtonStyler}" Grid.Column="1" AllowFocusOnInteraction="True"
+            Click="XBackgroundColorButton_OnClick" Margin="30 0 0 0">
                 <Button.Flyout>
                     <Flyout x:Name="xColorPickerFlyout">
                         <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->
                         <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"></local:DashColorPicker>
                     </Flyout>
                 </Button.Flyout>
-                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Margin="0 -5 0 0"/>
 
             </AppBarButton>
 
