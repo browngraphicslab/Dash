@@ -10,6 +10,8 @@ namespace Dash
     [OperatorType(Op.Name.regex)]
     public sealed class RegexOperatorController : OperatorController
     {
+        private readonly List<string> _digits = new List<string> {"1", "2", "3", "4", "5", "6", "7", "8", "9"}; 
+
         public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
@@ -52,6 +54,7 @@ namespace Dash
             {
                 var groups = match.Groups.ToList();
                 var infoDoc = new DocumentController();
+                var unnamedList = new ListController<TextController>();
 
                 infoDoc.SetField<TextController>(KeyStore.TitleKey, $"Match #{++i}", true);
                 infoDoc.SetField<NumberController>(new KeyController("Index"), match.Index, true);
@@ -60,15 +63,24 @@ namespace Dash
                 {
                     if (string.IsNullOrEmpty(group.Value)) continue;
 
-                    var key = new KeyController(group.Name);
-                    if (group.Name.Equals("0")) key = new KeyController("Full Match");
+                    if (IsNumeric(group.Name)) unnamedList.Add(new TextController(group.Value));
+                    else
+                    {
+                        var key = new KeyController(group.Name);
+                        if (group.Name.Equals("0")) key = new KeyController("Full Match");
 
-                    infoDoc.SetField<TextController>(key, $"\'{group.Value}\'", true);
+                        infoDoc.SetField<TextController>(key, $"\'{group.Value}\'", true);
+                    }
                 }
+
+                infoDoc.SetField(KeyStore.AnonymousGroupsKey, unnamedList, true);
+
                 matchDocs.Add(infoDoc);
             }
             outputs[MatchDocsKey] = matchDocs;
         }
+
+        private bool IsNumeric(string name) => _digits.Contains(name[0].ToString());
 
         public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);
     }

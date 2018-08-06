@@ -32,6 +32,7 @@ namespace Dash
             }
 
             FieldControllerBase val = _value.Execute(scope);
+
             scope?.SetVariable(_variableName, val);
 
             return val;

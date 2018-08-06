@@ -53,7 +53,7 @@ namespace Dash
 
             child._dictionary[variableName] = valueToSet;
 
-            var key = new KeyController(variableName, variableName);
+            var key = new KeyController(variableName);
             _variableDoc.SetField(key, valueToSet, true);
         }
     }
