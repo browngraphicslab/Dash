@@ -445,22 +445,71 @@ namespace Dash
         public DocumentController GetRegionDocument(Point? point = null)
         {
 	        if (point == null)
-	        {
-				return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
-			}
+		        return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
 
 			//if point !null & region is selected, return region 
-	        if (_bottomAnnotationOverlay.GetRegionDoc() != null) return _bottomAnnotationOverlay.GetRegionDoc();
+	        var regionDoc = _bottomAnnotationOverlay.GetRegionDoc();
 
-			//else, make a new push pin region closest to given point
-	        var xPos = point?.X;
-	        var yPos = point?.Y;
+	        if (regionDoc != null)
+		        return regionDoc;
 
-			//calculate closest point & make a push pin
-	        var pdfX = this.GetFirstAncestorOfType<DocumentView>().ViewModel;
+	       //else, make a new push pin region closest to given point
+		    Point nonNullPoint = point ?? new Point(0, 0);
+		    var newPoint = calculateClosestPointOnPDF(nonNullPoint);
+		    SetAnnotationType(AnnotationType.Pin);
+		    
+		    return _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
 
-	        //_bottomAnnotationOverlay.StartRegion(point);
-        }
+		}
+
+	    private Point calculateClosestPointOnPDF(Point from)
+	    {
+			//initialize variables
+		    double closestX;
+		    double closestY;
+
+		    var xPos = from.X;
+		    var yPos = from.Y;
+
+			//get PDF data
+		    var docView = this.GetFirstAncestorOfType<DocumentView>();
+		    var viewModel = docView.ViewModel;
+		    var pdfX = viewModel.XPos;
+		    var pdfY = viewModel.YPos;
+		    var pdfWidth = _bottomAnnotationOverlay.ActualWidth;
+		    var pdfHeight = docView.ActualHeight;
+
+			//if point is to the left of the pdf, set x to 10 (margin)
+		    if (xPos <= pdfX + 10)
+		    {
+			    closestX = 10;
+		    }//else if it is within the width of the pdf, set x to itself (minus pdfx offset)
+		    else if (xPos <= pdfX + pdfWidth - 20)
+		    {
+			    closestX = xPos - pdfX;
+		    } //else, it is to the right of the pdf
+		    else
+		    {
+			    closestX = pdfWidth - 20;
+		    }
+
+			//same idea for y pos!
+		    //if point is above the pdf, set x to 10 (margin)
+		    if (yPos <= pdfY + 20)
+		    {
+			    closestY = 20;
+		    }//else if it is within the height of the pdf, set x to itself
+		    else if (yPos <= pdfY + pdfHeight - 40)
+		    {
+			    closestY = yPos - pdfY;
+		    } //else, it is below the pdf
+		    else
+		    {
+			    closestY = pdfHeight - 40;
+		    }
+
+		    return new Point(closestX, closestY);
+	    }
 
         private static DocumentController RegionGetter(AnnotationType type)
         {

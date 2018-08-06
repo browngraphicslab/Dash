@@ -378,8 +378,10 @@ namespace Dash
             return true;
         }
 
+		//links this => target
         public void Link(DocumentController target, LinkContexts context, string specTitle = "<link description>")
         {
+			//document that represents the actual link
             DocumentController linkDocument = new RichTextNote(specTitle).Document;
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
@@ -387,6 +389,7 @@ namespace Dash
             target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
         }
+		
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {

@@ -49,6 +49,7 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
         public DockingFrame DockManager => xDockFrame;
+	    public LinkActivationManager ActivationMangager = new LinkActivationManager();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
@@ -85,7 +86,6 @@ namespace Dash
             Instance = this;
 
             InitializeComponent();
-
 
             Loaded += (s, e) =>
             {

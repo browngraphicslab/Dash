@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
+using Dash.Annotations;
 
 namespace Dash
 {
@@ -141,7 +143,7 @@ namespace Dash
         }
 
         public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-        public delegate DocumentController MakeRegionFunc(DocumentView view);
+        public delegate DocumentController MakeRegionFunc(DocumentView view, Point? point = null);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
     }

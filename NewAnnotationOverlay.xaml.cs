@@ -508,7 +508,28 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
-        private void CreatePin(Point point)
+	    public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
+	    {
+			//format pin annotation
+		    var annotation = _regionGetter(AnnotationType.Pin);
+		    annotation.SetWidth(10);
+		    annotation.SetHeight(10);
+			
+		    linkedDoc?.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+
+			//set pos & region type
+		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+		    annotation.GetDataDocument()
+			    .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+
+			RegionDocsList.Add(annotation);
+		    RegionAdded?.Invoke(this, annotation);
+		    RenderPin(annotation, linkedDoc);
+			
+			return annotation;
+		}
+
+        public void CreatePin(Point point, DocumentController linkedText = null)
         {
             if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
             {
@@ -523,21 +544,33 @@ namespace Dash
                 }
             }
 
-            var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
-                new Size(150, 75));
-            richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-            richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-            var annotation = _regionGetter(AnnotationType.Pin);
-            annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-            annotation.SetWidth(10);
-            annotation.SetHeight(10);
-            annotation.GetDataDocument()
-                .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
-            annotation.Link(richText.Document, LinkContexts.PushPin);
-            RegionDocsList.Add(annotation);
-            RegionAdded?.Invoke(this, annotation);
-            RenderPin(annotation, richText.Document);
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+			//	var annotation = _regionGetter(AnnotationType.Pin);
+			//       annotation.SetWidth(10);
+			//       annotation.SetHeight(10);
+			//   DocumentController linkedDoc = null;
+
+			//      var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
+			//new Size(150, 75));
+			//   richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+			//   richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+
+			//       annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+			//       annotation.GetDataDocument()
+			//        .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+			//       annotation.Link(richText.Document, LinkContexts.PushPin);
+			//       linkedDoc = richText.Document;
+
+			//          RegionDocsList.Add(annotation);
+			//          RegionAdded?.Invoke(this, annotation);
+			//          RenderPin(annotation, linkedDoc);
+
+			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
+		        new Size(150, 75));
+	        richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+	        var annotation = MakeAnnotationPinDoc(point, richText.Document);
+	        annotation.Link(richText.Document, LinkContexts.PushPin);
+
+			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
             var scale = pdfView.Width / pdfView.PdfMaxWidth;
 
             var docView = new DocumentView

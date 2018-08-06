@@ -491,5 +491,13 @@ namespace Dash
         {
             VisibilityState = Visibility.Collapsed;
         }
+
+	    private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+	    {
+		    foreach (var doc in SelectedDocs)
+		    {
+			    MainPage.Instance.ActivationMangager.ToggleActivation(doc);
+		    }
+	    }
     }
 }

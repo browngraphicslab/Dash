@@ -1490,25 +1490,22 @@ namespace Dash
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
-            xTopLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
-            xTopResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
-            xTopRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+	        ColorSelectionBorder(selected ? Colors.LightBlue : Colors.Transparent);
 
-            xBottomLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
-            xBottomResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
-            xBottomRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+        }
 
-            xRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
-            xLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+	    private void ColorSelectionBorder(Color color)
+	    {
+		    var brush = new SolidColorBrush(color);
 
+		    xTopLeftResizeControl.Fill = brush;
+		    xTopResizeControl.Fill = brush;
+			xTopRightResizeControl.Fill = brush;
+		    xBottomLeftResizeControl.Fill = brush;
+		    xBottomResizeControl.Fill = brush;
+		    xBottomRightResizeControl.Fill = brush;
+		    xRightResizeControl.Fill = brush;
+		    xLeftResizeControl.Fill = brush;
 		}
 
         public void hideResizers()
@@ -2415,5 +2412,16 @@ namespace Dash
         {
             this.Visibility = Visibility.Collapsed;
         }
-    }
+
+	    public void SetLinkBorderColor()
+	    {
+		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
+			xToPurple.Begin();
+	    }
+
+	    public void RemoveLinkBorderColor()
+	    {
+		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
+	    }
+	}
 }

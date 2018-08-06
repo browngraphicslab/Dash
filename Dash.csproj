@@ -207,6 +207,7 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="LinkActivationManager.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>

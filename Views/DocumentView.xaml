@@ -168,6 +168,14 @@
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
+                <Storyboard x:Name="xToPurple">
+                    <ColorAnimation 
+                        Storyboard.TargetName="xDocHighlight"
+                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                        To="MediumPurple"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
             </Border.Resources>
             <Border x:Name="xTargetBorder" x:FieldModifier="public">
                 <Grid x:Name="LayoutRoot" x:FieldModifier="public" BorderThickness="0" Grid.Column="0">

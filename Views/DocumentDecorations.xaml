@@ -40,7 +40,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
-                    PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped"
+                    PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" RightTapped="XAnnotateEllipseBorder_OnRightTapped"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                 <Grid  >
                     <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}" Width="25" Height="25"/>
