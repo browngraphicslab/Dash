@@ -32,60 +32,49 @@ namespace Dash
     public sealed partial class DocumentView
     {
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-
         public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
 
         public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentDeletedHandler DocumentDeleted;
-        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+        public event DocumentDeletedHandler      DocumentDeleted;
+        
+        private DocumentController _templateEditor;
+        private bool               _isQuickEntryOpen;
+        private Flyout             _flyout;
+        private ImageSource        _docPreview = null;
 
+        static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        public CollectionView       ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
-
-        public DocumentViewModel ViewModel
+        public DocumentViewModel    ViewModel
         {
             get => DataContext as DocumentViewModel;
             set => DataContext = value;
         }
-
-        private Point _newpoint;
-
-        public MenuFlyout MenuFlyout { get; set; }
-
-        static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
-
-        static DocumentView _focusedDocument;
-
-        // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
-        public static DocumentView FocusedDocument
+        public MenuFlyout           MenuFlyout { get; set; }
+        public bool                 PreventManipulation { get; set; }
+        private ImageSource         DocPreview
         {
-            get => _focusedDocument;
-            set => _focusedDocument = value;
+            get { return _docPreview; }
+            set
+            {
+                _docPreview = value;
+                xToolTipPreview.Source = value;
+                // To document previews from being resized
+                //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
+            }
         }
 
-        /// <summary>
-        /// The width of the context preview
-        /// </summary>
-        const double _contextPreviewActualWidth = 255;
-
-        /// <summary>
-        /// The height of the context preview
-        /// </summary>
-        const double _contextPreviewActualHeight = 330;
-
-        /// <summary>
-        /// A reference to the actual context preview
-        /// </summary>
-        private UIElement _localContextPreview;
-
-        private UIElement _selectedContextPreview;
-
-        private DocumentController _templateEditor;
-        private bool _showResize;
-        private bool _isQuickEntryOpen;
+        // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
+        public static DocumentView FocusedDocument { get; set; }
+        public CollectionViewModel.StandardViewLevel StandardViewLevel
+        {
+            get => (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty);
+            set => SetValue(StandardViewLevelProperty, value);
+        }
 
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
@@ -109,45 +98,8 @@ namespace Dash
             "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView),
             new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
 
-
-        public CollectionViewModel.StandardViewLevel StandardViewLevel
-        {
-            get => (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty);
-            set => SetValue(StandardViewLevelProperty, value);
-        }
-
-        public bool ShowResize
-        {
-            get => _showResize;
-            set
-            {
-                _showResize = value;
-                if (!value)
-                {
-                    RemoveResizeHandlers();
-                }
-            }
-        }
-
-        private Flyout _flyout;
-        private double _width;
-        private double _height;
-
-        private ImageSource _docPreview = null;
         public event EventHandler ResizeManipulationStarted;
         public event EventHandler ResizeManipulationCompleted;
-
-        private ImageSource DocPreview
-        {
-            get { return _docPreview; }
-            set
-            {
-                _docPreview = value;
-                xToolTipPreview.Source = value;
-                // To document previews from being resized
-                //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
-            }
-        }
 
         // == CONSTRUCTORs ==
 
@@ -162,8 +114,6 @@ namespace Dash
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
-            _newpoint = new Point(0, 0);
-
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
             RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
@@ -215,13 +165,7 @@ namespace Dash
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
-                //var cview = this.GetFirstAncestorOfType<CollectionView>();
-                //var container = cview?.CurrentView as CollectionFreeformView;
-                //if (container != null && container.ViewModel.FitToParent)
-                //    container.ViewModel.FitContents(cview);
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-
-                PositionContextPreview();
             }
             Loaded += (sender, e) =>
             {
@@ -231,67 +175,13 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 SetZLayer();
-
-				//var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
-				//if (ViewModel?.LayoutDocument != null) BindBackgroundColor();
-
-
-
-    //            switch (type)
-    //            {
-    //                case DashShared.TypeInfo.Image:
-    //                    xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Audio:
-    //                    xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Video:
-    //                    xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.RichText:
-    //                case DashShared.TypeInfo.Text:
-    //                    xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Document:
-    //                    xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
-    //                    break;
-    //                case DashShared.TypeInfo.Template:
-    //                    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-    //                    break;
-    //                default:
-    //                    xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
-    //                    break;
-
-				//}
-
-    //            if (type.Equals(DashShared.TypeInfo.Template))
-    //            {
-    //                xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-    //            }
-
-				//if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0)) 
-				//{
-				//	xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-				//	xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
-				//	xTemplateEditorEllipseBorder.Margin =
-				//		new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
-				//}
-				//else
-				//{
-				//	UpdateEllipses(_newpoint);
-				//}
-
                 UpdateResizers();
-
-
-                //var converter = new StringToBrushConverter();
-                //var currColor = converter.ConvertDataToXaml(ViewModel?.LayoutDocument?.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data);
-                //if (currColor != null) SetBackgroundColor((currColor as SolidColorBrush).Color);
             };
             Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; SelectionManager.Deselect(this);  };
 
             PointerPressed += (sender, e) =>
             {
+                PointerId = e.Pointer.PointerId;
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
@@ -304,13 +194,9 @@ namespace Dash
                         : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
-                if (false)  // bcz: set to 'true' for drag/Drop interactions
-                    SetupDragDropDragging(e);
                 e.Handled = true;
             };
-
-            PointerEntered += DocumentView_PointerEntered;
-            PointerExited += DocumentView_PointerExited;
+            
             RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             Tapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
@@ -353,9 +239,6 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    //this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
-                    PointerExited -=
-                        DocumentView_PointerExited; // ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
                 }
             }
@@ -365,8 +248,6 @@ namespace Dash
                 if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
                     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
                     ViewModel.DecorationState = xBottomRightResizeControl.IsPointerOver();
-                PointerExited -= DocumentView_PointerExited;
-                PointerExited += DocumentView_PointerExited;
 
             };
 
@@ -409,94 +290,22 @@ namespace Dash
                         CapturePointer(e.Pointer);
                         handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
                     }
-                    else if (false) // bcz: set to true for drag/drop interactions
-                        handle.ManipulationMode = ManipulationModes.None;
                     else
                         handle.ManipulationMode = ManipulationModes.All;
                 };
             }
 
-			// setup OperatorEllipse 
-			//OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
-			//OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
-			//xOperatorEllipseBorder.PointerPressed += (sender, e) =>
-			//{
-			//	this.ManipulationMode = ManipulationModes.None;
-			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			//};
-			//xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			//xOperatorEllipseBorder.DragStarting += (sender, args) =>
-			//{
-			//	//var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-			//	//if (selected?.Count() > 0)
-			//	//{
-			//	//    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-			//	//            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-			//	//}
-			//	//else
-			//	args.Data.Properties[nameof(DragDocumentModel)] =
-			//		new DragDocumentModel(ViewModel.DocumentController, false);
-			//	args.AllowedOperations =
-			//		DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-			//	args.Data.RequestedOperation =
-			//		DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-			//	ViewModel.DecorationState = false;
-			//};
-
-			// setup LinkEllipse
-			//AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
-			//AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
-			//xAnnotateEllipseBorder.PointerPressed += (sender, e) =>
-			//{
-			//	this.ManipulationMode = ManipulationModes.None;
-			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			//};
-			//xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			//xAnnotateEllipseBorder.DragStarting += (sender, args) =>
-			//{
-			//	args.Data.Properties[nameof(DragDocumentModel)] =
-			//		new DragDocumentModel(ViewModel.DocumentController, false, this);
-			//	args.AllowedOperations =
-			//		DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-			//	args.Data.RequestedOperation =
-			//		DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-			//	ViewModel.DecorationState = false;
-			//};
-
-			// setup EditorEllipse
-			//TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
-			//TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Visible;
-			//xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
-			//{
-			//	this.ManipulationMode = ManipulationModes.None;
-			//	ToggleTemplateEditor();
-			//	e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-			//};
-			//xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-			//xTemplateEditorEllipseBorder.DragStarting += (sender, args) => { };
-
-			// setup Title Icon
-			//xTitleIcon.PointerPressed += (sender, e) =>
-			//{
-			//	CapturePointer(e.Pointer);
-			//	ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed
-			//		? ManipulationModes.None
-			//		: ManipulationModes.All;
-			//	e.Handled = ManipulationMode == ManipulationModes.All;
-			//};
-			//xTitleIcon.Tapped += (s, args) =>
-			//{
-			//	ShowContext();
-			//	args.Handled = true;
-			//};
-			// setup Context Title
-			xContextTitle.Tapped += (sender, e) => ShowContext();
-			xContextTitle.SizeChanged += (sender, e) => Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
-
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) =>
                 SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorAborted += () =>
+                SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+                {
+                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
+                    d.RenderTransform =
+                        TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { d.ViewModel.InteractiveManipulationPosition, d.ViewModel.InteractiveManipulationScale });
+                });
             ManipulationControls.OnManipulatorStarted += () =>
             {
                 ToFront();
@@ -525,6 +334,33 @@ namespace Dash
                 });
 
             };
+            ManipulationControls.OnManipulatorAborted += () =>
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+                    {
+                        d.ViewModel.DecorationState = d.IsPointerOver() &&
+                                                      (d.ViewModel.ViewLevel.Equals(CollectionViewModel
+                                                           .StandardViewLevel.Detail) ||
+                                                       d.ViewModel.ViewLevel.Equals(CollectionViewModel
+                                                           .StandardViewLevel.None));
+                        d.ViewModel.Position =
+                            d.ViewModel
+                                .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                        d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+                    });
+                    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    if (ViewModel.IsAdornmentGroup && !wasSelected)
+                    {
+                        if (ParentCollection.CurrentView is CollectionFreeformView ||
+                            ParentCollection.CurrentView is CollectionStandardView)
+                        {
+                            SelectionManager.DeselectAll();
+                        }
+                    }
+                }
+            };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
                 using (UndoManager.GetBatchHandle())
@@ -548,13 +384,9 @@ namespace Dash
                             ParentCollection.CurrentView is CollectionStandardView)
                         {
                             SelectionManager.DeselectAll();
-                            
                         }
                     }
                 }
-
-              
-               
             };
 
             KeyDown += (sender, args) =>
@@ -679,7 +511,7 @@ namespace Dash
 
             var cdo = new CoreDragOperation();
             var rtb = new RenderTargetBitmap();
-
+            
             await rtb.RenderAsync(this, (int)p.X, (int)p.Y);
 
             IBuffer buf = await rtb.GetPixelsAsync();
@@ -696,9 +528,18 @@ namespace Dash
 
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
+            if (SelectionManager.GetSelectedDocs().Count > 1)
+            {
+                cdo.Data.Properties[nameof(List<DragDocumentModel>)] = SelectionManager.GetSelectedDocs().Select((dv) => new DragDocumentModel(dv.ViewModel.DocumentController,true)).ToList();
+            }
+            else
+            {
+                var dragDocModel = new DragDocumentModel(ViewModel.DocumentController, true);
+                cdo.Data.Properties[nameof(DragDocumentModel)] = dragDocModel;
+            }
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
-            await cdo.StartAsync();
+            cdo.StartAsync();
         }
 
         public void RemoveResizeHandlers()
@@ -718,10 +559,6 @@ namespace Dash
             xTopRow.Height = new GridLength(0);
             xBottomRow.Height = new GridLength(0);
             ViewModel.DecorationState = false;
-
-			//xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-			//xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-			//xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
 		}
 
         public void ToggleTemplateEditor()
@@ -753,7 +590,6 @@ namespace Dash
                 _templateEditor.SetHidden(!_templateEditor.GetHidden());
             }
         }
-
 
         #region StandardCollectionView
 
@@ -904,9 +740,6 @@ namespace Dash
             }
         }
 
-        public RectangleGeometry Bounds { get; set; }
-        public bool PreventManipulation { get; set; }
-
         /// <summary> 
         /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
         /// At the end of the interaction, the caches are copied to the viewModel.
@@ -914,8 +747,9 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-            
-            if (PreventManipulation) return;
+            if (PreventManipulation)
+                return;
+
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
 
@@ -927,18 +761,10 @@ namespace Dash
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
 
-
-
-
-
-
-
-
-
-
-            if (Bounds != null && (!Bounds.Rect.Contains(translate) ||
-                                   !Bounds.Rect.Contains(new Point(translate.X + ActualWidth,
-                                       translate.Y + ActualHeight))))
+            if (ViewModel.DragBounds != null && 
+                (!ViewModel.DragBounds.Rect.Contains(translate) ||
+                 !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
+                                                               translate.Y + ActualHeight))))
             {
                 return;
             }
@@ -947,9 +773,6 @@ namespace Dash
             ViewModel.InteractiveManipulationScale = scaleAmount;
             RenderTransform =
                 TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount });
-
-
-
         }
 
         public void TransformDelta(Point moveTo)
@@ -962,29 +785,8 @@ namespace Dash
                 TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { moveTo, scaleAmount });
         }
 
-        /// <summary>
-        /// Handles keypress events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
-        {
-            if (!this.IsF1Pressed())
-                ShowLocalContext(false);
-        }
-
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            if (this.IsF1Pressed() && this.IsPointerOver())
-            {
-                ShowLocalContext(true);
-            }
-
-            if (this.IsF2Pressed() && this.IsPointerOver())
-            {
-                ShowSelectedContext();
-            }
-
             if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
             {
                 var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
@@ -1000,125 +802,7 @@ namespace Dash
                 }
             }
         }
-
-        public void ShowLocalContext(bool showContext)
-        {
-            if (ViewModel == null)
-                return;
-            ViewModel.ShowLocalContext = showContext;
-
-            if (!showContext && _localContextPreview != null)
-            {
-                xContextCanvas.Children.Remove(_localContextPreview);
-                _localContextPreview = null;
-                GC.Collect();
-                if (_selectedContextPreview == null)
-                {
-                    xContextTitle.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    xContextTitle.Content = ViewModel.DocumentController
-                        .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext()
-                        .Title;
-                }
-            }
-
-            if (showContext)
-            {
-                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
-
-                var context = ViewModel.DocumentController.GetFirstContext();
-                if (context != null && _localContextPreview == null)
-                {
-                    _localContextPreview = new ContextPreview(context)
-                    {
-                        Width = _contextPreviewActualWidth,
-                        Height = _contextPreviewActualHeight,
-                    };
-                    _localContextPreview.Tapped += (s, e) => ShowContext();
-                    xContextCanvas.Children.Add(_localContextPreview);
-                    xContextTitle.Content = context.Title;
-                    xContextTitle.Visibility = Visibility.Visible;
-                    PositionContextPreview();
-                }
-            }
-        }
-
-        public void ShowSelectedContext(bool selectedChanged = false)
-        {
-            if (ViewModel == null)
-                return;
-
-            if (_selectedContextPreview != null && selectedChanged == false)
-            {
-                xContextCanvas.Children.Remove(_selectedContextPreview);
-                _selectedContextPreview = null;
-                GC.Collect();
-                if (_localContextPreview == null)
-                {
-                    xContextTitle.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    xContextTitle.Content = ViewModel.DocumentController.GetFirstContext().Title;
-                }
-            }
-            else
-            {
-                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
-
-                var context = ViewModel.DataDocument
-                    .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext();
-                if (context == null) return;
-
-                if (_selectedContextPreview == null)
-                {
-                    _selectedContextPreview = new ContextPreview(context)
-                    {
-                        Width = _contextPreviewActualWidth,
-                        Height = _contextPreviewActualHeight,
-                    };
-                    xContextCanvas.Children.Add(_selectedContextPreview);
-                }
-                else
-                {
-                    (_selectedContextPreview as ContextPreview).Context = context;
-                }
-
-                xContextTitle.Content = context.Title;
-                xContextTitle.Visibility = Visibility.Visible;
-                PositionContextPreview();
-
-                void OnSelectedSchemaRowUpdated(DocumentController sender,
-                    DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
-                {
-                    ShowSelectedContext(true);
-                }
-
-                ViewModel.DataDocument.RemoveFieldUpdatedListener(KeyStore.SelectedSchemaRow,
-                    OnSelectedSchemaRowUpdated);
-                ViewModel.DataDocument.AddFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
-            }
-        }
-
-        private void PositionContextPreview()
-        {
-            var previewMarginLeft = 1;
-            var previewMarginTop = 25;
-            Canvas.SetTop(xContextTitle, previewMarginTop);
-            if (_localContextPreview != null)
-            {
-                Canvas.SetLeft(_localContextPreview, -_contextPreviewActualWidth - previewMarginLeft);
-                Canvas.SetTop(_localContextPreview, 35 + previewMarginTop);
-            }
-
-            if (_selectedContextPreview != null)
-            {
-                Canvas.SetLeft(_selectedContextPreview, -_contextPreviewActualWidth - previewMarginLeft);
-                Canvas.SetTop(_selectedContextPreview, 35 + previewMarginTop);
-            }
-        }
+        
 
         #region Xaml Styling Methods (used by operator/collection view)
 
@@ -1177,8 +861,6 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
-
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
             if (this.IsRightBtnPressed())
@@ -1242,15 +924,15 @@ namespace Dash
             var h = ActualHeight - extraOffsetY;
 
             // clamp the drag position to the available Bounds
-            if (Bounds != null)
+            if (ViewModel.DragBounds != null)
             {
                 var width = ActualWidth;
                 var height = ActualHeight;
                 var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
                     ViewModel.YPos + height * (1 - moveYScale));
-                if (!Bounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
+                if (!ViewModel.DragBounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
                     return;
-                var clamped = Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), Bounds.Rect);
+                var clamped = Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), ViewModel.DragBounds.Rect);
                 delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
             }
 
@@ -1308,10 +990,10 @@ namespace Dash
 
 
             // re-clamp the position to keep it in bounds
-            if (Bounds != null)
+            if (ViewModel.DragBounds != null)
             {
-                if (!Bounds.Rect.Contains(newPos) ||
-                    !Bounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
+                if (!ViewModel.DragBounds.Rect.Contains(newPos) ||
+                    !ViewModel.DragBounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
                 {
                     ViewModel.Position = oldPos;
                     ViewModel.Width = oldSize.Width;
@@ -1319,11 +1001,11 @@ namespace Dash
                     return;
                 }
 
-                var clamp = Clamp(newPos, Bounds.Rect);
+                var clamp = Clamp(newPos, ViewModel.DragBounds.Rect);
                 newSize.Width += newPos.X - clamp.X;
                 newSize.Height += newPos.Y - clamp.Y;
                 newPos = clamp;
-                var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), Bounds.Rect);
+                var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), ViewModel.DragBounds.Rect);
                 newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
             }
 
@@ -1392,11 +1074,11 @@ namespace Dash
         }
 
         // this action is used to remove template editor in sync with document
-        public Action FadeOutBegin;
-        private bool _animationBusy;
+        public Action   FadeOutBegin;
+        private bool   _animationBusy;
         private string _lastValueInput;
-        private bool _articialChange;
-        private bool _clearByClose;
+        private bool   _articialChange;
+        private bool   _clearByClose;
         private string _mostRecentPrefix;
 
         /// <summary>
@@ -1568,56 +1250,6 @@ namespace Dash
 
             return false;
         }
-		public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
-		{
-			//if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-			//    StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-			//{
-			//	if (e == null ||
-			//	    (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed &&
-			//	     !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) && ViewModel != null)
-			//		ViewModel.DecorationState = false;
-			//}
-
-			//MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
-			//if (MainPage.Instance.MainDocView != this)
-			//{
-			//	var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
-			//	if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-			//	    viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
-			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-			//	else if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
-			//}
-		}
-
-        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e) => DocumentView_PointerEntered();
-
-        public void DocumentView_PointerEntered()
-		{
-			//if (ViewModel != null)
-			//{
-			//	if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-			//	     StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
-			//	{
-			//	    var isSelected = this.xTargetBorder.BorderThickness.Left > 0;
-   //                 ViewModel.DecorationState = ViewModel?.Undecorated == false && isSelected;
-			//	}
-
-			//	MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
-			//}
-
-			//Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-			//if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
-			//{
-			//	var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
-			//	if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-			//	    level.Equals(CollectionViewModel.StandardViewLevel.Region))
-			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-			//	else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
-			//		Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
-			//}
-		}
 
         /// <summary>
         /// Encompasses the different type of events triggers by changing document data.
@@ -1664,56 +1296,6 @@ namespace Dash
             }
 
             return null;
-        }
-
-        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
-        {
-            var selectedDocs = SelectionManager.GetSelectedSiblings(this);
-
-            //if it's a group, add all content docs
-            if (ViewModel.IsAdornmentGroup)
-            {
-                var adornmentGroups = SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
-                if (ParentCollection?.CurrentView is CollectionFreeformBase cview)
-                {
-                    adornmentGroups.ForEach((dv) =>
-                    {
-                        foreach (var docV in cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
-                            new Size(dv.ActualWidth, dv.ActualHeight))))
-                        {
-                            if (!selectedDocs.Contains(docV))
-                            {
-                                selectedDocs.Add(docV);
-                            }
-                        }
-                    });
-
-                    SetSelectionBorder(false);
-                }
-            }
-
-            var collection = this.GetFirstAncestorOfType<CollectionView>();
-            CollectionView nestedCollection = GetCollectionToMoveTo(overlappedViews);
-
-            if (nestedCollection == null)
-            {
-                return false;
-            }
-
-            foreach (DocumentView selDoc in selectedDocs)
-            {
-                if (selDoc != nestedCollection.GetFirstAncestorOfType<DocumentView>())
-                {
-                    Point pos = selDoc.TransformToVisual(MainPage.Instance.MainDocView).TransformPoint(new Point());
-                    Point where = nestedCollection.CurrentView is CollectionFreeformBase @base
-                        ? Util.GetCollectionFreeFormPoint(@base, pos)
-                        : new Point();
-                    collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-                    nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
-                }
-            }
-            
-            return true;
         }
 
         public void HandleShiftEnter()
@@ -1799,8 +1381,8 @@ namespace Dash
                 var collectionView = this.GetFirstDescendantOfType<CollectionView>();
                 if (collectionView != null)
                 {
-                    collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
-                    if (collectionView.ViewModel.FitToParent)
+                    collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel.ContainerDocument.GetFitToParent());
+                    if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
                         collectionView.ViewModel.FitContents(collectionView);
                 }
             }
@@ -2048,24 +1630,6 @@ namespace Dash
             ViewModel.DecorationState = false;
         }
 
-        public void hideControls()
-        {
-            ViewModel.DecorationState = false;
-
-        }
-
-		public void hideEllipses()
-		{
-			//xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-			//xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-			//xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
-		}
-
-        public void showControls()
-        {
-            ViewModel.DecorationState = true;
-        }
-
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             if (Equals(MainPage.Instance.MainDocView)) return;
@@ -2112,77 +1676,14 @@ namespace Dash
         public void UpdateResizers()
         {
             var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
-            _newpoint = newpoint;
 
             if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
-                _newpoint = newpoint = new Point();
+                newpoint = new Point();
 
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            //xBottomRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
-            //xTopRow.Height = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.Y * 15);
-            //xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
-            //xRightColumn.Width = new GridLength(ViewModel?.Undecorated == true || ViewModel?.DecorationState == false ? 0 : newpoint.X * 15);
-
-            UpdateEllipses(newpoint);
-        }
-
-        public bool ResizersVisible = false;
-
-		private void UpdateEllipses(Point newpoint)
-		{
-			//AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25 * (newpoint.Y));
-			//AdjustEllipseSize(AnnotateEllipseUnhighlight, 25 * (newpoint.Y));
-			//AdjustEllipseSize(OperatorEllipseUnhighlight, 25 * (newpoint.Y));
-
-			//AdjustEllipseFontSize(12 * newpoint.Y);
-
-
-			//xTitleIcon.FontSize = 16 * (newpoint.Y);
-
-			//if (TemplateEditorEllipseBorderUnhighlight.Width < 25)
-			//{
-			//	AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 25);
-			//	AdjustEllipseSize(AnnotateEllipseUnhighlight, 25);
-			//	AdjustEllipseSize(OperatorEllipseUnhighlight, 25);
-			//}
-
-			//if (TemplateEditorEllipseBorderUnhighlight.Width > 150)
-			//{
-			//	AdjustEllipseSize(TemplateEditorEllipseBorderUnhighlight, 150);
-			//	AdjustEllipseSize(AnnotateEllipseUnhighlight, 150);
-			//	AdjustEllipseSize(OperatorEllipseUnhighlight, 150);
-			//}
-
-			//if (xTitleIcon.FontSize < 16)
-			//{
-			//	xTitleIcon.FontSize = 16;
-			//}
-
-			//if (xTitleIcon.FontSize > 100)
-			//{
-			//	xTitleIcon.FontSize = 100;
-			//}
-
-			//if (xTemplateEllipseText.FontSize < 12)
-			//{
-			//	AdjustEllipseFontSize(12);
-			//}
-
-			//if (xTemplateEllipseText.FontSize > 60)
-			//{
-			//	AdjustEllipseFontSize(60);
-			//}
-
-			//xTitleBorder.Margin = new Thickness(-1.2 * xTitleIcon.FontSize - 10, 0, 0, 0);
-			//xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-			//xAnnotateEllipseBorder.Margin =
-			//	new Thickness(10, AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y), 0, 0);
-			//xTemplateEditorEllipseBorder.Margin =
-			//	new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + (5 * newpoint.Y)), 0, 0);
-
+            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)
@@ -2191,16 +1692,8 @@ namespace Dash
             ellipse.Height = length;
         }
 
-		private void AdjustEllipseFontSize(double size)
-		{
-			//xTemplateEllipseText.FontSize = size;
-			//xAnnotateEllipseText.FontSize = size;
-			//xOperatorEllipseText.FontSize = size;
-		}
-
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
-
             var applier = new TemplateApplier(ViewModel.LayoutDocument);
             _flyout.Content = applier;
             if (_flyout.IsInVisualTree())
@@ -2211,20 +1704,6 @@ namespace Dash
             {
                 _flyout.ShowAt(this);
             }
-        }
-
-        //sets background color of doc
-        public void SetBackgroundColor(Color color)
-        {
-            ViewModel?.LayoutDocument?.SetField(KeyStore.BackgroundColorKey, new TextController(color.ToString()), true);
-        }
-
-        //gets current background color of doc
-        public Color? GetBackgroundColor()
-        {
-            var colorString = ViewModel.LayoutDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data;
-            if (colorString == null) return Colors.White;
-            return (new StringToBrushConverter().ConvertDataToXaml(colorString) as SolidColorBrush)?.Color;
         }
 
         //binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
@@ -2243,12 +1722,6 @@ namespace Dash
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
-        }
-
-        private void XTitleIcon_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            ToggleQuickEntry();
-            e.Handled = true;
         }
 
         private void ToggleQuickEntry()

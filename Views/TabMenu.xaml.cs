@@ -33,6 +33,8 @@ namespace Dash
         {
             InitializeComponent();
             GetSearchItems();
+            this.HorizontalAlignment = HorizontalAlignment.Left;
+            this.VerticalAlignment = VerticalAlignment.Top;
 
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
@@ -55,7 +57,7 @@ namespace Dash
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
-        public static void ConfigureAndShow(CollectionFreeformBase col, Point p, Canvas canvas, bool isTouch = false)
+        public static void ConfigureAndShow(CollectionFreeformBase col, Point p, Panel canvas, bool isTouch = false)
         {
             _addsToThisCollection = col;
             _whereToAdd = p;
@@ -64,7 +66,7 @@ namespace Dash
 
 
 
-        private static void ShowAt(Canvas canvas, bool isTouch = false)
+        private static void ShowAt(Panel canvas, bool isTouch = false)
         {
             if (Instance != null)
             {
@@ -251,7 +253,7 @@ namespace Dash
         /// </summary>
         private static void Hide()
         {
-            MainPage.Instance.xCanvas.Children.Remove(Instance);
+            MainPage.Instance.xTabCanvas.Children.Remove(Instance);
         }
 
 

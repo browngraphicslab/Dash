@@ -49,7 +49,7 @@ namespace Dash
 
         private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            MainPage.Instance.xCanvas.Children.Remove(Instance);
+            MainPage.Instance.xTabCanvas.Children.Remove(Instance);
         }
     }
 }

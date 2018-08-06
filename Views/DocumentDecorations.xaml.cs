@@ -65,6 +65,7 @@ namespace Dash
                     }
                     doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted -= ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -89,11 +90,17 @@ namespace Dash
                     doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
                     doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted += ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
             }
+        }
+
+        private void ManipulationControls_OnManipulatorAborted()
+        {
+            VisibilityState = Visibility.Collapsed;
         }
 
         private void OnManipulatorHelperCompleted()

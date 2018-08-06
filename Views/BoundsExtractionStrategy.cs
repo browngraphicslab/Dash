@@ -9,6 +9,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -17,14 +18,16 @@ namespace Dash
         private Rectangle _pageSize;
         private double _pageOffset;
         private int _pageNumber;
+        private double _pageRotation;
         private readonly List<SelectableElement> _elements = new List<SelectableElement>();
         private readonly List<Rectangle> _pages = new List<Rectangle>();
 
-        public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
+        public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize, double rotation)
         {
             _pageNumber = pageNumber;
             _pageSize = pageSize;
             _pageOffset = pageOffset;
+            _pageRotation = rotation;
             _pages.Add(new Rectangle(pageSize.GetX(), (float) (pageSize.GetY() + pageOffset), pageSize.GetWidth(),
                 pageSize.GetHeight()));
         }
@@ -36,15 +39,22 @@ namespace Dash
             {
                 return;
             }
-            
-            var mainData = (TextRenderInfo)data;
+
+            var rotated    = _pageRotation != 0;
+            var mainData   = (TextRenderInfo)data;
+            var pageHeight = _pageSize.GetHeight();
+            var pageWidth  = _pageSize.GetWidth();
+            var aspect     = rotated ? pageWidth / pageHeight : 1;
 
             foreach (var textData in mainData.GetCharacterRenderInfos())
             {
                 // top left corner of the bounding box
-                var start = textData.GetAscentLine().GetStartPoint();
+                var rawStartPt = textData.GetAscentLine().GetStartPoint();
                 // bottom right corner of the bounding box
-                var end = textData.GetDescentLine().GetEndPoint();
+                var rawEndPt = textData.GetDescentLine().GetEndPoint();
+
+                var start = new Point(rawStartPt.Get(rotated ? 1 : 0) * aspect, (rotated ? pageHeight - rawStartPt.Get(0) / aspect : rawStartPt.Get(1)));
+                var end   = new Point(rawEndPt.Get(rotated   ? 1 : 0) * aspect, (rotated ? pageHeight - rawEndPt.Get(0)   / aspect : rawEndPt.Get(1)));
 
                 #region Commented Out Code
 
@@ -77,21 +87,20 @@ namespace Dash
                 /* code to insert spaces into the text when there is too much space between elements */
 
                 // if the space between this and the previous element is greater than or equal to some arbitrary constant space
-                if (_elements.Any() && start.Get(0) - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
+                if (_elements.Any() && start.X - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width) >=
                     textData.GetSingleSpaceWidth() * 0.3)
                 {
                     // insert a space into that index
-                    var width = start.Get(0) - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
+                    var width = start.X - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                            _pageSize.GetHeight() - (start.Get(1) + _pageOffset),
-                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Get(1) - start.Get(1)))));
+                            pageHeight - (start.Y + _pageOffset),
+                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Y - start.Y))));
                 }
 
-                var newBounds = new Rect(start.Get(0),
-                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                    Math.Abs(end.Get(0) - start.Get(0)),
-                    Math.Abs(end.Get(1) - start.Get(1)));
+                var newBounds = new Rect(start.X, pageHeight - start.Y + _pageOffset,
+                    Math.Abs(end.X - start.X),
+                    Math.Abs(end.Y - start.Y));
                 if (!_elements.Any() || _elements.Last().Bounds != newBounds)
                 {
                     _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
@@ -181,8 +190,20 @@ namespace Dash
                 }
             }
 
-            return lines;
+            return lines;//.Where((s,i) => i == 0).ToList();
         }
+
+        class PdfColumnDef {
+
+            public List<SelectableElement> SelectableElements = new List<SelectableElement>();
+            public Rect Bounds;
+            public bool Overlaps(SelectableElement sel)
+            {
+                var selCenter = (sel.Bounds.Left + sel.Bounds.Right)/ 2;
+                return Bounds.Left < selCenter && selCenter < Bounds.Right;
+            }
+        }
+
 
         /// <summary>
         ///     Given a list of lists of selectable elements, resturns a list of lists of selectable elements
@@ -190,12 +211,14 @@ namespace Dash
         /// </summary>
         private List<List<SelectableElement>> SortIntoColumns(List<List<SelectableElement>> lines)
         {
-            var columns = new List<List<SelectableElement>> {new List<SelectableElement>()};
+            var columns = new List<PdfColumnDef> {new PdfColumnDef()};
+            var strings = new List<string>(); strings.Add("");
             // loop through every line
             foreach (var line in lines)
             {
                 // sort each line horizontally
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+                var linestr = line.Aggregate("", (str, e) => str + (e.Contents as string));
                 var element = line.First();
                 // assume that each line starts at column 0
                 var col = 0;
@@ -204,9 +227,10 @@ namespace Dash
 
                 if (columns.Any() && line.Any())
                 {
-                    var temp = line.First().Bounds.X;
+                    var firstEle = line.First();
+                    var temp = firstEle.Bounds.X;
                     // while there's space to move the content to another column, based on what the previous line width is
-                    while (columns[col].Any() && temp - lineWidth > columns[col].Min(i => i.Bounds.X) &&
+                    while (!string.IsNullOrWhiteSpace(firstEle.Contents as string) && columns[col].SelectableElements.Any() && temp - lineWidth > columns[col].SelectableElements.Min(i => i.Bounds.X) &&
                            lineWidth != 0.0)
                     {
                         // do the math that would end up doing it
@@ -216,12 +240,29 @@ namespace Dash
                         // add a new column if need be
                         if (columns.Count - 1 < col)
                         {
-                            columns.Add(new List<SelectableElement>());
+                            columns.Add(new PdfColumnDef());
+                            strings.Add("");
                         }
                     }
                 }
 
-                columns[col].Add(element);
+                double lastX = element.Bounds.Left;
+                var lastRect = element.Bounds;
+
+                if (!string.IsNullOrWhiteSpace(element.Contents as string))
+                {
+                    columns[col].SelectableElements.Add(element);
+                    strings[col] += (element.Contents as string);
+                    lastX = element.Bounds.Right;
+                    var left = Math.Min(columns[col].Bounds.Left, element.Bounds.Left);
+                    columns[col].Bounds = new Rect(left, 0,
+                        Math.Max(columns[col].Bounds.Right, element.Bounds.Right)-left, 0);
+                }
+                else
+                {
+                    lastRect = new Rect(lastX, 0, element.Bounds.Width, 0);
+                    columns[col].Bounds = new Rect(lastX, 0, element.Bounds.Width, 0);
+                }
 
                 /*
                  * this method of "column-izing" each line relies on the fact that we loop through each
@@ -233,32 +274,57 @@ namespace Dash
                 var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line.Skip(1))
                 {
-                    // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
-                    if (selectableElement.Bounds.X - (element.Bounds.X + element.Bounds.Width) > 2.75 * currFontWidth)
+                    var selectableLeft = selectableElement.Bounds.Left;
+                    var selectableString = selectableElement.Contents as string;
+                    if ((selectableElement.Bounds.Left+ selectableElement.Bounds.Right)/2 > lastX)
                     {
-                        // establish that we are moving over one column
-                        col++;
-                        // build a new column if need be, otherwise, just add it
-                        if (columns.Count > col)
+                        var whiteSpace = string.IsNullOrWhiteSpace(selectableString);
+                        // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
+                        var nextColumn = selectableLeft > columns[col].Bounds.Right + currFontWidth ||
+                                         selectableElement.Bounds.Left > lastX + currFontWidth*1.1;
+                        if (nextColumn && !whiteSpace)
                         {
-                            columns[col].Add(selectableElement);
+                            var newCol = -1;
+                            for (int i = col+1; i < columns.Count; i++) 
+                                if (columns[i].Overlaps(selectableElement))
+                                {
+                                    newCol = i;
+                                    break;
+                                }
+                            if (newCol == -1)
+                            {
+                                columns.Add(new PdfColumnDef() { Bounds = selectableElement.Bounds });
+                                strings.Add("");
+                                newCol = columns.Count-1;
+                            }
+                            col = newCol;
+                            var prev = columns[newCol-1];
+                            if (selectableLeft < prev.Bounds.Right)
+                                prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, lastX - prev.Bounds.Left, prev.Bounds.Height);
                         }
-                        else
+                        // add to whatever column we're indexed in
+                        if (!nextColumn || !whiteSpace)
                         {
-                            columns.Add(new List<SelectableElement> { selectableElement });
+                            if ((selectableElement.Bounds.Left + selectableElement.Bounds.Right) / 2 < lastRect.Right && !nextColumn)
+                            {
+                                columns[col].SelectableElements.RemoveAt(columns[col].SelectableElements.Count - 1);
+                                strings[col] = strings[col].Substring(0, strings[col].Length - 1);
+                            }
+                            columns[col].SelectableElements.Add(selectableElement);
+                            strings[col] += selectableString;
+                            columns[col].Bounds = new Rect(new Point(Math.Min(columns[col].Bounds.Left, whiteSpace ? lastX : selectableElement.Bounds.Left), 0),
+                                new Point(right, 0));
                         }
-                    }
-                    // otherwise, just add it to whatever column we're indexed in
-                    else
-                    {
-                        columns[col].Add(selectableElement);
-                    }
+                        if (!whiteSpace)
+                            lastX = selectableElement.Bounds.Right;
+                        lastRect = selectableElement.Bounds;
 
-                    element = selectableElement;
+                        element = selectableElement;
+                    }
                 }
             }
 
-            return columns;
+            return columns.Select((cdef) => cdef.SelectableElements).ToList();
         }
 
         /// <summary>
@@ -354,6 +420,15 @@ namespace Dash
         /// </summary>
         private double AverageFontSize(List<SelectableElement> line)
         {
+            var mx = 0.0;
+            foreach (var sel in line)
+                if (!string.IsNullOrWhiteSpace(sel.Contents as string))
+                {
+                    if (sel.Bounds.Width > mx)
+                        mx = sel.Bounds.Width;
+                }
+            return mx;
+
             var cumulativeWidth = 0.0;
             var numberOfSpaces = 0;
             // skip the first and last items for simplicity

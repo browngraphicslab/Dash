@@ -184,7 +184,6 @@ namespace Dash
                 MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
-                treeContext.Tag = "TreeView VM";
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("My Workspaces");
                 xMainTreeView.ToggleDarkMode(true);
@@ -599,7 +598,7 @@ namespace Dash
                 }
             }
 
-            if (xCanvas.Children.Contains(TabMenu.Instance))
+            if (xTabCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
@@ -623,14 +622,6 @@ namespace Dash
                             DocumentView.FocusedDocument.HandleShiftEnter();
                     }
                 }
-                if (this.IsF1Pressed() && this.IsPointerOver())
-                {
-                    DocumentView.FocusedDocument.ShowLocalContext(true);
-                }
-                if (this.IsF2Pressed() && this.IsPointerOver())
-                {
-                    DocumentView.FocusedDocument.ShowSelectedContext();
-                }
             }
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
@@ -642,15 +633,6 @@ namespace Dash
                         {
                             doc.DeleteDocument();
                         }
-                    //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
-                    //    .OfType<CollectionView>().ToList();
-                    //foreach (var c in topCollection.Select(c => c.CurrentView).OfType<CollectionFreeformBase>())
-                    //    if (c.SelectedDocs.Count() > 0)
-                    //    {
-                    //        foreach (var d in c.SelectedDocs)
-                    //            d.DeleteDocument();
-                    //        break;
-                    //    }
                 }
             }
 
@@ -687,7 +669,7 @@ namespace Dash
             }
 
             // TODO propagate the event to the tab menu
-            if (xCanvas.Children.Contains(TabMenu.Instance))
+            if (xTabCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
@@ -695,13 +677,6 @@ namespace Dash
             if (e.VirtualKey == VirtualKey.Escape)
             {
                 this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
-                e.Handled = true;
-            }
-
-            if (DocumentView.FocusedDocument != null)
-            {
-                if (!this.IsF1Pressed())
-                    DocumentView.FocusedDocument.ShowLocalContext(false);
             }
 
             e.Handled = true;
@@ -741,7 +716,7 @@ namespace Dash
 
                 if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
-                    //TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
+                    TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
                     if (e != null)
                         e.Handled = true;
@@ -751,12 +726,12 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            //TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xTabCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
         {
-            if (!xCanvas.Children.Contains(GenericSearchView.Instance))
+            if (!xTabCanvas.Children.Contains(GenericSearchView.Instance))
             {
                 xCanvas.Children.Add(GenericSearchView.Instance);
                 Point absPos = e.GetPosition(Instance);
@@ -788,6 +763,7 @@ namespace Dash
         }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
+        Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
             if (xMapDocumentView == null)
@@ -798,17 +774,27 @@ namespace Dash
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
-                //xMapDocumentView.IsHitTestVisible = false;
+                var overlay = new Grid();
+                overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
+
+                _mapActivateBtn.HorizontalAlignment = HorizontalAlignment.Left;
+                _mapActivateBtn.VerticalAlignment = VerticalAlignment.Top;
+                _mapActivateBtn.Click += (s, e) => overlay.Background = overlay.Background == null ? new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) : null;
+                overlay.Children.Add(_mapActivateBtn);
+
+                Grid.SetColumn(overlay, 2);
+                Grid.SetRow(overlay, 0);
                 Grid.SetColumn(xMapDocumentView, 2);
                 Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
+                xLeftStack.Children.Add(overlay);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
                     cview?.ViewModel?.FitContents(cview);
                 };
-                xMapDocumentView.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
+                overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -817,6 +803,8 @@ namespace Dash
 
         private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
+                return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
             var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
@@ -1117,7 +1105,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                onScreenView?.ViewModel.RetractBorder();
+                onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 
@@ -1146,9 +1134,8 @@ namespace Dash
 
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
-            var list = frame.GetDescendantsOfType<DocumentView>().Select((dv) => dv.ViewModel.DocumentController).ToList();
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.LayoutDocument.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
