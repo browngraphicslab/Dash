@@ -19,6 +19,8 @@ using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Dash.Models.DragModels;
 using System.Diagnostics;
+using Windows.System;
+using Windows.UI.Xaml.Media.Animation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -65,6 +67,7 @@ namespace Dash
                     }
                     doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted -= ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -89,11 +92,17 @@ namespace Dash
                     doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
                     doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted += ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
             }
+        }
+
+        private void ManipulationControls_OnManipulatorAborted()
+        {
+            VisibilityState = Visibility.Collapsed;
         }
 
         private void OnManipulatorHelperCompleted()
@@ -284,48 +293,91 @@ namespace Dash
             xRow.Height = new GridLength(botRight.Y - topLeft.Y);
         }
 
+	    private void AddLinkTypeButton(string linkName)
+	    {
+			var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+			var g = new Grid();
+			g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.DodgerBlue) });
+			g.Children.Add(tb);
+			var button = new ContentPresenter() { Content = g, Width = 22, Height = 22, CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
+			button.DragStarting += (s, args) =>
+			{
+				var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
+				if (doq != null)
+				{
+					args.Data.Properties[nameof(DragDocumentModel)] =
+						new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName };
+					args.AllowedOperations =
+						DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+					args.Data.RequestedOperation =
+						DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+					doq.ViewModel.DecorationState = false;
+				}
+			};
+			ToolTip toolTip = new ToolTip();
+			toolTip.Content = linkName;
+			toolTip.HorizontalOffset = 5;
+			toolTip.Placement = PlacementMode.Right;
+			ToolTipService.SetToolTip(button, toolTip);
+			xButtonsPanel.Children.Add(button);
+			button.PointerEntered += (s, e) => toolTip.IsOpen = true;
+			button.PointerExited += (s, e) => toolTip.IsOpen = false;
+
+			button.Tapped += (s, e) =>
+			{
+				var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
+				if (doq != null)
+					new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController, doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
+			};
+			button.Tag = new Tuple<DocumentView, string>(null, linkName);
+		}
+
+	    private void LaunchLinkTypeInputBox(Point where)
+	    {
+			ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+			Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+			Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+			
+			var moveTransform = new TranslateTransform { X = where.X, Y = where.Y };
+			inputBox.RenderTransform = moveTransform;
+
+			inputBox.AddKeyHandler(VirtualKey.Enter, args =>
+			{
+				string entry = inputBox.Text.Trim();
+				if (string.IsNullOrEmpty(entry)) return;
+
+				inputBox.ClearHandlers(VirtualKey.Enter);
+
+				fadeOut.Completed += FadeOutOnCompleted;
+				fadeOut.Begin();
+
+				args.Handled = true;
+
+				void FadeOutOnCompleted(object sender2, object o1)
+				{
+					fadeOut.Completed -= FadeOutOnCompleted;
+
+					LinkNames.Add(entry);
+					AddLinkTypeButton(entry);
+					//rebuildMenuIfNeeded();
+
+					//SELECT LINK TYPE 
+
+					inputBox.Visibility = Visibility.Collapsed;
+				}
+			});
+
+			inputBox.Visibility = Visibility.Visible;
+			fadeIn.Begin();
+			inputBox.Focus(FocusState.Programmatic);
+		}
+
         private void rebuildMenuIfNeeded()
         {
-            if (xButtonsPanel.Children.Count == LinkNames.Count)
-                return;
             xButtonsPanel.Children.Clear();
             foreach (var linkName in LinkNames)
             {
-                var tb = new TextBlock() { Text = linkName.Substring(0, 1), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-                var g = new Grid();
-                g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse() { Width = 22, Height = 22, Stroke = new SolidColorBrush(Windows.UI.Colors.Green) });
-                g.Children.Add(tb);
-                var button = new ContentPresenter() { Content = g, Width = 22, Height = 22, CanDrag = true, HorizontalAlignment = HorizontalAlignment.Center, Background = null };
-                button.DragStarting += (s, args) =>
-                {
-                    var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView,string>).Item1;
-                    if (doq != null)
-                    {
-                        args.Data.Properties[nameof(DragDocumentModel)] =
-                            new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName };
-                        args.AllowedOperations =
-                            DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                        args.Data.RequestedOperation =
-                            DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                        doq.ViewModel.DecorationState = false;
-                    }
-                };
-                ToolTip toolTip = new ToolTip();
-                toolTip.Content = linkName;
-                toolTip.HorizontalOffset = 5;
-                toolTip.Placement = PlacementMode.Right;
-                ToolTipService.SetToolTip(button, toolTip);
-                xButtonsPanel.Children.Add(button);
-                button.PointerEntered += (s, e) => toolTip.IsOpen = true;
-                button.PointerExited += (s, e) => toolTip.IsOpen = false;
-
-                button.Tapped += (s, e) =>
-                {
-                    var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-                    if (doq != null)
-                        new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController, doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
-                };
-                button.Tag = new Tuple<DocumentView, string>(null, linkName);
+                AddLinkTypeButton(linkName);
             }
         }
 
@@ -333,6 +385,8 @@ namespace Dash
         {
             if (doc == null)
                 return;
+			//ADDED: cleared linknames
+	        linknames.Clear();
             var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
             if (linkedTo != null)
                 foreach (var l in linkedTo) { 
@@ -414,7 +468,8 @@ namespace Dash
             }
         }
 
-        private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+
+		private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             foreach (var doc in SelectedDocs)
             {
@@ -499,5 +554,18 @@ namespace Dash
 			    MainPage.Instance.ActivationMangager.ToggleActivation(doc);
 		    }
 	    }
+
+	    private void XAddLinkTypeBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+	    {
+			//MAKE NEW LINK TYPE BUBBLE
+		    //LaunchLinkTypeInputBox(e.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
+		}
+
+	    private void XAddLinkTypeBorder_OnTapped(object sender, TappedRoutedEventArgs e)
+	    {
+			LaunchLinkTypeInputBox(e.GetPosition(MainPage.Instance.xCanvas));
+		}
+
+	   
     }
 }

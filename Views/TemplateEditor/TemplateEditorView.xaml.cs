@@ -283,7 +283,7 @@ namespace Dash
 
             //hide resize and ellipse controls for template editor
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.hideControls();
+            docView.ViewModel.DecorationState = false;
             docView.RemoveResizeHandlers();
 
 			// determine if the active layout exists and has information about rows and columns
@@ -1087,7 +1087,6 @@ namespace Dash
 			{
 				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
 				DocumentViews.Add(docView);
-				docView.hideEllipses();
 			}
 
 			var typeInfo = docView.ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo;
@@ -1152,7 +1151,7 @@ namespace Dash
 			//updates and generates bounds for the children inside the template canvas
 			var bounds = new Rect(0, 0, xWorkspace.Width,
 				xWorkspace.Height);
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
+			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 
 			docView.DocumentDeleted += DocView_DocumentDeleted;
@@ -1168,7 +1167,6 @@ namespace Dash
 			{
 				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
 				DocumentViews.Add(docView);
-				docView.hideEllipses();
 			}
 
 			docView.DocumentSelected += DocView_DocumentSelected;
@@ -1261,7 +1259,7 @@ namespace Dash
 
 		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
 		{
-			sender.Bounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
+			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
 
 			xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 			_selectedDocument = sender;
@@ -2029,8 +2027,8 @@ namespace Dash
 
 			//if document view contains a text block, ensure its dimensions are within bounds
 			var textBlock = docView?.GetFirstDescendantOfType<EditableTextBlock>();
-			if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.Bounds.Rect.Width &&
-									  docView.ActualHeight + docView.ViewModel.YPos < docView.Bounds.Rect.Height))
+			if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.ViewModel.DragBounds.Rect.Width &&
+									  docView.ActualHeight + docView.ViewModel.YPos < docView.ViewModel.DragBounds.Rect.Height))
 				return;
 
 			//start by updating position to fit entire contents of text box on the canvas
@@ -2054,7 +2052,7 @@ namespace Dash
 			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
 				xWorkspace.Height - docView.ActualHeight);
 
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
+			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
 
 			//      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
 			//{

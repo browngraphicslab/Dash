@@ -42,6 +42,7 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Panel _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
+        public UserControl UserControl => this;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }
@@ -90,7 +91,6 @@ namespace Dash
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
             MakeInkCanvas();
-           // UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;
@@ -1112,7 +1112,23 @@ namespace Dash
                         postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                     }
-                }
+					//move link activation stuff here
+	                //check if a doc is currently in link activation mode
+	                if (LinkActivationManager.ActivatedDocs.Count == 1 && LinkActivationManager.ActivatedDocs[0].GetFirstDescendantOfType<CustomPdfView>() != null)
+	                {
+		                //make this rich text an annotation for activated  doc
+		                DocumentView activated = LinkActivationManager.ActivatedDocs[0];
+
+		                if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+		                {
+			                var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
+				                postitNote.GetPosition());
+
+			                //link region to this text 
+			                region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
+		                }
+	                }
+				}
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)

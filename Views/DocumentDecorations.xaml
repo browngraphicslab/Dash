@@ -37,6 +37,7 @@
         <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
+                <RowDefinition Height="26"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
@@ -53,7 +54,20 @@
                 </Grid>
             </Border>
 
-            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="1" VerticalScrollBarVisibility="Hidden" Margin="0,4,0,0">
+            <Border x:Name="xAddLinkTypeBorder" Grid.Row="1" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
+                    PointerPressed="XAddLinkTypeBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAddLinkTypeBorder_OnTapped" 
+                    HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0 0 0 0" >
+                <Grid  >
+                    <Ellipse x:Name="xAddLinkTypeUnhighlight" Stroke="DodgerBlue" Width="25" Height="25"/>
+                    <Ellipse x:Name="xAddLinkTypeHighlight" Visibility="Collapsed" Stroke="DodgerBlue" Fill="LightGray" Width="25" Height="25"/>
+                    <TextBlock x:Name="xAddLinkTypeText" Foreground="Black" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,-4,0,0" > + </TextBlock>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Add Link Type" Placement="Right" HorizontalOffset="30" VerticalOffset="0"/>
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </Border>
+
+            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="2" VerticalScrollBarVisibility="Hidden" Margin="0,4,0,0">
                 <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Stretch"  Visibility="{x:Bind VisibilityState, Mode=OneWay}" Spacing="4">
                 </StackPanel>
             </ScrollViewer>

@@ -75,6 +75,7 @@ namespace Dash
 
 
         private GraphNodeView _selectedNode;
+        public UserControl UserControl => this;
 
         public CollectionGraphView()
         {
@@ -421,5 +422,7 @@ namespace Dash
                 node.XPosition = OriginalXPositions[node];
             }
         }
+
+        public void SetDropIndicationFill(Brush fill) { }
     }
 }

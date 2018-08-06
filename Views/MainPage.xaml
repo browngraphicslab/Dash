@@ -119,6 +119,7 @@
             </Grid>
 
         </Grid>
+        <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
         
         
 

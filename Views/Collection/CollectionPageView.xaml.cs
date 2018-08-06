@@ -21,6 +21,7 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public CollectionViewModel OldViewModel = null;
         private DSL _dsl;

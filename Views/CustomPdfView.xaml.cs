@@ -275,8 +275,8 @@ namespace Dash
             Unloaded += CustomPdfView_Unloaded;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
-            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
+            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
@@ -392,8 +392,25 @@ namespace Dash
                     _bottomTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
                     _bottomTimer.Start();
                 }
+
+				//check if annotations have left the screen
+	            foreach (var child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
+	            {
+					//show any that are visible
+		            if (BottomScrollViewer.VerticalOffset < Canvas.GetTop(child) && 
+		                Canvas.GetTop(child) < (BottomScrollViewer.VerticalOffset + BottomScrollViewer.ViewportHeight))
+		            {
+						//need way of getting linked doc from ui element or use 
+						_bottomAnnotationList
+					}
+		            else
+		            {
+						
+		            }
+	            }
                
             }
+
            
         }
 
@@ -477,7 +494,7 @@ namespace Dash
 		    var pdfX = viewModel.XPos;
 		    var pdfY = viewModel.YPos;
 		    var pdfWidth = _bottomAnnotationOverlay.ActualWidth;
-		    var pdfHeight = docView.ActualHeight;
+		    var pdfHeight = _bottomAnnotationOverlay.ActualHeight * BottomScrollViewer.ViewportHeight / BottomScrollViewer.ExtentHeight;
 
 			//if point is to the left of the pdf, set x to 10 (margin)
 		    if (xPos <= pdfX + 10)
@@ -495,17 +512,18 @@ namespace Dash
 
 			//same idea for y pos!
 		    //if point is above the pdf, set x to 10 (margin)
+		    double yOff = _bottomAnnotationOverlay.ActualHeight * BottomScrollViewer.VerticalOffset / BottomScrollViewer.ExtentHeight;
 		    if (yPos <= pdfY + 20)
 		    {
-			    closestY = 20;
+			    closestY = 20 + yOff;
 		    }//else if it is within the height of the pdf, set x to itself
-		    else if (yPos <= pdfY + pdfHeight - 40)
+		    else if (yPos <= pdfY + pdfHeight - 30)
 		    {
-			    closestY = yPos - pdfY;
+			    closestY = yPos - pdfY + yOff;
 		    } //else, it is below the pdf
 		    else
 		    {
-			    closestY = pdfHeight - 40;
+			    closestY = pdfHeight - 30 + yOff;
 		    }
 
 		    return new Point(closestX, closestY);
@@ -571,7 +589,7 @@ namespace Dash
                 {
                     var page = pdfDocument.GetPage(i);
                     var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size);
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
                 }
@@ -724,9 +742,12 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
-            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
+            var curPt = e.GetCurrentPoint(this).Position;
+            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
+            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
             {
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
             }
         }
 
@@ -748,8 +769,10 @@ namespace Dash
             //e.Handled = true;
         }
 
+        Point _downPt = new Point();
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||

@@ -96,29 +96,7 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
-			//check if a doc is currently in link activation mode
-	        if (LinkActivationManager.ActivatedDocs.Count == 1 && LinkActivationManager.ActivatedDocs[0].GetFirstDescendantOfType<CustomPdfView>() != null)
-	        {
-				//make this rich text an annotation for activated  doc
-				DocumentView activated = LinkActivationManager.ActivatedDocs[0];
-
-		        if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
-		        {
-			        var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-				        rtv.LayoutDocument.GetPosition());
-					
-					//link region to this text 
-					region.Link(rtv.LayoutDocument, LinkContexts.PushPin, "quick annotation");
-				}
-
-		        // CustomPdfView pdfView = activated.GetFirstDescendantOfType<CustomPdfView>();
-
-		        //link from activated Get Region to this rich text
-		        // var regionDoc = pdfView.GetRegionDocument(rtv.LayoutDocument.GetPosition());
-		        //activated.ViewModel.DataDocument.LinkFromActivatedToText(regionDoc, docController.GetDataDocument(), LinkContexts.PushPin);
-
-
-	        }
+			
             return rtv;
         }
 
