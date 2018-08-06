@@ -409,6 +409,6 @@ namespace Dash
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
 
-        public void SetDropIndicationFill(Brush fill) { CurrentView.SetDropIndicationFill(fill); } 
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
     }
 }
