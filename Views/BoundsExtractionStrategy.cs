@@ -93,7 +93,7 @@ namespace Dash
                     var width = start.X - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width);
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
-                            pageHeight - (start.Y + _pageOffset),
+                            _elements.Last().Bounds.Y, // pageHeight - (start.Y + _pageOffset),
                             width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Y - start.Y))));
                 }
 
@@ -137,11 +137,13 @@ namespace Dash
                         // add the element to the page if the page (of selectable elements) already exists
                         if (pageElements.Count > _pages.IndexOf(page))
                         {
+                            selectableElement.RawIndex = pageElements[_pages.IndexOf(page)].Count;
                             pageElements[_pages.IndexOf(page)].Add(selectableElement);
                         }
                         // otherwise create a new page of selectable elements and initialize it with this element
                         else
                         {
+                            selectableElement.RawIndex = 0;
                             pageElements.Add(new List<SelectableElement> {selectableElement});
                         }
                     }
@@ -173,7 +175,7 @@ namespace Dash
             foreach (var selectableElement in page.Skip(1))
             {
                 // if the element is deemed to be on a new line, create a new one and add it
-                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height ||
+                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height*2/3 ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
                 {
                     element = selectableElement;
@@ -207,8 +209,8 @@ namespace Dash
         /// </summary>
         private List<List<SelectableElement>> SortIntoColumns(List<List<SelectableElement>> lines)
         {
-            var columns = new List<PdfColumnDef> {new PdfColumnDef()};
-            var strings = new List<string>(); strings.Add("");
+            var columns = new List<PdfColumnDef> ();
+            var strings = new List<string>(); 
             // loop through every line
             foreach (var line in lines)
             {
@@ -219,11 +221,12 @@ namespace Dash
                     else line.RemoveAt(0);
                 if (line.Count == 0)
                     continue;
-                if (!string.IsNullOrWhiteSpace(strings[0]) && !strings[0].EndsWith(" "))
+                if (strings.Count > 0 && !string.IsNullOrWhiteSpace(strings[0]) && !strings[0].EndsWith(" "))
                     strings[0] += " ";
                     // sort each line horizontally
                 var linestr = line.Aggregate("", (str, e) => str + (e.Contents as string));
                 var element = line.First();
+                var currFontWidth = AverageFontSize(line);
                 // assume that each line starts at column 0
                 var col = 0;
                 // find the width of the previous line
@@ -234,9 +237,12 @@ namespace Dash
                     var firstEle = line.First();
                     var temp = firstEle.Bounds.X;
                     // while there's space to move the content to another column, based on what the previous line width is
-                    while (!string.IsNullOrWhiteSpace(firstEle.Contents as string) && columns[col].SelectableElements.Any() && temp - lineWidth > columns[col].SelectableElements.Min(i => i.Bounds.X) &&
-                           lineWidth != 0.0)
+                    while ( firstEle.Bounds.Left > columns[col].Bounds.Right + currFontWidth)
+
+                    //!string.IsNullOrWhiteSpace(firstEle.Contents as string) && columns[col].SelectableElements.Any() && temp - lineWidth > columns[col].SelectableElements.Min(i => i.RawIndex == -1 ? int.MaxValue : i.Bounds.X) &&
+                    //       lineWidth != 0.0)
                     {
+                        columns[col].SelectableElements.Add(new SelectableElement(-1, "", new Rect()) { RawIndex = -1 }); // there's a gap
                         // do the math that would end up doing it
                         temp -= lineWidth;
                         // tell the line that we are now one column over
@@ -246,8 +252,13 @@ namespace Dash
                         {
                             columns.Add(new PdfColumnDef());
                             strings.Add("");
+                            break;
                         }
                     }
+                } else
+                {
+                    columns.Add(new PdfColumnDef());
+                    strings.Add("");
                 }
 
                 double lastX = element.Bounds.Left;
@@ -274,15 +285,18 @@ namespace Dash
                  * through templates, this will break.
                  */
 
+                if (linestr.Contains("AARTS"))
+                    ;
+
                 // find the average font size of the line's elements
-                var currFontWidth = AverageFontSize(line);
                 foreach (var selectableElement in line.Skip(1))
                 {
                     var selectableLeft = selectableElement.Bounds.Left;
                     var selectableString = selectableElement.Contents as string;
-                    if ((selectableElement.Bounds.Left+ selectableElement.Bounds.Right)/2 > lastX)
+                    var whiteSpace = string.IsNullOrWhiteSpace(selectableString); 
+                    if (!whiteSpace || 
+                        ((selectableElement.Bounds.Left+ selectableElement.Bounds.Right)/2 > lastX && Math.Abs(element.RawIndex - selectableElement.RawIndex) < 3))
                     {
-                        var whiteSpace = string.IsNullOrWhiteSpace(selectableString);
                         // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
                         var nextColumn = selectableLeft > columns[col].Bounds.Right + currFontWidth ||
                                          selectableElement.Bounds.Left > lastX + currFontWidth*1.1;
@@ -297,6 +311,8 @@ namespace Dash
                                     newCol = i;
                                     break;
                                 }
+                                else
+                                    columns[i].SelectableElements.Add(new SelectableElement(-1, "", new Rect()) { RawIndex = -1 });
                             if (newCol == -1)
                             {
                                 columns.Add(new PdfColumnDef() { Bounds = selectableElement.Bounds });
@@ -311,7 +327,7 @@ namespace Dash
                         // add to whatever column we're indexed in
                         if (!nextColumn || !whiteSpace)
                         {
-                            if ((selectableElement.Bounds.Left + selectableElement.Bounds.Right) / 2 < lastRect.Right && 
+                            if ((selectableElement.Bounds.Left + selectableElement.Bounds.Right*2) / 3 < lastRect.Right && 
                                  selectableElement.Bounds.Left - lastX < currFontWidth/2 && !nextColumn)
                             {
                                 columns[col].SelectableElements.RemoveAt(columns[col].SelectableElements.Count - 1);
@@ -321,11 +337,11 @@ namespace Dash
                                 continue;
                             columns[col].SelectableElements.Add(selectableElement);
                             strings[col] += selectableString;
-                            var right = Math.Max(columns[col].Bounds.Right, whiteSpace ? lastX : selectableElement.Bounds.Right);
+                            var right = Math.Max(columns[col].Bounds.Right,  selectableElement.Bounds.Right);
                             columns[col].Bounds = new Rect(new Point(Math.Min(columns[col].Bounds.Left, whiteSpace ? lastX : selectableElement.Bounds.Left), 0),
                                 new Point(right, 0));
                         }
-                        if (!whiteSpace)
+                       // if (!whiteSpace)
                             lastX = selectableElement.Bounds.Right;
                         lastRect = selectableElement.Bounds;
 
@@ -406,19 +422,45 @@ namespace Dash
             var elements = new List<SelectableElement>();
             var lines = SortIntoLines(page);
             var columns = SortIntoColumns(lines);
-            RemoveDuplicates(columns);
+            //RemoveDuplicates(columns);
 
+            var colIndexes = columns.Select((c) => 0).ToList();
             // loop through each column in increasing order
-            foreach (var column in columns)
+            while (true)
             {
-                // loop through each element
-                foreach (var selectableElement in column)
+                int whichCol = -1;
+                var lowIndex = int.MaxValue;
+                for (int i = 0; i < colIndexes.Count; i++) 
+                    if (columns[i].Count > colIndexes[i] && columns[i][colIndexes[i]].RawIndex < lowIndex)
+                    {
+                        whichCol = i;
+                        lowIndex = columns[i][colIndexes[i]].RawIndex;
+                    }
+                // foreach (var column in columns)
+                if (whichCol == -1)
+                    break;
+                var column = columns[whichCol];
                 {
-                    // add it
-                    selectableElement.Index = elements.Count + elementCount;
-                    elements.Add(selectableElement);
+                    // loop through each element
+                    for (int idx = colIndexes[whichCol]; idx < column.Count; idx++)
+                    {
+                        var selectableElement = column[idx];
+                        if (selectableElement.RawIndex == -1)
+                        {
+                            colIndexes[whichCol]++;
+                            break;
+                        }
+                        else
+                        {
+                            // add it
+                            selectableElement.Index = elements.Count + elementCount;
+                            elements.Add(selectableElement);
+                            colIndexes[whichCol]++;
+                        }
+                    }
                 }
             }
+            var outstr = elements.Aggregate("", ((seed, e) => seed + (e.Contents as string)));
 
             return elements;
         }
