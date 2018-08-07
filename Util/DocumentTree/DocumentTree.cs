@@ -39,20 +39,6 @@ namespace Dash
                     cachedNodes[doc] = new DocumentNode(doc, null, null);
                 }
 
-                //var region = (doc.GetDataDocument().GetField(KeyStore.RegionsKey) as DocumentController).GetDataDocument();
-                //var regions = (region.GetLinks(KeyStore.LinkToKey)?.TypedData.ToList() ?? new List<DocumentController>()).Concat(
-                //    region.GetLinks(KeyStore.LinkFromKey)?.TypedData.ToList() ?? new List<DocumentController>());
-                //foreach (var reg in regions)
-                //{
-                //    if (cachedNodes.ContainsKey(reg))
-                //    {
-                //        continue;
-                //    } else
-                //    {
-                //        cachedNodes[reg] = new DocumentNode(reg, null, null);
-                //    }
-                //}
-
                 var dfields = doc.EnumDisplayableFields().ToList();
                 foreach (var enumDisplayableField in dfields)
                 {
