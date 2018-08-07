@@ -909,7 +909,7 @@ namespace Dash
             foreach (var selectableElement in _textSelectableElements)
             {
                 var b = selectableElement.Bounds;
-                if (b.Contains(p))
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
