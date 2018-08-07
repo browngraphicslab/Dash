@@ -185,7 +185,7 @@ namespace Dash
 
         private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
         {
-            _docs?.SetBackgroundColor(e);
+            _docs?.ViewModel?.LayoutDocument?.SetBackgroundColor(e);
         }
 
         #region Old Opacity/Color Code No Longer In Use

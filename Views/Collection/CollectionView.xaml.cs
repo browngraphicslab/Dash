@@ -20,12 +20,12 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard
-        }
+        public UserControl UserControl => this;
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
-        public UserControl CurrentView { get; set; }
+        public ICollectionView CurrentView { get; set; }
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Dash
                 }
                 else
                     if (parentParentFreeform != null)
-                        CurrentView.ManipulationMode = ManipulationModes.None;
+                        CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
             }
             
 
@@ -368,11 +368,12 @@ namespace Dash
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
-            CurrentView.Loaded -= CurrentView_Loaded;
-            CurrentView.Loaded += CurrentView_Loaded;
-            var selected = SelectionManager.SelectedDocs.ToArray();
-            SelectionManager.DeselectAll();
-            SelectionManager.SelectDocuments(selected.ToList());
+            CurrentView.UserControl.Loaded -= CurrentView_Loaded;
+            CurrentView.UserControl.Loaded += CurrentView_Loaded;
+            // tfs - I don't think these three lines are actually doing anything...
+            //var selected = SelectionManager.SelectedDocs.ToArray();
+            //SelectionManager.DeselectAll();
+            //SelectionManager.SelectDocuments(selected.ToList());
 
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
@@ -407,6 +408,7 @@ namespace Dash
         {
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
-        
+
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
     }
 }

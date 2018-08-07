@@ -66,6 +66,7 @@ namespace Dash
                     }
                     doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted -= ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -90,11 +91,17 @@ namespace Dash
                     doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
                     doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
                     doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    doc.ManipulationControls.OnManipulatorAborted += ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
             }
+        }
+
+        private void ManipulationControls_OnManipulatorAborted()
+        {
+            VisibilityState = Visibility.Collapsed;
         }
 
         private void OnManipulatorHelperCompleted()
@@ -161,7 +168,7 @@ namespace Dash
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            SelectedDocs = SelectionManager.SelectedDocs.ToList();
+            SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
             {
                 xMultiSelectBorder.BorderThickness = new Thickness(2);

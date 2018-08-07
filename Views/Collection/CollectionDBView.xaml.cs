@@ -14,6 +14,7 @@ namespace Dash
 {
     public sealed partial class CollectionDBView : ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionDBView()
         {
             this.InitializeComponent();

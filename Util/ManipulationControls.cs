@@ -15,6 +15,7 @@ using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -38,12 +39,11 @@ namespace Dash
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
+        public delegate void OnManipulatorAbortedHandler();
+        public event OnManipulatorAbortedHandler OnManipulatorAborted;
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
         public event OnManipulationCompletedHandler OnManipulatorCompleted;
         public event OnManipulationStartedHandler OnManipulatorStarted;
-
-
-        private CollectionView _previouslyHighlightedCollectionView = null;
 
         private double _accumulatedTranslateAfterSnappingX;
         private double _accumulatedTranslateAfterSnappingY;
@@ -64,7 +64,7 @@ namespace Dash
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
+            _manipulationCompleted = new ManipulationCompletedEventHandler(ElementOnManipulationCompleted);
         }
 
         #region Snapping Layouts
@@ -549,9 +549,9 @@ namespace Dash
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var right = (ParentDocument.IsRightBtnPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
-            var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
-            var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-            ParentDocument.ManipulationMode = right && parentFreeform != null && (ParentDocument.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+            //var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
+            //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+            ParentDocument.ManipulationMode = right || (ParentDocument.IsShiftPressed()) ? ManipulationModes.All : ManipulationModes.None;
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
                 e.Complete();
@@ -564,7 +564,11 @@ namespace Dash
             {
                 e.Handled = true;
             }
+            ParentDocument.RemoveHandler(UIElement.ManipulationCompletedEvent, _manipulationCompleted);
+            ParentDocument.AddHandler(UIElement.ManipulationCompletedEvent, _manipulationCompleted, true);
         }
+
+        ManipulationCompletedEventHandler _manipulationCompleted = null;
 
         // If you want to add new code into the ElementOnManipulationStarted handler, use this one. It will always be called.
         public void ElementOnManipulationStarted()
@@ -573,13 +577,14 @@ namespace Dash
             ManipulationStartX = ParentDocument.ViewModel.XPos;
             ManipulationStartY = ParentDocument.ViewModel.YPos;
             OnManipulatorStarted?.Invoke();
+            _convertToDragDrop = false;
         }
-
+        bool _convertToDragDrop = false;
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event. Note that this event does NOT always fire: TranslateAndScale should be the
         /// method to add code in so ALL documents will have access to the code.
         /// </summary>
-        void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        async void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
@@ -593,11 +598,7 @@ namespace Dash
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
                 var deltaAfterAlignment = SimpleAlign(delta);
 
-                TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
-                //DetectShake(sender, e);
-
-                //_translateLastManipulationDelta = delta;
-
+                TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale, e, null, null);
                 e.Handled = true;
             }
         }
@@ -607,7 +608,7 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(Point position, Point translate, double scaleFactor)
+        public async void TranslateAndScale(Point position, Point translate, double scaleFactor, ManipulationDeltaRoutedEventArgs e, ManipulationControlHelper helper, PointerRoutedEventArgs ptrArgs)
         {
             ElementScale *= scaleFactor;
 
@@ -618,22 +619,33 @@ namespace Dash
             }
 
             var nestedCollection = ParentDocument.GetCollectionToMoveTo(GetOverlappedViews());
-            if ((nestedCollection == null && _previouslyHighlightedCollectionView != null) || nestedCollection != null && !nestedCollection.Equals(_previouslyHighlightedCollectionView))
+            if (nestedCollection != null)
             {
-                _previouslyHighlightedCollectionView?.Unhighlight();
-                nestedCollection?.Highlight();
-                _previouslyHighlightedCollectionView = nestedCollection;
-            }
-            Dock(true);
+                OnManipulatorAborted?.Invoke();
+                _convertToDragDrop = true;
+                if (helper != null)
+                {
+                    helper.Abort(ptrArgs);
+                    ElementOnManipulationCompleted(null, null);
+                }
+                else if (e != null)
+                {
+                    e.Complete();
+                }
+            } else
+                Dock(true);
         }
 
         // DO NOT ADD CODE INTO THIS METHOD: add into the overloaded ElementOnManipulationCompleted method below. Not all documents will
         // fire this method.
         private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            ParentDocument.RemoveHandler(UIElement.ManipulationCompletedEvent, _manipulationCompleted);
             if (e == null || !e.Handled)
             {
-                ElementOnManipulationCompleted();
+                ElementOnManipulationCompleted(_convertToDragDrop);
+                if (_convertToDragDrop)
+                    this.ParentDocument.SetupDragDropDragging(null);
 
                 if (e != null)
                 {
@@ -647,26 +659,16 @@ namespace Dash
         {
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            _previouslyHighlightedCollectionView?.Unhighlight();
 
             var docRoot = ParentDocument;
 
-            if (!aborted)
+            if (aborted)
+                OnManipulatorAborted?.Invoke();
+            else
             {
-                var pos = docRoot.RootPointerPos();
-                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    using (UndoManager.GetBatchHandle())
-                        docRoot.MoveToContainingCollection(overlappedViews);
-                });
-            }
-
-			OnManipulatorCompleted?.Invoke();
-
-            if (!aborted)
+                OnManipulatorCompleted?.Invoke();
                 Dock(false);
+            }
 
             UndoManager.EndBatch();
             _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;

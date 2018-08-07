@@ -159,9 +159,8 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-
-            _bottomAnnotationOverlay.LoadPinAnnotations();
-            _topAnnotationOverlay.LoadPinAnnotations();
+            _bottomAnnotationOverlay.LoadPinAnnotations(this);
+            _topAnnotationOverlay.LoadPinAnnotations(this);
         }
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
@@ -195,13 +194,15 @@ namespace Dash
                     }
 
                     // if there's ever a jump in our indices, insert two line breaks before adding the next index
-                    var prevIndex = indices.First();
-                    foreach (var index in indices.Skip(1))
+                    var prevIndex = indices.First()-1;
+                    foreach (var index in indices)
                     {
                         if (prevIndex + 1 != index)
                         {
                             sb.Append("\r\n\r\n");
                         }
+                        if (prevIndex > 0 && sb.Length > 0 && !char.IsWhiteSpace(sb[sb.Length - 1]) && sb[sb.Length-1] != '-' && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
+                            sb.Append("\r\n");
                         var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
@@ -277,8 +278,8 @@ namespace Dash
             Unloaded += CustomPdfView_Unloaded;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
-            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
+            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
@@ -343,7 +344,7 @@ namespace Dash
         private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.SelectedDocs.Contains(docview))
+            if (SelectionManager.IsSelected(docview))
             {
                 ShowPdfControls();
             }
@@ -503,14 +504,16 @@ namespace Dash
                 _currentPageCount = (int)_wPdfDocument.PageCount;
             }
 
-            for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-            {
-                var page = pdfDocument.GetPage(i);
-                var size = page.GetPageSize();
-                strategy.SetPage(i - 1, offset, size);
-                offset += page.GetPageSize().GetHeight() + 10;
-                processor.ProcessPageContent(page);
-            }
+            await Task.Run(() => {
+                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                {
+                    var page = pdfDocument.GetPage(i);
+                    var size = page.GetPageSize();
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
+                    offset += page.GetPageSize().GetHeight() + 10;
+                    processor.ProcessPageContent(page);
+                }
+            });
             
             var selectableElements = await strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.SetSelectableElements(selectableElements);
@@ -520,14 +523,14 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-            _bottomAnnotationOverlay.LoadPinAnnotations();
-            _topAnnotationOverlay.LoadPinAnnotations();
+
+            _bottomAnnotationOverlay.LoadPinAnnotations(this);
+            _topAnnotationOverlay.LoadPinAnnotations(this);
             MainPage.Instance.ClosePopup();
         }
 
         public BoundsExtractionStrategy Strategy { get; set; }
 
-        private CancellationTokenSource _renderToken;
         private int _currentPageCount = -1;
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -660,10 +663,12 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
             e.Handled = true;
-            if (!SelectionManager.SelectedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            var curPt = e.GetCurrentPoint(this).Position;
+            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
+            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
             }
         }
 
@@ -685,8 +690,10 @@ namespace Dash
             //e.Handled = true;
         }
 
+        Point _downPt = new Point();
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||
@@ -812,11 +819,14 @@ namespace Dash
 
                     topOffset += size.Height * scale + 15;
                 }
-                
+
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, offsets.First(), null);
-                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First(), null);
+                TopScrollViewer.ChangeView(null,
+                    offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null,
+                    offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
+                    null);
             }
             else
             {
@@ -837,7 +847,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, offsets.First(), null);
+                BottomScrollViewer.ChangeView(null, offsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
             }
         }
 
@@ -959,7 +969,7 @@ namespace Dash
                 DocControllers.Add(docview.ViewModel.LayoutDocument);            //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
                 DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers), true);
             }
-            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>());
+            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)

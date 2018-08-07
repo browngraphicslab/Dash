@@ -18,8 +18,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
+using Windows.Storage;
+using Dash.Popups;
+using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
-using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -63,7 +65,7 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
-        public Popup LayoutPopup => xLayoutPopup;
+        public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
@@ -105,8 +107,11 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
-                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+	            if (ActivePopup != null)
+	            {
+		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+				}
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -180,7 +185,6 @@ namespace Dash
                 MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
-                treeContext.Tag = "TreeView VM";
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
@@ -595,7 +599,7 @@ namespace Dash
                 }
             }
 
-            if (xCanvas.Children.Contains(TabMenu.Instance))
+            if (xTabCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
@@ -619,14 +623,6 @@ namespace Dash
                             DocumentView.FocusedDocument.HandleShiftEnter();
                     }
                 }
-                if (this.IsF1Pressed() && this.IsPointerOver())
-                {
-                    DocumentView.FocusedDocument.ShowLocalContext(true);
-                }
-                if (this.IsF2Pressed() && this.IsPointerOver())
-                {
-                    DocumentView.FocusedDocument.ShowSelectedContext();
-                }
             }
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
@@ -634,19 +630,10 @@ namespace Dash
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
                     using (UndoManager.GetBatchHandle())
-                        foreach (var doc in SelectionManager.SelectedDocs)
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
                         {
                             doc.DeleteDocument();
                         }
-                    //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
-                    //    .OfType<CollectionView>().ToList();
-                    //foreach (var c in topCollection.Select(c => c.CurrentView).OfType<CollectionFreeformBase>())
-                    //    if (c.SelectedDocs.Count() > 0)
-                    //    {
-                    //        foreach (var d in c.SelectedDocs)
-                    //            d.DeleteDocument();
-                    //        break;
-                    //    }
                 }
             }
 
@@ -683,7 +670,7 @@ namespace Dash
             }
 
             // TODO propagate the event to the tab menu
-            if (xCanvas.Children.Contains(TabMenu.Instance))
+            if (xTabCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
@@ -691,13 +678,6 @@ namespace Dash
             if (e.VirtualKey == VirtualKey.Escape)
             {
                 this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
-                e.Handled = true;
-            }
-
-            if (DocumentView.FocusedDocument != null)
-            {
-                if (!this.IsF1Pressed())
-                    DocumentView.FocusedDocument.ShowLocalContext(false);
             }
 
             e.Handled = true;
@@ -737,7 +717,7 @@ namespace Dash
 
                 if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
-                    //TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
+                    TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
                     if (e != null)
                         e.Handled = true;
@@ -747,12 +727,12 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            //TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xTabCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
         {
-            if (!xCanvas.Children.Contains(GenericSearchView.Instance))
+            if (!xTabCanvas.Children.Contains(GenericSearchView.Instance))
             {
                 xCanvas.Children.Add(GenericSearchView.Instance);
                 Point absPos = e.GetPosition(Instance);
@@ -786,6 +766,7 @@ namespace Dash
         }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
+        Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
             if (xMapDocumentView == null)
@@ -796,17 +777,27 @@ namespace Dash
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
-                //xMapDocumentView.IsHitTestVisible = false;
+                var overlay = new Grid();
+                overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
+
+                _mapActivateBtn.HorizontalAlignment = HorizontalAlignment.Left;
+                _mapActivateBtn.VerticalAlignment = VerticalAlignment.Top;
+                _mapActivateBtn.Click += (s, e) => overlay.Background = overlay.Background == null ? new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) : null;
+                overlay.Children.Add(_mapActivateBtn);
+
+                Grid.SetColumn(overlay, 2);
+                Grid.SetRow(overlay, 0);
                 Grid.SetColumn(xMapDocumentView, 2);
                 Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
+                xLeftStack.Children.Add(overlay);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
                     cview?.ViewModel?.FitContents(cview);
                 };
-                xMapDocumentView.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
+                overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -815,6 +806,8 @@ namespace Dash
 
         private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
+                return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
             var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
@@ -918,67 +911,78 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
+		
 
+	    public async Task<PushpinType> GetPushpinType()
+	    {
+		    var typePopup = new PushpinTypePopup();
+			SetUpPopup(typePopup);
 
-        private void Popup_OnOpened(object sender, object e)
+		    var mode = await typePopup.GetPushpinType();
+		    UnsetPopup();
+
+		    return mode;
+	    }
+
+        public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-            xOverlay.Visibility = Visibility.Visible;
-            xComboBox.SelectedItem = null;
+	        var importPopup = new HTMLRTFPopup();
+			SetUpPopup(importPopup);
+
+	        var mode = await importPopup.GetLayoutMode();
+	        UnsetPopup();
+
+			return mode;
         }
 
-        private void Popup_OnClosed(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Collapsed;
-        }
+	    public async Task<VideoWrapper> GetVideoFile()
+	    {
+		    var videoPopup = new ImportVideoPopup();
+		    SetUpPopup(videoPopup);
 
-        public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
-        {
-            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
-            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
-            {
-                xOverlay.Visibility = Visibility.Collapsed;
-                xLayoutPopup.IsOpen = false;
-                xErrorMessageIcon.Visibility = Visibility.Collapsed;
-                xErrorMessageText.Visibility = Visibility.Collapsed;
+		    var video = await videoPopup.GetVideoFile();
+			UnsetPopup();
 
-                var remember = xSaveHtmlType.IsChecked ?? false;
+		    return video;
+	    }
 
-                if (xComboBox.SelectedIndex == 0)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else if (xComboBox.SelectedIndex == 1)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else
-                {
-                    xOverlay.Visibility = Visibility.Visible;
-                    xLayoutPopup.IsOpen = true;
-                    xErrorMessageIcon.Visibility = Visibility.Visible;
-                    xErrorMessageText.Visibility = Visibility.Visible;
-                }
-            }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+	    public async Task<StorageFile> GetImageFile()
+	    {
+		    var imagePopup = new ImportImagePopup();
+			SetUpPopup(imagePopup);
 
-            LayoutPopup.IsOpen = true;
-            xConfirmButton.Tapped += XConfirmButton_OnClick;
+		    var image = await imagePopup.GetImageFile();
+		    UnsetPopup();
 
-            return tcs.Task;
-        }
+		    return image;
+	    }
+
+		/// <summary>
+		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+		/// </summary>
+		/// <param name="popup"></param>
+	    private void SetUpPopup(DashPopup popup)
+		{
+			ActivePopup = popup;
+			xOverlay.Visibility = Visibility.Visible;
+			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+			Grid.SetColumn(popup.Self(), 2);
+			xOuterGrid.Children.Add(popup.Self());
+		}
+
+		/// <summary>
+		/// This method is called after a popup closes, to remove it from the page.
+		/// </summary>
+	    private void UnsetPopup()
+		{
+			xOverlay.Visibility = Visibility.Collapsed;
+			if (ActivePopup != null)
+		    {
+			    xOuterGrid.Children.Remove(ActivePopup.Self());
+			    ActivePopup = null;
+		    }
+	    }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {
@@ -1115,7 +1119,7 @@ namespace Dash
 
             void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
             {
-                onScreenView?.ViewModel.RetractBorder();
+                onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
 
@@ -1144,9 +1148,8 @@ namespace Dash
 
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
-            var list = frame.GetDescendantsOfType<DocumentView>().Select((dv) => dv.ViewModel.DocumentController).ToList();
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel.LayoutDocument.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
@@ -1212,18 +1215,18 @@ namespace Dash
 
         public void TogglePopup()
         {
-            xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
-            xLoadingPopup.IsOpen = true;
-            Load.Begin();
+            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+            //xLoadingPopup.IsOpen = true;
+            //Load.Begin();
         }
 
         public void ClosePopup()
         {
-            Load.Stop();
-            xLoadingPopup.HorizontalOffset = 0;
-            xLoadingPopup.VerticalOffset = 0;
-            xLoadingPopup.IsOpen = false;
+            //Load.Stop();
+            //xLoadingPopup.HorizontalOffset = 0;
+            //xLoadingPopup.VerticalOffset = 0;
+            //xLoadingPopup.IsOpen = false;
 
         }
 

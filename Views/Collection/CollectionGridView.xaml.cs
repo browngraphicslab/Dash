@@ -14,15 +14,14 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
+        int _cellSize = 250;
+        public UserControl         UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
         {
             this.InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
             AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
-
-
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
             Loaded += CollectionGridView_Loaded;
@@ -30,11 +29,12 @@ namespace Dash
 
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
-            var selected = SelectionManager.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            var selectedDocControllers =
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;
-                if (selected.Contains(d))
+                if (selectedDocControllers.Contains(d))
                     xGridView.SelectedItem = i;
             }
             xGridView.SelectionChanged += XGridView_SelectionChanged;
@@ -44,11 +44,8 @@ namespace Dash
         {
             if (e.AddedItems.Count > 0)
             {
-                SelectionManager.DeselectAll();
-                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)).FirstOrDefault());
-
+                SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)), false);
             }
-
         }
 
         private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -62,12 +59,9 @@ namespace Dash
             {
                 docview.ManipulationMode = ManipulationModes.None;
                 //SelectionManager.Select(docview);
-                
             }
 
             e.Handled = true;
-
-
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -78,36 +72,17 @@ namespace Dash
 
                 // get the scale amount
                 var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
-                if (ViewModel.CellSize + scaleAmount > 10 && ViewModel.CellSize + scaleAmount < 1000)
+                if (_cellSize + scaleAmount > 10 && _cellSize + scaleAmount < 1000)
                 {
                     
-                    ViewModel.CellSize += scaleAmount;
+                    _cellSize += scaleAmount;
 
-                    ((ItemsWrapGrid) xGridView.ItemsPanelRoot).ItemWidth = ViewModel.CellSize;
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = ViewModel.CellSize;
-
-                    //var style = new Style(typeof(GridViewItem));
-                    
-                    //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-                    //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-                    //xGridView.ItemContainerStyle = style;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = _cellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = _cellSize;
                     e.Handled = true;
                 }
                 
             }
-        }
-
-        public CollectionGridView(CollectionViewModel viewModel) : this()
-        {
-            DataContext = viewModel;
-        }
-
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            //var style = new Style(typeof(GridViewItem));
-            //style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-            //style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-            //xGridView.ItemContainerStyle = style;
         }
 
         #region DragAndDrop
@@ -130,10 +105,6 @@ namespace Dash
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            if (args.DropResult == DataPackageOperation.None)
-            {
-                return;
-            }
             if (args.DropResult == DataPackageOperation.Move)
             {
                 var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
@@ -148,7 +119,6 @@ namespace Dash
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
             MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
-          
         }
     }
 }

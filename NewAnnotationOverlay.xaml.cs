@@ -6,8 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -20,12 +26,15 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using Dash.Models.DragModels;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
+using MyToolkit.Multimedia;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-
     public enum AnnotationType
     {
         None,
@@ -35,6 +44,13 @@ namespace Dash
         Pin 
     }
 
+	public enum PushpinType
+	{
+		Text,
+		Video,
+		Image
+	}
+
     public interface ISelectable
     {
         void Select();
@@ -43,6 +59,11 @@ namespace Dash
         bool Selected { get; }
 
         DocumentController RegionDocument { get; }
+    }
+
+    public class NewAnnotationOverlayViewModel : ViewModelBase
+    { 
+        public ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
     }
 
     public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
@@ -195,35 +216,21 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
-        public void LoadPinAnnotations()
+        public void LoadPinAnnotations(CustomPdfView pdfView)
         {
-            var currentDocViews = XAnnotationCanvas.Children.Where(i => i is DocumentView).Cast<DocumentView>();
-            foreach (var olddoc in currentDocViews)
-            {
-                XAnnotationCanvas.Children.Remove(olddoc);
-            }
-
-            var pinAnnotations = _mainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Clear();
+            
             if (pdfView != null)
             {
-                var scale = pdfView.Width / pdfView.PdfMaxWidth;
-
+                var pinAnnotations = _mainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
                 foreach (var doc in pinAnnotations)
                 {
-                    var dvm = new DocumentViewModel(doc) { Undecorated = true };
-                    var docView = new DocumentView
-                    {
-                        DataContext = dvm,
-                        BindRenderTransform = true,
-                        Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                        BindVisibility = true,
-                        ResizersVisible = true
-                    };
-                    XAnnotationCanvas.Children.Add(docView);
+                    var dvm = new DocumentViewModel(doc) { Undecorated = true, ResizersVisible = true, DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
                 }
             }
         }
@@ -508,7 +515,11 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
-        private void CreatePin(Point point)
+		/// <summary>
+		/// Call this method if you just want to make a pushpin annotation with the default text.
+		/// </summary>
+		/// <param name="point"></param>
+        private async void CreatePin(Point point)
         {
             if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
             {
@@ -522,55 +533,167 @@ namespace Dash
                     return;
                 }
             }
+			
+	        DocumentController annotationController;
 
-            var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
-                new Size(150, 75));
-            richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-            richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-            var annotation = _regionGetter(AnnotationType.Pin);
-            annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-            annotation.SetWidth(10);
-            annotation.SetHeight(10);
-            annotation.GetDataDocument()
-                .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
-            annotation.Link(richText.Document, LinkContexts.PushPin);
-            RegionDocsList.Add(annotation);
-            RegionAdded?.Invoke(this, annotation);
-            RenderPin(annotation, richText.Document);
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+	        var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+	        var scale = pdfView.Width / pdfView.PdfMaxWidth;
 
-            var docView = new DocumentView
-            {
-                DataContext = new DocumentViewModel(richText.Document) { Undecorated = true },
-                BindRenderTransform = true,
-                Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                BindVisibility = true,
-                ResizersVisible = true
-            };
-            XAnnotationCanvas.Children.Add(docView);
-            _pinAnnotations.Add(docView);
+			// the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
+			if (this.IsCtrlPressed())
+	        {
+		        var pushpinType = await MainPage.Instance.GetPushpinType();
+		        switch (pushpinType)
+		        {
+					case PushpinType.Text:
+						annotationController = CreateTextPin(point);
+						break;
+					case PushpinType.Video:
+						annotationController = await CreateVideoPin(point);
+						break;
+					case PushpinType.Image:
+						annotationController = await CreateImagePin(point);
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+		        }
+			}
+	        else
+	        {
+				// by default the pushpin will create a text note
+		        annotationController = CreateTextPin(point);
+	        }
 
-            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
-                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-                    Context context)
-                {
-                    if (args.NewValue == null) return;
+			// if the user presses back or cancel, return null
+	        if (annotationController == null)
+	        {
+		        return;
+			}
 
-                    var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
-                    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
-                        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
-                    var pos = regionDef.GetPosition().Value;
-                    pdfview.ScrollToPosition(pos.Y);
-                    docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
-                });
-            _mainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-                .Add(docView.ViewModel.DocumentController);
-
-            SelectionManager.DeselectAll();
-            SelectionManager.Select(docView);
+	        CreatePin(point, annotationController);
         }
+
+		/// <summary>
+		/// Call this method if you want to make a pushpin annotation with a DocumentController in mind as the target.
+		/// </summary>
+		/// <param name="point"></param>
+		/// <param name="target"></param>
+	    private void CreatePin(Point point, DocumentController target)
+		{
+			var annotation = _regionGetter(AnnotationType.Pin);
+		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+		    annotation.SetWidth(10);
+		    annotation.SetHeight(10);
+		    annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.Link(target, LinkContexts.PushPin);
+		    RegionDocsList.Add(annotation);
+		    RegionAdded?.Invoke(this, annotation);
+		    RenderPin(annotation, target);
+		    var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+
+		    var dvm = new DocumentViewModel(target)
+		    {
+			    Undecorated = true,
+			    ResizersVisible = true,
+			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) }
+		    };
+		    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
+
+		    // bcz: should this be called in LoadPinAnnotations as well?
+		    dvm.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+			    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+			    {
+				    if (args.NewValue != null)
+				    {
+					    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+						    .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+					    var pos = regionDef.GetPosition().Value;
+					    pdfView.ScrollToPosition(pos.Y);
+					    dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+				    }
+			    });
+		    _mainDocument.GetDataDocument()
+			    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+			    .Add(dvm.DocumentController);
+		}
+
+	    private async Task<DocumentController> CreateVideoPin(Point point)
+	    {
+		    var video = await MainPage.Instance.GetVideoFile();
+		    if (video == null) return null;
+
+		    DocumentController videoNote = null;
+
+			// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
+		    switch (video.Type)
+		    {
+				case VideoType.StorageFile:
+					videoNote = await new VideoToDashUtil().ParseFileAsync(video.File);
+					break;
+				case VideoType.Uri:
+					var query = HttpUtility.ParseQueryString(video.Uri.Query);
+					var videoId = string.Empty;
+
+					if (query.AllKeys.Contains("v"))
+					{
+						videoId = query["v"];
+					}
+					else
+					{
+						videoId = video.Uri.Segments.Last();
+					}
+
+					try
+					{
+						var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+						var uri = url.Uri;
+						videoNote = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+					}
+					catch (Exception)
+					{
+						// TODO: display error video not found
+					}
+
+					break;
+		    }
+
+		    if (videoNote == null) return null;
+
+		    videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    videoNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
+		    videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+		    videoNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
+
+		    return videoNote;
+	    }
+
+	    private async Task<DocumentController> CreateImagePin(Point point)
+	    {
+		    var file = await MainPage.Instance.GetImageFile();
+		    if (file == null) return null;
+
+		    var imageNote = await new ImageToDashUtil().ParseFileAsync(file);
+		    imageNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    imageNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
+		    imageNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+		    imageNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
+
+		    return imageNote;
+	    }
+
+		/// <summary>
+		/// Creates a pushpin annotation with a text note, and returns its DocumentController for CreatePin to finish the process.
+		/// </summary>
+		/// <param name="point"></param>
+		private DocumentController CreateTextPin(Point point)
+	    {
+			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
+				new Size(150, 75));
+			richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+			richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+
+		    return richText.Document;
+		}
 
         private void RenderPin(DocumentController region, DocumentController dest = null)
         {
@@ -599,12 +722,15 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    XAnnotationCanvas.Children.Remove(pin);
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Remove(pin.DataContext as DocumentViewModel);
                     var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
                     if (docView != null)
                     {
                         if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
+                        _mainDocument.GetDataDocument()
+                            .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                            .Remove(docView.ViewModel.DocumentController);
                     }
                 }
                 SelectRegion(vm, args.GetPosition(this));
@@ -926,7 +1052,7 @@ namespace Dash
             foreach (var selectableElement in _textSelectableElements)
             {
                 var b = selectableElement.Bounds;
-                if (b.Contains(p))
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
@@ -1045,6 +1171,40 @@ namespace Dash
             return LinkHandledResult.Unhandled;
         }
         private List<DocumentView> _pinAnnotations = new List<DocumentView>();
+
+	    public void OnDragEnter(object sender, DragEventArgs e)
+	    {
+		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
+		    {
+			    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+				    ? DataPackageOperation.Copy
+				    : e.DataView.RequestedOperation;
+			}
+		    else
+		    {
+			    e.AcceptedOperation = DataPackageOperation.None;
+		    }
+		    e.Handled = true;
+	    }
+
+	    public void OnDrop(object sender, DragEventArgs e)
+	    {
+			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
+		    var where = e.GetPosition(XAnnotationCanvas);
+		    var target = dragModel.GetDropDocument(where);
+		    if (!target.DocumentType.Type.Equals("Rich Text Box") && !target.DocumentType.Type.Equals("Text Box"))
+		    {
+			    if (target.GetActualSize()?.X > 200)
+			    {
+					var ratio = target.GetHeight() / target.GetWidth();
+					target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+					target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+				}
+			}
+		    CreatePin(where, target);
+		    e.Handled = true;
+	    }
     }
 
 }

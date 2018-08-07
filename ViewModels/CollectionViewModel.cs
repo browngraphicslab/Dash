@@ -31,67 +31,103 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-        static UserControl _previousDragEntered;
-        bool _canDragItems = true;
-        double _cellSize;
-        private bool _isLoaded;
-        private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
+        static ICollectionView _previousDragEntered;
+        bool    _canDragItems = true;
+        bool    _isLoaded;
+        DocumentController _lastContainerDocument = null; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
+        private SettingsView.WebpageLayoutMode         WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
+        public ListController<DocumentController>      CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
+        public InkController                           InkController        => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
-        ListViewSelectionMode _itemSelectionMode;
-        public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-        private Point _pasteWhereHack;
-
-        //this table saves requests to appData for htmlImport
-        private static ValueSet table = null;
-        //this is for copy and paste
-
-        #region StandardView
-        public enum StandardViewLevel
+        public TransformGroupData                      TransformGroup
         {
-            None = 0,
-            Overview = 1,
-            Region = 2,
-            Detail = 3
-        }
-
-        private StandardViewLevel _viewLevel = StandardViewLevel.None;
-
-        private double _prevScale = 1;
-
-        DataPackage dataPackage = new DataPackage();
-        public StandardViewLevel ViewLevel
-        {
-            get => _viewLevel;
+            get
+            {
+                var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                if (trans.Y > 0 && !SettingsView.Instance.NoUpperLimit)   // clamp the y offset so that we can only scroll down
+                {
+                    trans = new Point(trans.X, 0);
+                }
+                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
+            }
             set
             {
-                SetProperty(ref _viewLevel, value);
-                UpdateViewLevel();
+                ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
+                ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
             }
         }
-
-        public double PrevScale
+        public DocumentController                      ContainerDocument { get; set; }
+        public KeyController                           CollectionKey { get; set; }
+        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+        public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+        public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
+        public CollectionView.CollectionViewType       ViewType
         {
-            get => _prevScale;
-            set => SetProperty(ref _prevScale, value);
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
-        private void UpdateViewLevel()
+        public bool                                    CanDragItems
         {
-            foreach (var dvm in DocumentViewModels)
+            get { return _canDragItems; }
+            set { SetProperty(ref _canDragItems, value); }
+        }
+
+        public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
+        {
+            BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
+
+            SetCollectionRef(containerDocument, fieldKey);
+
+        }
+
+        /// <summary>
+        /// Sets the reference to the field that contains the documents to display.
+        /// </summary>
+        /// <param name="refToCollection"></param>
+        /// <param name="context"></param>
+        public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
+        {
+            var wasLoaded = _isLoaded;
+            Loaded(false);
+
+            ContainerDocument = containerDocument;
+            CollectionKey = fieldKey;
+            if (_isLoaded && wasLoaded)
             {
-                dvm.ViewLevel = ViewLevel;
-                dvm.DecorationState = false;
+                Loaded(true);
             }
+            _lastContainerDocument = ContainerDocument;
         }
-        #endregion
-
-        void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        /// <summary>
+        /// pan/zooms the document so that all of its contents are visible.  
+        /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
+        /// </summary>
+        public void FitContents(CollectionView cview)
         {
-            OnPropertyChanged(nameof(TransformGroup));
-        }
-        void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-        {
-            if (!MainPage.Instance.IsShiftPressed())
-                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
+            if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
+            {
+                 var realPar = cview?.CurrentView.UserControl;
+                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                
+                var r = Rect.Empty;
+                foreach (var d in DocumentViewModels)
+                {
+                    r.Union(d.Bounds);
+                }
+                if (r.Width != 0 && r.Height != 0)
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var scale = new Point(scaleAmt, scaleAmt);
+                    var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
+                    if (scaleAmt > 0)
+                    {
+                        TransformGroup = new TransformGroupData(trans, scale);
+                    }
+                }
+            }
         }
 
         public void Loaded(bool isLoaded)
@@ -118,105 +154,26 @@ namespace Dash
                     addViewModels(CollectionController.TypedData);
                 }
 
-                _lastDoc = ContainerDocument;
+                _lastContainerDocument = ContainerDocument;
             }
             else
             {
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                _lastDoc = null;
+                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _lastContainerDocument?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                _lastContainerDocument = null;
             }
         }
-        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
-        public TransformGroupData TransformGroup
+        void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            get
-            {
-                var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                if (trans.Y > 0 && !SettingsView.Instance.NoUpperLimit)   // clamp the y offset so that we can only scroll down
-                {
-                    trans = new Point(trans.X, 0);
-                }
-                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
-            }
-            set
-            {
-                ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
-                ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
-            }
+            OnPropertyChanged(nameof(TransformGroup));
         }
-
-        public DocumentController ContainerDocument { get; set; }
-        public KeyController CollectionKey { get; set; }
-        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public AdvancedCollectionView BindableDocumentViewModels { get; set; }
-
-        static int csize = 0;
-        public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
+        void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
-
-            SetCollectionRef(containerDocument, fieldKey);
-
-            CellSize = 250; // TODO figure out where this should be set
-                                //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
-
+            if (!MainPage.Instance.IsShiftPressed())
+                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
-
-        DocumentController _lastDoc = null;
-        /// <summary>
-        /// Sets the reference to the field that contains the documents to display.
-        /// </summary>
-        /// <param name="refToCollection"></param>
-        /// <param name="context"></param>
-        public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
-        {
-            var wasLoaded = _isLoaded;
-            Loaded(false);
-
-            ContainerDocument = containerDocument;
-            CollectionKey = fieldKey;
-            if (_isLoaded && wasLoaded)
-            {
-                Loaded(true);
-            }
-            _lastDoc = ContainerDocument;
-        }
-        /// <summary>
-        /// pan/zooms the document so that all of its contents are visible.  
-        /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
-        /// </summary>
-        public void FitContents(CollectionView cview)
-        {
-            if (FitToParent && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
-            {
-                 var realPar = cview?.CurrentView;
-                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
-                
-                var r = Rect.Empty;
-                foreach (var d in DocumentViewModels)
-                {
-                    r.Union(d.Bounds);
-                }
-                if (r.Width != 0 && r.Height != 0)
-                {
-                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
-                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
-                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
-                    var scale = new Point(scaleAmt, scaleAmt);
-                    var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
-                    if (scaleAmt > 0)
-                    {
-                        TransformGroup = new TransformGroupData(trans, scale);
-                    }
-                }
-            }
-        }
-
         void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
@@ -240,8 +197,7 @@ namespace Dash
         }
 
         #region DocumentModel and DocumentViewModel Data Changes
-
-        public string Tag;
+        
         private Storyboard _lateralAdjustment = new Storyboard();
         private Storyboard _verticalAdjustment = new Storyboard();
 
@@ -312,8 +268,7 @@ namespace Dash
             }
         }
 
-
-        bool createsCycle(DocumentController newDoc)
+        public bool CreatesCycle(DocumentController newDoc)
         {
             var curLayout = ContainerDocument.GetActiveLayout() ?? ContainerDocument;
             var newLayout = newDoc.GetActiveLayout() ?? newDoc;
@@ -329,7 +284,7 @@ namespace Dash
                     {
                         if (curLayout.GetDataDocument().Equals(subLayout.GetDataDocument()))
                             return true;
-                        if (createsCycle(subDoc))
+                        if (CreatesCycle(subDoc))
                             return true;
                     }
                 }
@@ -346,7 +301,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                if (!createsCycle(doc))
+                if (!CreatesCycle(doc))
                 {
                     doc.CaptureNeighboringContext();
 
@@ -356,7 +311,6 @@ namespace Dash
                     UpdateViewLevel();
             }
         }
-
 
         public void RemoveDocuments(List<DocumentController> documents)
         {
@@ -392,53 +346,42 @@ namespace Dash
 
         #endregion
 
-        #region Grid or List Specific Variables I want to Remove
-
-        // todo: this should be tied to a field on the collection so that it will be persisted
-        public double CellSize
+        #region StandardView
+        public enum StandardViewLevel
         {
-            get { return _cellSize; }
-            set { SetProperty(ref _cellSize, value); }
+            None = 0,
+            Overview = 1,
+            Region = 2,
+            Detail = 3
         }
 
-        public bool CanDragItems
+        private StandardViewLevel _viewLevel = StandardViewLevel.None;
+        public StandardViewLevel ViewLevel
         {
-            get { return _canDragItems; }
-            set { SetProperty(ref _canDragItems, value); }
+            get => _viewLevel;
+            set
+            {
+                SetProperty(ref _viewLevel, value);
+                UpdateViewLevel();
+            }
         }
-        public bool FitToParent
+        private double _prevScale = 1;
+        public double PrevScale
         {
-            get => ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
-            set => ContainerDocument.SetFitToParent(value);
+            get => _prevScale;
+            set => SetProperty(ref _prevScale, value);
         }
-        public CollectionView.CollectionViewType ViewType
+        private void UpdateViewLevel()
         {
-            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
-            set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
+            foreach (var dvm in DocumentViewModels)
+            {
+                dvm.ViewLevel = ViewLevel;
+                dvm.DecorationState = false;
+            }
         }
-
-
-        /// <summary>
-        /// Determines whether a document can be added to the collection based on whether it would create a layout cycle.
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <returns></returns>
-        public bool CanDrop(DocumentController doc)
-        {
-            return !createsCycle(doc);
-        }
-
-        public ListViewSelectionMode ItemSelectionMode
-        {
-            get { return _itemSelectionMode; }
-            set { SetProperty(ref _itemSelectionMode, value); }
-        }
-
         #endregion
 
-
         #region DragAndDrop
-
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
             var dictionary = new Dictionary<object, Dictionary<KeyController, List<object>>>();
@@ -796,7 +739,7 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Move;
                 else e.AcceptedOperation = e.DataView.RequestedOperation;
 
-                RemoveDragDropIndication(sender as UserControl);
+                RemoveDragDropIndication(sender as ICollectionView);
 
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
@@ -835,25 +778,21 @@ namespace Dash
 
                 if (e.DataView?.Contains(StandardDataFormats.Html) == true)
                 {
-                    _pasteWhereHack = where;
                     var html = await e.DataView.GetHtmlFormatAsync();
 
                     //get url of where this html is coming from
-                    var htmlStartIndex = html.IndexOf("<html>", StringComparison.Ordinal);
-                    if (htmlStartIndex == -1)
-                        htmlStartIndex = html.IndexOf("<HTML", StringComparison.Ordinal);
+                    var htmlStartIndex = html.ToLower().IndexOf("<html", StringComparison.Ordinal); // Edge uses "<HTML", chrome "<html"
                     var beforeHtml = html.Substring(0, htmlStartIndex);
                     var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
                     var uri = introParts.LastOrDefault()?.Substring(10);
-                    if (uri?.IndexOf("HTML>") != -1)
+                    if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
                         uri = introParts[introParts.Count - 2]?.Substring(10);
                     var titlesUrl = GetTitlesUrl(uri);
 
                     if (!string.IsNullOrEmpty(titlesUrl) || uri.StartsWith("HTML"))
                     {
                         //try to get website and article title
-                        var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
-
+                        var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>"; 
 
                         //update html length in intro - the way that word reads HTML is kinda funny
                         //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
@@ -906,143 +845,25 @@ namespace Dash
                         imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                         return;
                     }
-
-
-
-
+                     
                     DocumentController htmlNote = null;
+                    var layoutMode = WebpageLayoutMode == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : WebpageLayoutMode;
 
-                    if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && !MainPage.Instance.IsCtrlPressed()) || 
-                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && MainPage.Instance.IsCtrlPressed()))
+                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) || 
+                        (layoutMode == SettingsView.WebpageLayoutMode.RTF  &&  MainPage.Instance.IsCtrlPressed()))
                     {
-
-                        htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-
-                    }
-
-                    else if ((WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.RTF) && !MainPage.Instance.IsCtrlPressed()) || 
-                        (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.HTML) && MainPage.Instance.IsCtrlPressed()))
-                    {
-
-                        //copy html to clipboard
-                        dataPackage.RequestedOperation = DataPackageOperation.Copy;
-                        dataPackage.SetHtmlFormat(html);
-                        Clipboard.SetContent(dataPackage);
-
-                        //to import from html
-                        // create a ValueSet from the datacontext, used to create word doc to copy html to
-                        var table = new ValueSet { { "REQUEST", "HTML to RTF" } };
-
-                        await DotNetRPC.CallRPCAsync(table);
-                        var dataPackageView = Clipboard.GetContent();
-                        if (dataPackageView.Contains(StandardDataFormats.Rtf))
-                        {
-                            var richtext = await dataPackageView.GetRtfAsync();
-                            htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
-                        }
-                      
-                        //richtext +=
-                        //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
-                        //            "\"} {\\fldrslt" + uri + "}}";
-                       
-                    }
-
-                    else if (WebpageLayoutMode.Equals(SettingsView.WebpageLayoutMode.Default))
-                    {
-                        var layoutType = await MainPage.Instance.GetLayoutType();
-                        if (layoutType.Equals(SettingsView.WebpageLayoutMode.HTML))
-                        {
-                            htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-                        }
-                        else if (layoutType.Equals(SettingsView.WebpageLayoutMode.RTF))
-                        {
-                            //copy html to clipboard
-                            dataPackage.RequestedOperation = DataPackageOperation.Copy;
-                            dataPackage.SetHtmlFormat(html);
-                            Clipboard.SetContent(dataPackage);
-
-                            //to import from html
-                            // create a ValueSet from the datacontext, used to create word doc to copy html to
-                            var table = new ValueSet { { "REQUEST", "HTML to RTF" } };
-
-                            await DotNetRPC.CallRPCAsync(table);
-                            var dataPackageView = Clipboard.GetContent();
-                            if (dataPackageView.Contains(StandardDataFormats.Rtf))
-                            {
-                                var richtext = await dataPackageView.GetRtfAsync();
-                                //richtext +=
-                                //    "{\\field{\\*\\fldinst HYPERLINK \"" + uri +
-                                //    "\"} {\\fldrslt" + uri + "}}";
-                                htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
-                            }
-                            else
-                                htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-                        }
-
-                    }
-
-
-
-
-                    //Syncfusion version
-                    /*
-                    WordDocument d = new WordDocument();
-                    d.EnsureMinimal();
-                    d.LastParagraph.AppendHTML(html);
-                    MemoryStream mem = new MemoryStream();
-                    d.Save(mem, FormatType.Rtf);
-                    mem.Position = 0;
-                    byte[] arr = new byte[mem.Length];
-                    arr = mem.ToArray();
-                    string rtf = Encoding.Default.GetString(arr);
-                    var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
-                    //var matches = new Regex(".*:.*").Matches(rtf);
-                    //foreach (var match in matches)
-                    //{
-                    //    var pair = new Regex(":").Split(match.ToString());
-                    //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
-                    //}
-                    AddDocument(t.Document);
-                    */
-
-                    var strings = text.Split(new char[] { '\r' });
-                    foreach (var str in html.Split(new char[] { '\r' }))
-                    {
-                        var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
-                        if (matches.Count != 0)
-                        {
-                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey,
-                                matches[0].Value.Replace("SourceURL:", ""), true);
-                            break;
-                        }
-                    }
-
-                    if (imgs.Count() == 0)
-                    {
-                        var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
-                        var title = (matches.Count == 1 && matches[0].Value == text)
-                            ? new Regex(":").Split(matches[0].Value)[0]
-                            : "";
-                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        try
-                        {
-                            if (title == "")
-                                ;
-                            //foreach (var match in matches)
-                            //{
-                            //    var pair = new Regex(":").Split(match.ToString());
-                            //    htmlNote.GetDataDocument()
-                            //        .SetField<TextController>(new KeyController(pair[0], pair[0]),
-                            //            pair[1].Trim(), true);
-                            //}
-                            else
-                                htmlNote.SetTitle(title);
-                        } catch (Exception)
-                        {
-
-                        }
+                        htmlNote = new HtmlNote(html, titlesUrl, where: where).Document; // BrowserView.Current?.Title ?? ""
                     }
                     else
+                    {
+                        htmlNote = await createRTFnote(where, titlesUrl, html); // BrowserView.Current?.Title ?? ""
+                    }
+                    
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
+
+                    if (imgs.Count() > 0)
                     {
                         var related = new List<DocumentController>();
                         foreach (var img in imgs)
@@ -1056,42 +877,18 @@ namespace Dash
                             }
                         }
 
-                        htmlNote.GetDataDocument()
-                            .SetField<ListController<DocumentController>>(
-                                new KeyController("Html Images", "Html Images"), related, true); //
-                                                                                                 //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
-                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                        foreach (var str in strings)
-                        {
-                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
-                            if (matches.Count != 0)
-                            {
-                                foreach (var match in matches)
-                                {
-                                    var pair = new Regex(":").Split(match.ToString());
-                                    htmlNote.GetDataDocument()
-                                        .SetField<TextController>(new KeyController(pair[0]),
-                                            pair[1].Trim(),
-                                            true);
-                                }
-                            }
-                        }
+                        htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(
+                                new KeyController("Html Images", "Html Images"), related, true); 
                     }
-
-                    //make context navigate back to website
-                    htmlNote.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(uri), true);
-
+                    
                     AddDocument(htmlNote);
-                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                 }
 
                 else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
                 {
                     var text = await e.DataView.GetRtfAsync();
-
                     var t = new RichTextNote(text, where, new Size(300, double.NaN));
                     AddDocument(t.Document);
-                    t.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                 }
 
 
@@ -1195,7 +992,7 @@ namespace Dash
                     var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                     if (dragModel.LinkSourceView != null) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                     {
-                        // bcz:  Needs to support LinksFrom as well as LinksTo...
+                        // bcz:   Needs to support LinksFrom as well as LinksTo...
                         if (MainPage.Instance.IsShiftPressed() && MainPage.Instance.IsAltPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                         {
                             var regions = dragModel.DraggedDocument.GetDataDocument()
@@ -1377,46 +1174,28 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// If you drop a collection, the collection serves as a layout template for all the documents in the collection and changes the way they are displayed.
-        /// TODO: This needs an explicit GUI drop target for setting a template...
-        /// </summary>
-        /// <param name="dragModel"></param>
-        private void HandleTemplateLayoutDrop(DragDocumentModel dragModel)
+        static async Task<DocumentController> createRTFnote(Point where, string title, string html)
         {
-            var template = dragModel.DraggedDocument;
-            var templateFields = template.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.TypedData;
-            foreach (var dvm in DocumentViewModels.ToArray())
+            //copy html to clipboard
+            var dataPackage = new DataPackage();
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            dataPackage.SetHtmlFormat(html);
+            Clipboard.SetContent(dataPackage);
+
+            //to import RTF from html, create a ValueSet and call Word app to do the conversion on the clipboard
+            var rpcRequest = new ValueSet { { "REQUEST", "HTML to RTF" } };
+            await DotNetRPC.CallRPCAsync(rpcRequest);
+
+            var dataPackageView = Clipboard.GetContent();
+            if (dataPackageView.Contains(StandardDataFormats.Rtf))
             {
-                var listOfFields = new List<DocumentController>();
-                var doc = dvm.DocumentController;
-                var maxW = 0.0;
-                var maxH = 0.0;
-                foreach (var templateField in templateFields)
-                {
-                    var p = templateField.GetPositionField(null)?.Data ?? new Point();
-                    var w = templateField.GetWidthField(null)?.Data ?? 10;
-                    var h = templateField.GetHeightField(null)?.Data ?? 10;
-                    if (p.Y + h > maxH)
-                        maxH = p.Y + h;
-                    if (p.X + w > maxW)
-                        maxW = p.X = w;
-                    var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
-                    if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
-                    {
-                        var k = new KeyController(templateFieldDataRef.Substring(1));
-                        if (k != null)
-                        {
-                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument(), k), p.X, p.Y, w, h).Document);
-                        }
-                    }
-                    else
-                        listOfFields.Add(templateField);
-                }
-                var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
-                doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
-                // dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
+                var richtext = await dataPackageView.GetRtfAsync();
+                var rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
+                if (!string.IsNullOrEmpty(title))
+                    rtfNote.GetDataDocument().SetTitle(title);
+                return rtfNote;
             }
+            return new HtmlNote(html, title, where: where).Document;
         }
 
         /// <summary>
@@ -1424,7 +1203,7 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            this.HighlightPotentialDropTarget(sender as UserControl);
+            HighlightPotentialDropTarget(sender as ICollectionView);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
@@ -1437,12 +1216,8 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
-            var currentBoundingBox = new Rect(e.GetPosition(MainPage.Instance.xMainDocView),
-                new Size(10, 10));
-
-            var dir =  MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
-            MainPage.Instance.DockManager.HighlightDock(dir);
-            HighlightPotentialDropTarget(sender as UserControl);
+            MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
+            HighlightPotentialDropTarget(sender as ICollectionView);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
@@ -1467,62 +1242,30 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            // bcz: this fix causes a hard crash sometimes -- just call HighlightPotentialDropTarget instead?
-            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one -
-            //var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-            //parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
-
-            var element = sender as UserControl;
-            if (element != null)
-            {
-                var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
-                this.ChangeIndicationColor(element, color);
-            }
-            this.RemoveDragDropIndication(sender as UserControl);
+            RemoveDragDropIndication(sender as ICollectionView);
             e.Handled = true;
         }
 
         /// <summary>
         /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
         /// </summary>
-        private void HighlightPotentialDropTarget(UserControl element)
+        private void HighlightPotentialDropTarget(ICollectionView element)
         {
-            // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
-            if (element != null)
-            {
-                // only one collection should be highlighted at a time
-                if (_previousDragEntered != null)
-                {
-                    this.ChangeIndicationColor(_previousDragEntered, Colors.Transparent);
-                }
-                var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
-                //element.HasDragLeft = false;
-                _previousDragEntered = element;
-                this.ChangeIndicationColor(element, color);
-            }
+            // only one collection should be highlighted at a time
+            _previousDragEntered?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
+            element?.SetDropIndicationFill((SolidColorBrush)App.Instance.Resources["DragHighlight"]);
+            _previousDragEntered = element;
         }
 
         /// <summary>
         /// Remove highlight from target drop collection and border from DocumentView being dragged
         /// </summary>
         /// <param name="element"></param>
-        private void RemoveDragDropIndication(UserControl element)
+        private void RemoveDragDropIndication(ICollectionView element)
         {
-            // remove drop target indication when doc is dropped
-            if (element != null)
-            {
-                this.ChangeIndicationColor(element, Colors.Transparent);
-                _previousDragEntered = null;
-            }
+            element?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
+            _previousDragEntered = null;
         }
-
-        public void ChangeIndicationColor(UserControl element, Color fill)
-        {
-            (element as CollectionFreeformBase)?.SetDropIndicationFill(new SolidColorBrush(fill));
-            (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
-        }
-
-
         #endregion
 
     }

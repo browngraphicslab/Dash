@@ -9,10 +9,34 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Background="Transparent" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
         <Canvas x:Name="XAnnotationCanvas">
-            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00"
-                       Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+            <ItemsControl x:Name="xItemsControl"
+                      x:FieldModifier="public"
+                      ItemsSource="{Binding ViewModels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas 
+                            Background="Transparent"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Width="0"
+                           Height="0"
+                            RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
+                            >
+                        </Canvas>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <local:DocumentView
+                            BindRenderTransform="True"
+                            BindVisibility="True"
+                        />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>
