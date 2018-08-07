@@ -206,6 +206,8 @@
     <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ContainsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ParseDoubleOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TemplateAssignmentOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
@@ -257,7 +259,7 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
-    <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />

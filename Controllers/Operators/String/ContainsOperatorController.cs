@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     [OperatorType(Op.Name.contains)]
-    public class ContainsOperatorController : OperatorController
+    public sealed class ContainsOperatorController : OperatorController
     {
-        public ContainsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
+        public ContainsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-
-        }
+        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override FieldControllerBase GetDefaultController() => new ContainsOperatorController();
 
@@ -28,7 +23,7 @@ namespace Dash
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Contains", "F9CD7950-4133-47F6-A1AA-CC78E3562FD3");
+        private static readonly KeyController TypeKey = new KeyController("Contains", "03CB1DD8-238B-467E-8BE6-C64164DB875B");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -40,13 +35,15 @@ namespace Dash
         {
             [ResultKey] = TypeInfo.Bool,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var str = (inputs[InputStringKey] as TextController).Data;
-            var res = (inputs[ContainerStringKey] as TextController).Data;
-            outputs[ResultKey] = new BoolController(res.Contains(str));
+            if (inputs[InputStringKey] is TextController inputStr && inputs[ContainerStringKey] is TextController containerStr)
+            {
+                outputs[ResultKey] = new BoolController(containerStr.Data.Contains(inputStr.Data));
+            }
+
+            throw new ScriptExecutionException(new TextErrorModel("contains() must receive two inputs of type text."));
         }
     }
 }

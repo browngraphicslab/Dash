@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     [OperatorType(Op.Name.parse_double)]
-    public class ParseDoubleOperatorController : OperatorController
+    public sealed class ParseDoubleOperatorController : OperatorController
     {
-        public ParseDoubleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
+        public ParseDoubleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public ParseDoubleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-
-        }
+        public ParseDoubleOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override FieldControllerBase GetDefaultController() => new ContainsOperatorController();
 
@@ -24,10 +19,9 @@ namespace Dash
 
         // output keys
         public static readonly KeyController ResultKey = new KeyController("Double");
-
-
+        
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("ParseDouble", "3DA7315D-2B6C-42B7-B387-124D140687AC");
+        private static readonly KeyController TypeKey = new KeyController("ParseDouble", "9CBE9126-02B6-4635-B309-FB6F0489FC0E");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -38,22 +32,13 @@ namespace Dash
         {
             [ResultKey] = TypeInfo.Number,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var str = (inputs[InputStringKey] as TextController).Data;
-            double num;
-            var result = double.TryParse(str, out num);
-            if (result)
-            {
-                outputs[ResultKey] = new NumberController(num);
-            }
-            else
-            {
-                outputs[ResultKey] = null;
-            }
-           
+            string str = (inputs[InputStringKey] as TextController)?.Data;
+
+            if (double.TryParse(str, out double num)) outputs[ResultKey] = new NumberController(num);
+            else throw new ScriptExecutionException(new TextErrorModel($"Failed to parse \"{str}\" as a double."));
         }
     }
 }
