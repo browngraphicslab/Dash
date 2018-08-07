@@ -204,11 +204,10 @@ namespace Dash
             this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
-        public void LoadPinAnnotations()
+        public void LoadPinAnnotations(CustomPdfView pdfView)
         {
             (DataContext as NewAnnotationOverlayViewModel).ViewModels.Clear();
-
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            
             if (pdfView != null)
             {
                 var pinAnnotations = _mainDocument.GetDataDocument()

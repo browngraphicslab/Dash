@@ -159,8 +159,8 @@ namespace Dash
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
-            _bottomAnnotationOverlay.LoadPinAnnotations();
-            _topAnnotationOverlay.LoadPinAnnotations();
+            _bottomAnnotationOverlay.LoadPinAnnotations(this);
+            _topAnnotationOverlay.LoadPinAnnotations(this);
         }
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
@@ -194,13 +194,15 @@ namespace Dash
                     }
 
                     // if there's ever a jump in our indices, insert two line breaks before adding the next index
-                    var prevIndex = indices.First();
-                    foreach (var index in indices.Skip(1))
+                    var prevIndex = indices.First()-1;
+                    foreach (var index in indices)
                     {
                         if (prevIndex + 1 != index)
                         {
                             sb.Append("\r\n\r\n");
                         }
+                        if (prevIndex > 0 && sb.Length > 0 && !char.IsWhiteSpace(sb[sb.Length - 1]) && sb[sb.Length-1] != '-' && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
+                            sb.Append("\r\n");
                         var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
@@ -521,8 +523,8 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-            _bottomAnnotationOverlay.LoadPinAnnotations();
-            _topAnnotationOverlay.LoadPinAnnotations();
+            _bottomAnnotationOverlay.LoadPinAnnotations(this);
+            _topAnnotationOverlay.LoadPinAnnotations(this);
         }
 
         public BoundsExtractionStrategy Strategy { get; set; }
