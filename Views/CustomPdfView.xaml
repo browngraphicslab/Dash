@@ -10,8 +10,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged" AllowDrop="True"
-    >
+    SizeChanged="CustomPdfView_OnSizeChanged">
     <Grid x:Name="xPdfContainer" MinWidth="50"
           Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered"
           PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
