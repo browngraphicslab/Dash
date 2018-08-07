@@ -312,6 +312,8 @@ namespace Dash
                             }
                             columns[col].SelectableElements.Add(selectableElement);
                             strings[col] += selectableString;
+                            double right = Math.Max(columns[col].Bounds.Right,
+                                whiteSpace ? lastX : selectableElement.Bounds.Right);
                             columns[col].Bounds = new Rect(new Point(Math.Min(columns[col].Bounds.Left, whiteSpace ? lastX : selectableElement.Bounds.Left), 0),
                                 new Point(right, 0));
                         }

@@ -223,15 +223,12 @@ namespace Dash
 
         private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
-            var listArgs = fieldUpdatedEventArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-            if (listArgs == null)
-            {
-                return;
-            }
+            if (!(fieldUpdatedEventArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)) return;
+
             switch (listArgs.ListAction)
             {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    foreach (var documentController in listArgs.NewItems)
+                    foreach (DocumentController documentController in listArgs.NewItems)
                     {
                         RenderAnnotation(documentController);
                     }
@@ -373,6 +370,15 @@ namespace Dash
             RegionAdded?.Invoke(this, annotation);
 
             return annotation;
+        }
+
+        public static void LinkRegion(int startIndex, int endIndex, DocumentController annotation, DocumentController pdf)
+        {
+            var selectionIndexList = new ListController<PointController> { new PointController(startIndex, endIndex) };
+            annotation.SetField(KeyStore.SelectionIndicesListKey, selectionIndexList, true);
+            annotation.SetRegionDefinition(pdf);
+            annotation.SetAnnotationType(AnnotationType.Selection);
+            pdf.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(annotation);
         }
 
         #region General Annotation
@@ -800,6 +806,7 @@ namespace Dash
                     ClearSelection();
                 }
             }
+            _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
             _selectionStartPoint = p;
         }
 
@@ -981,13 +988,7 @@ namespace Dash
 
         private void SelectElements(int startIndex, int endIndex)
         {// if control isn't pressed, reset the selection
-
-            // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
-            if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
-            {
-                // create a new selection
-                _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
-            }
+     
             var currentSelectionStart = _currentSelections.Last().Key;
             var currentSelectionEnd = _currentSelections.Last().Value;
 

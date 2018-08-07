@@ -50,7 +50,6 @@ namespace Dash
             var pdfView = new CustomPdfView(docController);
             SetupBindings(pdfView, docController, context);
             SetupPdfBinding(pdfView, docController, context);
-            pdfView.
             
             return pdfView;
         }
