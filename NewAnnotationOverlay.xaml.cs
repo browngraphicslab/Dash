@@ -730,7 +730,7 @@ namespace Dash
 
         #region Selection Annotation
 
-        private sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
+        public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
         {
             private SolidColorBrush _selectionColor;
             public SolidColorBrush SelectionColor

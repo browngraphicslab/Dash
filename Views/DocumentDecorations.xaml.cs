@@ -659,14 +659,7 @@ namespace Dash
         {
             VisibilityState = Visibility.Collapsed;
         }
-
-        private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                MainPage.Instance.ActivationMangager.ToggleActivation(doc);
-            }
-        }
+        
 
         private void XAddLinkTypeBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -716,8 +709,20 @@ namespace Dash
         }
 
 
+        
+	    private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+	    {
+		    if (!MainPage.Instance.IsShiftPressed())
+		    {
+			    MainPage.Instance.ActivationManager.DeactivateAll();
+		    }
 
-       
+			foreach (var doc in SelectedDocs)
+			 {
+				MainPage.Instance.ActivationManager.ToggleActivation(doc);
+			}
+			
+	    }
 
 
 

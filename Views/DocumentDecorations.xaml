@@ -36,7 +36,7 @@
         </Border>
 
         <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
-                HorizontalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" />
+                HorizontalAlignment="Stretch" BorderBrush="DodgerBlue" BorderThickness="2" />
 
         <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
