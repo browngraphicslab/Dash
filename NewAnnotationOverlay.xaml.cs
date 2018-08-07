@@ -580,49 +580,42 @@ namespace Dash
 		/// <param name="point"></param>
 		/// <param name="target"></param>
 	    private void CreatePin(Point point, DocumentController target)
-	    {
+		{
 			var annotation = _regionGetter(AnnotationType.Pin);
-			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-			annotation.SetWidth(10);
-			annotation.SetHeight(10);
-			annotation.GetDataDocument()
-				.SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+		    annotation.SetWidth(10);
+		    annotation.SetHeight(10);
+		    annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.Link(target, LinkContexts.PushPin);
+		    RegionDocsList.Add(annotation);
+		    RegionAdded?.Invoke(this, annotation);
+		    RenderPin(annotation, target);
+		    var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
 
-			var docView = new DocumentView
-			{
-				DataContext = new DocumentViewModel(target) { DecorationState = false, Undecorated = false },
-				BindRenderTransform = true,
-				//Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-				BindVisibility = true,
-				ResizersVisible = true
-			};
-			XAnnotationCanvas.Children.Add(docView);
-			_pinAnnotations.Add(docView);
+		    var dvm = new DocumentViewModel(target)
+		    {
+			    Undecorated = true,
+			    ResizersVisible = true,
+			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) }
+		    };
+		    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
 
-			docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
-				delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-					Context context)
-				{
-					if (args.NewValue == null) return;
-
-					var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
-					var regionDef = (args.NewValue as DocumentController).GetDataDocument()
-						.GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
-					var pos = regionDef.GetPosition().Value;
-					pdfview.ScrollToPosition(pos.Y);
-					docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
-				});
-			_mainDocument.GetDataDocument()
-				.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-				.Add(docView.ViewModel.DocumentController);
-
-			SelectionManager.DeselectAll();
-			SelectionManager.Select(docView, false);
-
-			annotation.Link(target, LinkContexts.PushPin);
-			RegionDocsList.Add(annotation);
-			RegionAdded?.Invoke(this, annotation);
-			RenderPin(annotation, target);
+		    // bcz: should this be called in LoadPinAnnotations as well?
+		    dvm.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+			    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+			    {
+				    if (args.NewValue != null)
+				    {
+					    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+						    .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+					    var pos = regionDef.GetPosition().Value;
+					    pdfView.ScrollToPosition(pos.Y);
+					    dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+				    }
+			    });
+		    _mainDocument.GetDataDocument()
+			    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+			    .Add(dvm.DocumentController);
 		}
 
 	    private async Task<DocumentController> CreateVideoPin(Point point)
