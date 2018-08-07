@@ -371,14 +371,14 @@ namespace Dash
             return annotation;
         }
 
-        public static DocumentController LinkRegion(int startIndex, int endIndex, DocumentController annotation, DocumentController pdf)
+        public static DocumentController LinkRegion(int startIndex, int endIndex, DocumentController sourceDoc, DocumentController targetDoc)
         {
             var selectionIndexList = new ListController<PointController> { new PointController(startIndex, endIndex) };
-            annotation.SetField(KeyStore.SelectionIndicesListKey, selectionIndexList, true);
-            annotation.SetRegionDefinition(pdf);
-            annotation.SetAnnotationType(AnnotationType.Selection);
-            pdf.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(annotation);
-            return annotation;
+            targetDoc.SetField(KeyStore.SelectionIndicesListKey, selectionIndexList, true);
+            targetDoc.SetRegionDefinition(sourceDoc);
+            targetDoc.SetAnnotationType(AnnotationType.Selection);
+            sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetDoc);
+            return targetDoc;
         }
 
         #region General Annotation
