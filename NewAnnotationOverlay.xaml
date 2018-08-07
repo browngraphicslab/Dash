@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop">
         <Canvas x:Name="XAnnotationCanvas">
             <Rectangle x:Name="XPreviewRect" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"/>
         </Canvas>

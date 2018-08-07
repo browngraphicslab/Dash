@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Core;
@@ -25,6 +26,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using Dash.Models.DragModels;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using MyToolkit.Multimedia;
 
@@ -523,6 +525,10 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
+		/// <summary>
+		/// Call this method if you just want to make a pushpin annotation with the default text.
+		/// </summary>
+		/// <param name="point"></param>
         private async void CreatePin(Point point)
         {
             if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
@@ -574,48 +580,58 @@ namespace Dash
 		        return;
 			}
 
-	        var annotation = _regionGetter(AnnotationType.Pin);
-	        annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-	        annotation.SetWidth(10);
-	        annotation.SetHeight(10);
-	        annotation.GetDataDocument()
-		        .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+	        CreatePin(point, annotationController);
+        }
+
+		/// <summary>
+		/// Call this method if you want to make a pushpin annotation with a DocumentController in mind as the target.
+		/// </summary>
+		/// <param name="point"></param>
+		/// <param name="target"></param>
+	    private void CreatePin(Point point, DocumentController target)
+	    {
+			var annotation = _regionGetter(AnnotationType.Pin);
+			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+			annotation.SetWidth(10);
+			annotation.SetHeight(10);
+			annotation.GetDataDocument()
+				.SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
 
 			var docView = new DocumentView
-	        {
-		        DataContext = new DocumentViewModel(annotationController) { DecorationState = false, Undecorated = false },
-		        BindRenderTransform = true,
-		        //Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-		        BindVisibility = true,
-		        ResizersVisible = true
-	        };
-	        XAnnotationCanvas.Children.Add(docView);
-	        _pinAnnotations.Add(docView);
+			{
+				DataContext = new DocumentViewModel(target) { DecorationState = false, Undecorated = false },
+				BindRenderTransform = true,
+				//Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
+				BindVisibility = true,
+				ResizersVisible = true
+			};
+			XAnnotationCanvas.Children.Add(docView);
+			_pinAnnotations.Add(docView);
 
-	        docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
-		        delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-			        Context context)
-		        {
-			        if (args.NewValue == null) return;
+			docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+				delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+					Context context)
+				{
+					if (args.NewValue == null) return;
 
-			        var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
-			        var regionDef = (args.NewValue as DocumentController).GetDataDocument()
-				        .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
-			        var pos = regionDef.GetPosition().Value;
-			        pdfview.ScrollToPosition(pos.Y);
-			        docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
-		        });
-	        _mainDocument.GetDataDocument()
-		        .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-		        .Add(docView.ViewModel.DocumentController);
+					var pdfview = this.GetFirstAncestorOfType<CustomPdfView>();
+					var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+						.GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+					var pos = regionDef.GetPosition().Value;
+					pdfview.ScrollToPosition(pos.Y);
+					docView.ViewModel.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+				});
+			_mainDocument.GetDataDocument()
+				.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+				.Add(docView.ViewModel.DocumentController);
 
-	        SelectionManager.DeselectAll();
-	        SelectionManager.Select(docView, false);
+			SelectionManager.DeselectAll();
+			SelectionManager.Select(docView, false);
 
-			annotation.Link(annotationController, LinkContexts.PushPin);
-	        RegionDocsList.Add(annotation);
-	        RegionAdded?.Invoke(this, annotation);
-	        RenderPin(annotation, annotationController);
+			annotation.Link(target, LinkContexts.PushPin);
+			RegionDocsList.Add(annotation);
+			RegionAdded?.Invoke(this, annotation);
+			RenderPin(annotation, target);
 		}
 
 	    private async Task<DocumentController> CreateVideoPin(Point point)
@@ -1172,7 +1188,30 @@ namespace Dash
             return LinkHandledResult.Unhandled;
         }
         private List<DocumentView> _pinAnnotations = new List<DocumentView>();
-		
+
+	    private void OnDragOver(object sender, DragEventArgs e)
+	    {
+		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
+		    {
+			    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+				    ? DataPackageOperation.Copy
+				    : e.DataView.RequestedOperation;
+			}
+		    else
+		    {
+			    e.AcceptedOperation = DataPackageOperation.None;
+		    }
+		    e.Handled = true;
+	    }
+
+	    private void OnDrop(object sender, DragEventArgs e)
+	    {
+			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
+		    var where = e.GetPosition(XAnnotationCanvas);
+		    var target = dragModel.GetDropDocument(where);
+		    CreatePin(where, target);
+	    }
     }
 
 }

@@ -1447,7 +1447,7 @@ namespace Dash
         public void This_Drop(object sender, DragEventArgs e)
         {
             //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
             if (dragModel?.LinkSourceView != null)
             {
                 var dragDoc = dragModel.DraggedDocument;
