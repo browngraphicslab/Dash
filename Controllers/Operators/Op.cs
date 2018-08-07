@@ -94,6 +94,7 @@ namespace Dash
 
             data_document,
             data_doc,
+            link,
 
                 // collections
                 coll,
@@ -106,6 +107,8 @@ namespace Dash
 
                 // lists
                 zip,
+                count,
+                len,
 
                 // templates
                 apply,

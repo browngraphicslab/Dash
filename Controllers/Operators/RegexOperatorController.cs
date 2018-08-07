@@ -73,7 +73,7 @@ namespace Dash
                     }
                 }
 
-                infoDoc.SetField(KeyStore.AnonymousGroupsKey, unnamedList, true);
+                if (unnamedList.Count > 0) infoDoc.SetField(KeyStore.AnonymousGroupsKey, unnamedList, true);
 
                 matchDocs.Add(infoDoc);
             }
