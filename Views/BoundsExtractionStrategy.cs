@@ -300,7 +300,7 @@ namespace Dash
                             col = newCol;
                             var prev = columns[newCol-1];
                             if (selectableLeft < prev.Bounds.Right)
-                                prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, lastX - prev.Bounds.Left, prev.Bounds.Height);
+                                prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Abs(lastX - prev.Bounds.Left), prev.Bounds.Height);
                         }
                         // add to whatever column we're indexed in
                         if (!nextColumn || !whiteSpace)
@@ -312,8 +312,7 @@ namespace Dash
                             }
                             columns[col].SelectableElements.Add(selectableElement);
                             strings[col] += selectableString;
-                            double right = Math.Max(columns[col].Bounds.Right,
-                                whiteSpace ? lastX : selectableElement.Bounds.Right);
+                            double right = Math.Max(columns[col].Bounds.Right, whiteSpace ? lastX : selectableElement.Bounds.Right);
                             columns[col].Bounds = new Rect(new Point(Math.Min(columns[col].Bounds.Left, whiteSpace ? lastX : selectableElement.Bounds.Left), 0),
                                 new Point(right, 0));
                         }
