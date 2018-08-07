@@ -646,7 +646,7 @@ namespace Dash
 
 					try
 					{
-						var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality480P);
+						var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
 						var uri = url.Uri;
 						videoNote = VideoToDashUtil.CreateVideoBoxFromUri(uri);
 					}
