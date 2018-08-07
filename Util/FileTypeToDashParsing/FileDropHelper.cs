@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using MyToolkit.Multimedia;
 
 namespace Dash
 {
@@ -163,8 +165,34 @@ namespace Dash
                     return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Web:
                     var link = await dataView.GetWebLinkAsync();
-                    return new HtmlNote(link.AbsoluteUri, where: where).Document;
-                case FileType.Pdf:
+
+					// if this is a YouTube link, drop the video instead
+	                if (link.Host == "www.youtube.com")
+	                {
+		                var query = HttpUtility.ParseQueryString(link.Query);
+		                var videoId = string.Empty;
+						// the video ID depends on if it's youtube or youtu.be
+		                videoId = query.AllKeys.Contains("v") ? query["v"] : link.Segments.Last();
+
+		                try
+		                {
+							// make the video box with the Uri set as the video's, and return it
+			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+			                var uri = url.Uri;
+			                return VideoToDashUtil.CreateVideoBoxFromUri(uri);
+		                }
+		                // if that returns an error somehow, just return the page instead
+		                catch (Exception)
+		                {
+			                return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						}
+	                }
+	                else
+					{
+						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+					}
+
+				case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Text:
                     return await new TextToDashUtil().ParseFileAsync(fileData, dataView);

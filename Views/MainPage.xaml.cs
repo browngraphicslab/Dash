@@ -17,10 +17,12 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
-using Windows.UI;
+ using Windows.Storage;
+ using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
-using Visibility = Windows.UI.Xaml.Visibility;
+ using Dash.Popups;
+ using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Views;
 using iText.Layout.Element;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -67,7 +69,7 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
-        public Popup LayoutPopup => xLayoutPopup;
+        public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
@@ -109,8 +111,11 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
-                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+	            if (ActivePopup != null)
+	            {
+		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+				}
             };
 
             Toolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -908,67 +913,78 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
+		
 
+	    public async Task<PushpinType> GetPushpinType()
+	    {
+		    var typePopup = new PushpinTypePopup();
+			SetUpPopup(typePopup);
 
-        private void Popup_OnOpened(object sender, object e)
+		    var mode = await typePopup.GetPushpinType();
+		    UnsetPopup();
+
+		    return mode;
+	    }
+
+        public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-            xOverlay.Visibility = Visibility.Visible;
-            xComboBox.SelectedItem = null;
+	        var importPopup = new HTMLRTFPopup();
+			SetUpPopup(importPopup);
+
+	        var mode = await importPopup.GetLayoutMode();
+	        UnsetPopup();
+
+			return mode;
         }
 
-        private void Popup_OnClosed(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Collapsed;
-        }
+	    public async Task<VideoWrapper> GetVideoFile()
+	    {
+		    var videoPopup = new ImportVideoPopup();
+		    SetUpPopup(videoPopup);
 
-        public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
-        {
-            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
-            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
-            {
-                xOverlay.Visibility = Visibility.Collapsed;
-                xLayoutPopup.IsOpen = false;
-                xErrorMessageIcon.Visibility = Visibility.Collapsed;
-                xErrorMessageText.Visibility = Visibility.Collapsed;
+		    var video = await videoPopup.GetVideoFile();
+			UnsetPopup();
 
-                var remember = xSaveHtmlType.IsChecked ?? false;
+		    return video;
+	    }
 
-                if (xComboBox.SelectedIndex == 0)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else if (xComboBox.SelectedIndex == 1)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else
-                {
-                    xOverlay.Visibility = Visibility.Visible;
-                    xLayoutPopup.IsOpen = true;
-                    xErrorMessageIcon.Visibility = Visibility.Visible;
-                    xErrorMessageText.Visibility = Visibility.Visible;
-                }
-            }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+	    public async Task<StorageFile> GetImageFile()
+	    {
+		    var imagePopup = new ImportImagePopup();
+			SetUpPopup(imagePopup);
 
-            LayoutPopup.IsOpen = true;
-            xConfirmButton.Tapped += XConfirmButton_OnClick;
+		    var image = await imagePopup.GetImageFile();
+		    UnsetPopup();
 
-            return tcs.Task;
-        }
+		    return image;
+	    }
+
+		/// <summary>
+		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+		/// </summary>
+		/// <param name="popup"></param>
+	    private void SetUpPopup(DashPopup popup)
+		{
+			ActivePopup = popup;
+			xOverlay.Visibility = Visibility.Visible;
+			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+			Grid.SetColumn(popup.Self(), 2);
+			xOuterGrid.Children.Add(popup.Self());
+		}
+
+		/// <summary>
+		/// This method is called after a popup closes, to remove it from the page.
+		/// </summary>
+	    private void UnsetPopup()
+		{
+			xOverlay.Visibility = Visibility.Collapsed;
+			if (ActivePopup != null)
+		    {
+			    xOuterGrid.Children.Remove(ActivePopup.Self());
+			    ActivePopup = null;
+		    }
+	    }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {

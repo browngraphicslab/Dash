@@ -29,6 +29,7 @@ using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
+using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -190,14 +191,15 @@ namespace Dash
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
-                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode =
-                    right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
-                MainPage.Instance.Focus(FocusState.Programmatic);
+                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+				ManipulationMode = ManipulationModes.All;
+				//var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+				//var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+				ManipulationMode =
+					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+						? ManipulationModes.All
+						: ManipulationModes.None;
+				MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
             };
@@ -1173,23 +1175,23 @@ namespace Dash
             xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
             xTopLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xTopResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xTopRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
             xBottomLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xBottomResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xBottomRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
             xRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
             xLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Colors.LightBlue) : new SolidColorBrush(Colors.Transparent);
+                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
 
 		}
 
@@ -1446,7 +1448,7 @@ namespace Dash
         public void This_Drop(object sender, DragEventArgs e)
         {
             //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
             if (dragModel?.LinkSourceView != null)
             {
                 var dragDoc = dragModel.DraggedDocument;
@@ -1626,7 +1628,7 @@ namespace Dash
 
             e.DragUIOverride.IsContentVisible = true;
 
-            e.Handled = true;
+	        e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)

@@ -992,7 +992,7 @@ namespace Dash
                     var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                     if (dragModel.LinkSourceView != null) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                     {
-                        // bcz:  Needs to support LinksFrom as well as LinksTo...
+                        // bcz:   Needs to support LinksFrom as well as LinksTo...
                         if (MainPage.Instance.IsShiftPressed() && MainPage.Instance.IsAltPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                         {
                             var regions = dragModel.DraggedDocument.GetDataDocument()

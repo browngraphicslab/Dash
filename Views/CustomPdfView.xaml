@@ -10,8 +10,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged"
-    >
+    SizeChanged="CustomPdfView_OnSizeChanged">
     <Grid x:Name="xPdfContainer" MinWidth="50"
           Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered"
           PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
@@ -30,38 +29,38 @@
 
 
                 <Grid x:Name="xTopControlsToggleButton" PointerPressed="XTopControlsToggleButton_OnPointerPressed">
-                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <Ellipse/>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                 </Grid>
 
                 <StackPanel x:Name="xTopToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                     <Grid x:Name="xTopAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopNextPageButton" PointerPressed="XTopNextPageButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopPreviousPageButton" PointerPressed="XTopPreviousPageButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopScrollToTop" PointerPressed="XTopScrollToTop_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopScrollBack" PointerPressed="XTopScrollBack_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopScrollForward" PointerPressed="XTopScrollForward_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
                 </StackPanel>
@@ -125,37 +124,37 @@
             <StackPanel x:Name="xBottomButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0" Visibility="Collapsed">
 
                 <Grid x:Name="xBottomControlsToggleButton" PointerPressed="XBottomControlsToggleButton_OnPointerPressed">
-                    <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                    <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                 </Grid>
                 <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
                     <Grid x:Name="xBottomAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25" />
+                        <Ellipse  />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xBottomNextPageButton" PointerPressed="XBottomNextPageButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xBottomPreviousPageButton" PointerPressed="XBottomPreviousPageButton_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollToTop" PointerPressed="XBottomScrollToTop_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollBack" PointerPressed="XBottomScrollBack_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xBottomScrollForward" PointerPressed="XBottomScrollForward_OnPointerPressed">
-                        <Ellipse Fill="{StaticResource AccentGreenLight}" Width="25" Height="25"/>
+                        <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
                 </StackPanel>
@@ -237,9 +236,9 @@
                     <StackPanel Orientation="Vertical">
 
 
-                        <Rectangle Fill="{StaticResource AccentGreenLight}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                        <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
 
-                        <Rectangle x:Name="xBar" Fill="{StaticResource AccentGreenLight}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                        <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlueBrush}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>

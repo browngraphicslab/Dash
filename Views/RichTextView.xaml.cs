@@ -78,14 +78,8 @@ namespace Dash
 
             Application.Current.Suspending += (sender, args) =>
             {
-                try
-                {
-                    ClearSearchHighlights();
-                    SetSelected("");
-                } catch (Exception)
-                {
-                    // catch errors when database connection as closed because the app is being exited.
-                }
+                ClearSearchHighlights();
+                //SetSelected("");
             };
 
             xSearchDelete.Click += (s, e) =>

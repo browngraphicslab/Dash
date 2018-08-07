@@ -549,9 +549,9 @@ namespace Dash
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var right = (ParentDocument.IsRightBtnPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
-            var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
-            var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-            ParentDocument.ManipulationMode = right && parentFreeform != null && (ParentDocument.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+            //var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
+            //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+            ParentDocument.ManipulationMode = right || (ParentDocument.IsShiftPressed()) ? ManipulationModes.All : ManipulationModes.None;
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
                 e.Complete();

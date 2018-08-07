@@ -285,8 +285,8 @@ namespace Dash
             UnfocusText();
             ClosePopups();
 
-            XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
-            XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
+	        XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
+            XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
         }
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -426,8 +426,8 @@ namespace Dash
             {
                 if (node.ViewModel?.DocumentController == workspace)
                 {
-                    node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
-                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.Black);
+                    node.XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
+                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
                 }
             }
         }

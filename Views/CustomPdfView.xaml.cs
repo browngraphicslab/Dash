@@ -158,7 +158,6 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-
             _bottomAnnotationOverlay.LoadPinAnnotations(this);
             _topAnnotationOverlay.LoadPinAnnotations(this);
         }

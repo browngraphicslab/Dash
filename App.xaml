@@ -34,6 +34,19 @@
             <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
             <!-- COLORS -->
+
+
+            <!-- NEW COLOR PALETTE -->
+            <Color x:Key="DashLightBlueColor">#A0C5E8</Color>
+            <Color x:Key="DashMediumBlueColor">#6DA8DE</Color>
+            <Color x:Key="DashDarkBlueColor">#407BB1</Color>
+            <Color x:Key="DashOverlayColor">#D4E0F7</Color>
+            <SolidColorBrush x:Key="DashLightBlue" Color="{StaticResource DashLightBlueColor}"/>
+            <SolidColorBrush x:Key="DashMediumBlue" Color="{StaticResource DashMediumBlueColor}"/>
+            <SolidColorBrush x:Key="DashDarkBlue" Color="{StaticResource DashDarkBlueColor}"/>
+
+
+
             <Color x:Key="WindowsBlueColor">#3c3836</Color>
             <Color x:Key="AccentGreenColor">#537769</Color>
             <Color x:Key="AccentGreenColorLight">#6a9383</Color>
@@ -51,9 +64,12 @@
 
             <!-- SOLID COLOR BRUSHES -->
             <!-- general colors -->
-            <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
+            <SolidColorBrush x:Key="DashLightBlueBrush" Color="{StaticResource DashLightBlueColor}"/>
+            <SolidColorBrush x:Key="DashMediumBlueBrush" Color="{StaticResource DashMediumBlueColor}"/>
+            <SolidColorBrush x:Key="DashDarkBlueBrush" Color="{StaticResource DashDarkBlueColor}"/>
             <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
             <SolidColorBrush x:Key="DarkWindowsBlue" Color="#cc103a6a"/>
+            <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
             <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
             <SolidColorBrush x:Key="AccentGreenLight" Color="{StaticResource AccentGreenColorLight}"/>
             <SolidColorBrush x:Key="AccentGreenDark" Color="{StaticResource AccentGreenColorDark}"/>
@@ -147,6 +163,8 @@
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
                 <Setter Property="BorderThickness" Value="0"></Setter>
             </Style>
+            
+            
 
             <!-- change to default appl-->
             <Style TargetType="RichTextBlock">
@@ -1824,7 +1842,14 @@
                 </Setter>
             </Style>
 
-            <!--Custom Themes--> 
+            <Style TargetType="Ellipse">
+                <Setter Property="Fill" Value="{StaticResource DashMediumBlueBrush}" />
+                <Setter Property="Width" Value="25" />
+                <Setter Property="Height" Value="25" />
+                
+            </Style>
+
+                <!--Custom Themes--> 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
