@@ -312,8 +312,6 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
-
-            var a = DocumentTree.MainPageTree;
             
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();

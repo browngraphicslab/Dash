@@ -595,6 +595,9 @@ namespace Dash
                     {
                         if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
+                        _mainDocument.GetDataDocument()
+                            .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                            .Remove(docView.ViewModel.DocumentController);
                     }
                 }
                 SelectRegion(vm, args.GetPosition(this));
