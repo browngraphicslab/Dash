@@ -68,8 +68,8 @@ namespace Dash
         public void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
         {
             WC = new WordCount(xRichEditBox);
-            xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
-            xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
+            //xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
+            //xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
         }
 
         public void SetRichTextBinding(RichTextView view)
@@ -247,13 +247,13 @@ namespace Dash
             richTextView.SmallCaps(true);
         }
 
-        private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
                 richTextView.Superscript(true);
         }
 
-        private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
                 richTextView.Subscript(true);
@@ -423,7 +423,7 @@ namespace Dash
         }
         #endregion
 
-        private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
+        public void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
             if (sender is DashColorPicker colorPicker)
             {
@@ -432,7 +432,7 @@ namespace Dash
             }
         }
 
-        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
+        public void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
             if (sender is DashColorPicker colorPicker)
             {

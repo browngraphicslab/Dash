@@ -1,31 +1,25 @@
-﻿ using System;
+﻿using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using DashShared;
-using Windows.UI.ViewManagement;
-using Windows.ApplicationModel.Core;
- using Windows.Storage;
- using Windows.UI;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
- using Dash.Popups;
- using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Views;
-using iText.Layout.Element;
-using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.UI.Xaml.Navigation;
+using Windows.Storage;
+using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 
@@ -45,6 +39,8 @@ namespace Dash
             Collapsed
         }
 
+
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
         public static MainPage Instance { get; private set; }
 
         public BrowserView WebContext => BrowserView.Current;
@@ -87,7 +83,7 @@ namespace Dash
             Instance = this;
 
             InitializeComponent();
-
+            SetUpToolTips();
 
             Loaded += (s, e) =>
             {
@@ -190,8 +186,8 @@ namespace Dash
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
-                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
-                xMainTreeView.ToggleDarkMode(true);
+                xMainTreeView.ChangeTreeViewTitle("Workspaces");
+                //xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
 
@@ -751,17 +747,19 @@ namespace Dash
             Toolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
+                xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
                 xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
@@ -836,19 +834,19 @@ namespace Dash
             Toolbar.ChangeVisibility(!changeToVisible);
         }
 
-        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
-        }
+        //private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
+        //}
 
-        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-        }
+        //private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+        //}
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
-            xMainTreeView.TogglePresentationMode(expand);
+        //    TogglePresentationMode(expand);
 
             if (expand)
             {
@@ -1189,5 +1187,128 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
+
+
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+        }
+
+        private void XLoadingPopup_OnClosed(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void XLoadingPopup_OnOpened(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void TogglePopup()
+        {
+            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+            //xLoadingPopup.IsOpen = true;
+            //Load.Begin();
+        }
+
+        public void ClosePopup()
+        {
+            //Load.Stop();
+            //xLoadingPopup.HorizontalOffset = 0;
+            //xLoadingPopup.VerticalOffset = 0;
+            //xLoadingPopup.IsOpen = false;
+
+        }
+
+        private ToolTip _search;
+        private ToolTip _back;
+        private ToolTip _forward;
+        private ToolTip _snapshot;
+        private ToolTip _presentation;
+        private ToolTip _export;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _search = new ToolTip()
+            {
+                Content = "Search workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSearchButton, _search);
+
+            _back = new ToolTip()
+            {
+                Content = "Go back",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackButton, _back);
+
+            _forward = new ToolTip()
+            {
+                Content = "Go forward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xForwardButton, _forward);
+
+            _snapshot = new ToolTip()
+            {
+                Content = "Snapshot workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
+
+            _presentation = new ToolTip()
+            {
+                Content = "Presentation mode",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPresentationModeButton, _presentation);
+
+            _export = new ToolTip()
+            {
+                Content = "Export workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xExportButton, _export);
+
+
+        }
+
+        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.MakePdf_OnTapped(sender, e);
+        }
+
+        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.TogglePresentationMode(sender, e);
+        }
+
+        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.Snapshot_OnTapped(sender, e);
+        }
+
+
+
     }
 }

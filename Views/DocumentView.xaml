@@ -15,10 +15,17 @@
     DragOver="This_DragOver"
     DragLeave="This_DragLeave"
     Drop="This_Drop"
-    UseLayoutRounding="False">
+    UseLayoutRounding="False"
+    Opacity="0">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
+        </Storyboard>
+        <Storyboard x:Name="FadeIn" SpeedRatio="0.7">
+            <DoubleAnimation
+                Storyboard.TargetName="Root"
+                Storyboard.TargetProperty="Opacity"
+                From="0.0" To="1.0" Duration="0:0:0.2"/>
         </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>

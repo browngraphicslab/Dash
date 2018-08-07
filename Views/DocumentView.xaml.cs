@@ -175,11 +175,23 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
+                FadeIn.Begin();
                 updateBindings();
                 DataContextChanged += (s, a) => updateBindings();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+
+                var maxZ = int.MinValue;
+                var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new
+                    Canvas();
+                foreach (var item in parentCanvas.Children)
+                {
+                    maxZ = Math.Max(Canvas.GetZIndex(item), maxZ);
+                }
+
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+
                 SetZLayer();
                 UpdateResizers();
             };

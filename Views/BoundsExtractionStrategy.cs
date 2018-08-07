@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf.Canvas.Parser;
@@ -112,14 +113,14 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public List<SelectableElement> GetSelectableElements(int startPage, int endPage)
+        public async Task<List<SelectableElement>> GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
             {
                 return new List<SelectableElement>();
             }
-            
+
             var pageElements = new List<List<SelectableElement>>();
             // if the end and start page are the same, use just that one page, otherwise use the range between the two indices
             var requestedPages = endPage == startPage ? new List<Rectangle>{_pages[startPage]} : _pages.GetRange(startPage, endPage - startPage);

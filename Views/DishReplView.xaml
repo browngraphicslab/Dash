@@ -5,24 +5,43 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:fontIcons="using:Dash.FontIcons"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
     x:Name="Control">
 
     <Grid>
-        <Border x:Name="xScriptRepl" BorderBrush="Black" BorderThickness="1">
-            <Grid VerticalAlignment="Stretch">
+        <Border x:Name="xScriptRepl" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="1">
+            <Grid VerticalAlignment="Stretch" Background="White">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
-                            Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
+                <Grid Grid.Row="0" Background="{StaticResource DashDarkBlueBrush}" Height="40" Padding="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Margin="0" Padding="0" Foreground="White" Grid.Column="0"
+                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">Scripting Console</TextBlock>
+                    <Button Click="XScript_OnClick" Background="Transparent" Grid.Column="1" Foreground="White"
+                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <fontIcons:FontAwesome Icon="Exchange" Foreground="White" />
+                    </Button>
+                    <Button Grid.Column="2" Foreground="White"
+                            Background="Transparent" VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch" Click="CloseButton_OnClick">
+                        <fontIcons:FontAwesome Icon="Close" Foreground="White" />
+                    </Button>
+                </Grid>
+                <!--<CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
+                            Grid.Row="0" Background="{StaticResource DashLightBlueBrush}" >
                     <AppBarButton x:Name="xScript"  Icon="Switch"  Label="Switch" Click="XScript_OnClick"></AppBarButton>
-                </CommandBar>
+                </CommandBar>-->
                 <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
                           Margin="5" Foreground="White" Background="#232625" Grid.Row="1">
@@ -41,9 +60,9 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock x:Name="xInputArrow" Text=" >>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
-                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Consolas"/>
+                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped"  FontFamily="Lucida Sans Typewriter"/>
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
-                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Consolas" />
+                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  FontFamily="Lucida Sans Typewriter" />
                                     </Grid>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
@@ -57,8 +76,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="18"
-                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Consolas"
+                <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" Background="White" FontSize="16" Margin="5 0 5 5" Padding="5"
+                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"  FontFamily="Lucida Sans Typewriter"
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
                 </local:ActionTextBox>
                 <Popup x:Name="xSuggestionsPopup" Grid.Row="3" Canvas.ZIndex="-1">
@@ -71,7 +90,7 @@
                                         <Grid>
                                             <Border Height="40">
                                                 <TextBlock Text="{x:Bind Name}" 
-                                                FontSize="15" Foreground="Black" FontFamily="Consolas"/>
+                                                FontSize="15" Foreground="Black" FontFamily="Lucida Sans Typewriter"/>
                                             </Border>
                                         </Grid>
                                     </DataTemplate>

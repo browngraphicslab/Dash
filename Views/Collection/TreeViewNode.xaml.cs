@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models.DragModels;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -169,14 +170,14 @@ namespace Dash
                     var collectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.DataKey);
                     CollectionTreeView.DataContext = collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
-                    XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-                    XArrowBlock.Visibility = Visibility.Visible;
+                    //xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                    xArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeCol";
                 }
                 else
                 {
-                    XArrowBlock.Text = "";
-                    XArrowBlock.Visibility = Visibility.Collapsed;
+                    //xArrowBlock.Text = "";
+                    xArrowBlock.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
@@ -228,13 +229,29 @@ namespace Dash
             if (CollectionTreeView.Visibility == Visibility.Collapsed)
             {
                 CollectionTreeView.Visibility = Visibility.Visible;
-                XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+
+                xCollectionIn.Begin();
+
+                var centX = (float)xArrowBlock.ActualWidth / 2 + 1;
+                var centY = (float)xArrowBlock.ActualHeight / 2 + 1;
+                //open search bar
+                xArrowBlock.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+
                 ClosePopups();
             }
             else
             {
+
+                xCollectionOut.Begin();
                 CollectionTreeView.Visibility = Visibility.Collapsed;
-                XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+
+                var centX = (float)xArrowBlock.ActualWidth / 2;
+                var centY = (float)xArrowBlock.ActualHeight / 2;
+                //open search bar
+
+                xArrowBlock.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
             }
         }
 

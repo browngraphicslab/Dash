@@ -19,6 +19,7 @@ using Windows.System;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Point = Windows.Foundation.Point;
@@ -248,6 +249,7 @@ namespace Dash
         public CustomPdfView(DocumentController document)
         {
             this.InitializeComponent();
+            SetUpToolTips();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
             _topPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
@@ -478,7 +480,7 @@ namespace Dash
                     return;
                 }
             }
-
+;
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
@@ -502,8 +504,7 @@ namespace Dash
                 _currentPageCount = (int)_wPdfDocument.PageCount;
             }
 
-            await Task.Run(() =>
-            {
+            await Task.Run(() => {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
@@ -514,7 +515,7 @@ namespace Dash
                 }
             });
             
-            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            var selectableElements = await strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.SetSelectableElements(selectableElements);
             _bottomAnnotationOverlay.SetSelectableElements(selectableElements);
 
@@ -522,13 +523,14 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
+
             _bottomAnnotationOverlay.LoadPinAnnotations(this);
             _topAnnotationOverlay.LoadPinAnnotations(this);
+            MainPage.Instance.ClosePopup();
         }
 
         public BoundsExtractionStrategy Strategy { get; set; }
 
-        private CancellationTokenSource _renderToken;
         private int _currentPageCount = -1;
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -1294,6 +1296,141 @@ namespace Dash
 
             xFadeAnimation.Begin();
             xFadeAnimation2.Begin();
+        }
+
+        private ToolTip _controlsTop;
+        private ToolTip _controlsBottom;
+
+        private ToolTip _nextTop;
+        private ToolTip _nextBottom;
+
+        private ToolTip _prevTop;
+        private ToolTip _prevBottom;
+
+        private ToolTip _upTop;
+        private ToolTip _upBottom;
+
+        private ToolTip _backTop;
+        private ToolTip _backBottom;
+
+        private ToolTip _forwardTop;
+        private ToolTip _forwardBottom;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 0;
+
+            _controlsTop = new ToolTip()
+            {
+                Content = "Toggle controls",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopAnnotationsToggleButton, _controlsTop);
+
+            _controlsBottom = new ToolTip()
+            {
+                Content = "Toggle controls",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomAnnotationsToggleButton, _controlsBottom);
+
+            _nextTop = new ToolTip()
+            {
+                Content = "Next page",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopNextPageButton, _nextTop);
+
+            _nextBottom = new ToolTip()
+            {
+                Content = "Next page",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomNextPageButton, _nextBottom);
+
+            _prevTop = new ToolTip()
+            {
+                Content = "Previous page",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopPreviousPageButton, _prevTop);
+
+            _prevBottom = new ToolTip()
+            {
+                Content = "Previous page",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomPreviousPageButton, _prevBottom);
+
+            _upTop = new ToolTip()
+            {
+                Content = "Scroll to top",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopScrollToTop, _upTop);
+
+            _upBottom = new ToolTip()
+            {
+                Content = "Scroll to top",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomScrollToTop, _upBottom);
+
+            _backTop = new ToolTip()
+            {
+                Content = "Scroll backward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopScrollBack, _backTop);
+
+            _backBottom = new ToolTip()
+            {
+                Content = "Scroll backward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomScrollBack, _backBottom);
+
+            _forwardTop = new ToolTip()
+            {
+                Content = "Scroll forward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTopScrollForward, _forwardTop);
+
+            _forwardBottom = new ToolTip()
+            {
+                Content = "Scroll forward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBottomScrollForward, _forwardBottom);
+
+
+
+        }
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
     }
 }

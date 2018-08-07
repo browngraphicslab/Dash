@@ -2,6 +2,7 @@
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
@@ -134,6 +135,26 @@ namespace Dash
         {
             Color past = xColorPicker.Color;
             xColorPicker.Color = Color.FromArgb(opacity, past.R, past.B, past.G);
+        }
+
+        private void xSaveColorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xSaveColorEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 109, 168, 222));
+        }
+
+        private void xSaveColorEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xSaveColorEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 48, 97, 153));
+        }
+
+        private void xApplyColorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xApplyColorEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 109, 168, 222));
+        }
+
+        private void xApplyColorEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xApplyColorEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 48, 97, 153));
         }
     }
 }
