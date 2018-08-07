@@ -54,5 +54,17 @@ namespace Dash
 		{
 			return ActivatedDocs.Contains(view);
 		}
+
+		public void DeactivateAll()
+		{
+			DocumentView[] copyArray = new DocumentView[ActivatedDocs.Count];
+			ActivatedDocs.CopyTo(copyArray, 0);
+
+			foreach (DocumentView copy in copyArray)
+			{
+				DeactivateDoc(copy);
+	
+			}
+		}
 	}
 }

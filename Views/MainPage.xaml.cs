@@ -49,7 +49,7 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
         public DockingFrame DockManager => xDockFrame;
-	    public LinkActivationManager ActivationMangager = new LinkActivationManager();
+	    public LinkActivationManager ActivationManager = new LinkActivationManager();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
@@ -636,7 +636,34 @@ namespace Dash
                 }
             }
 
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+			//deactivate all docs if esc was pressed
+	        if (e.VirtualKey == VirtualKey.Escape )
+	        {
+		        using (UndoManager.GetBatchHandle())
+		        {
+			        ActivationManager.DeactivateAll();
+				}
+				
+	        }
+
+	        //activateall selected docs
+	        if (e.VirtualKey == VirtualKey.A)
+	        {
+		        var selected = SelectionManager.GetSelectedDocs();
+		        if (selected.Count > 0)
+		        {
+			        using (UndoManager.GetBatchHandle())
+			        {
+						foreach (var doc in SelectionManager.GetSelectedDocs())
+					        {
+						        ActivationManager.ActivateDoc(doc);
+					        }
+						}
+				        
+			        }
+			}
+
+			var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires

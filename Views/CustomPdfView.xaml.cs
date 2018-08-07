@@ -21,6 +21,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -394,14 +395,14 @@ namespace Dash
                 }
 
 				//check if annotations have left the screen
-	            foreach (var child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
+	            foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
 	            {
 					//show any that are visible
 		            if (BottomScrollViewer.VerticalOffset < Canvas.GetTop(child) && 
 		                Canvas.GetTop(child) < (BottomScrollViewer.VerticalOffset + BottomScrollViewer.ViewportHeight))
 		            {
-						//need way of getting linked doc from ui element or use 
-						//_bottomAnnotationList
+						//show linked annotation
+						//child.DataContext as 
 					}
 		            else
 		            {

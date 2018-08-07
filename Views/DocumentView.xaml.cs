@@ -1103,6 +1103,7 @@ namespace Dash
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
 
+				MainPage.Instance.ActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
             }
         }
@@ -1462,9 +1463,16 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                    dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+	                var annotNote = new RichTextNote("Link description...", where).Document;
+					ParentCollection.ViewModel.AddDocument(annotNote);
+					//TODO: ensure LinkType is what the user plugged in
+					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
+					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
+                    //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                }
+	                dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+				}
                 else
                 {
 
@@ -1486,9 +1494,20 @@ namespace Dash
                             var dropDoc = ViewModel.DocumentController;
                             if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                            dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                            dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        }
+                            //dragDoc.Link(dropDoc, LinkContexts.None, entry);
+                            //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
+						
+	                        var annotNote = new RichTextNote("Link description...", where).Document;
+							annotNote.SetPosition(new Point(0,0));
+	                        ParentCollection.ViewModel.AddDocument(annotNote);
+	                        //TODO: ensure LinkType is what the user plugged in
+	                        dragDoc.Link(annotNote, LinkContexts.None, entry);
+	                        dropDoc.Link(annotNote, LinkContexts.None, entry);
+	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+	                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						}
 
                         fadeOut.Completed += FadeOutOnCompleted;
                         fadeOut.Begin();

@@ -39,8 +39,7 @@ namespace Dash
             base(_prototypeID)
         {
             var dataDocument = makeDataDelegate(new TextController(shape.ToString()));
-
-
+			
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255));
             // set fields based on the parameters

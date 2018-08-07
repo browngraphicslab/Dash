@@ -1114,19 +1114,20 @@ namespace Dash
                     }
 					//move link activation stuff here
 	                //check if a doc is currently in link activation mode
-	                if (LinkActivationManager.ActivatedDocs.Count == 1 && LinkActivationManager.ActivatedDocs[0].GetFirstDescendantOfType<CustomPdfView>() != null)
+	                if (LinkActivationManager.ActivatedDocs.Count >= 1)
 	                {
-		                //make this rich text an annotation for activated  doc
-		                DocumentView activated = LinkActivationManager.ActivatedDocs[0];
-
-		                if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+		                foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
 		                {
-			                var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-				                postitNote.GetPosition());
+							//make this rich text an annotation for activated  doc
+							if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+							{
+								var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
+									postitNote.GetPosition());
 
-			                //link region to this text 
-			                region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
-		                }
+								//link region to this text 
+								region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
+							}
+						}
 	                }
 				}
             }
