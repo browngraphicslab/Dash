@@ -29,6 +29,7 @@ using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
+using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -1627,7 +1628,7 @@ namespace Dash
 
             e.DragUIOverride.IsContentVisible = true;
 
-            e.Handled = true;
+	        e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)

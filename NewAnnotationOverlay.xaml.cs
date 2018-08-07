@@ -1171,7 +1171,7 @@ namespace Dash
         }
         private List<DocumentView> _pinAnnotations = new List<DocumentView>();
 
-	    private void OnDragOver(object sender, DragEventArgs e)
+	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
 		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
@@ -1187,12 +1187,13 @@ namespace Dash
 		    e.Handled = true;
 	    }
 
-	    private void OnDrop(object sender, DragEventArgs e)
+	    public void OnDrop(object sender, DragEventArgs e)
 	    {
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
 		    CreatePin(where, target);
+		    e.Handled = true;
 	    }
     }
 
