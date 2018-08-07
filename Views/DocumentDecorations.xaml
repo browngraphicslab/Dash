@@ -99,8 +99,8 @@
         <Grid BorderBrush="DodgerBlue" BorderThickness="2"  Grid.Row="1" Grid.Column="1" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="5">
             <StackPanel Orientation="Vertical">
 
-           
-            <AutoSuggestBox Height="35"
+
+                <AutoSuggestBox Height="35"
                     PlaceholderText="Search for tags" 
                     QueryIcon="Find"
                     TextChanged="AutoSuggestBox_TextChanged"
@@ -109,20 +109,11 @@
                     TextBoxStyle="{StaticResource AutoFontSize}"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Stretch"
-                    Margin="10"
+                    Margin="10 10 10 5"
                     AllowDrop="True">
-                <AutoSuggestBox.ItemTemplate>
+                </AutoSuggestBox>
 
-                    <DataTemplate x:DataType="local:SuggestViewModel">
-                        <Grid Background="{x:Bind Background}">
-                            <TextBlock Text="{x:Bind Text}"></TextBlock>
-                        </Grid>
-                    </DataTemplate>
-                </AutoSuggestBox.ItemTemplate>
-
-            </AutoSuggestBox>
-
-            <Grid Margin="10 0 10 10">
+            <Grid Margin="5 0 5 5">
                 <controls:WrapPanel x:Name="xTest"></controls:WrapPanel>
             </Grid>
             </StackPanel>

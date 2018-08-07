@@ -30,12 +30,7 @@ using DashShared;
 namespace Dash
 {
 
-    public class SuggestViewModel
-    {
-        public string Text { get; set; }
-        public SolidColorBrush Background { get; set; }
-    }
-    
+   
     public sealed partial class DocumentDecorations : UserControl, INotifyPropertyChanged
     {
         private Visibility _visibilityState;
@@ -62,9 +57,7 @@ namespace Dash
             set => _docWidth = value;
         }
 
-
-        //private List<SuggestViewModel> Tags;
-        //private Queue<SuggestViewModel> Recents;
+        
         public Queue<Tag> RecentTags
         {
             get => _recentTags;
@@ -448,39 +441,11 @@ namespace Dash
                 }
 
                 xTest.Children.Clear();
-                foreach (var recent in _recentTags)
+                foreach (var recent in _recentTags.Reverse())
                 {
                     xTest.Children.Add(recent);
                 }
             }
-
-            
-
-            //var tag = new SuggestViewModel() { Background = new SolidColorBrush(hexColor), Text = linkName };
-
-
-            //Tags.Add(tag);
-            //if (Recents.Count < 5)
-            //{
-            //    Recents.Enqueue(tag);
-            //}
-            //else
-            //{
-            //    Recents.Dequeue();
-            //    Recents.Enqueue(tag);
-            //}
-
-            // xAutoSuggestBox.ItemsSource = Recents;
-
-            //foreach (var recent in Recents)
-            //{
-            //    var grid = new Grid() { Background = recent.Background, Height = 30, Margin = new Thickness(5), Padding = new Thickness(2) };
-            //    grid.Children.Add(new TextBlock() { Text = recent.Text });
-            //    xTest.Children.Add(grid);
-            //}
-
-
-
 
         }
 
@@ -683,7 +648,7 @@ namespace Dash
 
                 if (search == "")
                 {
-                    foreach (var recent in _recentTags)
+                    foreach (var recent in _recentTags.Reverse())
                     {
                         xTest.Children.Add(recent);
                     }
