@@ -401,8 +401,8 @@ namespace Dash
 		                Canvas.GetTop(child) < (BottomScrollViewer.VerticalOffset + BottomScrollViewer.ViewportHeight))
 		            {
 						//need way of getting linked doc from ui element or use 
-						_bottomAnnotationList
-					}
+		                /*_bottomAnnotationList*/;
+		            }
 		            else
 		            {
 						
