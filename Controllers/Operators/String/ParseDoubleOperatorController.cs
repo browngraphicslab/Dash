@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.parse_double)]
+    [OperatorType(Op.Name.parse_num)]
     public sealed class ParseDoubleOperatorController : OperatorController
     {
         public ParseDoubleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

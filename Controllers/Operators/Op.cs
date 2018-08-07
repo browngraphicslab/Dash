@@ -46,6 +46,7 @@ namespace Dash
 
             remove_first_exp,
             remove_exp,
+            replace,
 
             substring,
             index,
@@ -87,7 +88,7 @@ namespace Dash
 
             to_list,
             to_string,
-            parse_double,
+            parse_num,
             contains,
 
             // DOCUMENTS

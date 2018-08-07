@@ -13,6 +13,7 @@ namespace Dash
         public static readonly KeyController EndIndKey = new KeyController("End Index");
         public static readonly KeyController SourceDocKey = new KeyController("Source Doc");
         public static readonly KeyController TargetDocKey = new KeyController("Target Doc");
+        public static readonly KeyController LinkTypeKey = new KeyController("Link Type");
 
         //Output keys
         public static readonly KeyController SuccessKey = new KeyController("Success");
@@ -28,7 +29,8 @@ namespace Dash
             new KeyValuePair<KeyController, IOInfo>(StartIndKey, new IOInfo(TypeInfo.Number, true)),
             new KeyValuePair<KeyController, IOInfo>(EndIndKey, new IOInfo(TypeInfo.Number, true)),
             new KeyValuePair<KeyController, IOInfo>(SourceDocKey, new IOInfo(TypeInfo.Document, true)),
-            new KeyValuePair<KeyController, IOInfo>(TargetDocKey, new IOInfo(TypeInfo.Document, true))
+            new KeyValuePair<KeyController, IOInfo>(TargetDocKey, new IOInfo(TypeInfo.Document, true)),
+            new KeyValuePair<KeyController, IOInfo>(LinkTypeKey, new IOInfo(TypeInfo.Text, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
@@ -45,8 +47,9 @@ namespace Dash
             var endIndex = (int)((inputs[EndIndKey] as NumberController)?.Data ?? -1);
             var sourceDoc = inputs[SourceDocKey] as DocumentController;
             var targetDoc = inputs[TargetDocKey] as DocumentController;
+            var linkType = (TextController) inputs[LinkTypeKey];
 
-            NewAnnotationOverlay.LinkRegion(startIndex, endIndex, sourceDoc, targetDoc);
+            NewAnnotationOverlay.LinkRegion(startIndex, endIndex, sourceDoc, targetDoc, linkType.Data);
         }
     }
 }

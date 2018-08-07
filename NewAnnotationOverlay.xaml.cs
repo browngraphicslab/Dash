@@ -2,22 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using System.Collections.ObjectModel;
@@ -371,14 +365,20 @@ namespace Dash
             return annotation;
         }
 
-        public static DocumentController LinkRegion(int startIndex, int endIndex, DocumentController sourceDoc, DocumentController targetDoc)
+        public static DocumentController LinkRegion(int startIndex, int endIndex, DocumentController sourceDoc, DocumentController targetDoc, string linkTag = null)
         {
-            var selectionIndexList = new ListController<PointController> { new PointController(startIndex, endIndex) };
-            targetDoc.SetField(KeyStore.SelectionIndicesListKey, selectionIndexList, true);
-            targetDoc.SetRegionDefinition(sourceDoc);
-            targetDoc.SetAnnotationType(AnnotationType.Selection);
-            sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetDoc);
-            return targetDoc;
+            Debug.Assert(sourceDoc.GetRegionDefinition() == null);
+            DocumentController region = new RichTextNote().Document;
+
+            region.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController(startIndex, endIndex) }, true);
+            region.SetRegionDefinition(sourceDoc);
+            region.SetAnnotationType(AnnotationType.Selection);
+
+            if (linkTag != null) region.Link(targetDoc, LinkContexts.None, linkTag);
+            else region.Link(targetDoc, LinkContexts.None);
+
+            sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
+            return region;
         }
 
         #region General Annotation
