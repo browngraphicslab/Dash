@@ -557,8 +557,9 @@ namespace Dash
             xRightColumn.Width = new GridLength(0);
             xTopRow.Height = new GridLength(0);
             xBottomRow.Height = new GridLength(0);
-            ViewModel.DecorationState = false;
-		}
+            if(ViewModel != null)
+                ViewModel.DecorationState = false;
+        }
 
         public void ToggleTemplateEditor()
         {

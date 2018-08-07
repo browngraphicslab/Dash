@@ -89,7 +89,7 @@ namespace Dash
                         };
                         var newPane = new SplitFrame()
                         {
-                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy())
+                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy()) { Undecorated = true }
                         };
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);
@@ -136,7 +136,7 @@ namespace Dash
                         }
 
                         bool left = args.Direction == SplitFrame.SplitDirection.Left;
-                        var col = CurSplitMode == SplitMode.Content ? 0 : Grid.GetColumn(sender.GetFirstAncestorOfType<SplitManager>()); 
+                        var col = CurSplitMode == SplitMode.Content ? 0 : Grid.GetColumn(sender.GetFirstAncestorOfType<SplitManager>());
                         CurSplitMode = SplitMode.Horizontal;
                         var splitter = new GridSplitter
                         {
@@ -145,7 +145,7 @@ namespace Dash
                         };
                         var newPane = new SplitFrame()
                         {
-                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy())
+                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy()) { Undecorated = true }
                         };
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);
@@ -153,9 +153,9 @@ namespace Dash
                         if (left)
                         {
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition {Width = new GridLength(0, GridUnitType.Star)}); //Content col
+                                new ColumnDefinition { Width = new GridLength(0, GridUnitType.Star) }); //Content col
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition {Width = new GridLength(10)}); //Splitter col
+                                new ColumnDefinition { Width = new GridLength(10) }); //Splitter col
                             Grid.SetColumn(splitter, col + 1);
                             Grid.SetColumn(newManager, col + 2);
                             UpdateCols(2, col + 1);
@@ -165,9 +165,9 @@ namespace Dash
                         else
                         {
                             XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition() {Width = new GridLength(10)}); //Splitter col
+                                new ColumnDefinition() { Width = new GridLength(10) }); //Splitter col
                             XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition {Width = new GridLength(0, GridUnitType.Star)}); //Content col
+                                new ColumnDefinition { Width = new GridLength(0, GridUnitType.Star) }); //Content col
                             Grid.SetColumn(newManager, col);
                             Grid.SetColumn(splitter, col + 1);
                             UpdateCols(2, col);
@@ -179,6 +179,7 @@ namespace Dash
                     break;
             }
 
+            Debug.WriteLine($"Num Children: {XContentGrid.Children.Count}");
             return true;
         }
 
@@ -218,6 +219,84 @@ namespace Dash
                 {
                     Grid.SetRow(fe, col + offset);
                 }
+            }
+        }
+
+        public void DeleteFrame(int index)
+        {
+            if (CurSplitMode == SplitMode.Horizontal)
+            {
+                var splitterIndex = index == XContentGrid.ColumnDefinitions.Count - 1 ? index - 1 : index + 1;
+                var eles = XContentGrid.Children.Where(ele =>
+                {
+                    var column = Grid.GetColumn((FrameworkElement)ele);
+                    return column == index || column == splitterIndex;
+                }).ToList();
+                foreach (var uiElement in eles)
+                {
+                    XContentGrid.Children.Remove(uiElement);
+                }
+
+                if (index == XContentGrid.ColumnDefinitions.Count - 1)
+                {
+                    XContentGrid.ColumnDefinitions.RemoveAt(index);
+                    XContentGrid.ColumnDefinitions.RemoveAt(index - 1);
+                }
+                else
+                {
+                    XContentGrid.ColumnDefinitions.RemoveAt(index + 1);
+                    XContentGrid.ColumnDefinitions.RemoveAt(index);
+                }
+            }
+            else if (CurSplitMode == SplitMode.Vertical)
+            {
+                var splitterIndex = index == XContentGrid.RowDefinitions.Count - 1 ? index - 1 : index + 1;
+                var eles = XContentGrid.Children.Where(ele =>
+                {
+                    var row = Grid.GetRow((FrameworkElement)ele);
+                    return row == index || row == splitterIndex;
+                }).ToList();
+                foreach (var uiElement in eles)
+                {
+                    XContentGrid.Children.Remove(uiElement);
+                }
+
+                if (index == XContentGrid.RowDefinitions.Count - 1)
+                {
+                    XContentGrid.RowDefinitions.RemoveAt(index);
+                    XContentGrid.RowDefinitions.RemoveAt(index - 1);
+                }
+                else
+                {
+                    XContentGrid.RowDefinitions.RemoveAt(index + 1);
+                    XContentGrid.RowDefinitions.RemoveAt(index);
+                }
+            }
+
+            //If there is only one child left after removing one, unwrap is from the SplitManager that it is in
+            if (XContentGrid.Children.Count == 1)
+            {
+                var manager = (SplitManager)XContentGrid.Children.First();
+                var children = manager.XContentGrid.Children.ToList();
+                manager.XContentGrid.Children.Clear();
+                XContentGrid.Children.Clear();
+                foreach (var uiElement in children)
+                {
+                    XContentGrid.Children.Add(uiElement);
+                }
+
+                XContentGrid.ColumnDefinitions.Clear();
+                foreach (var columnDefinition in manager.Columns)
+                {
+                    XContentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = columnDefinition.Width });
+                }
+                XContentGrid.RowDefinitions.Clear();
+                foreach (var rowDefinition in manager.Rows)
+                {
+                    XContentGrid.RowDefinitions.Add(new RowDefinition { Height = rowDefinition.Height });
+                }
+                CurSplitMode = manager.CurSplitMode;
+                _allowedSplits = manager._allowedSplits;
             }
         }
     }

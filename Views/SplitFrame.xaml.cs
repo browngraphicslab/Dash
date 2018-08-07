@@ -25,17 +25,17 @@ namespace Dash
 
         public static void OpenInActiveFrame(DocumentController doc)
         {
-            if(ActiveFrame.ViewModel.DataDocument.Equals(doc.GetDataDocument()))
+            if (ActiveFrame.ViewModel.DataDocument.Equals(doc.GetDataDocument()))
             {
                 return;
             }
-            if(!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()))
+            if (!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()))
             {
                 doc = doc.GetViewCopy();
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
             }
-            
+
             ActiveFrame.DataContext = new DocumentViewModel(doc) { Undecorated = true };
         }
 
@@ -45,6 +45,16 @@ namespace Dash
         {
             Left, Right, Up, Down, None
         }
+
+        public enum SplitMode
+        {
+            VerticalSplit, HorizontalSplit,
+            VerticalCollapsePrevious, VerticalCollapseNext,
+            HorizontalCollapsePrevious, HorizontalCollapseNext,
+            None
+        }
+
+        public SplitMode CurrentSplitMode { get; private set; } = SplitMode.None;
 
         public DocumentController DocumentController => (DataContext as DocumentViewModel)?.DocumentController;
 
@@ -65,87 +75,180 @@ namespace Dash
         public SplitFrame()
         {
             this.InitializeComponent();
-            XDocView.hideResizers();
+            XDocView.RemoveResizeHandlers();
         }
 
-        private void TopLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void TrySplit(SplitDirection direction, SplitMode splitMode)
         {
-            if (e.Cumulative.Translation.Y < 0 && e.Cumulative.Translation.X < 0)
+            foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
             {
-                e.Complete();
-                return;
-            }
-            if (e.Cumulative.Translation.Y > e.Cumulative.Translation.X)
-            {
-                foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
+                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction)))
                 {
-                    if (splitManager.DocViewTrySplit(this, new SplitEventArgs(SplitDirection.Down)))
-                    {
-                        break;
-                    }
+                    break;
                 }
-                XTopLeftResizer.ManipulationMode = ManipulationModes.TranslateY;
+            }
+
+            CurrentSplitMode = splitMode;
+        }
+
+        private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            var x = e.Cumulative.Translation.X;
+            var y = e.Cumulative.Translation.Y;
+            var angle = Math.Atan2(y, x);
+            angle = angle * 180 / Math.PI;
+            if (angle > 135 || angle < -150)
+            {
+                TrySplit(SplitDirection.Left, SplitMode.HorizontalSplit);
+            }
+            else if (angle <= 135 && angle > 60)
+            {
+                TrySplit(SplitDirection.Down, SplitMode.VerticalSplit);
+            }
+            else if (angle <= 60 && angle > -45)
+            {
+                CurrentSplitMode = SplitMode.HorizontalCollapseNext;
             }
             else
             {
-                foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
-                {
-                    if (splitManager.DocViewTrySplit(this, new SplitEventArgs(SplitDirection.Right)))
-                    {
-                        break;
-                    }
-                }
-                XTopLeftResizer.ManipulationMode = ManipulationModes.TranslateX;
+                CurrentSplitMode = SplitMode.VerticalCollapsePrevious;
             }
         }
 
-        private void TopLeftOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void BottomLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            var x = e.Cumulative.Translation.X;
+            var y = e.Cumulative.Translation.Y;
+            var angle = Math.Atan2(y, x);
+            angle = angle * 180 / Math.PI;
+            if (angle < 30 && angle > -45)
+            {
+                TrySplit(SplitDirection.Right, SplitMode.HorizontalSplit);
+            }
+            else if (angle <= -45 && angle > -120)
+            {
+                TrySplit(SplitDirection.Up, SplitMode.VerticalSplit);
+            }
+            else if (angle <= -120 || angle > 135)
+            {
+                CurrentSplitMode = SplitMode.HorizontalCollapsePrevious;
+            }
+            else
+            {
+                CurrentSplitMode = SplitMode.VerticalCollapseNext;
+            }
+        }
+
+        private void ResizeColumns(int offset, double diff)
         {
             var sms = this.GetAncestorsOfType<SplitManager>();
-            if (XTopLeftResizer.ManipulationMode == ManipulationModes.TranslateX)
+            var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Horizontal);
+            var parent = sms.First();
+            var cols = splitManager.Columns;
+            var col = splitManager == parent ? Grid.GetColumn(this) : Grid.GetColumn(parent);
+            diff = cols[col].ActualWidth - diff < 0 ? cols[col].ActualWidth : diff;
+            diff = cols[col + offset].ActualWidth + diff < 0 ? -cols[col + offset].ActualWidth : diff;
+            cols[col].Width = new GridLength(cols[col].ActualWidth - diff, GridUnitType.Star);
+            cols[col + offset].Width = new GridLength(cols[col + offset].ActualWidth + diff, GridUnitType.Star);
+        }
+
+        private void ResizeRows(int offset, double diff)
+        {
+            var sms = this.GetAncestorsOfType<SplitManager>();
+            var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Vertical);
+            var parent = sms.First();
+            var rows = splitManager.Rows;
+            var row = splitManager == parent ? Grid.GetRow(this) : Grid.GetRow(parent);
+            diff = rows[row].ActualHeight - diff < 0 ? rows[row].ActualHeight : diff;
+            diff = rows[row + offset].ActualHeight + diff < 0 ? -rows[row + offset].ActualHeight : diff;
+            rows[row].Height = new GridLength(rows[row].ActualHeight - diff, GridUnitType.Star);
+            rows[row + offset].Height = new GridLength(rows[row + offset].ActualHeight + diff, GridUnitType.Star);
+        }
+
+        private void TopRightOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (CurrentSplitMode == SplitMode.HorizontalSplit)
             {
-                var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Horizontal);
-                var parent = sms.First();
-                var cols = splitManager.Columns;
-                var col = splitManager == parent ? Grid.GetColumn(this) : Grid.GetColumn(parent);
-                double diff = e.Delta.Translation.X;
-                diff = cols[col].ActualWidth - diff < 0 ? 0 : diff;
-                diff = cols[col - 2].ActualWidth + diff < 0 ? 0 : diff;
-                cols[col].Width = new GridLength(cols[col].ActualWidth - diff, GridUnitType.Star);
-                cols[col - 2].Width = new GridLength(cols[col - 2].ActualWidth + diff, GridUnitType.Star);
-            } else if (XTopLeftResizer.ManipulationMode == ManipulationModes.TranslateY)
+                ResizeColumns(2, -e.Delta.Translation.X);
+            }
+            else if (CurrentSplitMode == SplitMode.VerticalSplit)
             {
-                var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Vertical);
-                var parent = sms.First();
-                var rows = splitManager.Rows;
-                var row = splitManager == parent ? Grid.GetRow(this) : Grid.GetRow(parent);
-                double diff = e.Delta.Translation.Y;
-                diff = rows[row].ActualHeight - diff < 0 ? rows[row].ActualHeight : diff;
-                diff = rows[row - 2].ActualHeight + diff < 0 ? -rows[row - 2].ActualHeight : diff;
-                rows[row].Height = new GridLength(rows[row].ActualHeight - diff, GridUnitType.Star);
-                rows[row - 2].Height = new GridLength(rows[row - 2].ActualHeight + diff, GridUnitType.Star);
+                ResizeRows(-2, e.Delta.Translation.Y);
             }
         }
 
-        private void TopLeftOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void BottomLeftOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            XTopLeftResizer.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            SplitCompleted?.Invoke(this);
+            if (CurrentSplitMode == SplitMode.HorizontalSplit)
+            {
+                ResizeColumns(-2, e.Delta.Translation.X);
+            }
+            else if (CurrentSplitMode == SplitMode.VerticalSplit)
+            {
+                ResizeRows(2, -e.Delta.Translation.Y);
+            }
         }
 
-        private void BottomRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            
-        }
+            switch (CurrentSplitMode)
+            {
+                case SplitMode.VerticalSplit:
+                case SplitMode.HorizontalSplit:
+                    SplitCompleted?.Invoke(this);
+                    break;
+                case SplitMode.VerticalCollapsePrevious:
+                    {
+                        var parent = this.GetFirstAncestorOfType<SplitManager>();
+                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
+                        {
+                            int index = Grid.GetRow(parent);
+                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index - 2 : index);
+                        }
 
-        private void BottomRightOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            
-        }
+                        break;
+                    }
+                case SplitMode.HorizontalCollapsePrevious:
+                    {
+                        var parent = this.GetFirstAncestorOfType<SplitManager>();
+                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
+                        {
+                            int index = Grid.GetColumn(parent);
+                            splitManager.DeleteFrame(e.Cumulative.Translation.X < 0 ? index - 2 : index);
+                        }
 
-        private void BottomRightOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            
+                        break;
+                    }
+                case SplitMode.VerticalCollapseNext:
+                    {
+                        var parent = this.GetFirstAncestorOfType<SplitManager>();
+                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
+                        {
+                            int index = Grid.GetRow(parent);
+                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
+                        }
+
+                        break;
+                    }
+                case SplitMode.HorizontalCollapseNext:
+                    {
+                        var parent = this.GetFirstAncestorOfType<SplitManager>();
+                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
+                        {
+                            int index = Grid.GetColumn(parent);
+                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
+                        }
+
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            CurrentSplitMode = SplitMode.None;
         }
 
         private void XDocView_DocumentSelected(DocumentView obj)

@@ -11,16 +11,16 @@
 
     <Grid>
         <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>
-        <Polygon x:Name="XTopLeftResizer" Fill="Black" Points="0,0,25,0,0,25" HorizontalAlignment="Left" VerticalAlignment="Top"
+        <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
                  ManipulationMode="TranslateX,TranslateY"
-                 ManipulationStarted="TopLeftOnManipulationStarted"
-                 ManipulationDelta="TopLeftOnManipulationDelta"
-                 ManipulationCompleted="TopLeftOnManipulationCompleted"/>
-        <Polygon x:Name="XBottomRightResizer" Fill="Black" Points="0,25,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 ManipulationStarted="TopRightOnManipulationStarted"
+                 ManipulationDelta="TopRightOnManipulationDelta"
+                 ManipulationCompleted="OnManipulationCompleted"/>
+        <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                  ManipulationMode="TranslateX,TranslateY"
-                 ManipulationStarted="BottomRightOnManipulationStarted"
-                 ManipulationDelta="BottomRightOnManipulationDelta"
-                 ManipulationCompleted="BottomRightOnManipulationCompleted"/>
+                 ManipulationStarted="BottomLeftOnManipulationStarted"
+                 ManipulationDelta="BottomLeftOnManipulationDelta"
+                 ManipulationCompleted="OnManipulationCompleted"/>
     </Grid>
 
 </UserControl>
