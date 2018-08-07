@@ -175,7 +175,7 @@ namespace Dash
             foreach (var selectableElement in page.Skip(1))
             {
                 // if the element is deemed to be on a new line, create a new one and add it
-                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height ||
+                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height*2/3 ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
                 {
                     element = selectableElement;
