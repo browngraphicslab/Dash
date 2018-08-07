@@ -90,7 +90,7 @@ namespace Dash
                     textData.GetSingleSpaceWidth() * 0.3)
                 {
                     // insert a space into that index
-                    var width = start.X - _elements.Last().Bounds.X + _elements.Last().Bounds.Width;
+                    var width = start.X - (_elements.Last().Bounds.X + _elements.Last().Bounds.Width);
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
                             pageHeight - (start.Y + _pageOffset),
