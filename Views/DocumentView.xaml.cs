@@ -60,7 +60,6 @@ namespace Dash
             set => DataContext = value;
         }
         public MenuFlyout           MenuFlyout { get; set; }
-        public RectangleGeometry    Bounds { get; set; }
         public bool                 PreventManipulation { get; set; }
         private ImageSource         DocPreview
         {
@@ -768,9 +767,10 @@ namespace Dash
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
 
-            if (Bounds != null && (!Bounds.Rect.Contains(translate) ||
-                                   !Bounds.Rect.Contains(new Point(translate.X + ActualWidth,
-                                       translate.Y + ActualHeight))))
+            if (ViewModel.DragBounds != null && 
+                (!ViewModel.DragBounds.Rect.Contains(translate) ||
+                 !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
+                                                               translate.Y + ActualHeight))))
             {
                 return;
             }
@@ -930,15 +930,15 @@ namespace Dash
             var h = ActualHeight - extraOffsetY;
 
             // clamp the drag position to the available Bounds
-            if (Bounds != null)
+            if (ViewModel.DragBounds != null)
             {
                 var width = ActualWidth;
                 var height = ActualHeight;
                 var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
                     ViewModel.YPos + height * (1 - moveYScale));
-                if (!Bounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
+                if (!ViewModel.DragBounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
                     return;
-                var clamped = Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), Bounds.Rect);
+                var clamped = Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), ViewModel.DragBounds.Rect);
                 delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
             }
 
@@ -996,10 +996,10 @@ namespace Dash
 
 
             // re-clamp the position to keep it in bounds
-            if (Bounds != null)
+            if (ViewModel.DragBounds != null)
             {
-                if (!Bounds.Rect.Contains(newPos) ||
-                    !Bounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
+                if (!ViewModel.DragBounds.Rect.Contains(newPos) ||
+                    !ViewModel.DragBounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
                 {
                     ViewModel.Position = oldPos;
                     ViewModel.Width = oldSize.Width;
@@ -1007,11 +1007,11 @@ namespace Dash
                     return;
                 }
 
-                var clamp = Clamp(newPos, Bounds.Rect);
+                var clamp = Clamp(newPos, ViewModel.DragBounds.Rect);
                 newSize.Width += newPos.X - clamp.X;
                 newSize.Height += newPos.Y - clamp.Y;
                 newPos = clamp;
-                var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), Bounds.Rect);
+                var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), ViewModel.DragBounds.Rect);
                 newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
             }
 
@@ -1686,13 +1686,11 @@ namespace Dash
             if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
                 newpoint = new Point();
 
-            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ResizersVisible ? newpoint.Y * 15 : 0);
+            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
         }
-
-        public bool ResizersVisible = false;
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)
         {

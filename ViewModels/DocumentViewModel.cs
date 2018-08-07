@@ -50,7 +50,7 @@ namespace Dash
         public DocumentController DataDocument => DocumentController.GetDataDocument();
         public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
-        
+        public bool ResizersVisible = false;
         public bool ShowLocalContext
         {
             get => _showLocalContext;
@@ -108,6 +108,7 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
+        public RectangleGeometry DragBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
 

@@ -20,7 +20,13 @@ namespace Dash
         PointerEventHandler release_hdlr;
         Point _rightDragLastPosition, _rightDragStartPosition;
         int _numMovements;
-        private bool _useCache;
+        bool _useCache;
+
+        Point GetPointerPosition()
+        {
+            var container = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>() as FrameworkElement;
+            return container.PointerPos();
+        }
 
         public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown, bool useCache = false)
         {
@@ -57,12 +63,12 @@ namespace Dash
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _numMovements = 0;
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
             if (_useCache) _eventElement.CacheMode = null;
         }
-        
+
 
         /// <summary>
         /// Move view around if right mouse button is held down
@@ -76,7 +82,7 @@ namespace Dash
             _numMovements++;
             if (_manipulationDocumentTarget.ManipulationControls == null) return;
             
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
             var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
@@ -118,7 +124,7 @@ namespace Dash
             if (_collection != null)
                 _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
 
             var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);

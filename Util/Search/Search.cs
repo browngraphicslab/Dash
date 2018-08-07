@@ -388,7 +388,6 @@ namespace Dash
             }
         }
 
-
         public struct SearchTerm {
 
             public bool Negate { get; set; }

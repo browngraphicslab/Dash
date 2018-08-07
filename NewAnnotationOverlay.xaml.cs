@@ -29,6 +29,7 @@ using Dash.Annotations;
 using Dash.Models.DragModels;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using MyToolkit.Multimedia;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -58,6 +59,11 @@ namespace Dash
         bool Selected { get; }
 
         DocumentController RegionDocument { get; }
+    }
+
+    public class NewAnnotationOverlayViewModel : ViewModelBase
+    { 
+        public ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
     }
 
     public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
@@ -210,37 +216,21 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
+            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
-        public void LoadPinAnnotations()
+        public void LoadPinAnnotations(CustomPdfView pdfView)
         {
-			//var currentDocViews = XAnnotationCanvas.Children.Where(child => child is DocumentView);
-			
-	        foreach (var child in XAnnotationCanvas.Children.ToList())
-	        {
-		        if (child is DocumentView dv)
-			        XAnnotationCanvas.Children.Remove(dv);
-	        }
-
-            var pinAnnotations = _mainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Clear();
+            
             if (pdfView != null)
             {
-                var scale = pdfView.Width / pdfView.PdfMaxWidth;
-
+                var pinAnnotations = _mainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
                 foreach (var doc in pinAnnotations)
                 {
-                    var dvm = new DocumentViewModel(doc) { DecorationState = false, Undecorated = false };
-                    var docView = new DocumentView
-                    {
-                        DataContext = dvm,
-                        BindRenderTransform = true,
-                        //Bounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth * scale, pdfView.PdfTotalHeight * scale) },
-                        BindVisibility = true,
-                        ResizersVisible = true
-                    };
-                    XAnnotationCanvas.Children.Add(docView);
+                    var dvm = new DocumentViewModel(doc) { Undecorated = true, ResizersVisible = true, DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
                 }
             }
         }
@@ -543,6 +533,7 @@ namespace Dash
                     return;
                 }
             }
+<<<<<<< HEAD
 			
 	        DocumentController annotationController;
 
@@ -739,16 +730,15 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    XAnnotationCanvas.Children.Remove(pin);
+                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Remove(pin.DataContext as DocumentViewModel);
                     var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
                     if (docView != null)
                     {
                         if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
-						var annotations =  _mainDocument.GetDataDocument()
-		                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
-	                    annotations.Remove(docView.ViewModel.DocumentController);
-	                    Debug.WriteLine(annotations.Count);
+                        _mainDocument.GetDataDocument()
+                            .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                            .Remove(docView.ViewModel.DocumentController);
                     }
                 }
                 SelectRegion(vm, args.GetPosition(this));
@@ -1069,7 +1059,7 @@ namespace Dash
             foreach (var selectableElement in _textSelectableElements)
             {
                 var b = selectableElement.Bounds;
-                if (b.Contains(p))
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
