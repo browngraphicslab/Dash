@@ -818,11 +818,14 @@ namespace Dash
 
                     topOffset += size.Height * scale + 15;
                 }
-                
+
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, offsets.First(), null);
-                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First(), null);
+                TopScrollViewer.ChangeView(null,
+                    offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null,
+                    offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
+                    null);
             }
             else
             {
@@ -843,7 +846,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, offsets.First(), null);
+                BottomScrollViewer.ChangeView(null, offsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
             }
         }
 
