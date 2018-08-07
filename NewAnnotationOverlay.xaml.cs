@@ -1192,6 +1192,15 @@ namespace Dash
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
+		    if (!target.DocumentType.Type.Equals("Rich Text Box") && !target.DocumentType.Type.Equals("Text Box"))
+		    {
+			    if (target.GetActualSize()?.X > 200)
+			    {
+					var ratio = target.GetHeight() / target.GetWidth();
+					target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+					target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+				}
+			}
 		    CreatePin(where, target);
 		    e.Handled = true;
 	    }

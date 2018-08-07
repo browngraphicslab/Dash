@@ -79,7 +79,7 @@ namespace Dash
             Application.Current.Suspending += (sender, args) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
             };
 
             xSearchDelete.Click += (s, e) =>
