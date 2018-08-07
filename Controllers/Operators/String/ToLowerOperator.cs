@@ -4,6 +4,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType(Op.Name.to_lower)]
     public class ToLowerOperator : OperatorController
     {
         public ToLowerOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)

@@ -49,6 +49,7 @@ namespace Dash
 
             substring,
             index,
+            to_lower,
 
             // BINARY COMPARISONS
 
@@ -86,6 +87,8 @@ namespace Dash
 
             to_list,
             to_string,
+            parse_double,
+            contains,
 
             // DOCUMENTS
 
