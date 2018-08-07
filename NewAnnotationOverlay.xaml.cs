@@ -533,7 +533,6 @@ namespace Dash
                     return;
                 }
             }
-<<<<<<< HEAD
 			
 	        DocumentController annotationController;
 
