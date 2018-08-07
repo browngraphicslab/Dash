@@ -73,9 +73,9 @@ namespace Dash
          */
         private void FormatDropdownMenu()
         {
-            xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
+            //xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            //xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            //xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         /*
@@ -113,7 +113,7 @@ namespace Dash
             //Whether or not open or closed, should always be visible if some content is selected
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
-            xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
         }
 

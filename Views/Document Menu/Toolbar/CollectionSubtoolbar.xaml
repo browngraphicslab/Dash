@@ -13,7 +13,7 @@
     <Grid>
 
         <StackPanel Orientation="Horizontal" x:Name="xCollectionCommandbar" Height="40" Background="{StaticResource DashToolBarBrush}">
-            <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
+            <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0"  SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
                 <ComboBoxItem Content="Freeform"/>
             </ComboBox>
             <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>

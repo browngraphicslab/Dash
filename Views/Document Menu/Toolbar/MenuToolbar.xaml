@@ -461,7 +461,7 @@
 
                 
                 <AppBarButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xPin" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled ="True" 
@@ -472,7 +472,7 @@
                     <TextBlock x:Name="xLockIcon" Text="&#xE840;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
                 <AppBarButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xCollapse" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     Background="{x:Bind ExpandColor, Mode=OneWay}" 
@@ -488,7 +488,7 @@
                 <AppBarSeparator x:Name="xSepThree"  Foreground="Gray"/>
 
                 <AppBarToggleButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xTouch"
                     Style="{StaticResource AppBarToggleButtonStyler}" 
                     Unchecked="AppBarToggleButton_UnChecked" 
@@ -498,7 +498,7 @@
                     <TextBlock x:Name="xTouchIcon" Text="&#xE14E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
                 <AppBarToggleButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xInk" 
                     Style="{StaticResource AppBarToggleButtonStyler}" 
                     IsEnabled="False" 
@@ -510,7 +510,7 @@
                     <TextBlock x:Name="xInkIcon" Text="&#xE104;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
                 <AppBarToggleButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xGroup"
                     Style="{StaticResource AppBarToggleButtonStyler}"
                     Unchecked="AppBarToggleButton_UnChecked"  
@@ -524,7 +524,7 @@
 
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
                 <AppBarButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xAddGroup" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled="True" 
@@ -535,7 +535,7 @@
                     <TextBlock x:Name="xGroupIcon" Text="&#xE138;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
                 <AppBarButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xAddImage"
                     Style="{StaticResource AppBarButtonStyler}" 
                     Tapped="AddImage_OnTapped"
@@ -544,7 +544,7 @@
                     <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
                 <AppBarButton
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xAddVideo" 
                     Style="{StaticResource AppBarButtonStyler}"
                     Click="Add_Video_On_Click"
@@ -553,7 +553,7 @@
                     <TextBlock x:Name="xVideoIcon" Text="&#xE116;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
                 <AppBarButton 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     x:Name="xAddAudio" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     Click="Add_Audio_On_Click"
@@ -566,7 +566,7 @@
 
                 <AppBarButton 
                     x:Name="xCopy" 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}"
                     IsEnabled="False" 
                     Opacity="0.5" 
@@ -577,7 +577,7 @@
                 </AppBarButton>
                 <AppBarButton 
                     x:Name="xDelete" 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled="False"
                     Opacity="0.5"  
@@ -593,7 +593,7 @@
                 <!-- Bind is enabled-->
                 <AppBarButton 
                     x:Name="xUndo" 
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled="False" 
                     Opacity="0.5" 
@@ -604,7 +604,7 @@
                 </AppBarButton>
                 <AppBarButton 
                     x:Name="xRedo"
-                    Margin="0 2 0 0"
+                    Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
                     IsEnabled="False" 
                     Opacity="0.5" 

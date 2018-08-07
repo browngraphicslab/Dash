@@ -1089,9 +1089,9 @@
                 <Setter Property="Padding" Value="12,5,0,7" />
                 <Setter Property="MinWidth" Value="{ThemeResource ComboBoxThemeMinWidth}" />
                 <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
-                <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundAltMediumLowBrush}" />
-                <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseMediumLowBrush}" />
-                <Setter Property="BorderThickness" Value="{ThemeResource ComboBoxBorderThemeThickness}" />
+                <Setter Property="Background" Value="#80FFFFFF" />
+                <Setter Property="BorderBrush" Value="#D9FFFFFF" />
+                <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="TabNavigation" Value="Once" />
                 <Setter Property="Height" Value="35" />
 
@@ -1106,7 +1106,7 @@
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Top" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="FontSize" Value="12" />
                 <Setter Property="ItemsPanel">
                     <Setter.Value>
                         <ItemsPanelTemplate>
@@ -1132,11 +1132,11 @@
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background" Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlPageBackgroundAltMediumBrush}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="White" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
                                                                                Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseMediumBrush}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashDarkBlueBrush}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
@@ -1144,11 +1144,11 @@
                                             <Storyboard>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
                                                                                Storyboard.TargetProperty="Background">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundListMediumBrush}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="White" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Background"
                                                                                Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseMediumLowBrush}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashMediumBlueBrush}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
@@ -1198,7 +1198,7 @@
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DropDownGlyph"
                                                                                Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseMediumHighBrush}" />
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashDarkBlueBrush}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
@@ -1297,6 +1297,7 @@
                                           IsHitTestVisible="False"
                                           Margin="0,10,10,10"
                                           Foreground="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
+                                          
                                           FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                           FontSize="12"
                                           Glyph="&#xE0E5;"
@@ -1306,9 +1307,9 @@
                                 <Popup x:Name="Popup">
                                     <Border
                                         x:Name="PopupBorder"
-                                        Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
-                                        BorderBrush="{ThemeResource SystemControlForegroundChromeHighBrush}"
-                                        BorderThickness="{ThemeResource ComboBoxDropdownBorderThickness}"
+                                        Background="White"
+                                        BorderBrush="{StaticResource DashDarkDarkBlueBrush}"
+                                        BorderThickness="3"
                                         Margin="0,-1,0,-1"
                                         HorizontalAlignment="Stretch">
                                         <ScrollViewer x:Name="ScrollViewer"
@@ -1339,6 +1340,8 @@
             <Style TargetType="SymbolIcon">
                 <Setter Property="RequestedTheme" Value="Dark"></Setter>
             </Style>
+            
+
 
             <!-- blue (default) button with white text -->
             <Style TargetType="Button" x:Key="BlueButton">

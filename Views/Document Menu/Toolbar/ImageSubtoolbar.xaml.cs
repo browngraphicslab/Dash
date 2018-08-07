@@ -64,9 +64,9 @@ namespace Dash
         /// </summary>
         private void FormatDropdownMenu()
         {
-            xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
+        //    xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+        //    xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+        //    xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         private void Crop_Click(object sender, RoutedEventArgs e)
@@ -90,8 +90,8 @@ namespace Dash
         public void CommandBarOpen(bool status)
         {
             xImageCommandbar.Visibility = Visibility.Visible;
-            //updates margin to visually account for the change in size
-            xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            ////updates margin to visually account for the change in size
+            //xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
         private void Revert_Click(object sender, RoutedEventArgs e)

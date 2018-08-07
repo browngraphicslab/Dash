@@ -47,7 +47,7 @@ namespace Dash
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
-            FormatDropdownMenu();
+            //FormatDropdownMenu();
 
             xCollectionCommandbar.Loaded += delegate
             {
@@ -72,12 +72,11 @@ namespace Dash
         /// <summary>
         /// Formats the combo box according to Toolbar Constants.
         /// </summary>
-        private void FormatDropdownMenu()
-        {
-            xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
-        }
+        //private void FormatDropdownMenu()
+        //{
+        //    xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
+        //    xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
+        //}
 
         /// <summary>
         /// When the Break button is clicked, the selected group should separate.
@@ -128,7 +127,7 @@ namespace Dash
         public void CommandBarOpen(bool status)
         {
             xCollectionCommandbar.Visibility = Visibility.Visible;
-            xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
         public void SetCollectionBinding(CollectionView thisCollection, DocumentController docController)

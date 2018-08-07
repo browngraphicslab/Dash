@@ -19,7 +19,7 @@
                     <ColumnDefinition x:Name="xRadialCol" Width="50"/>
                     <ColumnDefinition x:Name="xSliderCol" Width="300"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="xShapeOptionsDropdown" SelectedIndex="0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
+                <ComboBox x:Name="xShapeOptionsDropdown" Style="{StaticResource ComboBoxStyler}"  SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
                     <ComboBoxItem Content="Rectangle"/>
                     <ComboBoxItem Content="Ellipse"/>
                     <ComboBoxItem Content="Rounded"/>
