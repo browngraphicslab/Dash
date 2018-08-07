@@ -79,7 +79,7 @@ namespace Dash
             Application.Current.Suspending += (sender, args) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
             };
 
             xSearchDelete.Click += (s, e) =>
@@ -93,7 +93,7 @@ namespace Dash
 
             xSearchBox.QuerySubmitted += (s, e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
-           xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
+            xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
 
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
 

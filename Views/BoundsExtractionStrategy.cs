@@ -103,7 +103,7 @@ namespace Dash
                     Math.Abs(end.Y - start.Y));
                 if (!_elements.Any() || _elements.Last().Bounds != newBounds)
                 {
-                    _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
+                     _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
                 }
             }
         }
@@ -216,8 +216,16 @@ namespace Dash
             // loop through every line
             foreach (var line in lines)
             {
-                // sort each line horizontally
                 line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+                while (line.FirstOrDefault() != null)
+                    if (!string.IsNullOrWhiteSpace(line.FirstOrDefault().Contents as string))
+                        break;
+                    else line.RemoveAt(0);
+                if (line.Count == 0)
+                    continue;
+                if (!string.IsNullOrWhiteSpace(strings[0]) && !strings[0].EndsWith(" "))
+                    strings[0] += " ";
+                    // sort each line horizontally
                 var linestr = line.Aggregate("", (str, e) => str + (e.Contents as string));
                 var element = line.First();
                 // assume that each line starts at column 0
@@ -271,8 +279,8 @@ namespace Dash
                  */
 
                 // find the average font size of the line's elements
-                var currFontWidth = AverageFontSize(line);
-                foreach (var selectableElement in line.Skip(1))
+                double currFontWidth = AverageFontSize(line);
+                foreach (SelectableElement selectableElement in line.Skip(1))
                 {
                     var selectableLeft = selectableElement.Bounds.Left;
                     var selectableString = selectableElement.Contents as string;
@@ -284,6 +292,8 @@ namespace Dash
                                          selectableElement.Bounds.Left > lastX + currFontWidth*1.1;
                         if (nextColumn && !whiteSpace)
                         {
+                            if (!string.IsNullOrWhiteSpace(strings[col]))
+                                strings[col] += " ";
                             var newCol = -1;
                             for (int i = col+1; i < columns.Count; i++) 
                                 if (columns[i].Overlaps(selectableElement))
@@ -299,17 +309,19 @@ namespace Dash
                             }
                             col = newCol;
                             var prev = columns[newCol-1];
-                            if (selectableLeft < prev.Bounds.Right)
-                                prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Abs(lastX - prev.Bounds.Left), prev.Bounds.Height);
+                            if (selectableLeft < prev.Bounds.Right) prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Max(1,lastX - prev.Bounds.Left), prev.Bounds.Height);
                         }
                         // add to whatever column we're indexed in
                         if (!nextColumn || !whiteSpace)
                         {
-                            if ((selectableElement.Bounds.Left + selectableElement.Bounds.Right) / 2 < lastRect.Right && !nextColumn)
+                            if ((selectableElement.Bounds.Left + selectableElement.Bounds.Right) / 2 < lastRect.Right && 
+                                 selectableElement.Bounds.Left - lastX < currFontWidth/2 && !nextColumn)
                             {
                                 columns[col].SelectableElements.RemoveAt(columns[col].SelectableElements.Count - 1);
                                 strings[col] = strings[col].Substring(0, strings[col].Length - 1);
                             }
+                            if (strings[col].EndsWith(" ") && whiteSpace)
+                                continue;
                             columns[col].SelectableElements.Add(selectableElement);
                             strings[col] += selectableString;
                             double right = Math.Max(columns[col].Bounds.Right, whiteSpace ? lastX : selectableElement.Bounds.Right);
@@ -324,7 +336,6 @@ namespace Dash
                     }
                 }
             }
-
             return columns.Select((cdef) => cdef.SelectableElements).ToList();
         }
 
@@ -395,11 +406,11 @@ namespace Dash
         {
             // sort the elements in a page vertically
             page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
+            var elements = new List<SelectableElement>();
             var lines = SortIntoLines(page);
             var columns = SortIntoColumns(lines);
             RemoveDuplicates(columns);
 
-            var elements = new List<SelectableElement>();
             // loop through each column in increasing order
             foreach (var column in columns)
             {
@@ -411,7 +422,7 @@ namespace Dash
                     elements.Add(selectableElement);
                 }
             }
-            
+
             return elements;
         }
 

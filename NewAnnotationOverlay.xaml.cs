@@ -204,11 +204,10 @@ namespace Dash
             this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
-        public void LoadPinAnnotations()
+        public void LoadPinAnnotations(CustomPdfView pdfView)
         {
             (DataContext as NewAnnotationOverlayViewModel).ViewModels.Clear();
-
-            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            
             if (pdfView != null)
             {
                 var pinAnnotations = _mainDocument.GetDataDocument()
@@ -935,7 +934,7 @@ namespace Dash
             foreach (var selectableElement in _textSelectableElements)
             {
                 var b = selectableElement.Bounds;
-                if (b.Contains(p))
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
