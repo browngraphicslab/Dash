@@ -28,6 +28,7 @@ namespace DashShared
 		Pdf = 0x80000,
         Color = 0x100000,
         Reference = PointerReference | DocumentReference,
+        Length = Text | List,
 
         Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle |
               Key | Video | DateTime | Audio | Bool | AccessStream | Template | Reference | Color
