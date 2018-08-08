@@ -298,8 +298,14 @@ namespace Dash
           _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data = _currentText;
 
         }
-         #endregion
 
+        #endregion
 
+        private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            using (UndoManager.GetBatchHandle())
+                docView.DeleteDocument();
+        }
     }
 }

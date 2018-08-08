@@ -11,25 +11,36 @@
     Background="White"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource AccentGreenColorDark}"/>
-        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource AccentGreenColorDark}"/>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource DashMediumBlueColor}"/>
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="{StaticResource DashMediumBlueColor}"/>
         <SolidColorBrush x:Key="ButtonForegroundPointerOver">#DDEEFFFF</SolidColorBrush>
         <SolidColorBrush x:Key="ButtonForegroundPressed">#DDEEFFFF</SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid x:Name="xTreeGrid" Background="{ThemeResource TreeviewBrush}">
+    <Grid x:Name="xTreeGrid" Background="{StaticResource DashDarkDarkBlueBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <TextBlock x:Name="Textblock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" Text="TreeView" DoubleTapped="Textblock_OnDoubleTapped"/>
+        <Grid Grid.Row="0" Background="{StaticResource DashDarkDarkBlueBrush}">
+            <TextBlock Foreground="White"  x:Name="Textblock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" Text="TreeView" DoubleTapped="Textblock_OnDoubleTapped"/>
             <TextBox x:Name="Textbox" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Text="TreeView" Visibility="Collapsed" Padding="0,7" LostFocus="Textbox_OnLostFocus"/>
         </Grid>
-        <TextBox x:Name="XFilterBox" FontSize="12" Grid.Row="1" Margin="10" BorderThickness="1.5" PlaceholderText="filter notes"/>
-        <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 10">
+
+            <Grid Margin="0 10 0 0"  Tapped="AddWorkspace_OnTapped">
+                <TextBlock x:Name="xAddWorkspace" Text="&#xE710;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
+            </Grid>
+
+            <TextBox x:Name="XFilterBox" FontSize="14"  Width="240" Margin="10 0 0 0" Style="{StaticResource TextBoxStyler}" BorderBrush="{StaticResource DashBorderColorBrush}"  PlaceholderText="Filter notes"/>
+
+
+        </StackPanel>
+        
+       
+        <local:TreeViewCollectionNode Margin="8 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"/>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3" Padding="20, 0">
             <StackPanel.Resources>
                 <Storyboard x:Name="xLinkInputIn" x:FieldModifier="public">
@@ -49,11 +60,11 @@
                         EnableDependentAnimation="True"/>
                 </Storyboard>
             </StackPanel.Resources>
-            <Button x:Name="MakePdf" HorizontalAlignment="Stretch" TabIndex="-1" Margin="0, 0, 0, 5" Padding="10, 5" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Tapped="MakePdf_OnTapped">Export to HTML
+            <!--<Button x:Name="MakePdf" HorizontalAlignment="Stretch" TabIndex="-1" Margin="0, 0, 0, 5" Padding="10, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
-            <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="TogglePresentationMode">Presentation Mode</Button>
-            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="AddWorkspace_OnTapped">Add Workspace</Button>
-            <Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 20" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="10, 5" Tapped="Snapshot_OnTapped">Snapshot Workspace</Button>
+            <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="TogglePresentationMode">Presentation Mode</Button>-->
+            <!--<Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 5" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="AddWorkspace_OnTapped">Add Workspace</Button>-->
+            <!--<Button TabIndex="-1" HorizontalAlignment="Stretch" Margin="0, 0, 0, 20" Background="{StaticResource DashLightBlue}" Foreground="White" Padding="10, 5" Tapped="Snapshot_OnTapped">Snapshot Workspace</Button-->
             <local:ActionTextBox 
                 x:Name="xLinkInputBox"
                 Height="0"

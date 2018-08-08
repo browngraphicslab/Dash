@@ -9,8 +9,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
-        <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
+        <Grid Background="Transparent"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
+                <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
+
             <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{Binding ViewModels}">

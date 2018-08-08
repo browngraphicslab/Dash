@@ -21,7 +21,7 @@
             </Grid.ColumnDefinitions>
             <TextBox x:Name="XTextBox" Grid.Column="0"
                          x:FieldModifier="public"
-                         FontSize="{x:Bind FontSize, Mode=OneWay}"
+                         FontSize="14"
                          FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                          Foreground="{x:Bind Foreground}"
                          Background="{x:Bind Background}"
@@ -39,7 +39,7 @@
                 </FlyoutBase.AttachedFlyout>
             </TextBox>
             <Grid  Grid.Column="1">
-                <local:DocumentView x:Name="xFieldValue" IsHitTestVisible="False"/>
+                <local:DocumentView Margin="0 -10 0 0" Height="500" x:Name="xFieldValue" IsHitTestVisible="False"/>
             </Grid>
         </Grid>
     </Grid>

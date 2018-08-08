@@ -29,6 +29,7 @@ using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
+using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -174,11 +175,23 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
+                FadeIn.Begin();
                 updateBindings();
                 DataContextChanged += (s, a) => updateBindings();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+
+                var maxZ = int.MinValue;
+                var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new
+                    Canvas();
+                foreach (var item in parentCanvas.Children)
+                {
+                    maxZ = Math.Max(Canvas.GetZIndex(item), maxZ);
+                }
+
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+
                 SetZLayer();
                 UpdateResizers();
             };
@@ -190,14 +203,15 @@ namespace Dash
                 DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
-                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode =
-                    right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
-                MainPage.Instance.Focus(FocusState.Programmatic);
+                     MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+				ManipulationMode = ManipulationModes.All;
+				//var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+				//var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+				ManipulationMode =
+					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+						? ManipulationModes.All
+						: ManipulationModes.None;
+				MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
             };
@@ -1173,7 +1187,7 @@ namespace Dash
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
-	        ColorSelectionBorder(selected ? Colors.LightBlue : Colors.Transparent);
+	        ColorSelectionBorder(selected ? Color.FromArgb(120, 160, 197, 232) : Colors.Transparent);
 
         }
 
@@ -1444,7 +1458,7 @@ namespace Dash
         public void This_Drop(object sender, DragEventArgs e)
         {
             //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
             if (dragModel?.LinkSourceView != null)
             {
                 var dragDoc = dragModel.DraggedDocument;
@@ -1656,7 +1670,7 @@ namespace Dash
 
             e.DragUIOverride.IsContentVisible = true;
 
-            e.Handled = true;
+	        e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)

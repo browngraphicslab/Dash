@@ -10,22 +10,15 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" Height ="52" >
-        <StackPanel Height="50" Background="AliceBlue">
-            <TextBlock Text="Keyboard" TextAlignment="Center" FontSize="13" Height="25"/>
-            <TextBlock Text="Shortcuts:" TextAlignment="Center" FontSize="13" Height="25"  Margin="0,-3,0,0"/>
+    <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" BorderThickness="2 2 2 0" BorderBrush="DimGray">
+
+        <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 2 0" BorderBrush="DimGray">
+            <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" />
+            <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  />
         </StackPanel>
-        <StackPanel BorderThickness="1" BorderBrush="Black"  Width="65" Height ="52" VerticalAlignment="Top" Background="AliceBlue">
-            <TextBlock Text="Back" TextAlignment="Center" FontSize="20" Margin="0,-5,0,0"/>
-            <TextBlock Text="delete" TextAlignment="Center" FontSize="9" Margin="0,-12,0,0" />
-        </StackPanel>
-        <StackPanel BorderThickness="1" BorderBrush="Black" Height ="52" VerticalAlignment="Top" Background="AliceBlue">
-            <TextBlock Text="C" TextAlignment="Center" FontSize="20" Margin="0,-5,0,0" />
-            <TextBlock Text="new collection" TextAlignment="Center" FontSize="9" Margin="0,-12,0,0"  />
-        </StackPanel>
-        <StackPanel BorderThickness="1" BorderBrush="Black" Width="65" Height="52" VerticalAlignment="Top" Background="AliceBlue">
-            <TextBlock Text="G" HorizontalAlignment="Center" FontSize="20"  Margin="0,-5,0,0" />
-            <TextBlock Text="new group" HorizontalAlignment="Center" FontSize="9"  Margin="0,-12,0,0" />
+        <StackPanel  Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+            <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" />
+            <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" />
         </StackPanel>
     </StackPanel>
 

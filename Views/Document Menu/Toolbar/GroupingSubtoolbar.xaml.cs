@@ -47,6 +47,8 @@ namespace Dash
 
             FormatDropdownMenu();
 
+            SetUpToolTips();
+
             //Sets orientation binding when the actual command bar UI element is loaded. 
             //Potential bug fix: if visibility of command bar is collapsed, will never load and will fail to add event handler
             xGroupCommandbar.Loaded += delegate
@@ -71,9 +73,9 @@ namespace Dash
          */
         private void FormatDropdownMenu()
         {
-            xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
+            //xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            //xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            //xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         /*
@@ -111,7 +113,7 @@ namespace Dash
             //Whether or not open or closed, should always be visible if some content is selected
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
-            xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
         }
 
@@ -168,13 +170,13 @@ namespace Dash
             {
                 if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
                 xRadialCol.Width = new GridLength(50);
-                xSliderCol.Width = new GridLength(316);
+                xSliderCol.Width = new GridLength(300);
             }
             else
             {
                 if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
                 xRadialCol.Width = new GridLength(0);
-                xSliderCol.Width = new GridLength(344);
+                xSliderCol.Width = new GridLength(300);
             }
         }
 
@@ -282,5 +284,53 @@ namespace Dash
 		    _currentDocController?.SetField(KeyStore.GroupBackgroundColorKey, new TextController(e.ToString()), true);
 		   
 	    }
+
+        private ToolTip _group;
+        private ToolTip _ungroup;
+        private ToolTip _color;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _group = new ToolTip()
+            {
+                Content = "Group items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _group);
+
+            _ungroup = new ToolTip()
+            {
+                Content = "Ungroup items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUngroup, _ungroup);
+
+            _color = new ToolTip()
+            {
+                Content = "Font color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFontColor, _color);
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
     }
 }

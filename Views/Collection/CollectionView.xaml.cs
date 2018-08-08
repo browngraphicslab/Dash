@@ -158,7 +158,7 @@ namespace Dash
                 }
             }
 
-                var icon1 = new FontAwesome
+                var icon1 = new FontIcons.FontAwesome
                 {
                     Icon = FontAwesomeIcon.Tags
                 };
@@ -177,7 +177,7 @@ namespace Dash
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
 
-            var icon5 = new FontAwesome
+            var icon5 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.Code
             };
@@ -188,7 +188,7 @@ namespace Dash
             
             // add the item to create a scripting view
             var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
-            var icon6 = new FontAwesome
+            var icon6 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.WindowMaximize
             };
@@ -204,7 +204,7 @@ namespace Dash
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
-            var icon2 = new FontAwesome
+            var icon2 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.Eye
             };
@@ -230,7 +230,7 @@ namespace Dash
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
             viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            var icon3 = new FontAwesome
+            var icon3 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.Search
             };
@@ -241,7 +241,7 @@ namespace Dash
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
             fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
-            var icon4 = new FontAwesome
+            var icon4 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.WindowMaximize
             };
@@ -409,6 +409,6 @@ namespace Dash
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
 
-        public void SetDropIndicationFill(Brush fill) { CurrentView.SetDropIndicationFill(fill); } 
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
     }
 }
