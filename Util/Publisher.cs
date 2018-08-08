@@ -20,6 +20,8 @@ namespace Dash
 		private string _sidebarText;
 		private bool _mediaFolderMade = false;
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
+		// each DocumentController has a dictionary of its own to reference its coloring pairings with all the other DocumentControllers
+		private Dictionary<DocumentController, Dictionary<DocumentController, string>> _colorPairs = new Dictionary<DocumentController, Dictionary<DocumentController, string>>();
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -44,6 +46,9 @@ namespace Dash
 
 				// build fileNames dictionary
 				BuildFileNames(dcs);
+
+				// initialize color pairs
+				InitializeColorPairs(dcs);
 
 				// copy all the media
 				CopyMedia(dcs);
@@ -185,7 +190,7 @@ namespace Dash
 					var opposite = link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null)
 						.GetDataDocument();
 					if (_fileNames.ContainsKey(opposite))
-						html.Add(RenderLinkToHtml(opposite));
+						html.Add(RenderLinkToHtml(opposite, dc));
 				}
 			}
 
@@ -197,7 +202,7 @@ namespace Dash
 					var opposite = link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null)
 						.GetDataDocument();
 					if (_fileNames.ContainsKey(opposite))
-						html.Add(RenderLinkToHtml(opposite));
+						html.Add(RenderLinkToHtml(opposite, dc));
 				}
 			}
 
@@ -209,12 +214,23 @@ namespace Dash
 		/// </summary>
 		/// <param name="link"></param>
 		/// <returns></returns>
-		private string RenderLinkToHtml(DocumentController link)
+		private string RenderLinkToHtml(DocumentController link, DocumentController main)
 		{
+			var color = "";
+			if (_colorPairs[main].ContainsKey(link))
+			{
+				color = _colorPairs[main][link];
+			}
+			else
+			{
+				color = _regionColors[new Random().Next(0, 11)];
+				_colorPairs[main].Add(link, color);
+				_colorPairs[link].Add(main, color);
+			}
 			var html = new List<string> {
 				"<div class=\"annotationWrapper\">",
 				"<div>",
-				"<div style=\"border-left:3px solid " + _regionColors[new Random().Next(0, 11)] + "\"/>",
+				"<div style=\"border-left:3px solid " + color + "\"/>",
 				"<div class=\"annotation\">",
 				RenderNoteToHtml(link),
 				"</div>", // close annotation tag
@@ -347,6 +363,17 @@ namespace Dash
 			foreach (var dc in dcs)
 			{
 				_fileNames.Add(dc, GetFileName(dc));
+			}
+		}
+
+		/// <summary>
+		/// Initializes all the dictionaries.
+		/// </summary>
+		private void InitializeColorPairs(List<DocumentController> dcs)
+		{
+			foreach (var dc in dcs)
+			{
+				_colorPairs.Add(dc, new Dictionary<DocumentController, string>());
 			}
 		}
 
