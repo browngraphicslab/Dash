@@ -544,7 +544,6 @@ namespace Dash
 		    annotation.GetDataDocument()
 			    .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
 
-			RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, linkedDoc);
 			

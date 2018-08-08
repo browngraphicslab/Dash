@@ -66,5 +66,16 @@ namespace Dash
 	
 			}
 		}
+
+		public void DeactivateAllExcept(List<DocumentView> list)
+		{
+			DocumentView[] copyArray = new DocumentView[ActivatedDocs.Count];
+			ActivatedDocs.CopyTo(copyArray, 0);
+
+			foreach (DocumentView copy in copyArray)
+			{
+				if (!list.Contains(copy)) DeactivateDoc(copy);
+			}
+		}
 	}
 }
