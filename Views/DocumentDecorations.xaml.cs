@@ -66,6 +66,9 @@ namespace Dash
         private Queue<Tag> _recentTags;
         private List<Tag> Tags;
 
+        public ListController<DocumentController> RecentTagsSave;
+        public ListController<DocumentController> TagsSave;
+
         private double _docWidth;
         private bool _visibilityLock;
 
@@ -187,10 +190,6 @@ namespace Dash
             _recentTags = new Queue<Tag>();
             Loaded += DocumentDecorations_Loaded;
             Unloaded += DocumentDecorations_Unloaded;
-
-
-
-
         }
 
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
@@ -201,6 +200,27 @@ namespace Dash
         private void DocumentDecorations_Loaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+           
+        }
+
+        public void LoadTags(DocumentController settingsdoc)
+        {
+           
+            RecentTagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
+            TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+            foreach (var documentController in RecentTagsSave)
+            {
+                RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data, documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+            }
+            foreach (var documentController in TagsSave)
+            {
+                Tags.Add(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data, documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+            }
+
+            foreach (var tag in RecentTags)
+            {
+                xTest.Children.Add(tag);
+            }
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -439,14 +459,22 @@ namespace Dash
 
                 Tags.Add(tag);
 
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, linkName, true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, hexColor, true);
+                TagsSave.Add(doc);
+
                 if (_recentTags.Count < 5)
                 {
                     _recentTags.Enqueue(tag);
+                    RecentTagsSave.Add(doc);
                 }
                 else
                 {
                     _recentTags.Dequeue();
+                    RecentTagsSave.RemoveAt(0);
                     _recentTags.Enqueue(tag);
+                    RecentTagsSave.Add(doc);
                 }
 
                 xTest.Children.Clear();

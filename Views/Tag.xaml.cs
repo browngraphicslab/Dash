@@ -27,6 +27,7 @@ namespace Dash
             set { _text = value; }
         }
         private string _text;
+        private Color _color;
         private DocumentDecorations _docdecs;
         public Tag(DocumentDecorations docdecs, String text, Color color)
         {
@@ -35,6 +36,7 @@ namespace Dash
             xTagText.Text = text;
             _text = text;
             _docdecs = docdecs;
+            _color = color;
         }
 
 
@@ -53,16 +55,23 @@ namespace Dash
                     }
                 }
 
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, _text, true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
+
                 if (unique)
                 {
                     if (_docdecs.RecentTags.Count < 5)
                     {
                         _docdecs.RecentTags.Enqueue(this);
+                        _docdecs.RecentTagsSave.Add(doc);
                     }
                     else
                     {
                         _docdecs.RecentTags.Dequeue();
+                        _docdecs.RecentTagsSave.RemoveAt(0);
                         _docdecs.RecentTags.Enqueue(this);
+                        _docdecs.RecentTagsSave.Add(doc);
                     }
                 }
             }
