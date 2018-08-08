@@ -74,10 +74,252 @@ namespace Dash
                         _docdecs.RecentTagsSave.Add(doc);
                     }
                 }
+
+                if (_docdecs.SelectedDocs.Count == 1)
+                {
+                    ListController<DocumentController> linksFrom = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+
+                    if (linksFrom != null)
+                    {
+                        foreach (var link in linksFrom)
+                        {
+                            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
+                            {
+
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var uniqueTag = true;
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            uniqueTag = false;
+                                        }
+                                    }
+                                    if (uniqueTag)
+                                    {
+                                        currtags.Add(new TextController(this.Text));
+                                    }
+                                }
+                               
+
+                              
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+
+                            if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+                            {
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var uniqueTag = true;
+
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            uniqueTag = false;
+                                        }
+                                    }
+                                    if (uniqueTag)
+                                    {
+                                        currtags.Add(new TextController(this.Text));
+                                    }
+                                }
+                               
+
+                              
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+                        }
+                    }
+
+
+
+                    ListController<DocumentController> linksTo = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+
+                    if (linksTo != null)
+                    {
+                        foreach (var link in linksTo)
+                        {
+                            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
+                            {
+
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var uniqueTag = true;
+
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            uniqueTag = false;
+                                        }
+                                    }
+                                    if (uniqueTag)
+                                    {
+                                        currtags.Add(new TextController(this.Text));
+                                    }
+                                }
+
+
+                              
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+
+                            if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+                            {
+
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var uniqueTag = true;
+
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            uniqueTag = false;
+                                        }
+                                    }
+                                    if (uniqueTag)
+                                    {
+                                        currtags.Add(new TextController(this.Text));
+                                    }
+                                }
+
+
+                                
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+                        }
+                    }
+
+
+                }
             }
             else
             {
                 xTagContainer.BorderThickness = new Thickness(0);
+                if (_docdecs.SelectedDocs.Count == 1)
+                {
+                    ListController<DocumentController> linksFrom = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+
+                    if (linksFrom != null)
+                    {
+                        foreach (var link in linksFrom)
+                        {
+                            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
+                            {
+
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var index = 0;
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            index = currtags.IndexOf(tag);
+                                        }
+                                    }
+                                    currtags.RemoveAt(index);
+                                }
+                               
+                             
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+
+                            if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+                            {
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                var index = 0;
+                                if (currtags != null)
+                                {
+                                    foreach (var tag in currtags)
+                                    {
+                                        if (tag.Data == this.Text)
+                                        {
+                                            index = currtags.IndexOf(tag);
+                                        }
+                                    }
+                                    currtags.RemoveAt(index);
+                                }
+                                link.GetDataDocument()
+                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                break;
+                            }
+                        }
+                    }
+
+
+                   
+                        ListController<DocumentController> linksTo = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+
+                        if (linksTo != null)
+                        {
+                            foreach (var link in linksTo)
+                            {
+                                if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
+                                {
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                    var index = 0;
+                                    if (currtags != null)
+                                    {
+                                        foreach (var tag in currtags)
+                                        {
+                                            if (tag.Data == this.Text)
+                                            {
+                                                index = currtags.IndexOf(tag);
+                                            }
+                                        }
+                                        currtags.RemoveAt(index);
+                                }
+                                   
+                                    link.GetDataDocument()
+                                        .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    break;
+                                break;
+                                }
+
+                                if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+                                {
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+                                    var index = 0;
+                                    if (currtags != null)
+                                    {
+                                        foreach (var tag in currtags)
+                                        {
+                                            if (tag.Data == this.Text)
+                                            {
+                                                index = currtags.IndexOf(tag);
+                                            }
+                                        }
+                                        currtags.RemoveAt(index);
+                                }
+                                    
+                                    link.GetDataDocument()
+                                        .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    break;
+                                break;
+                                }
+                            }
+                        }
+
+                    
+                }
 
             }
         }

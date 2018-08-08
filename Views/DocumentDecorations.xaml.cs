@@ -145,7 +145,7 @@ namespace Dash
 			if (!_isMoving)
 			{
 				VisibilityState = Visibility.Visible;
-				//SuggestGrid.Visibility = Visibility.Visible;
+                ShowTags();
 			}
 		}
 
@@ -166,7 +166,7 @@ namespace Dash
 		private void ManipulatorCompleted()
 		{
 			VisibilityState = Visibility.Visible;
-			//SuggestGrid.Visibility = Visibility.Visible;
+            ShowTags();
 			_isMoving = false;
 		}
 
@@ -250,55 +250,9 @@ namespace Dash
 			{
 				xMultiSelectBorder.BorderThickness = new Thickness(0);
 
-			    if (SelectedDocs.Count == 1)
-			    {
-			        ListController<DocumentController> linksFrom = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
-
-			        if (linksFrom != null)
-			        {
-			            foreach (var link in linksFrom)
-			            {
-			                if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
-			                {
-			                    SuggestGrid.Visibility = Visibility.Visible;
-			                    break;
-			                }
-
-			                if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-			                {
-			                    SuggestGrid.Visibility = Visibility.Visible;
-			                    break;
-                            }
-			            }
-			        }
-
-
-			        if (SuggestGrid.Visibility == Visibility.Collapsed)
-			        {
-			            ListController<DocumentController> linksTo = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-
-			            if (linksTo != null)
-			            {
-			                foreach (var link in linksTo)
-			                {
-			                    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
-			                    {
-			                        SuggestGrid.Visibility = Visibility.Visible;
-			                        break;
-			                    }
-
-			                    if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-			                    {
-			                        SuggestGrid.Visibility = Visibility.Visible;
-			                        break;
-                                }
-                            }
-			            }
-
-			        }
-                }
 			    
-			   
+			    
+			   ShowTags();
 
                 //_docWidth = SelectedDocs.First().ActualWidth;
             }
@@ -308,7 +262,7 @@ namespace Dash
 			if (SelectedDocs.Any() && !this.IsRightBtnPressed())
 			{
 				VisibilityState = Visibility.Visible;
-				//SuggestGrid.Visibility = Visibility.Visible;
+                ShowTags();
 			}
 			else
 			{
@@ -316,6 +270,57 @@ namespace Dash
 
 			}
 		}
+
+	    private void ShowTags()
+	    {
+	        if (SelectedDocs.Count == 1)
+	        {
+	            ListController<DocumentController> linksFrom = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+
+	            if (linksFrom != null)
+	            {
+	                foreach (var link in linksFrom)
+	                {
+	                    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
+	                    {
+	                        SuggestGrid.Visibility = Visibility.Visible;
+	                        break;
+	                    }
+
+	                    if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+	                    {
+	                        SuggestGrid.Visibility = Visibility.Visible;
+	                        break;
+	                    }
+	                }
+	            }
+
+
+	            if (SuggestGrid.Visibility == Visibility.Collapsed)
+	            {
+	                ListController<DocumentController> linksTo = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+
+	                if (linksTo != null)
+	                {
+	                    foreach (var link in linksTo)
+	                    {
+	                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
+	                        {
+	                            SuggestGrid.Visibility = Visibility.Visible;
+	                            break;
+	                        }
+
+	                        if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+	                        {
+	                            SuggestGrid.Visibility = Visibility.Visible;
+	                            break;
+	                        }
+	                    }
+	                }
+
+	            }
+	        }
+        }
 
 		private void SetTitleIcon()
 		{
@@ -627,7 +632,7 @@ namespace Dash
 				    !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
 				{
 					VisibilityState = Visibility.Visible;
-					//SuggestGrid.Visibility = Visibility.Visible;
+                    ShowTags();
 				}
 
 				MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
@@ -751,7 +756,7 @@ namespace Dash
 		private void DocumentDecorations_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
 			VisibilityState = Visibility.Visible;
-			//SuggestGrid.Visibility = Visibility.Visible;
+            ShowTags();
 		}
 
 		private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
