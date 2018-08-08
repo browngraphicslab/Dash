@@ -1936,7 +1936,7 @@ namespace Dash
 	    public void SetLinkBorderColor()
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-			xToPurple.Begin();
+			xToBlue.Begin();
 	    }
 
 	    public void RemoveLinkBorderColor()

@@ -203,6 +203,7 @@ namespace Dash
 
         }
         private ToolTip _toggle;
+	    private ToolTip _scrollVis;
         private ToolTip _ink;
         private ToolTip _text;
         private ToolTip _region;
@@ -221,7 +222,15 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
 
-            _ink = new ToolTip()
+	        _scrollVis = new ToolTip()
+	        {
+		        Content = "Annotations visible on scroll",
+		        Placement = placementMode,
+		        VerticalOffset = offset
+	        };
+	        ToolTipService.SetToolTip(xAnnotationsVisibleOnScroll, _scrollVis);
+
+			_ink = new ToolTip()
             {
                 Content = "Ink annotation",
                 Placement = placementMode,
@@ -267,7 +276,17 @@ namespace Dash
             if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
-    }
+
+	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
+	    {
+		    _currentPdfView.SetAnnotationsVisibleOnScroll(true);
+	    }
+
+	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
+	    {
+		    _currentPdfView.SetAnnotationsVisibleOnScroll(false);
+	    }
+	}
 
 
 }

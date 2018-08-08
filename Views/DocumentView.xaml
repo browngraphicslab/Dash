@@ -175,11 +175,11 @@
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xToPurple">
+                <Storyboard x:Name="xToBlue">
                     <ColorAnimation 
                         Storyboard.TargetName="xDocHighlight"
                         Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                        To="MediumPurple"
+                        To="{StaticResource DashDarkBlueColor}"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
