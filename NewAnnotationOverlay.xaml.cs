@@ -1123,6 +1123,21 @@ namespace Dash
         private void SelectElements(int startIndex, int endIndex, Point start, Point end)
         {// if control isn't pressed, reset the selection
 
+            if (this.IsAltPressed())
+            {
+                var bounds = new Rect(new Point(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y)),
+                             new Point(Math.Max(start.X, end.X), Math.Max(start.Y, end.Y)));
+                foreach (var ele in _textSelectableElements)
+                {
+                    if (bounds.Contains(new Point(ele.Bounds.Left + ele.Bounds.Width / 2, ele.Bounds.Top + ele.Bounds.Height / 2)))
+                    {
+                        if (ele.Index < startIndex)
+                            startIndex = ele.Index;
+                        if (ele.Index > endIndex)
+                            endIndex = ele.Index;
+                    }
+                }
+            }
             // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
             if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
             {
