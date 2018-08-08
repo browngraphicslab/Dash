@@ -654,7 +654,7 @@ namespace Dash
 	        }
 
 	        //activateall selected docs
-	        if (e.VirtualKey == VirtualKey.A)
+	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
 	        {
 		        var selected = SelectionManager.GetSelectedDocs();
 		        if (selected.Count > 0)
