@@ -1177,19 +1177,21 @@ namespace Dash
 		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
 		    {
-			    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-				    ? DataPackageOperation.Copy
-				    : e.DataView.RequestedOperation;
-			}
+		        e.AcceptedOperation |= DataPackageOperation.Copy;
+		    }
 		    else
 		    {
 			    e.AcceptedOperation = DataPackageOperation.None;
 		    }
-		    e.Handled = true;
+		    //e.Handled = true;
 	    }
 
 	    public void OnDrop(object sender, DragEventArgs e)
 	    {
+	        if (!this.IsShiftPressed())
+	        {
+	            return;
+	        }
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
