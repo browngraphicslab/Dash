@@ -397,63 +397,36 @@ namespace Dash
 				//check if annotations have left the screen
 				foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
 	            {
-					
 					//get linked annotations
 		            var docController = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
 
 		            var toLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
 					var fromLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
 
-						if (toLinks != null)
+					//bool for checking whether child is currently in view of scrollviewer
+		            bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+
+		            if (toLinks != null)
 			            {
-				            //link to key is the linkdocument
-				            foreach (var link in toLinks)
+						foreach (var link in toLinks)
 				            {
 					            var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
-					            // var destDoc = docController.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
-
 					            //if ui element is currently visible, show annotations
-					            if (BottomScrollViewer.VerticalOffset < Canvas.GetTop(child) &&
-					                Canvas.GetTop(child) < (BottomScrollViewer.VerticalOffset + BottomScrollViewer.ViewportHeight))
-					            {
-						            sourceDoc?.SetHidden(false);
-						            // destDoc?.SetHidden(false);
-					            }
-					            else //hide annotations otherwise
-					            {
-						            sourceDoc?.SetHidden(true);
-						            //destDoc?.SetHidden(true);
-					            }
+								if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data != nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
 				            }
 						}
 
-			            if (fromLinks != null)
+			        if (fromLinks != null)
 			            {
-				            //link to key is the linkdocument
-					            foreach (var link in fromLinks)
-					            {
-						            var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true);
-						            // var destDoc = docController.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
-
-						            //if ui element is currently visible, show annotations
-						            if (BottomScrollViewer.VerticalOffset < Canvas.GetTop(child) &&
-						                Canvas.GetTop(child) < (BottomScrollViewer.VerticalOffset + BottomScrollViewer.ViewportHeight))
-						            {
-							            sourceDoc?.SetHidden(false);
-							            // destDoc?.SetHidden(false);
-						            }
-						            else //hide annotations otherwise
-						            {
-							            sourceDoc?.SetHidden(true);
-							            //destDoc?.SetHidden(true);
-						            }
-					            }
-				            }
+						foreach (var link in fromLinks)
+					          {
+						         var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true);
+								if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data != nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
+							}
+				        }
 					}
-	            }
+	            } 
 
-	            
-           
         }
 
         public void SetAnnotationType(AnnotationType type)

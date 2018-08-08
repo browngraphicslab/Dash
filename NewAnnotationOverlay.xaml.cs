@@ -508,6 +508,7 @@ namespace Dash
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
 			
+			//this differentiates a push pin created manually vs during activation mode
 		    linkedDoc?.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
 		    
 			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
@@ -521,7 +522,7 @@ namespace Dash
 			return annotation;
 		}
 
-        public void CreatePin(Point point, DocumentController linkedText = null)
+        public void CreatePin(Point point)
         {
             if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
             {
@@ -535,25 +536,6 @@ namespace Dash
                     return;
                 }
             }
-			//	var annotation = _regionGetter(AnnotationType.Pin);
-			//       annotation.SetWidth(10);
-			//       annotation.SetHeight(10);
-			//   DocumentController linkedDoc = null;
-
-			//      var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
-			//new Size(150, 75));
-			//   richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-			//   richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-
-			//       annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-			//       annotation.GetDataDocument()
-			//        .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
-			//       annotation.Link(richText.Document, LinkContexts.PushPin);
-			//       linkedDoc = richText.Document;
-
-			//          RegionDocsList.Add(annotation);
-			//          RegionAdded?.Invoke(this, annotation);
-			//          RenderPin(annotation, linkedDoc);
 
 			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
 		        new Size(150, 75));
@@ -626,7 +608,24 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
-            pin.SetBinding(Shape.FillProperty, new Binding
+
+			//handlers for moving pin
+	        pin.ManipulationMode = ManipulationModes.All;
+	        pin.ManipulationStarted += (s, e) =>
+	        {
+		        pin.ManipulationMode = ManipulationModes.All;
+		        e.Handled = true;
+	        };
+	        pin.ManipulationDelta += (s, e) =>
+	        {
+		        var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
+		        Canvas.SetLeft(pin, Canvas.GetLeft(pin) + p.X);
+		        Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
+		        e.Handled = true;
+	        };
+
+			//formatting bindings
+			pin.SetBinding(Shape.FillProperty, new Binding
             {
                 Path = new PropertyPath(nameof(vm.SelectionColor)),
                 Mode = BindingMode.OneWay
@@ -640,7 +639,6 @@ namespace Dash
             });
 
             _regions.Add(vm);
-
             SelectRegion(vm, new Point(point.X + pin.Width, point.Y + pin.Height));
         }
 
