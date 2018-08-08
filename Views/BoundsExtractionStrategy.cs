@@ -285,10 +285,6 @@ namespace Dash
                  * line left to right. if we ever want to stop doing so, or if we find a better way of looping
                  * through templates, this will break.
                  */
-
-                if (linestr.Contains("AARTS"))
-                    ;
-
                 // find the average font size of the line's elements
                 foreach (var selectableElement in line.Skip(1))
                 {
@@ -296,11 +292,11 @@ namespace Dash
                     var selectableString = selectableElement.Contents as string;
                     var whiteSpace = string.IsNullOrWhiteSpace(selectableString); 
                     if (!whiteSpace || 
-                        ((selectableElement.Bounds.Left+ selectableElement.Bounds.Right)/2 > lastX && Math.Abs(element.RawIndex - selectableElement.RawIndex) < 3))
+                        ((selectableLeft + selectableElement.Bounds.Right)/2 > lastX && Math.Abs(element.RawIndex - selectableElement.RawIndex) < 3))
                     {
                         // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
                         var nextColumn = selectableLeft > columns[col].Bounds.Right + currFontWidth ||
-                                         selectableElement.Bounds.Left > lastX + currFontWidth*1.1;
+                                         selectableLeft > lastX + currFontWidth*1.1;
                         if (nextColumn && !whiteSpace)
                         {
                             if (!string.IsNullOrWhiteSpace(strings[col]))

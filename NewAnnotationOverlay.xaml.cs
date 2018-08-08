@@ -86,6 +86,7 @@ namespace Dash
 
         // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
         public readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
+        public readonly List<Rect> _currentSelectionClipRects = new List<Rect>();
         public static readonly DependencyProperty AnnotationVisibilityProperty = DependencyProperty.Register(
             "AnnotationVisibility", typeof(bool), typeof(NewAnnotationOverlay), new PropertyMetadata(true));
 
@@ -324,12 +325,17 @@ namespace Dash
                     var indices = new List<int>();
                     foreach (var selection in _currentSelections)
                     {
+                        var ind = _currentSelections.IndexOf(selection);
                         for (var i = selection.Key; i <= selection.Value; i++)
                         {
-                            // this will avoid double selecting any items
-                            if (!indices.Contains(i))
+                            var elem = _textSelectableElements[i];
+                            if (_currentSelectionClipRects[ind].Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
                             {
-                                indices.Add(i);
+                                // this will avoid double selecting any items
+                                if (!indices.Contains(i))
+                                {
+                                    indices.Add(i);
+                                }
                             }
                         }
                     }
@@ -912,6 +918,7 @@ namespace Dash
         public void ClearSelection(bool hardReset = false)
         {
             _currentSelections.Clear();
+            _currentSelectionClipRects.Clear();
             _selectionStartPoint = hardReset ? null : _selectionStartPoint;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
@@ -964,7 +971,7 @@ namespace Dash
                 {
                     return;
                 }
-                SelectElements(Math.Min(startEle.Index, currentEle.Index), Math.Max(startEle.Index, currentEle.Index));
+                SelectElements(Math.Min(startEle.Index, currentEle.Index), Math.Max(startEle.Index, currentEle.Index), _selectionStartPoint ?? new Point(), p);
             }
         }
 
@@ -1065,46 +1072,55 @@ namespace Dash
             return ele;
         }
 
-        private void DeselectIndex(int index)
+        private void DeselectIndex(int index, Rect? clipRect = null)
         {
-            if (!_selectedRectangles.ContainsKey(index))
+            if (_selectedRectangles.ContainsKey(index))
             {
-                return;
-            }
+                var ele = _textSelectableElements[index];
+                if (clipRect == null || clipRect == Rect.Empty || 
+                    clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
+                {
 
-            XSelectionCanvas.Children.Remove(_selectedRectangles[index]);
-            _selectedRectangles.Remove(index);
+                    //XSelectionCanvas.Children.Remove(_selectedRectangles[index]);
+                    _selectedRectangles[index].Visibility = Visibility.Collapsed;
+                    // _selectedRectangles.Remove(index);
+                }
+            }
         }
 
         private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
 
-        private void SelectIndex(int index)
+        private void SelectIndex(int index, Rect? clipRect = null)
         {
-            if (_selectedRectangles.ContainsKey(index))
-            {
-                return;
-            }
-
             var ele = _textSelectableElements[index];
-            var rect = new Rectangle
+            if (clipRect == null || clipRect == Rect.Empty ||
+                clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
             {
-                Width = ele.Bounds.Width,
-                Height = ele.Bounds.Height
-            };
-            Canvas.SetLeft(rect, ele.Bounds.Left);
-            Canvas.SetTop(rect, ele.Bounds.Top);
-            rect.Fill = _selectionBrush;
+                if (!_selectedRectangles.ContainsKey(index))
+                {
+                    var rect = new Rectangle
+                    {
+                        Width = ele.Bounds.Width,
+                        Height = ele.Bounds.Height
+                    };
+                    Canvas.SetLeft(rect, ele.Bounds.Left);
+                    Canvas.SetTop(rect, ele.Bounds.Top);
+                    rect.Fill = _selectionBrush;
 
-            XSelectionCanvas.Children.Add(rect);
-            
-            _selectedRectangles[index] = rect;
+                    XSelectionCanvas.Children.Add(rect);
+
+                    _selectedRectangles[index] = rect;
+                }
+                else
+                    _selectedRectangles[index].Visibility = Visibility.Visible;
+            }
         }
 
 
         private Point? _selectionStartPoint;
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
-        private void SelectElements(int startIndex, int endIndex)
+        private void SelectElements(int startIndex, int endIndex, Point start, Point end)
         {// if control isn't pressed, reset the selection
 
             // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
@@ -1112,37 +1128,57 @@ namespace Dash
             {
                 // create a new selection
                 _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+                _currentSelectionClipRects.Add(Rect.Empty);
             }
             var currentSelectionStart = _currentSelections.Last().Key;
-            var currentSelectionEnd = _currentSelections.Last().Value;
+            var currentSelectionEnd   = _currentSelections.Last().Value;
+            var lastSelectionClipRect = _currentSelectionClipRects.LastOrDefault();
 
-            if (currentSelectionStart == -1)
+            _currentSelectionClipRects[_currentSelectionClipRects.Count - 1] = this.IsAltPressed() ? 
+                new Rect(new Point(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y)), 
+                         new Point(Math.Max(start.X, end.X), Math.Max(start.Y, end.Y))) : 
+                Rect.Empty;
+            if (this.IsAltPressed())
             {
+                for (var i = currentSelectionStart; i <= currentSelectionEnd; ++i)
+                {
+                    DeselectIndex(i, lastSelectionClipRect);
+                }
                 for (var i = startIndex; i <= endIndex; ++i)
                 {
-                    SelectIndex(i);
+                    SelectIndex(i, _currentSelectionClipRects.LastOrDefault());
                 }
             }
             else
             {
-                for (var i = startIndex; i < currentSelectionStart; ++i)
+                if (currentSelectionStart == -1 || (lastSelectionClipRect != null && lastSelectionClipRect != Rect.Empty))
                 {
-                    SelectIndex(i);
+                    for (var i = startIndex; i <= endIndex; ++i)
+                    {
+                        SelectIndex(i, _currentSelectionClipRects.LastOrDefault());
+                    }
                 }
-
-                for (var i = currentSelectionStart; i < startIndex; ++i)
+                else
                 {
-                    DeselectIndex(i);
-                }
+                    for (var i = startIndex; i < currentSelectionStart; ++i)
+                    {
+                        SelectIndex(i);
+                    }
 
-                for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
-                {
-                    SelectIndex(i);
-                }
+                    for (var i = currentSelectionStart; i < startIndex; ++i)
+                    {
+                        DeselectIndex(i);
+                    }
 
-                for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
-                {
-                    DeselectIndex(i);
+                    for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
+                    {
+                        SelectIndex(i);
+                    }
+
+                    for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
+                    {
+                        DeselectIndex(i);
+                    }
                 }
             }
 
