@@ -426,6 +426,7 @@ namespace Dash
 				        }
 					}
 	            } 
+
         }
 
         public void SetAnnotationType(AnnotationType type)
