@@ -1496,9 +1496,23 @@ namespace Dash
                                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                             //dragDoc.Link(dropDoc, LinkContexts.None, entry);
                             //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
-						
-	                        var annotNote = new RichTextNote("Link description...", where).Document;
-							annotNote.SetPosition(new Point(0,0));
+
+	                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+	                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
+
+							//get pos and avg them
+	                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+		                        ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+	                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+		                        ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
+
+							var x = (doc1.GetPosition().Value.X +
+	                                 doc2.GetPosition().Value.X + offsetWidth/2) / 2;
+	                        var y = (doc1.GetPosition().Value.Y  +
+	                                 doc2.GetPosition().Value.Y + offsetHeight/2) / 2;
+
+
+							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
 	                        ParentCollection.ViewModel.AddDocument(annotNote);
 	                        //TODO: ensure LinkType is what the user plugged in
 	                        dragDoc.Link(annotNote, LinkContexts.None, entry);
