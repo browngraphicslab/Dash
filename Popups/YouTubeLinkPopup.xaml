@@ -1,0 +1,38 @@
+﻿<UserControl
+    x:Class="Dash.Popups.YouTubeLinkPopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Popups"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="Auto" Height="Auto">
+        <Popup x:Name="xPopup">
+            <Border x:Name="xBorder"
+                    BorderBrush="White"
+                    Background="White"
+                    BorderThickness="20, 20, 20, 40" Width="500" Height="150">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="3*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock FontSize="18" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" TextAlignment="Center">Import from YouTube</TextBlock>
+                    <TextBox x:Name="xURLBox" Grid.Row="1" Grid.Column="0"/>
+                    <Button x:Name="xConfirmButton" Margin="5, 0" Grid.Row="1" Grid.Column="1" Padding="10, 5">OK</Button>
+                    <Button x:Name="xCancelButton" Grid.Row="1" Grid.Column="2" Padding="10, 5">Cancel</Button>
+
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

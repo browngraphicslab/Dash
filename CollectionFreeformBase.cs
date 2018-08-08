@@ -692,9 +692,9 @@ namespace Dash
                     this.Focus(FocusState.Programmatic);
                     _marquee = new Rectangle()
                     {
-                        Stroke = new SolidColorBrush(Colors.Gray),
+                        Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
                         StrokeThickness = 1.5 / Zoom,
-                        StrokeDashArray = new DoubleCollection { 5, 2 },
+                        StrokeDashArray = new DoubleCollection { 4, 1 },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
                     if (_marqueeKeyHandler != null)
@@ -717,7 +717,7 @@ namespace Dash
                     args.Handled = true;
 
                     Canvas.SetLeft(mInfo, newAnchor.X);
-                    Canvas.SetTop(mInfo, newAnchor.Y + newHeight);
+                    Canvas.SetTop(mInfo, newAnchor.Y - 32);
                 }
             }
         }

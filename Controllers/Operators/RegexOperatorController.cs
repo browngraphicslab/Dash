@@ -61,15 +61,15 @@ namespace Dash
 
                 foreach (Group group in groups)
                 {
-                    if (string.IsNullOrEmpty(group.Value)) continue;
+                    if (string.IsNullOrEmpty(group.Value.Trim())) continue;
 
-                    if (IsNumeric(group.Name)) unnamedList.Add(new TextController(group.Value));
+                    if (IsNumeric(group.Name)) unnamedList.Add(new TextController(group.Value.Trim()));
                     else
                     {
                         var key = new KeyController(group.Name);
                         if (group.Name.Equals("0")) key = new KeyController("Full Match");
 
-                        infoDoc.SetField<TextController>(key, $"\'{group.Value}\'", true);
+                        infoDoc.SetField<TextController>(key, group.Value.Trim(), true);
                     }
                 }
 

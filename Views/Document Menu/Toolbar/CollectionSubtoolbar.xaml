@@ -12,20 +12,22 @@
 
     <Grid>
 
-        <StackPanel Orientation="Horizontal" Background="LightGray" x:Name="xCollectionCommandbar" Height="60" Spacing="10" Padding="10,0,10,0">
-            <ComboBox x:Name="xViewModesDropdown" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
+        <StackPanel Orientation="Horizontal" x:Name="xCollectionCommandbar" Height="40" Background="{StaticResource DashToolBarBrush}">
+            <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0"  SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
                 <ComboBoxItem Content="Freeform"/>
             </ComboBox>
-            <AppBarSeparator></AppBarSeparator>
-            <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
-            <AppBarSeparator></AppBarSeparator>
-            <AppBarButton x:Name="xBackgroundColor" Label="Background">
+            <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBackgroundColor" Label="Background" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Button.Flyout>
                     <Flyout x:Name="xColorFlyout">
                         <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"/>
                     </Flyout>
                 </Button.Flyout>
-                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Margin="0 -5 0 0"/>
             </AppBarButton>
         </StackPanel>
 <!--

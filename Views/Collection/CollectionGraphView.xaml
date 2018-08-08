@@ -69,12 +69,12 @@
                            Foreground="White"
                            ExpandDirection="Left" Width="40" HorizontalAlignment="Right"
                            Expanded="Expander_OnExpanded" Collapsed="Expander_OnCollapsed"
-                           VerticalAlignment="Top" Background="{ThemeResource TreeviewBrush}">
+                           VerticalAlignment="Top" Background="{StaticResource DashDarkBlueBrush}">
             <Grid Height="Auto">
                 <ScrollViewer x:Name="xInfoScroller" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible">
                     <Grid Width="Auto" x:Name="xContainerGrid">
                         <StackPanel x:Name="xInfoPanel" x:FieldModifier="public"  Orientation="Vertical" HorizontalAlignment="Left"
-                                VerticalAlignment="Top" Width="250" Height="Auto"  Background="{ThemeResource TreeviewBrush}">
+                                VerticalAlignment="Top" Width="250" Height="Auto"  Background="{StaticResource DashDarkBlueBrush}">
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>

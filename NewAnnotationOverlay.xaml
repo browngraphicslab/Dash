@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Background="Transparent" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
         <Canvas x:Name="XAnnotationCanvas">
             <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"

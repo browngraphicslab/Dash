@@ -43,7 +43,7 @@ namespace Dash
                 return;
             }
 
-            outputs[DocumentTextKey] = new TextController(doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data);
+            outputs[DocumentTextKey] = new TextController(doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data ?? "");
         }
 
         public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);

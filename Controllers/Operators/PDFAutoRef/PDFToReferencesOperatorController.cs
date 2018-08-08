@@ -47,7 +47,7 @@ namespace Dash
 
             var authors = matches.Select(m => new TextController(m.Groups[1].Value)).ToList();
             var dates = matches.Select(m => new TextController(m.Groups[2].Value)).ToList();
-            var titles = matches.Select(m => new TextController(m.Groups[3].Value.Replace("- ", ""))).ToList();
+            var titles = matches.Select(m => new TextController(m.Groups[3].Value.Replace("- ", "").Replace("-", ""))).ToList();
             
             var referenceList = new ListController<DocumentController>();
 

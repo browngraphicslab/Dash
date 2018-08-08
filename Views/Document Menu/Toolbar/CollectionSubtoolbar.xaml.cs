@@ -47,7 +47,7 @@ namespace Dash
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
-            FormatDropdownMenu();
+            //FormatDropdownMenu();
 
             xCollectionCommandbar.Loaded += delegate
             {
@@ -65,17 +65,18 @@ namespace Dash
 
 			xBackgroundColorPicker.SetOpacity(200);
 	        xBackgroundColorPicker.ParentFlyout = xColorFlyout;
+
+            SetUpToolTips();
         }
 
         /// <summary>
         /// Formats the combo box according to Toolbar Constants.
         /// </summary>
-        private void FormatDropdownMenu()
-        {
-            xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
-        }
+        //private void FormatDropdownMenu()
+        //{
+        //    xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
+        //    xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
+        //}
 
         /// <summary>
         /// When the Break button is clicked, the selected group should separate.
@@ -126,7 +127,7 @@ namespace Dash
         public void CommandBarOpen(bool status)
         {
             xCollectionCommandbar.Visibility = Visibility.Visible;
-            xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
         public void SetCollectionBinding(CollectionView thisCollection, DocumentController docController)
@@ -140,5 +141,45 @@ namespace Dash
 	    {
 	            _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
 	    }
+
+        private ToolTip _break;
+        private ToolTip _color;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _break = new ToolTip()
+            {
+                Content = "Break collection",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBreakGroup, _break);
+
+            _color = new ToolTip()
+            {
+                Content = "Background color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackgroundColor, _color);
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
     }
 }

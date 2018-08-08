@@ -201,7 +201,6 @@ namespace Dash
             (xGrid.RenderTransform as TranslateTransform).Y -= xEllipse.Width * 0.1 / 2;
             xEllipse.Width *= 1.1;
             xEllipse.Height *= 1.1;
-            xEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 139, 165, 159));
         }
 
         private void XEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -214,7 +213,6 @@ namespace Dash
             if (xTitleBlock.ActualWidth > xEllipse.Width)
                 (xGrid.RenderTransform as TranslateTransform).X += xEllipse.Width * 0.1 / 2;
             (xGrid.RenderTransform as TranslateTransform).Y += xEllipse.Width * 0.1 / 2;
-            xEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 120, 145, 139));
             PositionsLoaded?.Invoke();
         }
 
