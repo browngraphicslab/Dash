@@ -1333,7 +1333,7 @@ namespace Dash
 		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.DocumentType)).ToList();
 		    allDocuments.Remove(MainDocument.GetDataDocument());
 			
-		    await Publisher.StartPublication(allDocuments);
+		    await new Publisher().StartPublication(allDocuments);
 	    }
     }
 }
