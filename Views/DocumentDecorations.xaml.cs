@@ -348,7 +348,7 @@ namespace Dash
 			rebuildMenuIfNeeded();
 
 			// update menu items to point to the currently selected document
-			foreach (var item in xButtonsPanel.Children.OfType<ContentPresenter>())
+			foreach (var item in xButtonsPanel.Children.OfType<Button>())
 			{
 				var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
 				var names = new HashSet<string>();
