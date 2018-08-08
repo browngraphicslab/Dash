@@ -440,14 +440,18 @@ namespace Dash
 			{
 				Text = linkName.Substring(0, 1),
 				HorizontalAlignment = HorizontalAlignment.Center,
-				VerticalAlignment = VerticalAlignment.Center
-			};
-			var g = new Grid();
+				VerticalAlignment = VerticalAlignment.Center,
+			    Foreground = new SolidColorBrush(Colors.White)
+            };
+		    var g = new Grid()
+		    {
+		        Background = new SolidColorBrush(Colors.Transparent)
+		    };
 			g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse()
 			{
 				Width = 22,
 				Height = 22,
-				Stroke = new SolidColorBrush(Windows.UI.Colors.DodgerBlue)
+				
 			});
 			g.Children.Add(tb);
 			var button = new Button()
@@ -457,7 +461,6 @@ namespace Dash
 				Height = 22,
 				CanDrag = true,
 				HorizontalAlignment = HorizontalAlignment.Center,
-				Background = new SolidColorBrush(Colors.Crimson)
 			};
 			button.DragStarting += (s, args) =>
 			{
@@ -601,7 +604,7 @@ namespace Dash
 				foreach (var l in linkedTo)
 				{
 					if (doc.GetLinks(KeyStore.LinkToKey) != null)
-						linknames.Add(l.Title);
+						linknames.Add(l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link");
 				}
 
 			var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
@@ -609,7 +612,7 @@ namespace Dash
 				foreach (var l in linkedFrom)
 				{
 					if (doc.GetLinks(KeyStore.LinkFromKey) != null)
-						linknames.Add(l.Title);
+					    linknames.Add(l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link");
 				}
 
 			var regions = doc.GetDataDocument().GetRegions();

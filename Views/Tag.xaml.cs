@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Office.Interop.Word;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -83,67 +84,17 @@ namespace Dash
                     {
                         foreach (var link in linksFrom)
                         {
+                            var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
                             if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
                             {
-
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var uniqueTag = true;
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            uniqueTag = false;
-                                        }
-                                    }
-                                    if (uniqueTag)
-                                    {
-                                        currtags.Add(new TextController(this.Text));
-                                    }
-                                }
-                                else
-                                {
-                                    currtags = new ListController<TextController>();
-                                    currtags.Add(new TextController(this.Text));
-                                }
-
-
-
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+                                AddLink(link, currtags);
                                 break;
                             }
 
                             if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
                             {
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var uniqueTag = true;
-
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            uniqueTag = false;
-                                        }
-                                    }
-                                    if (uniqueTag)
-                                    {
-                                        currtags.Add(new TextController(this.Text));
-                                    }
-                                }
-                                else
-                                {
-                                    currtags = new ListController<TextController>();
-                                    currtags.Add(new TextController(this.Text));
-                                }
-
-
-
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+                               
+                                AddLink(link, currtags);
                                 break;
                             }
                         }
@@ -157,68 +108,18 @@ namespace Dash
                     {
                         foreach (var link in linksTo)
                         {
+                            var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
                             if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
                             {
 
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var uniqueTag = true;
-
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            uniqueTag = false;
-                                        }
-                                    }
-                                    if (uniqueTag)
-                                    {
-                                        currtags.Add(new TextController(this.Text));
-                                    }
-                                }
-                                else
-                                {
-                                    currtags = new ListController<TextController>();
-                                    currtags.Add(new TextController(this.Text));
-                                }
-
-
-                              
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+                                AddLink(link, currtags);
                                 break;
                             }
 
                             if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
                             {
 
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var uniqueTag = true;
-
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            uniqueTag = false;
-                                        }
-                                    }
-                                    if (uniqueTag)
-                                    {
-                                        currtags.Add(new TextController(this.Text));
-                                    }
-                                }
-                                else
-                                {
-                                    currtags = new ListController<TextController>();
-                                    currtags.Add(new TextController(this.Text));
-                                }
-
-
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+                                AddLink(link, currtags);
                                 break;
                             }
                         }
@@ -238,46 +139,18 @@ namespace Dash
                     {
                         foreach (var link in linksFrom)
                         {
+                            var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
                             if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
                             {
 
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var index = 0;
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            index = currtags.IndexOf(tag);
-                                        }
-                                    }
-                                    currtags.RemoveAt(index);
-                                }
-                               
-                             
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+
+                                RemoveLink(link, currtags);
                                 break;
                             }
 
                             if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
                             {
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                var index = 0;
-                                if (currtags != null)
-                                {
-                                    foreach (var tag in currtags)
-                                    {
-                                        if (tag.Data == this.Text)
-                                        {
-                                            index = currtags.IndexOf(tag);
-                                        }
-                                    }
-                                    currtags.RemoveAt(index);
-                                }
-                                link.GetDataDocument()
-                                    .SetField(KeyStore.LinkTagKey, currtags, true);
+                                RemoveLink(link, currtags);
                                 break;
                             }
                         }
@@ -291,48 +164,18 @@ namespace Dash
                         {
                             foreach (var link in linksTo)
                             {
+                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
                                 if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
                                 {
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                    var index = 0;
-                                    if (currtags != null)
-                                    {
-                                        foreach (var tag in currtags)
-                                        {
-                                            if (tag.Data == this.Text)
-                                            {
-                                                index = currtags.IndexOf(tag);
-                                            }
-                                        }
-                                        currtags.RemoveAt(index);
-                                }
-                                   
-                                    link.GetDataDocument()
-                                        .SetField(KeyStore.LinkTagKey, currtags, true);
+                                
+                                   RemoveLink(link, currtags);
                                     break;
-                                break;
                                 }
 
                                 if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
                                 {
-                                var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                                    var index = 0;
-                                    if (currtags != null)
-                                    {
-                                        foreach (var tag in currtags)
-                                        {
-                                            if (tag.Data == this.Text)
-                                            {
-                                                index = currtags.IndexOf(tag);
-                                            }
-                                        }
-                                        currtags.RemoveAt(index);
-                                }
-                                    
-                                    link.GetDataDocument()
-                                        .SetField(KeyStore.LinkTagKey, currtags, true);
+                                    RemoveLink(link, currtags);
                                     break;
-                                break;
                                 }
                             }
                         }
@@ -341,6 +184,55 @@ namespace Dash
                 }
 
             }
+        }
+
+        private void AddLink(DocumentController link, ListController<TextController> currtags)
+        {
+            var uniqueTag = true;
+
+            if (currtags != null)
+            {
+                foreach (var tag in currtags)
+                {
+                    if (tag.Data == this.Text)
+                    {
+                        uniqueTag = false;
+                    }
+                }
+                if (uniqueTag)
+                {
+                    currtags.Add(new TextController(this.Text));
+                }
+            }
+            else
+            {
+                currtags = new ListController<TextController>();
+                currtags.Add(new TextController(this.Text));
+            }
+
+
+            link.GetDataDocument()
+                .SetField(KeyStore.LinkTagKey, currtags, true);
+        }
+
+        private void RemoveLink(DocumentController link, ListController<TextController> currtags)
+        {
+            var index = 0;
+            if (currtags != null)
+            {
+                foreach (var tag in currtags)
+                {
+                    if (tag.Data == this.Text)
+                    {
+                        index = currtags.IndexOf(tag);
+                    }
+                }
+                currtags.RemoveAt(index);
+            }
+
+            link.GetDataDocument()
+                .SetField(KeyStore.LinkTagKey, currtags, true);
+            
         }
 
         public int Compare(Tag x, Tag y)

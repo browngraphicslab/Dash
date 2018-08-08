@@ -77,7 +77,7 @@ namespace Dash
                     if (linkType == null || linkType == linkTo.Title) {
                         var item = new MenuFlyoutItem
                         {
-                            Text = linkTo.Title,
+                            Text = linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link",
                             DataContext = linkTo
                         };
                         var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers));
@@ -96,7 +96,7 @@ namespace Dash
                     {
                         var item = new MenuFlyoutItem
 	                    {
-	                        Text = linkFrom.Title,
+                            Text = linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link",
                             DataContext = linkFrom
 	                    };
                         var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));

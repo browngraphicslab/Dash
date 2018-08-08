@@ -62,9 +62,9 @@
                     PointerPressed="XAddLinkTypeBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAddLinkTypeBorder_OnTapped" 
                     HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0 0 0 0" >
                 <Grid  >
-                    <Ellipse x:Name="xAddLinkTypeUnhighlight" Stroke="DodgerBlue" Width="25" Height="25"/>
-                    <Ellipse x:Name="xAddLinkTypeHighlight" Visibility="Collapsed" Stroke="DodgerBlue" Fill="LightGray" Width="25" Height="25"/>
-                    <TextBlock x:Name="xAddLinkTypeText" Foreground="Black" FontFamily="Segoe MDL2 Assets" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,-4,0,0" > + </TextBlock>
+                    <Ellipse x:Name="xAddLinkTypeUnhighlight" Width="22" Height="22"/>
+                    <Ellipse x:Name="xAddLinkTypeHighlight" Visibility="Collapsed" Width="22" Height="22"/>
+                    <TextBlock x:Name="xAddLinkText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE710;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
                     <ToolTipService.ToolTip>
                         <ToolTip Content="Add Link Type" Placement="Right" HorizontalOffset="30" VerticalOffset="0"/>
                     </ToolTipService.ToolTip>
