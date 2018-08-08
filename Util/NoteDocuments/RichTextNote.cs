@@ -42,7 +42,6 @@ namespace Dash
                 dataDocument.SetField<TextController>(KeyStore.SourceUriKey, urlSource, true);
                 dataDocument.SetField<TextController>(KeyStore.WebContextKey, urlSource, true);
             }
-			//LINK ACTIVATION MODE STUFF
 
         }
     }

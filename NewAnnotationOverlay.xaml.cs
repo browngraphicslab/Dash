@@ -256,7 +256,13 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     foreach (var documentController in listArgs.NewItems)
                     {
-                        RenderAnnotation(documentController);
+	                    var userCreated = documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData
+		                                      .First()?.GetDataDocument()
+		                                      .GetField<DocumentController>(KeyStore.LinkDestinationKey, true)
+		                                      .GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
+	                                      nameof(LinkContexts.PushPin);
+
+						if (!userCreated) RenderAnnotation(documentController);
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
@@ -657,12 +663,16 @@ namespace Dash
 			MakeAnnotationPinDoc(point, target);
 
 			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+			var width = pdfView?.PdfMaxWidth ??
+			            this.GetFirstAncestorOfType<DocumentView>().ActualWidth;
+			var height= pdfView?.PdfTotalHeight ??
+			            this.GetFirstAncestorOfType<DocumentView>().ActualHeight;
 
-		    var dvm = new DocumentViewModel(target)
+			var dvm = new DocumentViewModel(target)
 		    {
 			    Undecorated = true,
 			    ResizersVisible = true,
-			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) }
+			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, width, height) }
 		    };
 		    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
 
@@ -675,7 +685,7 @@ namespace Dash
 					    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
 						    .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
 					    var pos = regionDef.GetPosition().Value;
-					    pdfView.ScrollToPosition(pos.Y);
+					    pdfView?.ScrollToPosition(pos.Y);
 					    dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
 				    }
 			    });
@@ -832,7 +842,7 @@ namespace Dash
             });
 
             _regions.Add(vm);
-
+            
         }
 
 	    private void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
@@ -1317,6 +1327,8 @@ namespace Dash
 		    CreatePin(where, target);
 		    e.Handled = true;
 	    }
+
+	    
     }
 
 }

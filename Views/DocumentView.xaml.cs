@@ -1477,8 +1477,26 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-	                var annotNote = new RichTextNote("Link description...", where).Document;
-					ParentCollection.ViewModel.AddDocument(annotNote);
+
+	                var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+	                var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
+
+	                //get pos and avg them
+	                var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+		                ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+	                var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+		                ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
+
+	                var x = (doc1.GetPosition().Value.X +
+	                         doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
+	                var y = (doc1.GetPosition().Value.Y +
+	                         doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
+
+					var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
+					(ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+					ParentCollection?.ViewModel.AddDocument(annotNote);
+	                //dock if drag and drop docs are in the same collection
+	                if (ParentCollection != dragModel.LinkSourceView.ParentCollection) MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
 					//TODO: ensure LinkType is what the user plugged in
 					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
 					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
@@ -1515,9 +1533,11 @@ namespace Dash
 	                        var y = (doc1.GetPosition().Value.Y  +
 	                                 doc2.GetPosition().Value.Y + offsetHeight/2) / 2;
 
-
 							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
-	                        ParentCollection.ViewModel.AddDocument(annotNote);
+	                        (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+							ParentCollection.ViewModel.AddDocument(annotNote);
+							//dock if drag and drop docs are in the same collection
+							if (ParentCollection != dragModel.LinkSourceView.ParentCollection) MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
 	                        //TODO: ensure LinkType is what the user plugged in
 	                        dragDoc.Link(annotNote, LinkContexts.None);
 	                        dropDoc.Link(annotNote, LinkContexts.None);
@@ -1918,7 +1938,7 @@ namespace Dash
 	    public void SetLinkBorderColor()
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-			xToPurple.Begin();
+			xToBlue.Begin();
 	    }
 
 	    public void RemoveLinkBorderColor()
