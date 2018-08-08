@@ -10,15 +10,16 @@ namespace Dash
 {
     class FunctionDeclarationExpression : ScriptExpression
     {
-        private readonly string _funcName;
+        private readonly string _functionCode;
         private readonly NodeArray<ParameterDeclaration> _parameters;
         private readonly ScriptExpression _funcBlock;
         private readonly DashShared.TypeInfo _returnType;
 
 
-        public FunctionDeclarationExpression(NodeArray<ParameterDeclaration> param, 
+        public FunctionDeclarationExpression(string functionCode, NodeArray<ParameterDeclaration> param, 
             ScriptExpression fB, DashShared.TypeInfo retur)
         {
+            _functionCode = functionCode;
             _parameters = param;
             _funcBlock = fB;
             _returnType = retur;
@@ -26,7 +27,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var functionOperator = new FunctionOperatorController(_parameters, _funcBlock, _returnType);
+            var functionOperator = new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType);
 
             return functionOperator;
         }

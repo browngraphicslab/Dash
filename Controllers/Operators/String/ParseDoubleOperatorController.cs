@@ -12,7 +12,7 @@ namespace Dash
 
         public ParseDoubleOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
-        public override FieldControllerBase GetDefaultController() => new ContainsOperatorController();
+        public override FieldControllerBase GetDefaultController() => new ParseDoubleOperatorController();
 
         // input keys
         public static readonly KeyController InputStringKey = new KeyController("Input String");

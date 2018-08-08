@@ -215,6 +215,7 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>

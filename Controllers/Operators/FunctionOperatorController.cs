@@ -1,24 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using DashShared;
 using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
     [OperatorType(Op.Name.function)]
-    public class FunctionOperatorController :OperatorController
+    public class FunctionOperatorController : OperatorController
     {
         public FunctionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        {
+            Debug.Assert(operatorFieldModel is FunctionOperatorModel);
+            string code = ((FunctionOperatorModel)operatorFieldModel).FunctionCode;
+
+            //var expr = TypescriptToOperatorParser.ParseToExpression(code);
+
+            //var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
+
+            //return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
+        }
+
+        public FunctionOperatorController() : base(new FunctionOperatorModel("", TypeKey.KeyModel))
         {
             SaveOnServer();
         }
 
-        public FunctionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
+        public FunctionOperatorController(string functionCode, NodeArray<ParameterDeclaration> paramss,
+            ScriptExpression block, TypeInfo returnType) : base(new FunctionOperatorModel(functionCode,
+            TypeKey.KeyModel))
         {
+            InitFunc(paramss, block, returnType);
         }
 
-        public FunctionOperatorController(NodeArray<ParameterDeclaration> paramss, ScriptExpression block, TypeInfo returnType) : base(new OperatorModel(TypeKey.KeyModel))
+        private void InitFunc(NodeArray<ParameterDeclaration> paramss, ScriptExpression block, TypeInfo returnType)
         {
+
             _block = block;
             _returnType = returnType;
 
@@ -27,7 +44,7 @@ namespace Dash
             {
                 var newKey = new KeyController(param.IdentifierStr);
                 _inputNames.Add(param.IdentifierStr);
-                
+
                 //restrict types based on user input
                 var inputType = TypeInfo.Any;
                 var parType = param.Type?.GetText().ToLower();
@@ -55,20 +72,21 @@ namespace Dash
 
                 Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(inputType, true)));
             }
-            
 
+
+            SaveOnServer();
         }
-         
+
         private List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("FA160F44-26A8-40DC-ABBE-CC3F3EEA9420", "Function");
+        private static readonly KeyController TypeKey = new KeyController("Function", "1573E918-19E0-47A9-BB9D-0531233277C9");
 
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("1BFC2A49-CB4C-4D00-99FC-B0A9E61E32D0", "Result");
+        public static readonly KeyController ResultKey = new KeyController("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -85,7 +103,7 @@ namespace Dash
             for (int i = 0; i < _inputNames.Count; i++)
             {
                 var value = inputs[Inputs[i].Key];
-                
+
                 var expectedType = Inputs[i].Value.Type;
 
                 //if not expected type , don't run
@@ -99,7 +117,7 @@ namespace Dash
             var result = _block.Execute(scope);
 
             outputs[ResultKey] = result;
-          
+
         }
 
         public override FieldControllerBase GetDefaultController()
