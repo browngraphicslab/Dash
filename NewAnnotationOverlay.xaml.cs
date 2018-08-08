@@ -256,9 +256,13 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     foreach (var documentController in listArgs.NewItems)
                     {
-                        if (documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData.First()?.GetDataDocument()
-		                    .GetField<DocumentController>(KeyStore.LinkDestinationKey, true).GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
-                            nameof(LinkContexts.PushPin)) RenderAnnotation(documentController);
+	                    var userCreated = documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData
+		                                      .First()?.GetDataDocument()
+		                                      .GetField<DocumentController>(KeyStore.LinkDestinationKey, true)
+		                                      .GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
+	                                      nameof(LinkContexts.PushPin);
+
+						if (!userCreated) RenderAnnotation(documentController);
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
