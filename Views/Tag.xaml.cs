@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class Tag : UserControl
+    public sealed partial class Tag : IComparable, IComparer<Tag>
     {
 
         public string Text
@@ -71,6 +71,21 @@ namespace Dash
                 xTagContainer.BorderThickness = new Thickness(0);
 
             }
+        }
+
+        public int Compare(Tag x, Tag y)
+        {
+            return x.Text.CompareTo(y.Text);
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Tag tag)
+            {
+                return Compare(this, tag);
+            }
+
+            return 0;
         }
     }
 }

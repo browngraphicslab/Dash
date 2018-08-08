@@ -96,8 +96,8 @@
             </Grid>
         </Grid>
 
-        <Grid BorderBrush="DodgerBlue" BorderThickness="2"  Grid.Row="1" Grid.Column="1" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="5">
-            <StackPanel Orientation="Vertical">
+        <Grid BorderBrush="DodgerBlue" BorderThickness="2" Grid.Row="1" Grid.Column="1" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="5">
+            <StackPanel Orientation="Vertical" >
 
 
                 <AutoSuggestBox Height="35"
@@ -107,6 +107,7 @@
                     UpdateTextOnSelect="False"
                     Name="xAutoSuggestBox"
                     TextBoxStyle="{StaticResource AutoFontSize}"
+                    
                     VerticalAlignment="Top"
                     HorizontalAlignment="Stretch"
                     Margin="10 10 10 5"

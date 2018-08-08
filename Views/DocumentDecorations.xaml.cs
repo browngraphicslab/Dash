@@ -99,6 +99,7 @@ namespace Dash
                     {
                         _visibilityLock = true;
                         VisibilityState = Visibility.Collapsed;
+                        SuggestGrid.Visibility = Visibility.Collapsed;
                     }
 
                     doc.PointerEntered += SelectedDocView_PointerEntered;
@@ -124,6 +125,7 @@ namespace Dash
         private void ManipulationControls_OnManipulatorAborted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
         private void OnManipulatorHelperCompleted()
@@ -131,6 +133,7 @@ namespace Dash
             if (!_isMoving)
             {
                 VisibilityState = Visibility.Visible;
+                SuggestGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -145,17 +148,20 @@ namespace Dash
         private void DocView_OnDeleted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
         private void ManipulatorCompleted()
         {
             VisibilityState = Visibility.Visible;
+            SuggestGrid.Visibility = Visibility.Visible;
             _isMoving = false;
         }
 
         private void ManipulatorStarted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
             _isMoving = true;
         }
 
@@ -173,6 +179,7 @@ namespace Dash
         {
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
             _selectedDocs = new List<DocumentView>();
             //Tags = new List<SuggestViewModel>();
             //Recents = new Queue<SuggestViewModel>();
@@ -220,6 +227,7 @@ namespace Dash
             else
             {
                 VisibilityState = Visibility.Collapsed;
+                
             }
         }
 
@@ -496,6 +504,7 @@ namespace Dash
                     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed && !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
                 {
                     VisibilityState = Visibility.Visible;
+                    SuggestGrid.Visibility = Visibility.Visible;
                 }
 
                 MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
@@ -618,6 +627,7 @@ namespace Dash
         private void DocumentDecorations_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Visible;
+            SuggestGrid.Visibility = Visibility.Visible;
         }
 
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -657,11 +667,36 @@ namespace Dash
                 {
                     foreach (var tag in Tags)
                     {
-                        if (tag.Text.Contains(search))
+                        if (tag.Text.StartsWith(search))
                         {
                             results.Add(tag);
                         }
                     }
+
+                    var temp = new List<Tag>();
+                    foreach (var tag in Tags)
+                    {
+                        if (tag.Text.Contains(search))
+                        {
+                            bool unique = true;
+                            foreach (var result in results)
+                            {
+                                if (result.Text == tag.Text)
+                                {
+                                    unique = false;
+                                }
+
+                            }
+
+                            if (unique)
+                            {
+                                temp.Add(tag);
+                            }
+                        }
+                    }
+
+                    temp.Sort();
+                    results.AddRange(temp);
 
                     foreach (var result in results)
                     {
