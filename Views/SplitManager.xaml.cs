@@ -79,6 +79,7 @@ namespace Dash
                         {
                             sender.SplitCompleted += WrapFrameInManager;
                         }
+
                         bool up = args.Direction == SplitFrame.SplitDirection.Up;
                         var row = CurSplitMode == SplitMode.Content ? 0 : Grid.GetRow(sender.GetFirstAncestorOfType<SplitManager>());
                         CurSplitMode = SplitMode.Vertical;
@@ -100,8 +101,8 @@ namespace Dash
                                 new RowDefinition { Height = new GridLength(0, GridUnitType.Star) }); //Content row
                             XContentGrid.RowDefinitions.Insert(row + 1,
                                 new RowDefinition { Height = new GridLength(10) }); //Splitter row
-                            Grid.SetColumn(splitter, row + 1);
-                            Grid.SetColumn(newManager, row + 2);
+                            Grid.SetRow(splitter, row + 1);
+                            Grid.SetRow(newManager, row + 2);
                             UpdateRows(2, row + 1);
                             XContentGrid.Children.Add(splitter);
                             XContentGrid.Children.Add(newManager);
@@ -129,7 +130,6 @@ namespace Dash
                     }
                     else
                     {
-
                         if (CurSplitMode == SplitMode.Content)
                         {
                             sender.SplitCompleted += WrapFrameInManager;
@@ -179,7 +179,6 @@ namespace Dash
                     break;
             }
 
-            Debug.WriteLine($"Num Children: {XContentGrid.Children.Count}");
             return true;
         }
 
@@ -191,6 +190,7 @@ namespace Dash
             var col = Grid.GetColumn(frame);
             var nested = new SplitManager();
             nested.SetContent(frame);
+            nested._allowedSplits = CurSplitMode == SplitMode.Horizontal ? SplitMode.Vertical : SplitMode.Horizontal;
             Grid.SetRow(nested, row);
             Grid.SetColumn(nested, col);
             XContentGrid.Children.Add(nested);
@@ -214,10 +214,10 @@ namespace Dash
             foreach (var child in XContentGrid.Children)
             {
                 var fe = child as FrameworkElement;
-                var col = Grid.GetRow(fe);
-                if (col >= min)
+                var row = Grid.GetRow(fe);
+                if (row >= min)
                 {
-                    Grid.SetRow(fe, col + offset);
+                    Grid.SetRow(fe, row + offset);
                 }
             }
         }
