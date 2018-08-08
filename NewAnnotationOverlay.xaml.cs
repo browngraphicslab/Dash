@@ -519,7 +519,7 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Visible;
             if (!XAnnotationCanvas.Children.Contains(XPreviewRect))
             {
-                XAnnotationCanvas.Children.Add(XPreviewRect);
+                XAnnotationCanvas.Children.Insert(0, XPreviewRect);
             }
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
@@ -682,9 +682,9 @@ namespace Dash
 		    _mainDocument.GetDataDocument()
 			    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
 			    .Add(dvm.DocumentController);
-		}
+        }
 
-	    private async Task<DocumentController> CreateVideoPin(Point point)
+        private async Task<DocumentController> CreateVideoPin(Point point)
 	    {
 		    var video = await MainPage.Instance.GetVideoFile();
 		    if (video == null) return null;
@@ -778,11 +778,7 @@ namespace Dash
             Canvas.SetTop(pin, point.Y - pin.Height / 2);
             XAnnotationCanvas.Children.Add(pin);
 
-            var vm = new SelectionViewModel(region)
-            {
-                SelectedBrush = new SolidColorBrush(Colors.OrangeRed),
-                UnselectedBrush = new SolidColorBrush(Color.FromArgb(128, 255, 0, 0))
-            };
+            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
             pin.DataContext = vm;
 			
 			pin.Tapped += (sender, args) =>
@@ -836,7 +832,9 @@ namespace Dash
             });
 
             _regions.Add(vm);
+
             SelectRegion(vm, new Point(point.X + pin.Width, point.Y + pin.Height));
+
         }
 
 	    private void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
@@ -984,10 +982,13 @@ namespace Dash
                 get => _unselectedBrush;
                 set => _unselectedBrush = value;
             }
-
-            public SelectionViewModel(DocumentController region)
+            public SelectionViewModel(DocumentController region, 
+                SolidColorBrush selectedBrush= null, 
+                SolidColorBrush unselectedBrush= null)
             {
                 RegionDocument = region;
+                UnselectedBrush = unselectedBrush;
+                SelectedBrush = selectedBrush;
                 _selectionColor = _unselectedBrush;
             }
 
@@ -1039,7 +1040,8 @@ namespace Dash
             }
             foreach (var item in removeItems)
             {
-                XAnnotationCanvas.Children.Remove(item);
+                if (item != xItemsControl)
+                    XAnnotationCanvas.Children.Remove(item);
             }
         }
 
@@ -1091,7 +1093,7 @@ namespace Dash
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             Debug.Assert(posList.Count == sizeList.Count);
 
-            SelectionViewModel vm = new SelectionViewModel(region);
+            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(0x10, 0xff, 0xff, 0)));
             for (int i = 0; i < posList.Count; ++i)
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
@@ -1287,19 +1289,21 @@ namespace Dash
 		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
 		    {
-			    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-				    ? DataPackageOperation.Copy
-				    : e.DataView.RequestedOperation;
-			}
+		        e.AcceptedOperation |= DataPackageOperation.Copy;
+		    }
 		    else
 		    {
 			    e.AcceptedOperation = DataPackageOperation.None;
 		    }
-		    e.Handled = true;
+		    //e.Handled = true;
 	    }
 
 	    public void OnDrop(object sender, DragEventArgs e)
 	    {
+	        if (!this.IsShiftPressed())
+	        {
+	            return;
+	        }
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);

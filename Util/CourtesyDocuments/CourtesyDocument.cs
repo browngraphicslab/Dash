@@ -387,7 +387,7 @@ namespace Dash
         public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction)
         {
             var key = direction == LinkDirection.ToDestination ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
-            return document.GetDereferencedField<DocumentController>(key, null);
+            return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
 
         public static void GotoRegion(this DocumentController document, DocumentController region,
