@@ -117,7 +117,7 @@
                             <TextBlock x:Name="xNewButtonIcon" Text="&#xE710;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 8 0 0"/>
 
                         </Grid>
-                        <TextBox x:Name="xLabelBox" PlaceholderText="Create a link tag" Margin="0 5 0 0" Padding="10 5 0 0"  Visibility="Collapsed" Height="35" Width="150" BorderBrush="Gray" BorderThickness="2"></TextBox>
+                        <TextBox x:Name="xLabelBox" PlaceholderText="Create a link tag" Margin="0 5 0 0" Padding="10 5 0 0"  Visibility="Collapsed" Height="35" Width="150" BorderBrush="Gray" BorderThickness="2" KeyDown="XLabelBox_OnKeyDown"></TextBox>
                     </StackPanel>
                         
 
@@ -157,8 +157,8 @@
                     </Grid.Resources>
                 
                     </Grid>
-                <Grid Margin="5 0 5 5">
-                <controls:WrapPanel x:Name="xTest"></controls:WrapPanel>
+                <Grid Margin="5 5 5 5" BorderBrush="DodgerBlue" BorderThickness="0 2 0 0">
+                <controls:WrapPanel x:Name="xTest" Margin="0 5 0 0"></controls:WrapPanel>
             </Grid>
             </StackPanel>
         </Grid>

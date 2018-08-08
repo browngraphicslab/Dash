@@ -753,5 +753,24 @@ namespace Dash
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
                 new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
         }
+
+      
+
+        private void XLabelBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                var box = sender as TextBox;
+                string entry = box.Text.Trim();
+                if (string.IsNullOrEmpty(entry)) return;
+
+
+                e.Handled = true;
+                AddTag(entry);
+                box.Text = "";
+            }
+            
+                
+        }
     }
 }
