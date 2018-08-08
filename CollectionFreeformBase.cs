@@ -1126,6 +1126,7 @@ namespace Dash
 
 								//link region to this text 
 								region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
+								region.Tag = PinAnnotationVisibility.VisibleOnScroll;
 							}
 						}
 	                }

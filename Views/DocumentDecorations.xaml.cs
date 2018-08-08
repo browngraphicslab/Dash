@@ -376,10 +376,7 @@ namespace Dash
                     doq.ViewModel.DecorationState = false;
                 }
             };
-
-           
-
-
+			
             ToolTip toolTip = new ToolTip();
             toolTip.Content = linkName;
             toolTip.HorizontalOffset = 5;

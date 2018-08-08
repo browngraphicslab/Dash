@@ -37,6 +37,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+          
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>

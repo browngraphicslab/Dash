@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using System.Collections.ObjectModel;
+using Syncfusion.Windows.PdfViewer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,6 +36,13 @@ namespace Dash
         Ink,
         Pin 
     }
+
+	public enum PinAnnotationVisibility
+	{
+		VisibleOnScroll,
+		ManualToggle,
+		AlwaysVisible
+	}
 
     public interface ISelectable
     {
@@ -592,8 +600,8 @@ namespace Dash
                 UnselectedBrush = new SolidColorBrush(Color.FromArgb(128, 255, 0, 0))
             };
             pin.DataContext = vm;
-            
-            pin.Tapped += (sender, args) =>
+			
+			pin.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
@@ -624,6 +632,8 @@ namespace Dash
 		        e.Handled = true;
 	        };
 
+	        FormatRegionOptionsFlyout(region, pin);
+			
 			//formatting bindings
 			pin.SetBinding(Shape.FillProperty, new Binding
             {
@@ -641,6 +651,28 @@ namespace Dash
             _regions.Add(vm);
             SelectRegion(vm, new Point(point.X + pin.Width, point.Y + pin.Height));
         }
+
+	    private void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
+	    {
+		    // context menu that toggles whether annotations should be show/ hidden on scroll
+
+		    MenuFlyout flyout = new MenuFlyout();
+		    MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
+		    MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
+		    visOnScrollON.Text = "Annotations Visibile On Scroll : TURN ON";
+		    visOnScrollOFF.Text = "Annotations Visibile On Scroll : TURN OFF";
+		    visOnScrollON.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.VisibleOnScroll; };
+		    visOnScrollOFF.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.ManualToggle; };
+		    regionGraphic.ContextFlyout = flyout;
+		    regionGraphic.RightTapped += (s, e) =>
+		    {
+			    var currVisibileOnScroll = region.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
+			    var item = currVisibileOnScroll ? visOnScrollOFF : visOnScrollON;
+			    flyout.Items.Clear();
+			    flyout.Items.Add(item);
+			    flyout.ShowAt(regionGraphic as FrameworkElement);
+		    };
+		}
 
         public void UpdateRegion(Point p)
         {
@@ -715,6 +747,8 @@ namespace Dash
             r.Visibility = Visibility.Visible;
             r.Background = new SolidColorBrush(Colors.Goldenrod);
             Canvas.SetTop(r, region.GetPosition().Value.Y);
+			
+			FormatRegionOptionsFlyout(region, r);
             //r.SetBinding(VisibilityProperty, new Binding
             //{
             //    Source = this,
@@ -874,7 +908,7 @@ namespace Dash
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
             }
-
+			
             _regions.Add(vm);
         }
 
@@ -912,6 +946,7 @@ namespace Dash
                 Converter = new BoolToVisibilityConverter()
             });
 
+			FormatRegionOptionsFlyout(vm.RegionDocument, r);
             XAnnotationCanvas.Children.Add(r);
         }
 

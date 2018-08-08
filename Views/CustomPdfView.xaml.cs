@@ -395,36 +395,42 @@ namespace Dash
 	            }
 
 				//check if annotations have left the screen
-				foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
+	            foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
 	            {
-					//get linked annotations
+		            //get linked annotations
 		            var docController = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
+		            bool scrollVisMode = docController?.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
+		            if (scrollVisMode)
+		            {
+			            var toLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+			            var fromLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
 
-		            var toLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-					var fromLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+			            //bool for checking whether child is currently in view of scrollviewer
+			            bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-					//bool for checking whether child is currently in view of scrollviewer
-		            bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
-
-		            if (toLinks != null)
+			            if (toLinks != null)
 			            {
-						foreach (var link in toLinks)
+				            foreach (var link in toLinks)
 				            {
 					            var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
 					            //if ui element is currently visible, show annotations
-								if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data != nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
+					            bool userCreated = sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data == nameof(LinkContexts.PushPin);
+					            sourceDoc?.SetHidden(!inView);
 				            }
-						}
+			            }
 
-			        if (fromLinks != null)
+			            if (fromLinks != null)
 			            {
-						foreach (var link in fromLinks)
-					          {
-						         var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true);
-								if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data != nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
-							}
-				        }
-					}
+				            foreach (var link in fromLinks)
+				            {
+					            var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true);
+					            if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data != nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
+				            }
+			            }
+		            }
+				}
+
+					
 	            } 
 
         }
@@ -516,13 +522,13 @@ namespace Dash
 		    {
 			    closestX = 10;
 		    }//else if it is within the width of the pdf, set x to itself (minus pdfx offset)
-		    else if (xPos <= pdfX + pdfWidth - 20)
+		    else if (xPos <= pdfX + pdfWidth - 10)
 		    {
 			    closestX = xPos - pdfX;
 		    } //else, it is to the right of the pdf
 		    else
 		    {
-			    closestX = pdfWidth - 20;
+			    closestX = pdfWidth - 10;
 		    }
 
 			//same idea for y pos!
