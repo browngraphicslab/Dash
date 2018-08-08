@@ -842,7 +842,7 @@ namespace Dash
             });
 
             _regions.Add(vm);
-            SelectRegion(vm, new Point(point.X + pin.Width, point.Y + pin.Height));
+            
         }
 
 	    private void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)

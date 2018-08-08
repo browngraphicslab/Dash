@@ -379,10 +379,15 @@ namespace Dash
         }
 
 		//links this => target
-        public void Link(DocumentController target, LinkContexts context, string specTitle = "<link description>")
+        public void Link(DocumentController target, LinkContexts context, string specTitle = null)
         {
 			//document that represents the actual link
-            DocumentController linkDocument = new RichTextNote(specTitle).Document;
+            DocumentController linkDocument = new RichTextNote("link").Document;
+            if (specTitle != null)
+            {
+                linkDocument.GetDataDocument().SetField(KeyStore.LinkTagKey,
+                    new ListController<TextController>{new TextController(specTitle)}, true);
+            }
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkContextKey, context.ToString(), true);
