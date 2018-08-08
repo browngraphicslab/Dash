@@ -100,6 +100,73 @@ namespace Dash
 		}
 
 		/// <summary>
+		/// This method gets the sidebar template HTML for the list of DocumentControllers.
+		/// </summary>
+		/// <param name="dcs"></param>
+		/// <returns></returns>
+		private string GetSidebarText(IEnumerable<DocumentController> dcs)
+		{
+			var sidebar = new List<string>();
+			sidebar.Add("<div id=\"sidebar\">");
+
+			sidebar.Add("<div class=\"heading\">NOTES</div>");
+			sidebar.Add("<ul>");
+			sidebar.AddRange(dcs.Select(dc => "<li><a href=\"" + _fileNames[dc] + ".html\">" + dc.Title + "</a></li>"));
+			sidebar.Add("</ul>");
+
+			sidebar.Add("</div>");
+
+			return ConcatenateList(sidebar);
+		}
+
+		#region RENDERING MAIN CONTENT
+
+		/// <summary>
+		/// This method renders the document's content and returns it.
+		/// </summary>
+		/// <param name="dc"></param>
+		/// <returns></returns>
+		private string RenderNoteToHtml(DocumentController dc)
+		{
+			var content = "";
+			switch (dc.DocumentType.Type)
+			{
+				case "Rich Text Note":
+					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+					content = content.Replace("\n", "<br/>");
+					break;
+				case "Markdown Note":
+					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+					content = content.Replace("\n", "<br/>");
+					break;
+				case "Image Note":
+					content = RenderImageToHtml(dc);
+					break;
+				case "Pdf Note":
+					break;
+				case "Video Note":
+					break;
+				case "Audio Note":
+					break;
+				default:
+					break;
+			}
+
+			return content;
+		}
+
+		private string RenderImageToHtml(DocumentController dc)
+		{
+			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
+			var path = "media\\" + imgTitle;
+			return "<img src=\"" + path + "\">";
+		}
+
+		#endregion
+
+		#region RENDERING LINKING
+
+		/// <summary>
 		/// This method takes in a DocumentController and finds all of its links, renders each of them to an annotationWrapper CSS class, and returns it all in one string.
 		/// </summary>
 		/// <param name="dc"></param>
@@ -159,66 +226,7 @@ namespace Dash
 			return ConcatenateList(html);
 		}
 
-		/// <summary>
-		/// This method renders the document's content and returns it.
-		/// </summary>
-		/// <param name="dc"></param>
-		/// <returns></returns>
-		private string RenderNoteToHtml(DocumentController dc)
-		{
-			var content = "";
-			switch (dc.DocumentType.Type)
-			{
-				case "Rich Text Note":
-					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-					content = content.Replace("\n", "<br/>");
-					break;
-				case "Markdown Note":
-					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-					content = content.Replace("\n", "<br/>");
-					break;
-				case "Image Note":
-					content = RenderImageToHtml(dc);
-					break;
-				case "Pdf Note":
-					break;
-				case "Video Note":
-					break;
-				case "Audio Note":
-					break;
-				default:
-					break;
-			}
-
-			return content;
-		}
-
-		private string RenderImageToHtml(DocumentController dc)
-		{
-			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
-			var path = "media\\" + imgTitle;
-			return "<img src=\"" + path + "\">";
-		}
-
-		/// <summary>
-		/// This method gets the sidebar template HTML for the list of DocumentControllers.
-		/// </summary>
-		/// <param name="dcs"></param>
-		/// <returns></returns>
-		private string GetSidebarText(IEnumerable<DocumentController> dcs)
-		{
-			var sidebar = new List<string>();
-			sidebar.Add("<div id=\"sidebar\">");
-
-			sidebar.Add("<div class=\"heading\">NOTES</div>");
-			sidebar.Add("<ul>");
-			sidebar.AddRange(dcs.Select(dc => "<li><a href=\"" + _fileNames[dc] + ".html\">" + dc.Title + "</a></li>"));
-			sidebar.Add("</ul>");
-
-			sidebar.Add("</div>");
-
-			return ConcatenateList(sidebar);
-		}
+		#endregion 
 
 		#region UTIL
 
@@ -343,6 +351,7 @@ namespace Dash
 		}
 
 		#endregion
+
 		#region COPYING MEDIA 
 
 		/// <summary>
