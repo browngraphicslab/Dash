@@ -1466,9 +1466,9 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 
 
-                ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+                //ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+                //Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+                //Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
 
                 Point where = e.GetPosition(MainPage.Instance.xCanvas);
 
@@ -1490,21 +1490,11 @@ namespace Dash
                 else
                 {
 
-                    inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
+                   
+                        //string entry = inputBox.Text.Trim();
+                        //if (string.IsNullOrEmpty(entry)) return;
 
-                    inputBox.AddKeyHandler(VirtualKey.Enter, args =>
-                    {
-                        string entry = inputBox.Text.Trim();
-                        if (string.IsNullOrEmpty(entry)) return;
-
-                        inputBox.ClearHandlers(VirtualKey.Enter);
-
-                        void FadeOutOnCompleted(object sender2, object o1)
-                        {
-                            fadeOut.Completed -= FadeOutOnCompleted;
-
-                            inputBox.Text = "";
-                            inputBox.Visibility = Visibility.Collapsed;
+                       
                             var dropDoc = ViewModel.DocumentController;
                             if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
@@ -1529,24 +1519,16 @@ namespace Dash
 							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
 	                        ParentCollection.ViewModel.AddDocument(annotNote);
 	                        //TODO: ensure LinkType is what the user plugged in
-	                        dragDoc.Link(annotNote, LinkContexts.None, entry);
-	                        dropDoc.Link(annotNote, LinkContexts.None, entry);
+	                        dragDoc.Link(annotNote, LinkContexts.None);
+	                        dropDoc.Link(annotNote, LinkContexts.None);
 	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
 	                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 	                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 	                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 						}
 
-                        fadeOut.Completed += FadeOutOnCompleted;
-                        fadeOut.Begin();
-
-                        args.Handled = true;
-                    });
-
-                    inputBox.Visibility = Visibility.Visible;
-                    fadeIn.Begin();
-                    inputBox.Focus(FocusState.Programmatic);
-                }
+                       
+                
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link

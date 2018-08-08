@@ -134,10 +134,15 @@ namespace Dash
         public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
         public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
 
+        public static KeyController LinkTagKey =
+            new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
+
+        
+
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
             TypeRenderer[type] = makeViewFunc;

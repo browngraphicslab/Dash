@@ -263,6 +263,12 @@ namespace Dash
 			                    SuggestGrid.Visibility = Visibility.Visible;
 			                    break;
 			                }
+
+			                if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+			                {
+			                    SuggestGrid.Visibility = Visibility.Visible;
+			                    break;
+                            }
 			            }
 			        }
 
@@ -280,7 +286,13 @@ namespace Dash
 			                        SuggestGrid.Visibility = Visibility.Visible;
 			                        break;
 			                    }
-			                }
+
+			                    if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+			                    {
+			                        SuggestGrid.Visibility = Visibility.Visible;
+			                        break;
+                                }
+                            }
 			            }
 
 			        }
