@@ -223,6 +223,7 @@ namespace Dash
             if (SelectedDocs.Any() && !this.IsRightBtnPressed())
             {
                 VisibilityState = Visibility.Visible;
+                SuggestGrid.Visibility = Visibility.Visible;
             }
             else
             {
@@ -725,6 +726,32 @@ namespace Dash
 	    }
 
 
+        private void XNewButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xLabelBox.Visibility == Visibility.Visible)
+            {
+                xFadeAnimationOut.Begin();
+                xAddNew.Width = new GridLength(50, GridUnitType.Pixel);
+                xLabelBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                xLabelBox.Visibility = Visibility.Visible;
+                xAddNew.Width = new GridLength(210, GridUnitType.Pixel);
+                xFadeAnimationIn.Begin();
+                xLabelBox.Focus(FocusState.Programmatic);
+            }
+        }
 
+        private void XNewButton_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+        }
+
+        private void XNewButton_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+        }
     }
 }
