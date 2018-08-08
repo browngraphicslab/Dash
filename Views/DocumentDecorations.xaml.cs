@@ -800,20 +800,14 @@ namespace Dash
 
 		private void XNewButton_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
-			if (xLabelBox.Visibility == Visibility.Visible)
-			{
-				xFadeAnimationOut.Begin();
-				xAddNew.Width = new GridLength(50, GridUnitType.Pixel);
-				xLabelBox.Visibility = Visibility.Collapsed;
-			}
-			else
-			{
-				xLabelBox.Visibility = Visibility.Visible;
-				xAddNew.Width = new GridLength(210, GridUnitType.Pixel);
-				xFadeAnimationIn.Begin();
-				xLabelBox.Focus(FocusState.Programmatic);
-			}
-		}
+		
+		    string entry = xAutoSuggestBox.Text.Trim();
+		    if (string.IsNullOrEmpty(entry)) return;
+
+		    e.Handled = true;
+		    AddTag(entry);
+		    xAutoSuggestBox.Text = "";
+        }
 
 		private void XNewButton_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
@@ -827,23 +821,20 @@ namespace Dash
 				new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
 		}
 
+        
+
+	    private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
+	    {
+	        if (e.Key == VirtualKey.Enter)
+	        {
+	            var box = sender as AutoSuggestBox;
+	            string entry = box.Text.Trim();
+	            if (string.IsNullOrEmpty(entry)) return;
 
 
-		private void XLabelBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
-		{
-			if (e.Key == VirtualKey.Enter)
-			{
-				var box = sender as TextBox;
-				string entry = box.Text.Trim();
-				if (string.IsNullOrEmpty(entry)) return;
-
-
-				e.Handled = true;
-				AddTag(entry);
-				box.Text = "";
-			}
-
-
-		}
+	            AddTag(entry);
+	            box.Text = "";
+            }
+        }
 	}
 }
