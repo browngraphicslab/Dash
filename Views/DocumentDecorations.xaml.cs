@@ -780,14 +780,12 @@ namespace Dash
 
 			}
 		}
-
-
-
+		
 		private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
 		{
 			if (!MainPage.Instance.IsShiftPressed())
 			{
-				MainPage.Instance.ActivationManager.DeactivateAll();
+				MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
 			}
 
 			foreach (var doc in SelectedDocs)
