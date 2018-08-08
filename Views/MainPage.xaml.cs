@@ -223,7 +223,12 @@ namespace Dash
 
         #region LOAD AND UPDATE SETTINGS
 
-        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+        private void LoadSettings()
+        {
+            var settingsDoc = GetAppropriateSettingsDoc();
+            xSettingsView.LoadSettings(settingsDoc);
+            XDocumentDecorations.LoadTags(settingsDoc);
+        }
 
         private DocumentController GetAppropriateSettingsDoc()
         {

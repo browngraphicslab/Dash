@@ -66,6 +66,9 @@ namespace Dash
         private Queue<Tag> _recentTags;
         private List<Tag> Tags;
 
+        public ListController<DocumentController> RecentTagsSave;
+        public ListController<DocumentController> TagsSave;
+
         private double _docWidth;
         private bool _visibilityLock;
 
@@ -187,10 +190,6 @@ namespace Dash
             _recentTags = new Queue<Tag>();
             Loaded += DocumentDecorations_Loaded;
             Unloaded += DocumentDecorations_Unloaded;
-
-
-
-
         }
 
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
@@ -201,6 +200,27 @@ namespace Dash
         private void DocumentDecorations_Loaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+           
+        }
+
+        public void LoadTags(DocumentController settingsdoc)
+        {
+           
+            RecentTagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
+            TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+            foreach (var documentController in RecentTagsSave)
+            {
+                RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data, documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+            }
+            foreach (var documentController in TagsSave)
+            {
+                Tags.Add(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data, documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+            }
+
+            foreach (var tag in RecentTags)
+            {
+                xTest.Children.Add(tag);
+            }
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -223,6 +243,7 @@ namespace Dash
             if (SelectedDocs.Any() && !this.IsRightBtnPressed())
             {
                 VisibilityState = Visibility.Visible;
+                SuggestGrid.Visibility = Visibility.Visible;
             }
             else
             {
@@ -438,14 +459,22 @@ namespace Dash
 
                 Tags.Add(tag);
 
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, linkName, true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, hexColor, true);
+                TagsSave.Add(doc);
+
                 if (_recentTags.Count < 5)
                 {
                     _recentTags.Enqueue(tag);
+                    RecentTagsSave.Add(doc);
                 }
                 else
                 {
                     _recentTags.Dequeue();
+                    RecentTagsSave.RemoveAt(0);
                     _recentTags.Enqueue(tag);
+                    RecentTagsSave.Add(doc);
                 }
 
                 xTest.Children.Clear();
@@ -725,6 +754,51 @@ namespace Dash
 	    }
 
 
+        private void XNewButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xLabelBox.Visibility == Visibility.Visible)
+            {
+                xFadeAnimationOut.Begin();
+                xAddNew.Width = new GridLength(50, GridUnitType.Pixel);
+                xLabelBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                xLabelBox.Visibility = Visibility.Visible;
+                xAddNew.Width = new GridLength(210, GridUnitType.Pixel);
+                xFadeAnimationIn.Begin();
+                xLabelBox.Focus(FocusState.Programmatic);
+            }
+        }
 
+        private void XNewButton_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+        }
+
+        private void XNewButton_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+        }
+
+      
+
+        private void XLabelBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                var box = sender as TextBox;
+                string entry = box.Text.Trim();
+                if (string.IsNullOrEmpty(entry)) return;
+
+
+                e.Handled = true;
+                AddTag(entry);
+                box.Text = "";
+            }
+            
+                
+        }
     }
 }
