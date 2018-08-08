@@ -102,11 +102,16 @@ namespace Dash
                                         currtags.Add(new TextController(this.Text));
                                     }
                                 }
-                               
+                                else
+                                {
+                                    currtags = new ListController<TextController>();
+                                    currtags.Add(new TextController(this.Text));
+                                }
 
-                              
+
+
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
 
@@ -129,11 +134,16 @@ namespace Dash
                                         currtags.Add(new TextController(this.Text));
                                     }
                                 }
-                               
+                                else
+                                {
+                                    currtags = new ListController<TextController>();
+                                    currtags.Add(new TextController(this.Text));
+                                }
 
-                              
+
+
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
                         }
@@ -167,11 +177,16 @@ namespace Dash
                                         currtags.Add(new TextController(this.Text));
                                     }
                                 }
+                                else
+                                {
+                                    currtags = new ListController<TextController>();
+                                    currtags.Add(new TextController(this.Text));
+                                }
 
 
                               
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
 
@@ -195,11 +210,15 @@ namespace Dash
                                         currtags.Add(new TextController(this.Text));
                                     }
                                 }
+                                else
+                                {
+                                    currtags = new ListController<TextController>();
+                                    currtags.Add(new TextController(this.Text));
+                                }
 
 
-                                
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
                         }
@@ -238,7 +257,7 @@ namespace Dash
                                
                              
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
 
@@ -258,7 +277,7 @@ namespace Dash
                                     currtags.RemoveAt(index);
                                 }
                                 link.GetDataDocument()
-                                    .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                    .SetField(KeyStore.LinkTagKey, currtags, true);
                                 break;
                             }
                         }
@@ -289,7 +308,7 @@ namespace Dash
                                 }
                                    
                                     link.GetDataDocument()
-                                        .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                        .SetField(KeyStore.LinkTagKey, currtags, true);
                                     break;
                                 break;
                                 }
@@ -311,7 +330,7 @@ namespace Dash
                                 }
                                     
                                     link.GetDataDocument()
-                                        .SetField<ListController<TextController>>(KeyStore.LinkTagKey, currtags, true);
+                                        .SetField(KeyStore.LinkTagKey, currtags, true);
                                     break;
                                 break;
                                 }
