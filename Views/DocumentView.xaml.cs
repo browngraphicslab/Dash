@@ -1478,7 +1478,8 @@ namespace Dash
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 	                var annotNote = new RichTextNote("Link description...", where).Document;
-					ParentCollection.ViewModel.AddDocument(annotNote);
+					(ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+					ParentCollection?.ViewModel.AddDocument(annotNote);
 					//TODO: ensure LinkType is what the user plugged in
 					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
 					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
@@ -1527,7 +1528,8 @@ namespace Dash
 
 
 							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
-	                        ParentCollection.ViewModel.AddDocument(annotNote);
+	                        (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+							ParentCollection.ViewModel.AddDocument(annotNote);
 	                        //TODO: ensure LinkType is what the user plugged in
 	                        dragDoc.Link(annotNote, LinkContexts.None, entry);
 	                        dropDoc.Link(annotNote, LinkContexts.None, entry);

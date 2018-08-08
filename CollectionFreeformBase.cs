@@ -974,6 +974,7 @@ namespace Dash
         #region TextInputBox
 
         string previewTextBuffer = "";
+	    private bool previewSelectText = false;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
@@ -990,6 +991,19 @@ namespace Dash
         }
 
         bool loadingPermanentTextbox;
+
+		/// <summary>
+		/// THIS IS KIND OF A HACK, DON'T USE THIS
+		/// </summary>
+	    public void MarkLoadingNewTextBox(string text = "", bool selectText = false)
+		{
+			previewTextBuffer = text;
+			previewSelectText = selectText;
+		    if (!loadingPermanentTextbox)
+		    {
+			    loadingPermanentTextbox = true;
+		    }
+	    }
 
         TextBox previewTextbox { get; set; }
 
@@ -1254,6 +1268,19 @@ namespace Dash
                         richEditBox.GotFocus -= RichEditBox_GotFocus;
                         richEditBox.GotFocus += RichEditBox_GotFocus;
                         richEditBox.Focus(FocusState.Programmatic);
+	                    //if (previewSelectText)
+	                    //{
+		                   // RoutedEventHandler loaded = null;
+		                   // loaded = (o, args) =>
+		                   // {
+			                  //  richEditBox.Loaded -= loaded;
+			                  //  richEditBox.Document.GetText(TextGetOptions.None, out var str);
+			                  //  richEditBox.Document.Selection.SetRange(0, str.Length);
+		                   // };
+		                   // richEditBox.Loaded += loaded;
+		                    
+		                   // previewSelectText = false;
+	                    //}
                     }
                     var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
                     if (textBox != null)
