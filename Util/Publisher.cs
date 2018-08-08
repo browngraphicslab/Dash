@@ -19,6 +19,7 @@ namespace Dash
 		// since the sidebar is the same code for every page, we might as well as save it instead of generate it for every file
 		private string _sidebarText;
 		private bool _mediaFolderMade = false;
+		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -146,7 +147,7 @@ namespace Dash
 			var html = new List<string> {
 				"<div class=\"annotationWrapper\">",
 				"<div>",
-				"<div style=\"border-left:3px solid #95B75F\"/>",
+				"<div style=\"border-left:3px solid " + _regionColors[new Random().Next(0, 11)] + "\"/>",
 				"<div class=\"annotation\">",
 				RenderNoteToHtml(link),
 				"</div>", // close annotation tag
