@@ -619,7 +619,7 @@ namespace Dash
 
 
                             DocumentController postitNote;
-                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            if (Clipboard.GetContent().Properties[nameof(DocumentController)] is DocumentController sourceDoc)
                             {
                                 var region = new RichTextNote("Rich text region").Document;
 
@@ -627,13 +627,13 @@ namespace Dash
                                 var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
                                 postitNote = postitView.Document;
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
-                                    sourceDoc.DataDocument.Title, true);
+                                    sourceDoc.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument, LinkContexts.None);
+                                region.Link(sourceDoc, LinkContexts.None);
 
                             }
                             else

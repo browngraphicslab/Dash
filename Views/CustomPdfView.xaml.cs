@@ -195,7 +195,7 @@ namespace Dash
                             if (!indices.Contains(i))
                             {
                                 var eleBounds = _bottomAnnotationOverlay._textSelectableElements[i].Bounds;
-                                if (selection.ClipRect == null || selection.ClipRect.Contains(new Point(eleBounds.X+eleBounds.Width/2, eleBounds.Y + eleBounds.Height/2)))
+                                if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||  selection.ClipRect.Contains(new Point(eleBounds.X+eleBounds.Width/2, eleBounds.Y + eleBounds.Height/2)))
                                     indices.Add(i);
                             }
                         }
@@ -209,9 +209,10 @@ namespace Dash
                         {
                             sb.Append("\r\n\r\n");
                         }
-                        if (prevIndex > 0 && sb.Length > 0 && !char.IsWhiteSpace(sb[sb.Length - 1]) && sb[sb.Length-1] != '-' && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
-                            sb.Append("\r\n");
                         var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        var nchar = ((string)selectableElement.Contents).First();
+                        if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length-1]) && !char.IsLower(sb[sb.Length-1]))) && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
+                            sb.Append("\r\n");
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);
@@ -222,6 +223,7 @@ namespace Dash
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
+                    dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
                     Clipboard.SetContent(dataPackage);
                     args.Handled = true;
                 }
