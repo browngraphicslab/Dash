@@ -353,7 +353,7 @@ namespace Dash
                         for (var i = selection.Key; i <= selection.Value; i++)
                         {
                             var elem = _textSelectableElements[i];
-                            if (_currentSelectionClipRects[ind].Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
+                            if (_currentSelectionClipRects[ind] == Rect.Empty || _currentSelectionClipRects[ind].Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
                             {
                                 // this will avoid double selecting any items
                                 if (!indices.Contains(i))
