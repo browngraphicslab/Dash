@@ -20,7 +20,6 @@ namespace Dash
 		private string _sidebarText;
 		private bool _mediaFolderMade = false;
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
-		// each DocumentController has a dictionary of its own to reference its coloring pairings with all the other DocumentControllers
 		private Dictionary<DocumentController, Dictionary<DocumentController, string>> _colorPairs = new Dictionary<DocumentController, Dictionary<DocumentController, string>>();
 
 		/// <summary>
@@ -137,19 +136,18 @@ namespace Dash
 			switch (dc.DocumentType.Type)
 			{
 				case "Rich Text Note":
-					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-					content = content.Replace("\n", "<br/>");
+					content += RenderRichTextToHtml(dc);
 					break;
 				case "Markdown Note":
-					content += dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-					content = content.Replace("\n", "<br/>");
+					content += RenderMarkdownToHtml(dc);
 					break;
 				case "Image Note":
-					content = RenderImageToHtml(dc);
+					content += RenderImageToHtml(dc);
 					break;
 				case "Pdf Note":
 					break;
 				case "Video Note":
+					content += RenderVideoToHtml(dc);
 					break;
 				case "Audio Note":
 					break;
@@ -160,11 +158,50 @@ namespace Dash
 			return content;
 		}
 
+		private string RenderRichTextToHtml(DocumentController dc)
+		{
+			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+			var richText = dc.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
+			// TODO: replace URLs linked to actual websites as well
+
+			// do the regioning
+			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
+			if (regions != null)
+			{
+				foreach (var region in regions)
+				{
+					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
+					plainText = plainText.Insert(startIndex, "<b>");
+					plainText = plainText.Insert(startIndex + regionText.Length + 3, "</b>"); // need to add 3 to account for the <b>
+				}
+			}
+
+			plainText = plainText.Replace("\n", "<br/>");
+
+			return plainText;
+		}
+
+		private string RenderMarkdownToHtml(DocumentController dc)
+		{
+			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+			content = content.Replace("\n", "<br/>");
+			return content;
+		}
+
 		private string RenderImageToHtml(DocumentController dc)
 		{
 			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
 			var path = "media\\" + imgTitle;
 			return "<img src=\"" + path + "\">";
+		}
+
+		//TODO: deal with YouTube videos
+		private string RenderVideoToHtml(DocumentController dc)
+		{
+			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
+			var path = "media\\" + vidTitle;
+			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
 		}
 
 		#endregion
@@ -179,18 +216,35 @@ namespace Dash
 		private string RenderAllLinksToHtml(DocumentController dc)
 		{
 			var html = new List<string>();
+			var allLinks = GetAllRelevantTargetLinkedDocuments(dc);
+
+			foreach (var link in allLinks)
+			{
+				if (_fileNames.ContainsKey(link))
+					html.Add(RenderLinkToHtml(link, dc, link.Title));
+			}
+
+			return ConcatenateList(html);
+		}
+
+		/// <summary>
+		/// This method returns all of the relevant links -- to and from -- in the DataDocument format.
+		/// </summary>
+		/// <param name="dc"></param>
+		/// <returns></returns>
+		private List<DocumentController> GetAllRelevantTargetLinkedDocuments(DocumentController dc)
+		{
+			var links = new List<DocumentController>();
+
 			var linksTo = dc.GetLinks(KeyStore.LinkToKey)?.TypedData;
 			var linksFrom = dc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
 
 			if (linksTo != null)
 			{
-				// linksTo uses LinkDestination to get the opposite document
+				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					var opposite = link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null)
-						.GetDataDocument();
-					if (_fileNames.ContainsKey(opposite))
-						html.Add(RenderLinkToHtml(opposite, dc));
+					links.Add(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument());
 				}
 			}
 
@@ -199,43 +253,31 @@ namespace Dash
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					var opposite = link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null)
-						.GetDataDocument();
-					if (_fileNames.ContainsKey(opposite))
-						html.Add(RenderLinkToHtml(opposite, dc));
+					links.Add(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument());
 				}
 			}
 
-			return ConcatenateList(html);
+			return links;
 		}
 
 		/// <summary>
 		/// This method takes in a link's DocumentController and renders it in an annotationWrapper CSS class, using RenderNoteToHtml to help with it.
 		/// </summary>
 		/// <param name="link"></param>
+		/// <param name="main"></param>
+		/// <param name="linkTitle"></param>
 		/// <returns></returns>
-		private string RenderLinkToHtml(DocumentController link, DocumentController main)
+		private string RenderLinkToHtml(DocumentController link, DocumentController main, string linkTitle)
 		{
-			var color = "";
-			if (_colorPairs[main].ContainsKey(link))
-			{
-				color = _colorPairs[main][link];
-			}
-			else
-			{
-				color = _regionColors[new Random().Next(0, 11)];
-				_colorPairs[main].Add(link, color);
-				_colorPairs[link].Add(main, color);
-			}
 			var html = new List<string> {
 				"<div class=\"annotationWrapper\">",
 				"<div>",
-				"<div style=\"border-left:3px solid " + color + "\"/>",
+				"<div style=\"border-left:3px solid " + GetPairedColor(main, link) + "\"/>",
 				"<div class=\"annotation\">",
 				RenderNoteToHtml(link),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[link] + ".html\">" + link.Title + "</a></div>",
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[link] + ".html\">" + linkTitle + " → " + link.Title + "</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
 
@@ -245,6 +287,29 @@ namespace Dash
 		#endregion 
 
 		#region UTIL
+
+		/// <summary>
+		/// This gets the paired linking color between two DocumentControllers. If it didn't exist before, this will make it. If it existed already, it will return it.
+		/// </summary>
+		/// <param name="a"></param>
+		/// <param name="b"></param>
+		/// <returns></returns>
+		private string GetPairedColor(DocumentController a, DocumentController b)
+		{
+			string color;
+			if (_colorPairs[a].ContainsKey(b))
+			{
+				color = _colorPairs[a][b];
+			}
+			else
+			{
+				color = _regionColors[new Random().Next(0, 10)];
+				_colorPairs[a].Add(b, color);
+				_colorPairs[b].Add(a, color);
+			}
+
+			return color;
+		}
 
 		/// <summary>
 		/// This takes the templated sidebar and adds in the decorations necessary to indicate the active link currently.
@@ -428,12 +493,26 @@ namespace Dash
 					case "Pdf Note":
 						break;
 					case "Video Note":
+						await CopyVideo(dc);
 						break;
 					case "Audio Note":
 						break;
 					default:
 						break;
 				}
+			}
+		}
+
+		private async Task CopyVideo(DocumentController dc)
+		{
+			var uriRaw = dc.GetDereferencedField(KeyStore.DataKey, null);
+			if (uriRaw != null)
+			{
+				var olduri = uriRaw.ToString();
+
+				// create file with unique title
+				var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
+				await CopyMedia(olduri, vidTitle);
 			}
 		}
 
@@ -445,7 +524,7 @@ namespace Dash
 			{
 				var olduri = uriRaw.ToString();
 
-				//create image with unique title
+				// create file with unique title
 				var imgTitle = "img_" + _fileNames[dc] + ".jpg";
 				await CopyMedia(olduri, imgTitle);
 			}

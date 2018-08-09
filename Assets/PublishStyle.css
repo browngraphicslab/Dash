@@ -107,6 +107,10 @@ img {
     max-width: 100%;
 }
 
+video {
+    max-width: 100%;
+}
+
 /* ========= finer details ========= */
 /* decorate links a bit */
 .inlineLink {
