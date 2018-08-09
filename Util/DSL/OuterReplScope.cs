@@ -49,10 +49,11 @@ namespace Dash
         {
             var child = (Scope)this;
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            if (child == null) return;
+            if (child == null || child._dictionary[variableName].Equals(valueToSet)) return;
+
             child._dictionary[variableName] = valueToSet;
 
-            var key = new KeyController(variableName, variableName);
+            var key = new KeyController(variableName);
             _variableDoc.SetField(key, valueToSet, true);
         }
     }

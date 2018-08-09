@@ -190,7 +190,7 @@ namespace Dash
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
-                setupMapView(lastWorkspace);
+                //setupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.to_string, Op.Name.print)]
-    public class ToStringOperatorController : OperatorController
+    [OperatorType(Op.Name.to_string)]
+    public sealed class ToStringOperatorController : OperatorController
     {
         //Input keys
         public static readonly KeyController InputKey = new KeyController("Input");
@@ -24,15 +22,13 @@ namespace Dash
         {
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            throw new NotImplementedException();
-        }
+        public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {
             new KeyValuePair<KeyController, IOInfo>(InputKey, new IOInfo(TypeInfo.Any, true))
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
             [ResultStringKey] = TypeInfo.Text

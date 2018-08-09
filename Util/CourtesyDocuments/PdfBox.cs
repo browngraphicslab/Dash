@@ -65,6 +65,7 @@ namespace Dash
             var pdf = documentView.GetFirstDescendantOfType<CustomPdfView>();
             return pdf.GetRegionDocument(point);
         }
+
         protected static void SetupPdfBinding(CustomPdfView pdf, DocumentController controller,
             Context context)
         {

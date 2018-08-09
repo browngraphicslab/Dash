@@ -640,26 +640,28 @@ namespace Dash
 				_currentPageCount = (int) _wPdfDocument.PageCount;
 			}
 
-			await Task.Run(() =>
-			{
-				for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-				{
-					var page = pdfDocument.GetPage(i);
-					var size = page.GetPageSize();
-					strategy.SetPage(i - 1, offset, size, page.GetRotation());
-					offset += page.GetPageSize().GetHeight() + 10;
-					processor.ProcessPageContent(page);
-				}
-			});
+            await Task.Run(() => {
+                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                {
+                    var page = pdfDocument.GetPage(i);
+                    var size = page.GetPageSize();
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
+                    offset += page.GetPageSize().GetHeight() + 10;
+                    processor.ProcessPageContent(page);
+                }
+            });
+            
+            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            _topAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
+            _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
 
-			var selectableElements = await strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-			_topAnnotationOverlay.SetSelectableElements(selectableElements);
-			_bottomAnnotationOverlay.SetSelectableElements(selectableElements);
+            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
+            DataDocument.SetField<TextController>(KeyStore.TitleMatchKey, selectableElements.Item2.Substring(300).Replace("-", ""), true);
 
-			reader.Close();
-			pdfDocument.Close();
-			PdfTotalHeight = offset - 10;
-			DocumentLoaded?.Invoke(this, new EventArgs());
+            reader.Close();
+            pdfDocument.Close();
+            PdfTotalHeight = offset - 10;
+            DocumentLoaded?.Invoke(this, new EventArgs());
 
 			_bottomAnnotationOverlay.LoadPinAnnotations(this);
 			_topAnnotationOverlay.LoadPinAnnotations(this);
@@ -908,27 +910,48 @@ namespace Dash
 			BottomScrollViewer.ChangeView(null, botOffset, null);
 		}
 
-		public void ScrollToRegion(DocumentController target)
-		{
-			var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
-			if (ratioOffsets == null) return;
+        public void ScrollToRegion(DocumentController target, DocumentController source = null)
+        {
+            var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            if (ratioOffsets == null) return;
 
-			var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight);
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight).ToList();
 
-			var currOffset = offsets.First();
-			var firstOffset = offsets.First();
-			var maxOffset = BottomScrollViewer.ViewportHeight;
-			var splits = new List<double>();
-			foreach (var offset in offsets.Skip(1))
-			{
-				if (offset - currOffset > maxOffset)
-				{
-					splits.Add(offset);
-					currOffset = offset;
-				}
-			}
+            var currOffset = offsets.First();
+            var firstOffset = offsets.First();
+            var maxOffset = BottomScrollViewer.ViewportHeight;
+            var splits = new List<double>();
+            
 
-			Debug.WriteLine($"{splits} screen splits are needed to show everything");
+            if (source != null)
+            {
+                currOffset = 0;
+                foreach (var offset in offsets)
+                {
+                    if (currOffset == 0 || offset - currOffset > maxOffset)
+                    {
+                        splits.Add(offset);
+                        currOffset = offset;
+                    }
+                }
+
+                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data * BottomScrollViewer.ExtentHeight;
+                splits.Insert(1, off);
+                offsets.Insert(1, off);
+            }
+            else
+            {
+                foreach (var offset in offsets.Skip(1))
+                {
+                    if (offset - currOffset > maxOffset)
+                    {
+                        splits.Add(offset);
+                        currOffset = offset;
+                    }
+                }
+            }
+            
+            Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
 			var sizes = _bottomPages.PageSizes;
 			// TODO: functionality for more than one split maybe?
@@ -963,21 +986,21 @@ namespace Dash
 					topOffset += size.Height * scale + 15;
 				}
 
-				xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
-				xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-				TopScrollViewer.ChangeView(null,
-					offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-				BottomScrollViewer.ChangeView(null,
-					offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
-					null);
-			}
-			else
-			{
-				var annoWidth = xBottomAnnotationBox.ActualWidth;
-				var botOffset = 0.0;
-				foreach (var size in sizes)
-				{
-					var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                TopScrollViewer.ChangeView(null,
+                    offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null,
+                    offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
+                    null, true);
+            }
+            else
+            {
+                var annoWidth = xBottomAnnotationBox.ActualWidth;
+                var botOffset = 0.0;
+                foreach (var size in sizes)
+                {
+                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
 
 					if (botOffset + (size.Height * scale) + 15 - firstOffset >= -1)
 
@@ -1400,21 +1423,19 @@ namespace Dash
 			_bottomAnnotationOverlay.AnnotationVisibility = false;
 		}
 
-		public bool AreAnnotationsVisible()
-		{
-			//This makes the assumption that both overlays are kept in sync
-			return _bottomAnnotationOverlay.AnnotationVisibility;
-		}
-
-		public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
-		{
-			if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
-				.GetField<DocumentController>(KeyStore.LinkSourceKey)))
-			{
-				var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
-				ScrollToRegion(src);
-				return LinkHandledResult.Unhandled;
-			}
+        public bool AreAnnotationsVisible()
+        {
+            //This makes the assumption that both overlays are kept in sync
+            return _bottomAnnotationOverlay.AnnotationVisibility;
+        }
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            var target = linkDoc.GetLinkedDocument(direction);
+            if (_bottomAnnotationOverlay.RegionDocsList.Contains(target))
+            {
+                ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
+                return LinkHandledResult.HandledClose;
+            }
 
 			return LinkHandledResult.Unhandled;
 		}

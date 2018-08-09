@@ -12,6 +12,16 @@
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {
+            if (left == null)
+            {
+                return new BoolController(right != null);
+            }
+
+            if (right == null)
+            {
+                return new BoolController(true);
+            }
+
             return new BoolController( !(left.TypeInfo == right.TypeInfo && left.GetValue(null).Equals(right.GetValue(null))) );
         }
 

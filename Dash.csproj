@@ -175,6 +175,7 @@
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
+    <Compile Include="Controllers\CountOperatorController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -191,6 +192,7 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\DebugPrintOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
@@ -199,15 +201,22 @@
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\DocumentLinkOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFDocTextOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFToReferencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ContainsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ParseDoubleOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TemplateAssignmentOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
@@ -271,7 +280,7 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
-    <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
@@ -362,6 +371,8 @@
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\VariableDeclarationExpression.cs" />
     <Compile Include="Util\DSL\VariableSuggestion.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">

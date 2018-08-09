@@ -384,9 +384,9 @@ namespace Dash
                 : Enum.Parse<AnnotationType>(t.Data);
         }
 
-        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction)
+        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
         {
-            var key = direction == LinkDirection.ToDestination ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
+            var key = (direction == LinkDirection.ToDestination ^ inverse) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
             return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
 

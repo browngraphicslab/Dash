@@ -49,7 +49,9 @@ namespace Dash
             get => _typedData;
             set => SetTypedData(value);
         }
-       
+
+        public bool IsEmpty => Count == 0;
+
         /*
          * Sets the data property and gives UpdateOnServer an UndoCommand 
          */
@@ -411,6 +413,7 @@ namespace Dash
             index = CheckedIndex(index, TypedData);
 
             TypedData.Insert(index, element);
+            ListModel.Data.Insert(index, element.Id);
 
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -505,9 +508,9 @@ namespace Dash
             foreach (var element in TypedData)
             {
                 element.FieldModelUpdated -= ContainedFieldUpdated;
-                ListModel.Data.Remove(element.Id);
             }
             TypedData.Clear();
+            ListModel.Data.Clear();
 
             var newEvent = new UndoCommand(() => ClearManager(false), () => SetTypedData(prevList, false));
 
