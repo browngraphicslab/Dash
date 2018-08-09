@@ -122,57 +122,7 @@ namespace Dash
             contextMenu.Items.Add(separatorOne);
             elementsToBeRemoved.Add(separatorOne);
 
-            // add the item to create a new collection
-            var newCollection = new MenuFlyoutItem()
-            {
-                Text = "Add new collection",
-                Icon = new FontIcon() {Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets")}
-            };
-            newCollection.Click += NewCollectionFlyout_OnClick;
-            contextMenu.Items.Add(newCollection);
-            elementsToBeRemoved.Add(newCollection);
-
-            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
-
-            void EnterTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= EnterTagMode;
-                tagMode.Click += ExitTagMode;
-
-                tagMode.Text = "Exit Tag Mode";
-
-                (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
-            }
-
-            void ExitTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click += EnterTagMode;
-
-                tagMode.Text = "Tag Notes";
-                var view = CurrentView as CollectionFreeformBase;
-                if (view != null)
-                {
-                    view.HideTagKeyBox();
-                    view.TagMode = false;
-                }
-            }
-
-                var icon1 = new FontIcons.FontAwesome
-                {
-                    Icon = FontAwesomeIcon.Tags
-                };
-                tagMode.Icon = icon1;
-
-                tagMode.Click += EnterTagMode;
-                contextMenu.Items.Add(tagMode);
-                elementsToBeRemoved.Add(tagMode);
-
-            // add another horizontal separator
-            var separatorTwo = new MenuFlyoutSeparator();
-
-            contextMenu.Items.Add(separatorTwo);
-            elementsToBeRemoved.Add(separatorTwo);
+           
 
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
@@ -228,17 +178,6 @@ namespace Dash
             }
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
-            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            var icon3 = new FontIcons.FontAwesome
-            {
-                Icon = FontAwesomeIcon.Search
-            };
-            viewCollectionPreview.Icon = icon3;
-            contextMenu.Items.Add(viewCollectionPreview);
-            elementsToBeRemoved.Add(viewCollectionPreview);
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
             fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
             var icon4 = new FontIcons.FontAwesome
@@ -261,10 +200,7 @@ namespace Dash
                 {
                     contextMenu.Items.Remove(flyoutItem);
                 }
-
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click -= EnterTagMode;
-                newCollection.Click -= NewCollectionFlyout_OnClick;
+                
                 newRepl.Click -= ReplFlyout_OnClick;
                 newScriptEdit.Click -= ScriptEdit_OnClick;
             };

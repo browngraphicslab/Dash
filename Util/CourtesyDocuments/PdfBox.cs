@@ -60,10 +60,10 @@ namespace Dash
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
-        public static DocumentController MakeRegionDocument(DocumentView documentView)
+        public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
             var pdf = documentView.GetFirstDescendantOfType<CustomPdfView>();
-            return pdf.GetRegionDocument();
+            return pdf.GetRegionDocument(point);
         }
 
         protected static void SetupPdfBinding(CustomPdfView pdf, DocumentController controller,

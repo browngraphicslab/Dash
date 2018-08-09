@@ -47,10 +47,11 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
         public DockingFrame DockManager => xDockFrame;
+	    public LinkActivationManager ActivationManager = new LinkActivationManager();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-
+		
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
@@ -224,7 +225,12 @@ namespace Dash
 
         #region LOAD AND UPDATE SETTINGS
 
-        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+        private void LoadSettings()
+        {
+            var settingsDoc = GetAppropriateSettingsDoc();
+            xSettingsView.LoadSettings(settingsDoc);
+            XDocumentDecorations.LoadTags(settingsDoc);
+        }
 
         private DocumentController GetAppropriateSettingsDoc()
         {
@@ -637,7 +643,34 @@ namespace Dash
                 }
             }
 
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+			//deactivate all docs if esc was pressed
+	        if (e.VirtualKey == VirtualKey.Escape )
+	        {
+		        using (UndoManager.GetBatchHandle())
+		        {
+			        ActivationManager.DeactivateAll();
+				}
+				
+	        }
+
+	        //activateall selected docs
+	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
+	        {
+		        var selected = SelectionManager.GetSelectedDocs();
+		        if (selected.Count > 0)
+		        {
+			        using (UndoManager.GetBatchHandle())
+			        {
+						foreach (var doc in SelectionManager.GetSelectedDocs())
+					        {
+						        ActivationManager.ActivateDoc(doc);
+					        }
+						}
+				        
+			        }
+			}
+
+			var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
@@ -1044,12 +1077,14 @@ namespace Dash
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
 
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
+                if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                         target.ToggleHidden();
                     else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                  
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {

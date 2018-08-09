@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
+using Dash.Annotations;
 
 namespace Dash
 {
@@ -135,11 +137,18 @@ namespace Dash
         public static KeyController PinAnnotationsKey = new KeyController("_Pin Annotations", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
         public static KeyController AnonymousGroupsKey = new KeyController("Anonymous Groups", "A35F8DA4-5471-4EA7-90D1-8F76F501FFB5");
         public static KeyController TitleMatchKey = new KeyController("Title Match", "FEBBA568-0DC5-4E8E-8FFE-339CC3E0B1D2");
+        public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
+        public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
 
+        public static KeyController LinkTagKey =
+            new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
+
+        
+
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
             TypeRenderer[type] = makeViewFunc;
@@ -147,8 +156,9 @@ namespace Dash
         }
 
         public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-        public delegate DocumentController MakeRegionFunc(DocumentView view);
+        public delegate DocumentController MakeRegionFunc(DocumentView view, Point? point = null);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
+        
     }
 }

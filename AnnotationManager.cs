@@ -53,19 +53,26 @@ namespace Dash
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (link.Title == linkType || linkType == null)
+                if (string.Join(", ", link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]) == linkType || linkType == null)
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
-	        }
+	        } else if (!MainPage.Instance.IsShiftPressed())
+            {
+                foreach (var link in linksTo)
+                    FollowLink(link, LinkDirection.ToDestination, linkHandlers);
+                foreach (var link in linksFrom)
+                    FollowLink(link, LinkDirection.ToSource, linkHandlers);
+            }
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || linkType == linkTo.Title) {
+                    if (linkType == null || linkType == string.Join(", ", linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]))
+                        { 
                         var item = new MenuFlyoutItem
                         {
-                            Text = linkTo.Title,
+                            Text = string.Join(", ", linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]),
                             DataContext = linkTo
                         };
                         var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers));
@@ -80,11 +87,11 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || linkType == linkFrom.Title)
+                    if (linkType == null || linkType == string.Join(", ", linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]))
                     {
                         var item = new MenuFlyoutItem
 	                    {
-	                        Text = linkFrom.Title,
+                            Text = string.Join(", ", linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]),
                             DataContext = linkFrom
 	                    };
                         var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));
