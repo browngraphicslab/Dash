@@ -438,10 +438,10 @@ namespace Dash
 		{
 			var tb = new TextBlock()
 			{
-				Text = linkName.Substring(0, 1),
-				HorizontalAlignment = HorizontalAlignment.Center,
-				VerticalAlignment = VerticalAlignment.Center,
-			    Foreground = new SolidColorBrush(Colors.White)
+                Text = linkName.Substring(0, 1),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = new SolidColorBrush(Colors.White)
             };
 		    var g = new Grid()
 		    {
@@ -589,7 +589,10 @@ namespace Dash
 			xButtonsPanel.Children.Clear();
 			foreach (var linkName in LinkNames)
 			{
-				AddLinkTypeButton(linkName);
+			    if (linkName != "")
+			    {
+			        AddLinkTypeButton(linkName);
+                }
 			}
 		}
 
@@ -603,17 +606,19 @@ namespace Dash
 			if (linkedTo != null)
 				foreach (var l in linkedTo)
 				{
-					if (doc.GetLinks(KeyStore.LinkToKey) != null)
-						linknames.Add(l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link");
+				    var tags = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+
+                    linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
 				}
 
 			var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
 			if (linkedFrom != null)
 				foreach (var l in linkedFrom)
 				{
-					if (doc.GetLinks(KeyStore.LinkFromKey) != null)
-					    linknames.Add(l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?[0].Data ?? "Link");
-				}
+				    var tags = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+
+                    linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
+                }
 
 			var regions = doc.GetDataDocument().GetRegions();
 			if (regions != null)
