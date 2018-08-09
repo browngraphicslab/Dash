@@ -465,17 +465,19 @@ namespace Dash
 				return;
 			}
 
-			this.RenderTransform = new TranslateTransform
-			{
-				X =
-					topLeft.X - xLeftColumn.Width.Value -
-					3, // bcz: -3 is needed for some reason to place buttons directly next to documentView.  Otherwise there's a gap that can cause the buttons to flicker or go away when you're trying to click them.
-				Y = topLeft.Y
-			};
+            if (botRight.X > MainPage.Instance.ActualWidth-xStackPanel.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth, botRight.Y);
+            this.RenderTransform = new TranslateTransform
+            {
+                X = topLeft.X - xLeftColumn.Width.Value, 
+                Y = topLeft.Y
+            };
 
-			ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-			xRow.Height = new GridLength(botRight.Y - topLeft.Y);
-		}
+            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            VisibilityState = Visibility.Visible; // bcz: want decorations to be visible for docked view .. this needs to be fixed elsewhere
+
+        }
 
 		private void AddLinkTypeButton(string linkName)
 		{

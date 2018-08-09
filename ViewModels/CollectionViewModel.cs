@@ -539,7 +539,7 @@ namespace Dash
             {
                 if (dvp.Contains(StandardDataFormats.StorageItems))
                 {
-                    var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
+                    var droppedDoc = await FileDropHelper.HandleDrop(where, dvp);
                     AddDocument(droppedDoc);
                     return droppedDoc;
                 }
@@ -619,7 +619,7 @@ namespace Dash
 
 
                             DocumentController postitNote;
-                            if (Clipboard.GetContent().Properties[nameof(RichTextView)] is RichTextView sourceDoc)
+                            if (Clipboard.GetContent().Properties[nameof(DocumentController)] is DocumentController sourceDoc)
                             {
                                 var region = new RichTextNote("Rich text region").Document;
 
@@ -627,13 +627,13 @@ namespace Dash
                                 var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
                                 postitNote = postitView.Document;
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
-                                    sourceDoc.DataDocument.Title, true);
+                                    sourceDoc.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
 
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc.LayoutDocument, LinkContexts.None);
+                                region.Link(sourceDoc, LinkContexts.None);
 
                             }
                             else
@@ -676,7 +676,7 @@ namespace Dash
                 await encoder.FlushAsync();
                 var dp = new DataPackage();
                 dp.SetStorageItems(new IStorageItem[] { savefile });
-                var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
+                var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView());
                 AddDocument(droppedDoc);
                 return droppedDoc;
             }
@@ -764,10 +764,9 @@ namespace Dash
                 {
                     try
                     {
-                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
+                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
                         if (droppedDoc != null)
                             AddDocument(droppedDoc);
-                        droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                         return;
                     }
                     catch (Exception exception)

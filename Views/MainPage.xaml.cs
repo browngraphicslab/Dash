@@ -1077,12 +1077,14 @@ namespace Dash
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
 
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
+                if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                         target.ToggleHidden();
                     else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                  
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {

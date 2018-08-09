@@ -785,7 +785,7 @@ namespace Dash
                  !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
                                                                translate.Y + ActualHeight))))
             {
-                return;
+                // return;  // bcz: need to abort only if the view is being pushed *farther* out of bounds
             }
 
             ViewModel.InteractiveManipulationPosition = translate;
@@ -1404,7 +1404,6 @@ namespace Dash
                 }
             }
         }
-        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
@@ -1944,7 +1943,7 @@ namespace Dash
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Collapsed;
+            ViewModel.LayoutDocument.SetHidden(true);
         }
 
 	    public void SetLinkBorderColor()

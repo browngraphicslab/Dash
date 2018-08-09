@@ -167,66 +167,72 @@ namespace Dash
 			_topAnnotationOverlay.LoadPinAnnotations(this);
 		}
 
-		private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
-		{
-			if (this.IsCtrlPressed())
-			{
-				var selections = new List<List<KeyValuePair<int, int>>>
-				{
-					new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
-					new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
-				};
-				var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-				if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Key != -1)
-				{
-					Debug.Assert(allSelections.Last().Value != -1);
-					Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
-					StringBuilder sb = new StringBuilder();
-					allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+        class SelRange {
+            public KeyValuePair<int, int> Range;
+            public Rect ClipRect;
+        }
 
-					// get the indices from our selections and ignore any duplicate selections
-					var indices = new List<int>();
-					foreach (var selection in allSelections)
-					{
-						for (var i = selection.Key; i <= selection.Value; i++)
-						{
-							if (!indices.Contains(i))
-							{
-								indices.Add(i);
-							}
-						}
-					}
+        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        {
+            if (this.IsCtrlPressed())
+            {
 
-					// if there's ever a jump in our indices, insert two line breaks before adding the next index
-					var prevIndex = indices.First() - 1;
-					foreach (var index in indices)
-					{
-						if (prevIndex + 1 != index)
-						{
-							sb.Append("\r\n\r\n");
-						}
+                var selections = new List<List<SelRange>>
+                {
+                    _bottomAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                    _topAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                };
+                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
+                if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
+                {
+                    Debug.Assert(allSelections.Last().Range.Value != -1);
+                    Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
+                    StringBuilder sb = new StringBuilder();
+                    allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
 
-						if (prevIndex > 0 && sb.Length > 0 && !char.IsWhiteSpace(sb[sb.Length - 1]) &&
-						    sb[sb.Length - 1] != '-' &&
-						    _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom <
-						    _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
-							sb.Append("\r\n");
-						var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
-						if (selectableElement.Type == SelectableElement.ElementType.Text)
-						{
-							sb.Append((string) selectableElement.Contents);
-						}
+                    // get the indices from our selections and ignore any duplicate selections
+                    var indices = new List<int>();
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
+                        {
+                            if (!indices.Contains(i))
+                            {
+                                var eleBounds = _bottomAnnotationOverlay._textSelectableElements[i].Bounds;
+                                if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||  selection.ClipRect.Contains(new Point(eleBounds.X+eleBounds.Width/2, eleBounds.Y + eleBounds.Height/2)))
+                                    indices.Add(i);
+                            }
+                        }
+                    }
+
+                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
+                    var prevIndex = indices.First()-1;
+                    foreach (var index in indices)
+                    {
+                        if (prevIndex + 1 != index)
+                        {
+                            sb.Append("\r\n\r\n");
+                        }
+                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        var nchar = ((string)selectableElement.Contents).First();
+                        if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length-1]) && !char.IsLower(sb[sb.Length-1]))) && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
+                            sb.Append("\r\n");
+                        if (selectableElement.Type == SelectableElement.ElementType.Text)
+                        {
+                            sb.Append((string)selectableElement.Contents);
+                        }
 
 						prevIndex = index;
 					}
 
-					var dataPackage = new DataPackage();
-					dataPackage.SetText(sb.ToString());
-					Clipboard.SetContent(dataPackage);
-					args.Handled = true;
-				}
-			}
-		}
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(sb.ToString());
+                    dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+                    Clipboard.SetContent(dataPackage);
+                    args.Handled = true;
+                }
+            }
+        }
 
 		private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
 			Context context)
@@ -1612,6 +1618,12 @@ namespace Dash
 						? PinAnnotationVisibility.VisibleOnScroll
 						: PinAnnotationVisibility.ManualToggle;
 			}
+
+		}
+
+		private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+			xFirstPanelRow.Height = new GridLength(0);
 		}
 	}
 
