@@ -361,7 +361,7 @@ namespace Dash
 			_topTimer.Start();
 			_bottomTimer.Start();
 
-			SetAnnotationType(AnnotationType.Pin);
+			SetAnnotationType(AnnotationType.Region);
 		}
 
 		private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
