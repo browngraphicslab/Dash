@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -215,49 +216,49 @@ namespace Dash
 		/// <returns></returns>
 		private string RenderAllLinksToHtml(DocumentController dc)
 		{
-			var html = new List<string>();
-			var allLinks = GetAllRelevantTargetLinkedDocuments(dc);
+			var html = new List<string> {RenderImmediateLinksToHtml(dc)};
 
-			foreach (var link in allLinks)
+			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
+			if (regions != null)
 			{
-				if (_fileNames.ContainsKey(link))
-					html.Add(RenderLinkToHtml(link, dc, link.Title));
+				html.AddRange(regions.Select(region => RenderImmediateLinksToHtml(region, dc)));
 			}
 
 			return ConcatenateList(html);
 		}
 
 		/// <summary>
-		/// This method returns all of the relevant links -- to and from -- in the DataDocument format.
+		/// This method returns all of the to and from targets in HTML. If you're calling this on a region, be sure to pass in the parent as well.
 		/// </summary>
 		/// <param name="dc"></param>
+		/// <param name="parent"></param>
 		/// <returns></returns>
-		private List<DocumentController> GetAllRelevantTargetLinkedDocuments(DocumentController dc)
+		private string RenderImmediateLinksToHtml(DocumentController dc, DocumentController parent = null)
 		{
-			var links = new List<DocumentController>();
+			var html = new List<string>();
 
+			// cycle through each link/region's links as necessary, building a new HTML segment as we go
 			var linksTo = dc.GetLinks(KeyStore.LinkToKey)?.TypedData;
-			var linksFrom = dc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
 			if (linksTo != null)
 			{
 				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					links.Add(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument());
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument(), parent ?? dc, link.Title));
 				}
 			}
 
+			var linksFrom = dc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
 			if (linksFrom != null)
 			{
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					links.Add(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument());
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument(), parent ?? dc, link.Title));
 				}
 			}
 
-			return links;
+			return ConcatenateList(html);
 		}
 
 		/// <summary>
@@ -269,7 +270,19 @@ namespace Dash
 		/// <returns></returns>
 		private string RenderLinkToHtml(DocumentController link, DocumentController main, string linkTitle)
 		{
-			var html = new List<string> {
+			if (!_fileNames.ContainsKey(link))
+			{
+				// if it wasn't found in the filename, then it means that we're annotating to a region.
+				// TODO: in the future stylize the regions a bit, e.g. only excerpts of text, a region over an image, etc.
+				var parent = link.GetDataDocument().GetRegionDefinition().GetDataDocument();
+				if (_fileNames.ContainsKey(parent))
+				{
+					link = parent;
+				}
+			}
+
+			var html = new List<string>
+			{
 				"<div class=\"annotationWrapper\">",
 				"<div>",
 				"<div style=\"border-left:3px solid " + GetPairedColor(main, link) + "\"/>",
@@ -277,10 +290,10 @@ namespace Dash
 				RenderNoteToHtml(link),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[link] + ".html\">" + linkTitle + " → " + link.Title + "</a></div>",
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[link] + ".html\">" + linkTitle + " → " + link.Title +
+				"</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
-
 			return ConcatenateList(html);
 		}
 
