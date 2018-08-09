@@ -130,11 +130,18 @@ namespace Dash
                         vm.SearchHighlightState = new Thickness(8);
                     };
                 }
-                return;
             }
-            _selectedRegion?.Deselect();
-            _selectedRegion = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            _selectedRegion?.Select();
+            var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
+            //if (_selectedRegion != selectable)
+            {
+                foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                    {
+                        nvo._selectedRegion?.Deselect();
+                        nvo._selectedRegion = r;
+                        r.Select();
+                    }
+            }
         }
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)

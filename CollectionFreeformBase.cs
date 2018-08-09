@@ -1139,7 +1139,7 @@ namespace Dash
 									postitNote.GetPosition());
 
 								//link region to this text 
-								region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
+								region.Link(postitNote, LinkContexts.PushPin);
 								region.Tag = PinAnnotationVisibility.VisibleOnScroll;
 							}
 						}
