@@ -539,7 +539,7 @@ namespace Dash
             {
                 if (dvp.Contains(StandardDataFormats.StorageItems))
                 {
-                    var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
+                    var droppedDoc = await FileDropHelper.HandleDrop(where, dvp);
                     AddDocument(droppedDoc);
                     return droppedDoc;
                 }
@@ -676,7 +676,7 @@ namespace Dash
                 await encoder.FlushAsync();
                 var dp = new DataPackage();
                 dp.SetStorageItems(new IStorageItem[] { savefile });
-                var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
+                var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView());
                 AddDocument(droppedDoc);
                 return droppedDoc;
             }
@@ -764,10 +764,9 @@ namespace Dash
                 {
                     try
                     {
-                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
+                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
                         if (droppedDoc != null)
                             AddDocument(droppedDoc);
-                        droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
                         return;
                     }
                     catch (Exception exception)

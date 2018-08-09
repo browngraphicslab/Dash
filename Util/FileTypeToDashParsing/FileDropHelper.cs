@@ -74,8 +74,7 @@ namespace Dash
         /// </summary>
         /// <param name="where"></param>
         /// <param name="e"></param>
-        /// <param name="collectionViewModel"></param>
-        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
+        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();

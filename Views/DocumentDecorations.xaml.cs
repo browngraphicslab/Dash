@@ -251,7 +251,7 @@ namespace Dash
             
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
                 topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTargetBorder.BorderThickness.Top, topLeft.Y);
@@ -282,14 +282,17 @@ namespace Dash
                 return;
             }
 
+            if (botRight.X > MainPage.Instance.ActualWidth-xStackPanel.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value - 3, // bcz: -3 is needed for some reason to place buttons directly next to documentView.  Otherwise there's a gap that can cause the buttons to flicker or go away when you're trying to click them.
+                X = topLeft.X - xLeftColumn.Width.Value, 
                 Y = topLeft.Y
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
             xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            VisibilityState = Visibility.Visible; // bcz: want decorations to be visible for docked view .. this needs to be fixed elsewhere
         }
 
         private void rebuildMenuIfNeeded()
@@ -365,9 +368,10 @@ namespace Dash
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (doc.ViewModel != null)
+            if (doc.ViewModel != null )
             {
-                if ((doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
+                if (doc.GetFirstAncestorOfType<DocumentView>() != null &&
+                    (doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
                      doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && doc.ViewModel != null &&
                     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed && !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
                 {
