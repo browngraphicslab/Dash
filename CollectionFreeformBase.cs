@@ -1115,6 +1115,7 @@ namespace Dash
                     {
                         postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+
                     }
                 }
                 else
@@ -1140,6 +1141,9 @@ namespace Dash
 
 								//link region to this text 
 								region.Link(postitNote, LinkContexts.PushPin, null);
+								activated.ViewModel.DocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
+								region.SetAnnotationType(AnnotationType.Pin);
+								region.SetRegionDefinition(activated.ViewModel.DocumentController.GetDataDocument());
 								region.Tag = PinAnnotationVisibility.VisibleOnScroll;
 							}
 						}

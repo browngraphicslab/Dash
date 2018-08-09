@@ -344,7 +344,7 @@ namespace Dash
             {
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
-                    if (!_regionRectangles.Any() && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
+                    if (!(_regionRectangles.Count > 1) && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
                     {
                         goto case AnnotationType.None;
                     }

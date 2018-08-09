@@ -38,6 +38,7 @@ namespace Dash
 		private List<DocumentView> _selectedDocs;
 		private bool _isMoving;
 		public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
+		private Tag _currEditTag;
 
 		public Visibility VisibilityState
 		{
@@ -47,7 +48,7 @@ namespace Dash
 				if (value != _visibilityState && !_visibilityLock)
 				{
 					_visibilityState = value;
-					if (value == Visibility.Collapsed) SuggestGrid.Visibility = Visibility.Collapsed;
+					//if (value == Visibility.Collapsed) SuggestGrid.Visibility = Visibility.Collapsed;
 					SetPositionAndSize();
 					OnPropertyChanged(nameof(VisibilityState));
 				}
@@ -323,8 +324,6 @@ namespace Dash
 
 		private void SetPositionAndSize()
 		{
-			//TODO: IS THIS LINE HELPFUL??
-			//_suggBoxShouldOpen = false;
 			var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
 			var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
@@ -386,7 +385,6 @@ namespace Dash
 
 		private void AddLinkTypeButton(string linkName)
 		{
-			//CHECK IF TAG SHOULD BE MADE
 			var tb = new TextBlock()
 			{
                 Text = linkName.Substring(0, 1),
@@ -457,7 +455,7 @@ namespace Dash
 			//allow users to change default tag titles by right click
 			button.RightTapped += (s, e) =>
 			{
-				ToggleTagEditor();
+				ToggleTagEditor(_tagNameDict[linkName]);
 			};
 		}
 
@@ -575,7 +573,7 @@ namespace Dash
 			if (doc == null)
 				return;
 			//ADDED: cleared linknames
-			linknames.Clear();
+			//linknames.Clear();
 			var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
 			if (linkedTo != null)
 				foreach (var l in linkedTo)
@@ -865,17 +863,40 @@ namespace Dash
             }
         }
 
-		private void ToggleTagEditor()
+		private void ToggleTagEditor(Tag tagPressed = null)
 		{
-			if (SuggestGrid.Visibility == Visibility.Collapsed)
+			if (tagPressed == _currEditTag)
 			{
-				SuggestGrid.Visibility = Visibility.Visible;
-				xFadeAnimationIn.Begin();
-			} else
+				if (SuggestGrid.Visibility == Visibility.Collapsed)
+				{
+					OpenTagEditor(tagPressed);
+				}
+				else
+				{
+					xFadeAnimationOut.Begin();
+					xFadeAnimationOut.Completed += (s, en) => { SuggestGrid.Visibility = Visibility.Collapsed; };
+					_currEditTag = null;
+				}
+			}
+			else
 			{
-				xFadeAnimationOut.Begin();
-				xFadeAnimationOut.Completed += (s, en) => { SuggestGrid.Visibility = Visibility.Collapsed; };
-			}	
+				OpenTagEditor(tagPressed);
+			}
+			
+		}
+
+		private void OpenTagEditor(Tag currTag)
+		{
+			_currEditTag = currTag;
+			//TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
+			foreach (var tag in _recentTags)
+			{
+				tag.RidSelectionBorder();
+				if (tag == currTag) tag.AddSelectionBorder();
+			}
+
+			SuggestGrid.Visibility = Visibility.Visible;
+			xFadeAnimationIn.Begin();
 		}
 
 	}

@@ -184,7 +184,7 @@ namespace Dash
 	    public void Select()
 	    {
 			xTagContainer.BorderThickness = new Thickness(2);
-			xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+			//xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
 			bool unique = true;
 			foreach (var recent in _docdecs.RecentTags)
 			{
