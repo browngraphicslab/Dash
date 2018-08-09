@@ -143,20 +143,28 @@ namespace Dash
             _annotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
-            if (_selectedRegion == selectable)
+            if (_selectedRegion != selectable)
             {
-                return;
+                foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                    {
+                        nvo._selectedRegion?.Deselect();
+                        nvo._selectedRegion = r;
+                        r.Select();
+                    }
             }
-            _selectedRegion?.Deselect();
-            _selectedRegion = selectable;
-            _selectedRegion.Select();
-
         }
 
         private void DeselectRegion()
         {
-            _selectedRegion?.Deselect();
-            _selectedRegion = null;
+            var selectedRegion = _selectedRegion;
+            if (selectedRegion != null)
+                foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
+                    {
+                        nvo._selectedRegion?.Deselect();
+                        nvo._selectedRegion = null;
+                    }
         }
 
         public NewAnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter regionGetter)
@@ -863,20 +871,10 @@ namespace Dash
 
             public event PropertyChangedEventHandler PropertyChanged;
 
-            private SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0));
+            public SolidColorBrush SelectedBrush { get; set; } = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0));
 
-            public SolidColorBrush SelectedBrush
-            {
-                get => _selectedBrush;
-                set => _selectedBrush = value;
-            }
-            private SolidColorBrush _unselectedBrush = new SolidColorBrush(Color.FromArgb(60, 255, 255, 0));
+            public SolidColorBrush UnselectedBrush { get; set; } = new SolidColorBrush(Color.FromArgb(128, 255, 255, 0));
 
-            public SolidColorBrush UnselectedBrush
-            {
-                get => _unselectedBrush;
-                set => _unselectedBrush = value;
-            }
             public SelectionViewModel(DocumentController region, 
                 SolidColorBrush selectedBrush= null, 
                 SolidColorBrush unselectedBrush= null)
@@ -884,7 +882,7 @@ namespace Dash
                 RegionDocument = region;
                 UnselectedBrush = unselectedBrush;
                 SelectedBrush = selectedBrush;
-                _selectionColor = _unselectedBrush;
+                _selectionColor = UnselectedBrush;
             }
 
             public bool Selected { get; private set; } = false;
@@ -893,13 +891,13 @@ namespace Dash
 
             public void Select()
             {
-                SelectionColor = _selectedBrush;
+                SelectionColor = SelectedBrush;
                 Selected = true;
             }
 
             public void Deselect()
             {
-                SelectionColor = _unselectedBrush;
+                SelectionColor = UnselectedBrush;
                 Selected = false;
             }
 
@@ -989,7 +987,7 @@ namespace Dash
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(0x10, 0xff, 0xff, 0)));
+            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0xff, 0)));
             for (int i = 0; i < posList.Count; ++i)
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);

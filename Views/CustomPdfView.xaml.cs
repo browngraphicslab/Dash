@@ -1442,6 +1442,11 @@ namespace Dash
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
+
+        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xFirstPanelRow.Height = new GridLength(0);
+        }
     }
 }
 

@@ -1899,7 +1899,7 @@ namespace Dash
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
-            this.Visibility = Visibility.Collapsed;
+            ViewModel.LayoutDocument.SetHidden(true);
         }
     }
 }
