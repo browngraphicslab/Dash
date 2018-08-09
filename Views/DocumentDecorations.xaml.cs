@@ -489,9 +489,12 @@ namespace Dash
 			button.Tapped += (s, e) =>
 			{
 				var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-				if (doq != null)
-					new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
-						doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
+			    if (doq != null)
+			    {
+			        new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
+			            doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
+                }
+					
 			};
 			button.Tag = new Tuple<DocumentView, string>(null, linkName);
 		}
