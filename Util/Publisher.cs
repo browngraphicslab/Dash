@@ -169,13 +169,14 @@ namespace Dash
 			// TODO: replace URLs linked to actual websites as well
 			
 			// do the regioning
-			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
+			var regions = regionsToRender ?? dc.GetRegions().TypedData; //?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
+				var stringsToReplace = new SortedDictionary<int, string>(); // int represents where to insert, string represents what to insert.
 				foreach (var region in regions)
 				{
-					var regionLinkTo = region.GetLinks(KeyStore.LinkToKey);
-					var regionLinkFrom = region.GetLinks(KeyStore.LinkFromKey);
+					var regionLinkTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+					var regionLinkFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
 					DocumentController oneTarget = null; // most of the time, each region will only link to one target, and this variable describes it.
 					string htmlToInsert = "<b>"; // this is the string of formatting applied at the start of the link
 
@@ -189,21 +190,24 @@ namespace Dash
 						oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
 					}
 
-					if (oneTarget != null)
+					if (oneTarget == null) continue;
+					// if we found a oneTarget, that might actually be a region, so check for that here and make sure we're looking at the big document.
+					if (oneTarget.GetRegionDefinition() != null)
 					{
-						// if we found a oneTarget, that might actually be a region, so check for that here and make sure we're looking at the big document.
-						if (oneTarget.GetRegionDefinition() != null)
-						{
-							oneTarget = oneTarget.GetRegionDefinition().GetDataDocument();
-						}
-						// insert the appropriate color pair.
-						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget] + "\">";
+						oneTarget = oneTarget.GetRegionDefinition().GetDataDocument();
 					}
-					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
-					plainText = plainText.Insert(startIndex, htmlToInsert);
-					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
+					// insert the appropriate color pair.
+					htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget] + "\">";
+
+					var regionText = region.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+					//var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
+					var startAndEndIndices = HyperlinkIndex(richText, region.Id, regionText);
+					if (startAndEndIndices[0] < 0) continue;
+					stringsToReplace.Add(startAndEndIndices[1], "</b></a>");
+					stringsToReplace.Add(startAndEndIndices[0], htmlToInsert);
 				}
+
+				plainText = stringsToReplace.Keys.Reverse().Aggregate(plainText, (current, key) => current.Insert(key, stringsToReplace[key]));
 			}
 			
 			// be careful that this line needs to go after the hyperlink regions, or you'll be messing up the indicing 
@@ -328,9 +332,71 @@ namespace Dash
 			return ConcatenateList(html);
 		}
 
-		#endregion 
+		#endregion
 
 		#region UTIL
+
+		/// <summary>
+		/// Gets the start and end indices of a hyperlink in plaintext when given richtext in the form of an int array. Returns -1 in the first field if the queryId isn't found
+		/// </summary>
+		private int[] HyperlinkIndex(string richText, string queryId, string query)
+		{
+			int len = query.Length;
+			bool ignore = false;
+			int curIndex = 0;
+			string fieldString = "";
+			int field = 0; //the number of curly braces (once the entire field property is closed, then we can continue search)
+			int[] modIndex = new int[2];
+
+			for (int i = richText.IndexOf(' ', richText.IndexOf("\\fs", StringComparison.Ordinal)) + 1; i < richText.Length; i++)
+			{
+				if (field > 0)
+				{
+					if (richText[i] == '{')
+						field += 1;
+					else if (richText[i] == '}')
+						field -= 1;
+					fieldString += richText[i];
+
+					if (field == 0 && fieldString.Contains(queryId))
+					{
+						modIndex[0] = curIndex;
+						modIndex[1] = curIndex + len;
+						return modIndex;
+					}
+				}
+				else if (ignore)
+				{
+					if (richText.Length > i + 7 && richText.Substring(i, 7).Equals("{\\field"))
+					{
+						field += 1;
+						ignore = false;
+					}
+					if (richText[i] == ' ' || richText[i] == '\n' || richText[i] == '\r' || richText[i] == '\t' || richText[i] == '~')
+					{
+						ignore = false;
+					}
+				}
+				else
+				{
+					if (richText.Length > i + 7 && richText.Substring(i, 7).Equals("{\\field"))
+						field += 1;
+					else if (richText.Length > i + 4 && richText.Substring((i, 4).Equals("\\par")))
+						curIndex++;
+					else if (richText[i] == '\\')
+					{
+						ignore = true;
+					}
+					else
+					{
+						curIndex++;
+					}
+				}
+			}
+			modIndex[0] = -1;
+			return modIndex;
+		}
+
 
 		/// <summary>
 		/// This takes the templated sidebar and adds in the decorations necessary to indicate the active link currently.

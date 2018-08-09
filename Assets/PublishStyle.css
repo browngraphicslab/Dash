@@ -46,6 +46,7 @@ body {
     #sidebar a {
         text-decoration: none;
         color: inherit;
+        text-overflow: ellipsis;
     }
 
     /* for the link in the sidebar that's the current page */
@@ -78,6 +79,7 @@ body {
     position: absolute;
     right: 0;
     width: 18%;
+    height: 100%;
 }
 
 .annotationWrapper {
@@ -89,6 +91,7 @@ body {
     margin-left: 8px;
     background: white;
     border-radius: 2px;
+    overflow-wrap: break-word;
 }
 
 .annotationLink {
@@ -117,9 +120,5 @@ video {
 .inlineLink {
     border-bottom: 0.5px solid;
     color: inherit;
-    text-transform: lowercase;
-    letter-spacing: 1px;
     text-decoration: none;
-    font-variant: small-caps;
-    font-size: 120%;
 }
