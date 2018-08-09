@@ -163,32 +163,40 @@ namespace Dash
             _topAnnotationOverlay.LoadPinAnnotations(this);
         }
 
+        class SelRange {
+            public KeyValuePair<int, int> Range;
+            public Rect ClipRect;
+        }
+
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
         {
             if (this.IsCtrlPressed())
             {
-                var selections = new List<List<KeyValuePair<int, int>>>
+
+                var selections = new List<List<SelRange>>
                 {
-                    new List<KeyValuePair<int, int>>(_bottomAnnotationOverlay._currentSelections),
-                    new List<KeyValuePair<int, int>>(_topAnnotationOverlay._currentSelections)
+                    _bottomAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                    _topAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-                if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Key != -1)
+                if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
                 {
-                    Debug.Assert(allSelections.Last().Value != -1);
-                    Debug.Assert(allSelections.Last().Value >= allSelections.Last().Key);
+                    Debug.Assert(allSelections.Last().Range.Value != -1);
+                    Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
                     StringBuilder sb = new StringBuilder();
-                    allSelections.Sort((s1, s2) => Math.Sign(s1.Key - s2.Key));
+                    allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
 
                     // get the indices from our selections and ignore any duplicate selections
                     var indices = new List<int>();
                     foreach (var selection in allSelections)
                     {
-                        for (var i = selection.Key; i <= selection.Value; i++)
+                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
                         {
                             if (!indices.Contains(i))
                             {
-                                indices.Add(i);
+                                var eleBounds = _bottomAnnotationOverlay._textSelectableElements[i].Bounds;
+                                if (selection.ClipRect == null || selection.ClipRect.Contains(new Point(eleBounds.X+eleBounds.Width/2, eleBounds.Y + eleBounds.Height/2)))
+                                    indices.Add(i);
                             }
                         }
                     }
