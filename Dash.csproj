@@ -192,6 +192,7 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\DebugPrintOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />

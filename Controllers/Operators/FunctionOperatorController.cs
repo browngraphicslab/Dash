@@ -1,83 +1,45 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using DashShared;
-using Zu.TypeScript.TsTypes;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     [OperatorType(Op.Name.function)]
-    public class FunctionOperatorController : OperatorController
+    public sealed class FunctionOperatorController : OperatorController
     {
         public FunctionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
             Debug.Assert(operatorFieldModel is FunctionOperatorModel);
-            string code = ((FunctionOperatorModel)operatorFieldModel).FunctionCode;
+            var model = (FunctionOperatorModel)operatorFieldModel;
 
-            //var expr = TypescriptToOperatorParser.ParseToExpression(code);
-
-            //var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
-
-            //return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
+            InitFunc(model.Parameters, TypescriptToOperatorParser.ParseToExpression(model.FunctionCode), model.ReturnType);
         }
 
-        public FunctionOperatorController() : base(new FunctionOperatorModel("", TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) => SaveOnServer();
 
-        public FunctionOperatorController(string functionCode, NodeArray<ParameterDeclaration> paramss,
-            ScriptExpression block, TypeInfo returnType) : base(new FunctionOperatorModel(functionCode,
-            TypeKey.KeyModel))
+        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
         {
             InitFunc(paramss, block, returnType);
         }
 
-        private void InitFunc(NodeArray<ParameterDeclaration> paramss, ScriptExpression block, TypeInfo returnType)
+        private void InitFunc(List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType)
         {
-
             _block = block;
             _returnType = returnType;
 
-            //set document keys
             foreach (var param in paramss)
             {
-                var newKey = new KeyController(param.IdentifierStr);
-                _inputNames.Add(param.IdentifierStr);
-
-                //restrict types based on user input
-                var inputType = TypeInfo.Any;
-                var parType = param.Type?.GetText().ToLower();
-                //this now only handles numbers, text and bool. If another type is needed, add a case
-                switch (parType)
-                {
-                    case "number":
-                        inputType = TypeInfo.Number;
-                        break;
-                    case "string":
-                        inputType = TypeInfo.Text;
-                        break;
-                    case "boolean":
-                        inputType = TypeInfo.Bool;
-                        break;
-                    case "document":
-                        inputType = TypeInfo.Document;
-                        break;
-                    case "list":
-                        inputType = TypeInfo.List;
-                        break;
-                    default:
-                        break;
-                }
-
-                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(inputType, true)));
+                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(new KeyController(param.Key), new IOInfo(param.Value, true)));
+                _inputNames.Add(param.Key);
             }
-
 
             SaveOnServer();
         }
 
-        private List<string> _inputNames = new List<string>();
+        private readonly List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
 
@@ -97,14 +59,13 @@ namespace Dash
             [ResultKey] = TypeInfo.Any,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            for (int i = 0; i < _inputNames.Count; i++)
+            for (var i = 0; i < _inputNames.Count; i++)
             {
-                var value = inputs[Inputs[i].Key];
+                FieldControllerBase value = inputs[Inputs[i].Key];
 
-                var expectedType = Inputs[i].Value.Type;
+                TypeInfo expectedType = Inputs[i].Value.Type;
 
                 //if not expected type , don't run
                 if (expectedType != TypeInfo.Any && value.TypeInfo != expectedType)
@@ -114,20 +75,20 @@ namespace Dash
                 scope?.DeclareVariable(_inputNames[i], value);
             }
 
-            var result = _block.Execute(scope);
+            FieldControllerBase result = _block.Execute(scope);
 
             outputs[ResultKey] = result;
-
         }
 
-        public override FieldControllerBase GetDefaultController()
+        public override FieldControllerBase GetDefaultController() => new FunctionOperatorController();
+
+        public override string ToString()
         {
-            return new FunctionOperatorController();
+            var returnType = _returnType == TypeInfo.None ? "void" : _returnType.ToString();
+            var parameters = string.Join(", ", Inputs.Select(kv => kv.Value.Type));
+            return $"{returnType} function({parameters})";
         }
 
-        public string getFunctionString()
-        {
-            return _block.ToString();
-        }
+        public string GetFunctionString() => _block.ToString();
     }
 }

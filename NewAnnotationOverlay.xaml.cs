@@ -162,10 +162,6 @@ namespace Dash
             _inkController = _mainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
-            foreach (var documentController in RegionDocsList)
-            {
-                RenderAnnotation(documentController);
-            }
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
@@ -184,6 +180,42 @@ namespace Dash
                 // regions and selectons follow the same functionality
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
+                    if (documentController.GetField(KeyStore.PDFSubregionKey) == null)
+                    {
+                        var currentSelections = documentController.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+
+                        var indices = new List<int>();
+                        double minRegionY = double.PositiveInfinity;
+                        foreach (PointController selection in currentSelections)
+                        {
+                            for (double i = selection.Data.X; i <= selection.Data.Y; i++)
+                            {
+                                if (!indices.Contains((int)i)) indices.Add((int)i);
+                            }
+                        }
+
+                        var subRegionsOffsets = new List<double>();
+                        int prevIndex = -1;
+                        foreach (int index in indices)
+                        {
+                            SelectableElement elem = _textSelectableElements[index];
+                            if (prevIndex + 1 != index)
+                            {
+                                var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+                                double scale = pdfView.Width / pdfView.PdfMaxWidth;
+                                double vOffset = elem.Bounds.Y * scale;
+                                double scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
+                                subRegionsOffsets.Add(scrollRatio);
+                            }
+                            minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
+                            prevIndex = index;
+                        }
+
+                        if ((this.GetFirstAncestorOfType<CustomPdfView>()) != null)
+                        {
+                            documentController.SetField(KeyStore.PDFSubregionKey, new ListController<NumberController>(subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                        }
+                    }
                     RenderRegion(documentController);
                     break;
                 case AnnotationType.Ink:
@@ -376,22 +408,43 @@ namespace Dash
             return annotation;
         }
 
-        public static DocumentController LinkRegion(int startIndex, int endIndex, DocumentController sourceDoc, DocumentController targetDoc, string linkTag = null)
+        public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc, double? sStartIndex = null, double? sEndIndex = null, double? tStartIndex = null, double? tEndIndex = null, string linkTag = null)
         {
             Debug.Assert(sourceDoc.GetRegionDefinition() == null);
-            DocumentController region = new RichTextNote().Document;
 
-            region.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController(startIndex, endIndex) }, true);
-            region.SetField(KeyStore.SelectionRegionTopLeftKey, new ListController<PointController>(), true);
-            region.SetField(KeyStore.SelectionRegionSizeKey, new ListController<PointController>(), true);
-            region.SetRegionDefinition(sourceDoc);
-            region.SetAnnotationType(AnnotationType.Selection);
+            DocumentController linkSource = sourceDoc;
+            DocumentController linkTarget = targetDoc;
 
-            if (linkTag != null) region.Link(targetDoc, LinkContexts.None, linkTag);
-            else region.Link(targetDoc, LinkContexts.None);
+            if (sStartIndex is double sStart && sEndIndex is double sEnd)
+            {
+                DocumentController sourceRegion = new RichTextNote().Document;
+                linkSource = sourceRegion;
 
-            sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
-            return region;
+                sourceRegion.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController(sStart, sEnd) }, true);
+                sourceRegion.SetField(KeyStore.SelectionRegionTopLeftKey, new ListController<PointController>(), true);
+                sourceRegion.SetField(KeyStore.SelectionRegionSizeKey, new ListController<PointController>(), true);
+                sourceRegion.SetRegionDefinition(sourceDoc);
+                sourceRegion.SetAnnotationType(AnnotationType.Selection);
+
+                sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(sourceRegion);
+            }
+
+            if (tStartIndex is double tStart && tEndIndex is double tEnd)
+            {
+                DocumentController targetRegion = new RichTextNote().Document;
+                linkTarget = targetRegion;
+
+                targetRegion.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController((int)tStart, (int)tEnd) }, true);
+                targetRegion.SetField(KeyStore.SelectionRegionTopLeftKey, new ListController<PointController>(), true);
+                targetRegion.SetField(KeyStore.SelectionRegionSizeKey, new ListController<PointController>(), true);
+                targetRegion.SetRegionDefinition(targetDoc);
+                targetRegion.SetAnnotationType(AnnotationType.Selection);
+
+                targetDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetRegion);
+            }
+
+            if (linkTag != null) linkSource.Link(linkTarget, LinkContexts.None, linkTag);
+            else linkSource.Link(linkTarget, LinkContexts.None);
         }
 
         #region General Annotation
@@ -917,6 +970,11 @@ namespace Dash
         public void SetSelectableElements(IEnumerable<SelectableElement> selectableElements)
         {
             _textSelectableElements = selectableElements.ToList();
+
+            foreach (var documentController in RegionDocsList)
+            {
+                RenderAnnotation(documentController);
+            }
         }
 
         public void ClearSelection(bool hardReset = false)
