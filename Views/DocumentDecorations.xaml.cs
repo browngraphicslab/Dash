@@ -37,6 +37,8 @@ namespace Dash
 		private Visibility _visibilityState;
 		private List<DocumentView> _selectedDocs;
 		private bool _isMoving;
+		public bool _suggBoxShouldOpen = false;
+		public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
 
 		public Visibility VisibilityState
 		{
@@ -107,7 +109,8 @@ namespace Dash
 					{
 						_visibilityLock = true;
 						VisibilityState = Visibility.Collapsed;
-						SuggestGrid.Visibility = Visibility.Collapsed;
+						//SuggestGrid.Visibility = Visibility.Collapsed;
+						ShowTags();
 					}
 
 					doc.PointerEntered += SelectedDocView_PointerEntered;
@@ -223,12 +226,16 @@ namespace Dash
 			{
 				RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
 					documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+				xRecentTagsDivider.Visibility = Visibility.Visible;
 			}
 
 			foreach (var documentController in TagsSave)
 			{
-				Tags.Add(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-					documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+				var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
+					documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
+				Tags.Add(tag);
+				_tagNameDict.Add(tag.Text, tag);
+				xRecentTagsDivider.Visibility = Visibility.Visible;
 			}
 
 			foreach (var tag in RecentTags)
@@ -271,56 +278,90 @@ namespace Dash
 			}
 		}
 
+		private bool ShouldShowTagDecorations()
+		{
+			if (SelectedDocs.Count == 1)
+			{
+				if (VisibilityState == Visibility.Collapsed) return false;
+				if (SuggestGrid.Visibility == Visibility.Visible)
+				{
+					//xAddLinkTypeBorder.Visibility = Visibility.Visible;
+					return true;
+				}
+
+				ListController<DocumentController> linksFrom = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+
+				if (linksFrom != null)
+				{
+					foreach (var link in linksFrom)
+					{
+						//if a linked doc is activated or no tag is specified, show + button
+						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
+						{
+							//SuggestGrid.Visibility = Visibility.Visible;
+							//xButtonsPanel.Visibility = Visibility.Visible;
+							return true;
+						}
+
+						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+						{
+							//SuggestGrid.Visibility = Visibility.Visible;
+							//xButtonsPanel.Visibility = Visibility.Visible;
+							return true;
+						}
+					}
+				}
+
+				ListController<DocumentController> linksTo = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+
+				if (linksTo != null)
+				{
+					foreach (var link in linksTo)
+					{
+						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
+						{
+							//xButtonsPanel.Visibility = Visibility.Visible;
+							return true;
+						}
+
+						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
+						{
+							//xButtonsPanel.Visibility = Visibility.Visible;
+							return true;
+						}
+					}
+				}
+
+			}
+
+			return false;
+		}
+
+		private void ShowAddLinkTypeBtnIfApplicable()
+		{
+			xAddLinkTypeBorder.Visibility = ShouldShowTagDecorations() ? Visibility.Visible : Visibility.Collapsed;
+		}
+
 	    private void ShowTags()
 	    {
 	        if (SelectedDocs.Count == 1)
 	        {
-	            ListController<DocumentController> linksFrom = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
-
-	            if (linksFrom != null)
-	            {
-	                foreach (var link in linksFrom)
-	                {
-	                    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
-	                    {
-	                        SuggestGrid.Visibility = Visibility.Visible;
-	                        break;
-	                    }
-
-	                    if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-	                    {
-	                        SuggestGrid.Visibility = Visibility.Visible;
-	                        break;
-	                    }
-	                }
-	            }
-
-
-	            if (SuggestGrid.Visibility == Visibility.Collapsed)
-	            {
-	                ListController<DocumentController> linksTo = SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-
-	                if (linksTo != null)
-	                {
-	                    foreach (var link in linksTo)
-	                    {
-	                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
-	                        {
-	                            SuggestGrid.Visibility = Visibility.Visible;
-	                            break;
-	                        }
-
-	                        if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-	                        {
-	                            SuggestGrid.Visibility = Visibility.Visible;
-	                            break;
-	                        }
-	                    }
-	                }
-
-	            }
-	        }
+		        ShowAddLinkTypeBtnIfApplicable();
+				SuggestGrid.Visibility = (_suggBoxShouldOpen && VisibilityState == Visibility.Visible)? Visibility.Visible : Visibility.Collapsed;
+		        
+				//update based on curr tags
+				//UpdateTagSelection();
+			}
         }
+
+		public void UpdateTagSelection()
+		{
+			foreach (Tag tag in xTest.Children)
+			{
+				//TODO: select tags that are used in this doc
+
+			}
+		}
 
 		private void SetTitleIcon()
 		{
@@ -381,6 +422,8 @@ namespace Dash
 
 		private void SetPositionAndSize()
 		{
+			//TODO: IS THIS LINE HELPFUL??
+			//_suggBoxShouldOpen = false;
 			var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
 			var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
@@ -436,6 +479,7 @@ namespace Dash
 
 		private void AddLinkTypeButton(string linkName)
 		{
+			
 			var tb = new TextBlock()
 			{
                 Text = linkName.Substring(0, 1),
@@ -447,11 +491,16 @@ namespace Dash
 		    {
 		        Background = new SolidColorBrush(Colors.Transparent)
 		    };
+			//set button color to tag color
+			var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
+			var btnColorFinal = btnColorOrig != null
+				? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
+				: Color.FromArgb(255, 64, 123, 177);
 			g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse()
 			{
 				Width = 22,
 				Height = 22,
-				
+				Fill = new SolidColorBrush(btnColorFinal)
 			});
 			g.Children.Add(tb);
 			var button = new Button()
@@ -499,6 +548,7 @@ namespace Dash
 			button.Tag = new Tuple<DocumentView, string>(null, linkName);
 		}
 
+		/*
 		private void LaunchLinkTypeInputBox(Point where)
 		{
 			ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
@@ -525,8 +575,10 @@ namespace Dash
 					fadeOut.Completed -= FadeOutOnCompleted;
 
 					LinkNames.Add(entry);
-					AddLinkTypeButton(entry);
-					AddTag(entry);
+					
+					var color = AddTag(entry);
+					//_tagNameDict.Add(entry)
+					//AddLinkTypeButton(, color);
 					//rebuildMenuIfNeeded();
 
 					//SELECT LINK TYPE 
@@ -534,16 +586,18 @@ namespace Dash
 					inputBox.Visibility = Visibility.Collapsed;
 				}
 			});
-
+			
 			inputBox.Visibility = Visibility.Visible;
 			fadeIn.Begin();
 			inputBox.Focus(FocusState.Programmatic);
 		}
-
-		private void AddTag(string linkName)
+		*/
+		private Color AddTag(string linkName)
 		{
+			if (_recentTags.Count > 0) xRecentTagsDivider.Visibility = Visibility.Visible;
+
 			var r = new Random();
-			var hexColor = Color.FromArgb(0x33, (byte) r.Next(256), (byte) r.Next(256), (byte) r.Next(256));
+			var hexColor = Color.FromArgb(150, (byte) r.Next(256), (byte) r.Next(256), (byte) r.Next(256));
 
 			bool unique = true;
 			foreach (var comp in Tags)
@@ -551,6 +605,7 @@ namespace Dash
 				if (linkName == comp.Text)
 				{
 					unique = false;
+					return comp.Color;
 				}
 			}
 
@@ -559,6 +614,7 @@ namespace Dash
 				var tag = new Tag(this, linkName, hexColor);
 
 				Tags.Add(tag);
+				_tagNameDict.Add(linkName, tag);
 
 				var doc = new DocumentController();
 				doc.SetField<TextController>(KeyStore.DataKey, linkName, true);
@@ -584,7 +640,7 @@ namespace Dash
 					xTest.Children.Add(recent);
 				}
 			}
-
+			return hexColor;
 		}
 
 		private void rebuildMenuIfNeeded()
@@ -610,7 +666,6 @@ namespace Dash
 				foreach (var l in linkedTo)
 				{
 				    var tags = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-
                     linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
 				}
 
@@ -631,6 +686,8 @@ namespace Dash
 				}
 		}
 
+
+
 		private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
 		{
 			var doc = sender as DocumentView;
@@ -643,7 +700,8 @@ namespace Dash
 				    !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
 				{
 					VisibilityState = Visibility.Visible;
-                    ShowTags();
+					if (_suggBoxShouldOpen) SuggestGrid.Visibility = Visibility.Visible;
+                    //ShowTags(); //if applicable this will show tags
 				}
 
 				MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
@@ -671,6 +729,8 @@ namespace Dash
 				    (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
 				     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
 					VisibilityState = Visibility.Collapsed;
+				xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
+				SuggestGrid.Visibility = Visibility.Collapsed;
 			}
 
 			MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
@@ -761,6 +821,7 @@ namespace Dash
 		[NotifyPropertyChangedInvocator]
 		private void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
+			ShowTags();
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
@@ -773,6 +834,8 @@ namespace Dash
 		private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
 			VisibilityState = Visibility.Collapsed;
+			SuggestGrid.Visibility = Visibility.Collapsed;
+			xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
 		}
 
 
@@ -780,11 +843,29 @@ namespace Dash
 		{
 			//MAKE NEW LINK TYPE BUBBLE
 			//LaunchLinkTypeInputBox(e.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
+			//toggle visibility of suggest grid
+			//SuggestGrid.Visibility = SuggestGrid.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 		}
 
 		private void XAddLinkTypeBorder_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
-			LaunchLinkTypeInputBox(e.GetPosition(MainPage.Instance.xCanvas));
+			//LaunchLinkTypeInputBox(e.GetPosition(MainPage.Instance.xCanvas));
+			//toggle visibility of suggest grid
+			//SuggestGrid.Visibility = SuggestGrid.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+			if (SuggestGrid.Visibility == Visibility.Visible)
+			{
+				//TODO:FIX THIS
+				//xFadeAnimationOut.Begin();
+				//xFadeAnimationOut.Completed += (s, en) => { SuggestGrid.Visibility = Visibility.Collapsed; };
+				SuggestGrid.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				SuggestGrid.Visibility = Visibility.Visible;
+				xFadeAnimationIn.Begin();
+			}
+			_suggBoxShouldOpen = SuggestGrid.Visibility == Visibility.Visible;
+
 
 		}
 

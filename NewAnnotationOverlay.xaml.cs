@@ -789,7 +789,57 @@ namespace Dash
 
             var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
             pin.DataContext = vm;
-			
+
+			var tip = new ToolTip()
+			{
+				Placement = PlacementMode.Bottom,
+			};
+			ToolTipService.SetToolTip(pin, tip);
+
+	        pin.PointerEntered += (s, e) =>
+	        {
+				//update tag content based on current tags of region
+		        var tags = new ObservableCollection<string>();
+				ListController<DocumentController> linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
+
+				if (linksFrom != null)
+				{
+					foreach (var link in linksFrom)
+					{
+						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
+						foreach (TextController text in currtags)
+						{
+							tags.Add(text.Data);
+						}
+					}
+				}
+
+				ListController<DocumentController> linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+
+				if (linksTo != null)
+				{
+					foreach (var link in linksTo)
+					{
+						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
+						if (currtags != null)
+						{
+							foreach (TextController text in currtags)
+							{
+								tags.Add(text.Data);
+							}
+						}
+						
+					}
+				}
+
+		        var content = tags.Count == 0 ? "" : tags[0];
+		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        foreach (var str in tags)
+		        {
+			        content = content + ", " + str;
+		        }
+		        tip.Content = content;
+	        };
 			pin.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
@@ -1100,7 +1150,7 @@ namespace Dash
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(0x10, 0xff, 0xff, 0)));
+            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
             for (int i = 0; i < posList.Count; ++i)
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
@@ -1135,8 +1185,57 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
+			//TOOLTIP TO SHOW TAGS
+	        var tip = new ToolTip()
+	        {
+		        Placement = PlacementMode.Bottom,
+	        };
+	        ToolTipService.SetToolTip(r, tip);
+			r.PointerEntered += (s, e) =>
+	        {
+		        //update tag content based on current tags of region
+		        var tags = new ObservableCollection<string>();
+		        ListController<DocumentController> linksFrom = vm.RegionDocument.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
 
-            r.SetBinding(VisibilityProperty, new Binding
+		        if (linksFrom != null)
+		        {
+			        foreach (var link in linksFrom)
+			        {
+				        var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
+				        foreach (TextController text in currtags)
+				        {
+					        tags.Add(text.Data);
+				        }
+			        }
+		        }
+
+		        ListController<DocumentController> linksTo = vm.RegionDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+
+		        if (linksTo != null)
+		        {
+			        foreach (var link in linksTo)
+			        {
+				        var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
+				        if (currtags != null)
+				        {
+					        foreach (TextController text in currtags)
+					        {
+						        tags.Add(text.Data);
+					        }
+				        }
+
+			        }
+		        }
+
+		        var content = tags.Count == 0 ? null : tags[0];
+		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        foreach (var str in tags)
+		        {
+			        content = content + ", " + str;
+		        }
+		        tip.Content = content;
+	        };
+			r.SetBinding(VisibilityProperty, new Binding
             {
                 Source = this,
                 Path = new PropertyPath(nameof(AnnotationVisibility)),

@@ -1064,7 +1064,7 @@ namespace Dash
                             //ActionTextBox inputBox = MainPage.Instance.xMainTreeView.xLinkInputBox;
                             //Storyboard fadeIn = MainPage.Instance.xMainTreeView.xLinkInputIn;
                             //Storyboard fadeOut = MainPage.Instance.xMainTreeView.xLinkInputOut;
-
+							/*
                             ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
                             Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
                             Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
@@ -1089,21 +1089,22 @@ namespace Dash
                                 void FadeOutOnCompleted(object sender2, object o1)
                                 {
                                     fadeOut.Completed -= FadeOutOnCompleted;
-
+									*/
                                     if (freebase2 != null)
                                     {
                                         var noteLocation = e.GetPosition(freebase2?.GetCanvas());
-                                        freebase2.RenderPreviewTextbox(noteLocation, dragDoc, entry, "");
+                                        freebase2.RenderPreviewTextbox(noteLocation, dragDoc, null, "");
                                     }
                                     else
                                     {
-                                        dragModel.LinkType = entry;
+                                        //dragModel.LinkType = entry;
                                         (senderView as FrameworkElement).GetFirstAncestorOfType<DocumentView>().This_Drop(sender, e);
                                         //var note = new RichTextNote("<annotation>", where).Document;
                                         //note.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
                                         //dragDoc.Link(note, LinkContexts.None, entry);
                                         //AddDocument(note);
                                     }
+							/*
                                     inputBox.Visibility = Visibility.Collapsed;
                                 }
                             });
@@ -1111,7 +1112,7 @@ namespace Dash
                             inputBox.Visibility = Visibility.Visible;
                             fadeIn.Begin();
                             inputBox.Focus(FocusState.Programmatic);
-
+							
                             var adjustLat = false;
                             var adjustVert = false;
 
@@ -1154,6 +1155,7 @@ namespace Dash
 
                             if (adjustLat) _lateralAdjustment.Begin();
                             if (adjustVert) _verticalAdjustment.Begin();
+							*/
                         }
                     }
                     else if (dragModel.CanDrop(sender as FrameworkElement))

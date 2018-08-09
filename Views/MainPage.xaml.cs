@@ -51,7 +51,7 @@ namespace Dash
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-
+		
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
