@@ -1309,22 +1309,6 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
 
-            _presentation = new ToolTip()
-            {
-                Content = "Presentation mode",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xPresentationModeButton, _presentation);
-
-            _export = new ToolTip()
-            {
-                Content = "Export workspace",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xExportButton, _export);
-
 
         }
 

@@ -460,7 +460,7 @@
             <ctrl:CommandBar x:Name="xToolbar" Height="42" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
 
                 
-                <AppBarButton 
+                <AppBarButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xPin" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -487,7 +487,7 @@
 
                 <AppBarSeparator x:Name="xSepThree"  Foreground="Gray"/>
 
-                <AppBarToggleButton 
+                <AppBarToggleButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xTouch"
                     Style="{StaticResource AppBarToggleButtonStyler}" 
@@ -497,7 +497,7 @@
                     PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xTouchIcon" Text="&#xE14E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
-                <AppBarToggleButton 
+                <AppBarToggleButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xInk" 
                     Style="{StaticResource AppBarToggleButtonStyler}" 
@@ -509,7 +509,7 @@
                     PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xInkIcon" Text="&#xE104;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
-                <AppBarToggleButton 
+                <AppBarToggleButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xGroup"
                     Style="{StaticResource AppBarToggleButtonStyler}"
@@ -520,10 +520,8 @@
                     <TextBlock x:Name="xPanIcon" Text="&#xE1E3;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarToggleButton>
 
-                <AppBarSeparator x:Name="xSepOne" Foreground="Gray"/>
-
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton 
+                <AppBarButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddGroup" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -543,7 +541,7 @@
                     PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
-                <AppBarButton
+                <AppBarButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddVideo" 
                     Style="{StaticResource AppBarButtonStyler}"
@@ -552,7 +550,7 @@
                     PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xVideoIcon" Text="&#xE116;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
-                <AppBarButton 
+                <AppBarButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddAudio" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -561,8 +559,6 @@
                     PointerExited="HideAppBarToolTip">
                     <TextBlock x:Name="xAudioIcon" Text="&#xE189;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                 </AppBarButton>
-
-                <AppBarSeparator x:Name="xSepTwo" Foreground="Gray"/>
 
                 <AppBarButton 
                     x:Name="xCopy" 
@@ -589,6 +585,31 @@
                 <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
                 <AppBarSeparator x:Name="xSepFour" Foreground="Gray"/>
+
+                <AppBarButton 
+                    x:Name="xExport" 
+                    Margin="0 1 0 0"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="True" 
+                    Opacity="1" 
+                    Click="XExport_OnClick"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                    <TextBlock x:Name="xExportIcon" Text="&#xEDE1;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                </AppBarButton>
+                <AppBarButton 
+                    x:Name="xPresentationMode"
+                    Margin="0 1 0 0"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="True" 
+                    Opacity="1" 
+                    Click="XPresentationMode_OnClick"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                    <TextBlock x:Name="xPresentationIcon" Text="&#xE768;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                </AppBarButton>
+
+                <AppBarSeparator x:Name="xSepFive" Foreground="Gray"/>
 
                 <!-- Bind is enabled-->
                 <AppBarButton 
