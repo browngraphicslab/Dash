@@ -19,7 +19,7 @@
         <uap:LockScreen Notification="badge" BadgeLogo="assets\Badge\Badge.png" />
         <uap:DefaultTile Wide310x150Logo="assets\Wide\Wide310x150Logo.png" Square310x310Logo="assets\Large\Large310x310Logo.png" Square71x71Logo="assets\Small\Small71x71Logo.png">
         </uap:DefaultTile>
-        <uap:SplashScreen Image="assets\SplashScreen\SplashScreen.png" BackgroundColor="#223333" />
+        <uap:SplashScreen Image="assets\SplashScreen\SplashScreen.png" BackgroundColor="#306199" />
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape" />
         </uap:InitialRotationPreference>

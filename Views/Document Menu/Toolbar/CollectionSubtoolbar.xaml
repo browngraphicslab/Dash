@@ -18,7 +18,7 @@
             </ComboBox>
             <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="0, -3, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
 
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBackgroundColor" Label="Background" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
@@ -27,7 +27,7 @@
                         <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged"/>
                     </Flyout>
                 </Button.Flyout>
-                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Margin="0 -5 0 0"/>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Width="20" Margin="2, -10, 0, 0"/>
             </AppBarButton>
         </StackPanel>
 <!--

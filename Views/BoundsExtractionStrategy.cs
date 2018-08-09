@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using iText.Kernel.Geom;
@@ -113,12 +114,12 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public async Task<List<SelectableElement>> GetSelectableElements(int startPage, int endPage)
+        public Tuple<List<SelectableElement>, string> GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
             {
-                return new List<SelectableElement>();
+                return Tuple.Create(new List<SelectableElement>(), "");
             }
 
             var pageElements = new List<List<SelectableElement>>();
@@ -159,7 +160,10 @@ namespace Dash
                 elements.AddRange(newElements);
             }
 
-            return elements;
+            StringBuilder sb = new StringBuilder(elements.Count);
+            elements.ForEach(se => sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : ""));
+
+            return Tuple.Create(elements, sb.ToString());
         }
 
         /// <summary>
@@ -285,22 +289,19 @@ namespace Dash
                  * line left to right. if we ever want to stop doing so, or if we find a better way of looping
                  * through templates, this will break.
                  */
-
-                if (linestr.Contains("AARTS"))
-                    ;
-
                 // find the average font size of the line's elements
+
                 foreach (var selectableElement in line.Skip(1))
                 {
                     var selectableLeft = selectableElement.Bounds.Left;
                     var selectableString = selectableElement.Contents as string;
                     var whiteSpace = string.IsNullOrWhiteSpace(selectableString); 
                     if (!whiteSpace || 
-                        ((selectableElement.Bounds.Left+ selectableElement.Bounds.Right)/2 > lastX && Math.Abs(element.RawIndex - selectableElement.RawIndex) < 3))
+                        ((selectableLeft + selectableElement.Bounds.Right)/2 > lastX && Math.Abs(element.RawIndex - selectableElement.RawIndex) < 3))
                     {
                         // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
                         var nextColumn = selectableLeft > columns[col].Bounds.Right + currFontWidth ||
-                                         selectableElement.Bounds.Left > lastX + currFontWidth*1.1;
+                                         selectableLeft > lastX + currFontWidth*1.1;
                         if (nextColumn && !whiteSpace)
                         {
                             if (!string.IsNullOrWhiteSpace(strings[col]))
@@ -321,9 +322,8 @@ namespace Dash
                                 newCol = columns.Count-1;
                             }
                             col = newCol;
-                            var prev = columns[newCol-1];
-                            if (selectableLeft < prev.Bounds.Right)
-                                prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Max(1,lastX - prev.Bounds.Left), prev.Bounds.Height);
+                            PdfColumnDef prev = columns[newCol-1];
+                            if (selectableLeft < prev.Bounds.Right) prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Max(1,lastX - prev.Bounds.Left), prev.Bounds.Height);
                         }
                         // add to whatever column we're indexed in
                         if (!nextColumn || !whiteSpace)
@@ -338,7 +338,8 @@ namespace Dash
                                 continue;
                             columns[col].SelectableElements.Add(selectableElement);
                             strings[col] += selectableString;
-                            var right = Math.Max(columns[col].Bounds.Right,  selectableElement.Bounds.Right);
+
+                            double right = Math.Max(columns[col].Bounds.Right, selectableElement.Bounds.Right);
                             columns[col].Bounds = new Rect(new Point(Math.Min(columns[col].Bounds.Left, whiteSpace ? lastX : selectableElement.Bounds.Left), 0),
                                 new Point(right, 0));
                         }

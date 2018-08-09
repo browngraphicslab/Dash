@@ -199,8 +199,6 @@ namespace Dash
             //ADD NEW SEPARATORS HERE!!!
             AppBarSeparator[] tempSeparators =
             {
-                xSepOne,
-                xSepTwo,
                 xSepThree,
                 xSepFour
             };
@@ -748,7 +746,7 @@ namespace Dash
             if (state == State.Expanded)
             {
 				
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -770,7 +768,7 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -954,6 +952,8 @@ namespace Dash
         private ToolTip _delete;
         private ToolTip _undo;
         private ToolTip _redo;
+        private ToolTip _presentation;
+        private ToolTip _export;
 
         private void SetUpToolTips()
         {
@@ -1063,6 +1063,22 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xRedo, _redo);
+
+            _export = new ToolTip()
+            {
+                Content = "Export workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xExport, _export);
+
+            _presentation = new ToolTip()
+            {
+                Content = "Presentation Mode",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPresentationMode, _presentation);
         }
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
@@ -1085,6 +1101,16 @@ namespace Dash
         {
             if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+        private void XExport_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.MakePdf_OnTapped(sender, null);
+        }
+
+        private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
         }
     }
 }

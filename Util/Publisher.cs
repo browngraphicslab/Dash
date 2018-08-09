@@ -198,6 +198,7 @@ namespace Dash
 						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget] + "\">";
 					}
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
 					plainText = plainText.Insert(startIndex, htmlToInsert);
 					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
