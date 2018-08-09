@@ -160,8 +160,6 @@ namespace Dash
 			return content;
 		}
 
-		// TODO HI THERE tomorrow make every document have its own color instead of each pair having a color, and display the color below the title. then do youtube.
-
 		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
@@ -226,9 +224,16 @@ namespace Dash
 			return "<img src=\"" + path + "\">";
 		}
 
-		//TODO: deal with YouTube videos
 		private string RenderVideoToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
+			// distinguish between YouTube and file-linked videos
+			if (dc.GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null)
+			{
+				var url = dc.GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null).Data;
+				return "<iframe src=\"" + url + "\"></iframe></div>";
+			}
+
+			// if not a YouTube video, the it's on here
 			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
 			var path = "media\\" + vidTitle;
 			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
@@ -321,7 +326,7 @@ namespace Dash
 				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + linkTitle + " → " + parentAnnotation.Title +
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">Tag: " + linkTitle + " &nbsp;| &nbsp;" + parentAnnotation.Title +
 				"</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
@@ -528,6 +533,8 @@ namespace Dash
 
 		private async Task CopyVideo(DocumentController dc)
 		{
+			// youtube videos don't have a saved file for copying
+			if (dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null) return;
 			var uriRaw = dc.GetDereferencedField(KeyStore.DataKey, null);
 			if (uriRaw != null)
 			{

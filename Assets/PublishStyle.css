@@ -89,6 +89,7 @@ body {
     margin-left: 8px;
     background: white;
     border-radius: 2px;
+    overflow-wrap: break-word;
 }
 
 .annotationLink {
@@ -103,14 +104,6 @@ body {
         color: inherit;
     }
 
-/* to prevent images from overflowing */
-img {
-    max-width: 100%;
-}
-
-video {
-    max-width: 100%;
-}
 
 /* ========= finer details ========= */
 /* decorate links a bit */
@@ -122,4 +115,15 @@ video {
     text-decoration: none;
     font-variant: small-caps;
     font-size: 120%;
+}
+
+/* to prevent media from overflowing */
+img, video, iframe {
+    max-width: 100%;
+}
+
+/* iframes (for youtube) require more delicate formatting*/
+iframe {
+    width: 100%;
+    height: 500px;
 }

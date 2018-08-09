@@ -179,7 +179,9 @@ namespace Dash
 							// make the video box with the Uri set as the video's, and return it
 			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
 			                var uri = url.Uri;
-			                return VideoToDashUtil.CreateVideoBoxFromUri(uri);
+							var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+			                video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+			                return video;
 		                }
 		                // if that returns an error somehow, just return the page instead
 		                catch (Exception)
