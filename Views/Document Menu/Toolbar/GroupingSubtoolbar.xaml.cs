@@ -226,7 +226,6 @@ namespace Dash
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColor = _currentDocController?.GetDataDocument().GetBackgroundColor() ?? Windows.UI.Colors.Red;
-            UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
            // xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
@@ -234,13 +233,6 @@ namespace Dash
             //NUM SIDES
             xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
             
-        }
-
-        private void UpdateToolbarAccentColors()
-        {
-           // xOpacitySlider.Background = new SolidColorBrush(_currentColor);
-            xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
-            xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
 		
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -279,7 +271,6 @@ namespace Dash
 		private void XGroupForegroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
 			_currentColor = xGroupForegroundColorPicker.SelectedColor;
-		    UpdateToolbarAccentColors();
 			//have to use a different key so that background color is 
 		    _currentDocController?.SetField(KeyStore.GroupBackgroundColorKey, new TextController(e.ToString()), true);
 		   

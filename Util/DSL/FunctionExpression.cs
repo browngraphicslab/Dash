@@ -63,8 +63,9 @@ namespace Dash
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
                 throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
 

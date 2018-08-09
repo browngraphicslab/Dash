@@ -57,50 +57,5 @@ namespace Dash
         private FieldControllerBase _outputValue;
 
         public bool NotEditTextValue => !_editTextValue;
-
-        public string GetValueFromResult(FieldControllerBase controller)
-        {
-            string result;
-            try
-            {
-                if (controller != null)
-                {
-                    if (controller is ReferenceController)
-                    {
-                        var r = (ReferenceController)controller;
-                        result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
-                    }
-                    else if (controller is FunctionOperatorController)
-                    {
-                        result = (controller as FunctionOperatorController).getFunctionString();
-                    }
-                    else
-                    {
-
-                        result = controller is BaseListController
-                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
-                            : controller?.GetValue(null)?.ToString();
-                    }
-
-                }
-                else
-                {
-                    result = "error, result controller was null";
-                }
-            }
-            catch (DSLException e)
-            {
-                result = "      \nException: " + e.GetHelpfulString();
-            }
-            catch (Exception e)
-            {
-                result = "Unknown annoying error occurred : " + e.StackTrace;
-            }
-
-            return result;
-        }
-
-
-
     }
 }

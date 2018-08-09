@@ -102,17 +102,6 @@
 
                         </Grid>
 
-                        <Grid x:Name="xPresentationModeButton" Tapped="TogglePresentationMode" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top"/>
-                            <TextBlock x:Name="xPresentationMode" Text="&#xE768;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-
-                        </Grid>
-
-                        <Grid x:Name="xExportButton" Tapped="MakePdf_OnTapped" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top"/>
-                            <TextBlock x:Name="xExport" Text="&#xEDE1;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-
-                        </Grid>
                         <StackPanel.Resources>
                             <Storyboard x:Name="xFadeAnimationIn">
                                 <DoubleAnimation
