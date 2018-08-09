@@ -1506,6 +1506,7 @@ namespace Dash
 					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
 					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+					//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 	                dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 	                annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
@@ -1550,8 +1551,8 @@ namespace Dash
 				                ParentCollection?.ViewModel.AddDocument(annotNote);
 			                }
 							//TODO: ensure LinkType is what the user plugged in
-							dragDoc.Link(annotNote, LinkContexts.None);
-	                        dropDoc.Link(annotNote, LinkContexts.None);
+							dragDoc.Link(annotNote, LinkContexts.None, null);
+	                        dropDoc.Link(annotNote, LinkContexts.None, null);
 	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
 	                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
 	                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
@@ -1955,6 +1956,7 @@ namespace Dash
 	    public void RemoveLinkBorderColor()
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
+		    xToYellow.Begin();
 	    }
 	}
 }

@@ -59,7 +59,6 @@
         <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
-                <RowDefinition Height="26"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
@@ -75,7 +74,7 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-
+<!--
             <Border x:Name="xAddLinkTypeBorder" Grid.Row="1" CanDrag="True" Background="Transparent" 
                     PointerPressed="XAddLinkTypeBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAddLinkTypeBorder_OnTapped" 
                     HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0 0 0 0" Visibility="Collapsed">
@@ -88,8 +87,8 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-
-            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="2" Visibility="{x:Bind VisibilityState, Mode=OneWay}" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,0">
+-->
+            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="1" Visibility="{x:Bind VisibilityState, Mode=OneWay}" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,0">
                 <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Stretch" Visibility="Visible" Spacing="4">
                     
                 </StackPanel>
