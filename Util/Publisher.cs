@@ -171,10 +171,34 @@ namespace Dash
 			{
 				foreach (var region in regions)
 				{
+					var regionLinkTo = region.GetLinks(KeyStore.LinkToKey);
+					var regionLinkFrom = region.GetLinks(KeyStore.LinkFromKey);
+					DocumentController oneTarget = null; // most of the time, each region will only link to one target, and this variable describes it.
+					string htmlToInsert = "<b>"; // this is the string of formatting applied at the start of the link
+
+					// trying to see if the one target is linkTo or linkFrom, and if it's one of them, set it to that target
+					if (regionLinkTo == null && regionLinkFrom != null && regionLinkFrom.Count == 1)
+					{
+						oneTarget = regionLinkFrom.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
+					} else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
+					{
+						oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+					}
+
+					if (oneTarget != null)
+					{
+						// if we found a oneTarget, that might actually be a region, so check for that here and make sure we're looking at the big document.
+						if (oneTarget.GetRegionDefinition() != null)
+						{
+							oneTarget = oneTarget.GetRegionDefinition().GetDataDocument();
+						}
+						// insert the appropriate color pair.
+						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + GetPairedColor(dc, oneTarget) + "\">";
+					}
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
-					plainText = plainText.Insert(startIndex, "<b>");
-					plainText = plainText.Insert(startIndex + regionText.Length + 3, "</b>"); // need to add 3 to account for the <b>
+					plainText = plainText.Insert(startIndex, htmlToInsert);
+					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
 				}
 			}
 
