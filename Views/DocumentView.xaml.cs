@@ -1117,6 +1117,7 @@ namespace Dash
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
 
+				MainPage.Instance.ActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
             }
         }
@@ -1186,25 +1187,22 @@ namespace Dash
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
 
-            xTopLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
-            xTopResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
-            xTopRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
+	        ColorSelectionBorder(selected ? Color.FromArgb(120, 160, 197, 232) : Colors.Transparent);
 
-            xBottomLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
-            xBottomResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
-            xBottomRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
+        }
 
-            xRightResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
-            xLeftResizeControl.Fill =
-                selected ? new SolidColorBrush(Color.FromArgb(120, 160, 197, 232)) : new SolidColorBrush(Colors.Transparent);
+	    private void ColorSelectionBorder(Color color)
+	    {
+		    var brush = new SolidColorBrush(color);
 
+		    xTopLeftResizeControl.Fill = brush;
+		    xTopResizeControl.Fill = brush;
+			xTopRightResizeControl.Fill = brush;
+		    xBottomLeftResizeControl.Fill = brush;
+		    xBottomResizeControl.Fill = brush;
+		    xBottomRightResizeControl.Fill = brush;
+		    xRightResizeControl.Fill = brush;
+		    xLeftResizeControl.Fill = brush;
 		}
 
         public void hideResizers()
@@ -1467,9 +1465,9 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 
 
-                ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+                //ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+                //Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+                //Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
 
                 Point where = e.GetPosition(MainPage.Instance.xCanvas);
 
@@ -1478,44 +1476,90 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                    dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+
+	                var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+	                var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
+
+	                //get pos and avg them
+	                var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+		                ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+	                var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+		                ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
+
+	                var x = (doc1.GetPosition().Value.X +
+	                         doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
+	                var y = (doc1.GetPosition().Value.Y +
+	                         doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
+
+					var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
+	                //dock if drag and drop docs are in the same collection
+	                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
+	                {
+		                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
+	                }
+	                else
+	                {
+		                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+		                ParentCollection?.ViewModel.AddDocument(annotNote);
+					}
+					//TODO: ensure LinkType is what the user plugged in
+					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
+					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
+                    //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                }
+	                dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+				}
                 else
                 {
 
-                    inputBox.RenderTransform = new TranslateTransform { X = where.X, Y = where.Y };
+                   
+                        //string entry = inputBox.Text.Trim();
+                        //if (string.IsNullOrEmpty(entry)) return;
 
-                    inputBox.AddKeyHandler(VirtualKey.Enter, args =>
-                    {
-                        string entry = inputBox.Text.Trim();
-                        if (string.IsNullOrEmpty(entry)) return;
-
-                        inputBox.ClearHandlers(VirtualKey.Enter);
-
-                        void FadeOutOnCompleted(object sender2, object o1)
-                        {
-                            fadeOut.Completed -= FadeOutOnCompleted;
-
-                            inputBox.Text = "";
-                            inputBox.Visibility = Visibility.Collapsed;
+                       
                             var dropDoc = ViewModel.DocumentController;
                             if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                            dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                            dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        }
+                            //dragDoc.Link(dropDoc, LinkContexts.None, entry);
+                            //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
 
-                        fadeOut.Completed += FadeOutOnCompleted;
-                        fadeOut.Begin();
+	                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+	                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
 
-                        args.Handled = true;
-                    });
+							//get pos and avg them
+	                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+		                        ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+	                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+		                        ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
 
-                    inputBox.Visibility = Visibility.Visible;
-                    fadeIn.Begin();
-                    inputBox.Focus(FocusState.Programmatic);
-                }
+							var x = (doc1.GetPosition().Value.X +
+	                                 doc2.GetPosition().Value.X + offsetWidth/2) / 2;
+	                        var y = (doc1.GetPosition().Value.Y  +
+	                                 doc2.GetPosition().Value.Y + offsetHeight/2) / 2;
+
+							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
+							//dock if drag and drop docs are in the same collection
+			                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
+			                {
+				                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
+			                }
+			                else
+			                {
+				                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+				                ParentCollection?.ViewModel.AddDocument(annotNote);
+			                }
+							//TODO: ensure LinkType is what the user plugged in
+							dragDoc.Link(annotNote, LinkContexts.None);
+	                        dropDoc.Link(annotNote, LinkContexts.None);
+	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+	                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						}
+
+                       
+                
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
@@ -1901,5 +1945,16 @@ namespace Dash
         {
             ViewModel.LayoutDocument.SetHidden(true);
         }
-    }
+
+	    public void SetLinkBorderColor()
+	    {
+		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
+			xToBlue.Begin();
+	    }
+
+	    public void RemoveLinkBorderColor()
+	    {
+		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
+	    }
+	}
 }

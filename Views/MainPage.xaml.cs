@@ -47,10 +47,11 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
         public DockingFrame DockManager => xDockFrame;
+	    public LinkActivationManager ActivationManager = new LinkActivationManager();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-
+		
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
@@ -224,7 +225,12 @@ namespace Dash
 
         #region LOAD AND UPDATE SETTINGS
 
-        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+        private void LoadSettings()
+        {
+            var settingsDoc = GetAppropriateSettingsDoc();
+            xSettingsView.LoadSettings(settingsDoc);
+            XDocumentDecorations.LoadTags(settingsDoc);
+        }
 
         private DocumentController GetAppropriateSettingsDoc()
         {
@@ -637,7 +643,34 @@ namespace Dash
                 }
             }
 
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+			//deactivate all docs if esc was pressed
+	        if (e.VirtualKey == VirtualKey.Escape )
+	        {
+		        using (UndoManager.GetBatchHandle())
+		        {
+			        ActivationManager.DeactivateAll();
+				}
+				
+	        }
+
+	        //activateall selected docs
+	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
+	        {
+		        var selected = SelectionManager.GetSelectedDocs();
+		        if (selected.Count > 0)
+		        {
+			        using (UndoManager.GetBatchHandle())
+			        {
+						foreach (var doc in SelectionManager.GetSelectedDocs())
+					        {
+						        ActivationManager.ActivateDoc(doc);
+					        }
+						}
+				        
+			        }
+			}
+
+			var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires

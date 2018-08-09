@@ -85,7 +85,7 @@ namespace Dash
             xSearchDelete.Click += (s, e) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 

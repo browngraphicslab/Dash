@@ -30,6 +30,7 @@ using Dash.Models.DragModels;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using MyToolkit.Multimedia;
 using System.Collections.ObjectModel;
+using Syncfusion.Windows.PdfViewer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -44,11 +45,19 @@ namespace Dash
         Pin 
     }
 
+
+	public enum PinAnnotationVisibility
+	{
+		VisibleOnScroll,
+		ManualToggle,
+	}
+
 	public enum PushpinType
 	{
 		Text,
 		Video,
 		Image
+
 	}
 
     public interface ISelectable
@@ -256,7 +265,13 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     foreach (var documentController in listArgs.NewItems)
                     {
-                        RenderAnnotation(documentController);
+	                    var userCreated = documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData
+		                                      .First()?.GetDataDocument()
+		                                      .GetField<DocumentController>(KeyStore.LinkDestinationKey, true)
+		                                      .GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
+	                                      nameof(LinkContexts.PushPin);
+
+						if (!userCreated) RenderAnnotation(documentController);
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
@@ -531,6 +546,26 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
+	    public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
+	    {
+			//format pin annotation
+		    var annotation = _regionGetter(AnnotationType.Pin);
+		    annotation.SetWidth(10);
+		    annotation.SetHeight(10);
+			
+			//this differentiates a push pin created manually vs during activation mode
+		    linkedDoc?.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    
+			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+		    annotation.GetDataDocument()
+			    .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+
+		    RegionAdded?.Invoke(this, annotation);
+		    RenderPin(annotation, linkedDoc);
+			
+			return annotation;
+		}
+
 		/// <summary>
 		/// Call this method if you just want to make a pushpin annotation with the default text.
 		/// </summary>
@@ -549,7 +584,40 @@ namespace Dash
                     return;
                 }
             }
-			
+/*
+			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
+		        new Size(150, 75));
+	        richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+	        var annotation = MakeAnnotationPinDoc(point, richText.Document);
+	        richText.Document.SetHidden(true); // hidden flag will be toggled off when annotation is rendered after annotation is added to RegionDocsList-- why??
+	        //set pos & region type
+			annotation.Link(richText.Document, LinkContexts.PushPin);
+
+			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var scale = pdfView.Width / pdfView.PdfMaxWidth;
+
+            var dvm = new DocumentViewModel(richText.Document) { Undecorated = true, ResizersVisible = true,
+                   DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
+            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
+
+            // bcz: should this be called in LoadPinAnnotations as well?
+             dvm.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+                {
+                    if (args.NewValue != null)
+                    {
+                        var regionDef = (args.NewValue as DocumentController).GetDataDocument()
+                            .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
+                        var pos = regionDef.GetPosition().Value;
+                        pdfView.ScrollToPosition(pos.Y);
+                        dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
+                    }
+                });
+            _mainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+                .Add(dvm.DocumentController);
+				*/
+
 	        DocumentController annotationController;
 
 	        var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
@@ -596,6 +664,7 @@ namespace Dash
 		/// <param name="target"></param>
 	    private void CreatePin(Point point, DocumentController target)
 		{
+			/*
 			var annotation = _regionGetter(AnnotationType.Pin);
 		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
 		    annotation.SetWidth(10);
@@ -605,13 +674,20 @@ namespace Dash
 		    RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, target);
-		    var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+			*/
+			MakeAnnotationPinDoc(point, target);
 
-		    var dvm = new DocumentViewModel(target)
+			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+			var width = pdfView?.PdfMaxWidth ??
+			            this.GetFirstAncestorOfType<DocumentView>().ActualWidth;
+			var height= pdfView?.PdfTotalHeight ??
+			            this.GetFirstAncestorOfType<DocumentView>().ActualHeight;
+
+			var dvm = new DocumentViewModel(target)
 		    {
 			    Undecorated = true,
 			    ResizersVisible = true,
-			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) }
+			    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, width, height) }
 		    };
 		    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
 
@@ -624,7 +700,7 @@ namespace Dash
 					    var regionDef = (args.NewValue as DocumentController).GetDataDocument()
 						    .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
 					    var pos = regionDef.GetPosition().Value;
-					    pdfView.ScrollToPosition(pos.Y);
+					    pdfView?.ScrollToPosition(pos.Y);
 					    dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
 				    }
 			    });
@@ -729,8 +805,58 @@ namespace Dash
 
             var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
             pin.DataContext = vm;
-            
-            pin.Tapped += (sender, args) =>
+
+			var tip = new ToolTip()
+			{
+				Placement = PlacementMode.Bottom,
+			};
+			ToolTipService.SetToolTip(pin, tip);
+
+	        pin.PointerEntered += (s, e) =>
+	        {
+				//update tag content based on current tags of region
+		        var tags = new ObservableCollection<string>();
+				ListController<DocumentController> linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
+
+				if (linksFrom != null)
+				{
+					foreach (var link in linksFrom)
+					{
+						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
+						foreach (TextController text in currtags)
+						{
+							tags.Add(text.Data);
+						}
+					}
+				}
+
+				ListController<DocumentController> linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+
+				if (linksTo != null)
+				{
+					foreach (var link in linksTo)
+					{
+						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
+						if (currtags != null)
+						{
+							foreach (TextController text in currtags)
+							{
+								tags.Add(text.Data);
+							}
+						}
+						
+					}
+				}
+
+		        var content = tags.Count == 0 ? "" : tags[0];
+		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        foreach (var str in tags)
+		        {
+			        content = content + ", " + str;
+		        }
+		        tip.Content = content;
+	        };
+			pin.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
@@ -748,7 +874,26 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
-            pin.SetBinding(Shape.FillProperty, new Binding
+
+			//handlers for moving pin
+	        pin.ManipulationMode = ManipulationModes.All;
+	        pin.ManipulationStarted += (s, e) =>
+	        {
+		        pin.ManipulationMode = ManipulationModes.All;
+		        e.Handled = true;
+	        };
+	        pin.ManipulationDelta += (s, e) =>
+	        {
+		        var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
+		        Canvas.SetLeft(pin, Canvas.GetLeft(pin) + p.X);
+		        Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
+		        e.Handled = true;
+	        };
+
+	        FormatRegionOptionsFlyout(region, pin);
+			
+			//formatting bindings
+			pin.SetBinding(Shape.FillProperty, new Binding
             {
                 Path = new PropertyPath(nameof(vm.SelectionColor)),
                 Mode = BindingMode.OneWay
@@ -762,7 +907,30 @@ namespace Dash
             });
 
             _regions.Add(vm);
+            
         }
+
+	    private void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
+	    {
+		    // context menu that toggles whether annotations should be show/ hidden on scroll
+
+		    MenuFlyout flyout = new MenuFlyout();
+		    MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
+		    MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
+		    visOnScrollON.Text = "Annotations Visibile On Scroll : TURN ON";
+		    visOnScrollOFF.Text = "Annotations Visibile On Scroll : TURN OFF";
+		    visOnScrollON.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.VisibleOnScroll; };
+		    visOnScrollOFF.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.ManualToggle; };
+		    regionGraphic.ContextFlyout = flyout;
+		    regionGraphic.RightTapped += (s, e) =>
+		    {
+			    var currVisibileOnScroll = region.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
+			    var item = currVisibileOnScroll ? visOnScrollOFF : visOnScrollON;
+			    flyout.Items.Clear();
+			    flyout.Items.Add(item);
+			    flyout.ShowAt(regionGraphic as FrameworkElement);
+		    };
+		}
 
         public void UpdateRegion(Point p)
         {
@@ -838,6 +1006,8 @@ namespace Dash
             r.Visibility = Visibility.Visible;
             r.Background = new SolidColorBrush(Colors.Goldenrod);
             Canvas.SetTop(r, region.GetPosition().Value.Y);
+			
+			FormatRegionOptionsFlyout(region, r);
             //r.SetBinding(VisibilityProperty, new Binding
             //{
             //    Source = this,
@@ -851,7 +1021,7 @@ namespace Dash
 
         #region Selection Annotation
 
-        private sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
+        public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
         {
             private SolidColorBrush _selectionColor;
             public SolidColorBrush SelectionColor
@@ -987,12 +1157,12 @@ namespace Dash
             var sizeList = region.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0xff, 0)));
+            var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
             for (int i = 0; i < posList.Count; ++i)
             {
                 RenderSubRegion(posList[i].Data, sizeList[i].Data, vm);
             }
-
+			
             _regions.Add(vm);
         }
 
@@ -1022,14 +1192,64 @@ namespace Dash
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
             };
+			//TOOLTIP TO SHOW TAGS
+	        var tip = new ToolTip()
+	        {
+		        Placement = PlacementMode.Bottom,
+	        };
+	        ToolTipService.SetToolTip(r, tip);
+			r.PointerEntered += (s, e) =>
+	        {
+		        //update tag content based on current tags of region
+		        var tags = new ObservableCollection<string>();
+		        ListController<DocumentController> linksFrom = vm.RegionDocument.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
 
-            r.SetBinding(VisibilityProperty, new Binding
+		        if (linksFrom != null)
+		        {
+			        foreach (var link in linksFrom)
+			        {
+				        var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
+				        foreach (TextController text in currtags)
+				        {
+					        tags.Add(text.Data);
+				        }
+			        }
+		        }
+
+		        ListController<DocumentController> linksTo = vm.RegionDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+
+		        if (linksTo != null)
+		        {
+			        foreach (var link in linksTo)
+			        {
+				        var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
+				        if (currtags != null)
+				        {
+					        foreach (TextController text in currtags)
+					        {
+						        tags.Add(text.Data);
+					        }
+				        }
+
+			        }
+		        }
+
+		        var content = tags.Count == 0 ? null : tags[0];
+		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        foreach (var str in tags)
+		        {
+			        content = content + ", " + str;
+		        }
+		        tip.Content = content;
+	        };
+			r.SetBinding(VisibilityProperty, new Binding
             {
                 Source = this,
                 Path = new PropertyPath(nameof(AnnotationVisibility)),
                 Converter = new BoolToVisibilityConverter()
             });
 
+			FormatRegionOptionsFlyout(vm.RegionDocument, r);
             XAnnotationCanvas.Children.Add(r);
         }
 
@@ -1256,6 +1476,8 @@ namespace Dash
 		    CreatePin(where, target);
 		    e.Handled = true;
 	    }
+
+	    
     }
 
 }

@@ -208,6 +208,7 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="LinkActivationManager.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>
@@ -891,6 +892,9 @@
     <Compile Include="Views\ContextPreview.xaml.cs">
       <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Tag.xaml.cs">
+      <DependentUpon>Tag.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
       <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
     </Compile>
@@ -1416,6 +1420,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ContextPreview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Tag.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
