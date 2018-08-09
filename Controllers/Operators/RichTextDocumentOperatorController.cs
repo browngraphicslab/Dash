@@ -34,6 +34,8 @@ namespace Dash
             [ReadableTextKey] = TypeInfo.Text
         };
 
+        
+
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("Doc Text", "A0BB0580-31E8-441E-907A-8A9C74224964");
         private static RichEditBox richEditBox = new RichEditBox();
@@ -46,10 +48,10 @@ namespace Dash
             {
                // var richEditBox = new RichEditBox();
                 richEditBox.Document.SetText(TextSetOptions.FormatRtf, richTextController.RichTextFieldModel.Data.RtfFormatString);
-                richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
+                richEditBox.Document.GetText(TextGetOptions.NoHidden, out string readableText);
                 readableText = readableText.Replace("\r", "\n");
                 outputs[ReadableTextKey] = new TextController(readableText ?? "");
-            }
+           }
         }
 
         public override FieldControllerBase GetDefaultController()
