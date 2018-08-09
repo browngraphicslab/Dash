@@ -49,7 +49,9 @@ namespace Dash
             get => _typedData;
             set => SetTypedData(value);
         }
-       
+
+        public bool IsEmpty => Count == 0;
+
         /*
          * Sets the data property and gives UpdateOnServer an UndoCommand 
          */

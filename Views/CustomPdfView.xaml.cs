@@ -768,23 +768,44 @@ namespace Dash
             BottomScrollViewer.ChangeView(null, botOffset, null);
         }
 
-        public void ScrollToRegion(DocumentController target)
+        public void ScrollToRegion(DocumentController target, DocumentController source = null)
         {
             var ratioOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
             if (ratioOffsets == null) return;
 
-            var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight);
+            var offsets = ratioOffsets.TypedData.Select(i => i.Data * TopScrollViewer.ExtentHeight).ToList();
 
             var currOffset = offsets.First();
             var firstOffset = offsets.First();
             var maxOffset = BottomScrollViewer.ViewportHeight;
             var splits = new List<double>();
-            foreach (var offset in offsets.Skip(1))
+            
+
+            if (source != null)
             {
-                if (offset - currOffset > maxOffset)
+                currOffset = 0;
+                foreach (var offset in offsets)
                 {
-                    splits.Add(offset);
-                    currOffset = offset;
+                    if (currOffset == 0 || offset - currOffset > maxOffset)
+                    {
+                        splits.Add(offset);
+                        currOffset = offset;
+                    }
+                }
+
+                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data * BottomScrollViewer.ExtentHeight;
+                splits.Insert(1, off);
+                offsets.Insert(1, off);
+            }
+            else
+            {
+                foreach (var offset in offsets.Skip(1))
+                {
+                    if (offset - currOffset > maxOffset)
+                    {
+                        splits.Add(offset);
+                        currOffset = offset;
+                    }
                 }
             }
             
@@ -829,7 +850,7 @@ namespace Dash
                     offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
                 BottomScrollViewer.ChangeView(null,
                     offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
-                    null);
+                    null, true);
             }
             else
             {
@@ -1250,11 +1271,11 @@ namespace Dash
         }
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            var target = linkDoc.GetLinkedDocument(direction);
+            if (_bottomAnnotationOverlay.RegionDocsList.Contains(target))
             {
-                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
-                ScrollToRegion(src);
-                return LinkHandledResult.Unhandled;
+                ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
+                return LinkHandledResult.HandledClose;
             }
 
             return LinkHandledResult.Unhandled;

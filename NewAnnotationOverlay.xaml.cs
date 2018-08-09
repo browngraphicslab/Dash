@@ -20,6 +20,7 @@ using Dash.Annotations;
 using Dash.Models.DragModels;
 using MyToolkit.Multimedia;
 using System.Collections.ObjectModel;
+using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -417,35 +418,211 @@ namespace Dash
 
             if (sStartIndex is double sStart && sEndIndex is double sEnd)
             {
-                DocumentController sourceRegion = new RichTextNote().Document;
+                DocumentController sourceRegion = ExistingRegionAtIndices(sourceDoc, sStart, sEnd);
+
+                if (sourceRegion == null)
+                {
+                    sourceRegion = new RichTextNote().Document;
+                    sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey).Add(new PointController(sStart, sEnd));
+                    sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                    sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+                    sourceRegion.SetAnnotationType(AnnotationType.Selection);
+                    sourceRegion.SetRegionDefinition(sourceDoc);
+
+                    sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(sourceRegion);
+                }
+
                 linkSource = sourceRegion;
-
-                sourceRegion.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController(sStart, sEnd) }, true);
-                sourceRegion.SetField(KeyStore.SelectionRegionTopLeftKey, new ListController<PointController>(), true);
-                sourceRegion.SetField(KeyStore.SelectionRegionSizeKey, new ListController<PointController>(), true);
-                sourceRegion.SetRegionDefinition(sourceDoc);
-                sourceRegion.SetAnnotationType(AnnotationType.Selection);
-
-                sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(sourceRegion);
             }
 
             if (tStartIndex is double tStart && tEndIndex is double tEnd)
             {
-                DocumentController targetRegion = new RichTextNote().Document;
+                DocumentController targetRegion = ExistingRegionAtIndices(sourceDoc, tStart, tEnd);
+
+                if (targetRegion == null)
+                {
+                    targetRegion = new RichTextNote().Document;
+                    targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey).Add(new PointController(tStart, tEnd));
+                    targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                    targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+                    targetRegion.SetAnnotationType(AnnotationType.Selection);
+                    targetRegion.SetRegionDefinition(targetDoc);
+
+                    targetDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetRegion);
+                }
+
                 linkTarget = targetRegion;
-
-                targetRegion.SetField(KeyStore.SelectionIndicesListKey, new ListController<PointController> { new PointController((int)tStart, (int)tEnd) }, true);
-                targetRegion.SetField(KeyStore.SelectionRegionTopLeftKey, new ListController<PointController>(), true);
-                targetRegion.SetField(KeyStore.SelectionRegionSizeKey, new ListController<PointController>(), true);
-                targetRegion.SetRegionDefinition(targetDoc);
-                targetRegion.SetAnnotationType(AnnotationType.Selection);
-
-                targetDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetRegion);
             }
 
             if (linkTag != null) linkSource.Link(linkTarget, LinkContexts.None, linkTag);
             else linkSource.Link(linkTarget, LinkContexts.None);
         }
+
+
+        //public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc, double? sStartIndex = null, double? sEndIndex = null, double? tStartIndex = null, double? tEndIndex = null, string linkTag = null)
+        //{
+        //    Debug.Assert(sourceDoc.GetRegionDefinition() == null);
+
+        //    var linkSources = new List<DocumentController> { sourceDoc };
+        //    var linkTargets = new List<DocumentController> { targetDoc };
+
+        //    if (sStartIndex is double sStart && sEndIndex is double sEnd)
+        //    {
+        //        RegionWithoutOverlaps(sourceDoc, sStart, sEnd, out var regionsToCreate);
+        //        linkSources = regionsToCreate.Where(r => r.Value != null).Select(r => r.Key).ToList();
+
+        //        foreach (var kv in regionsToCreate)
+        //        {
+        //            DocumentController sourceRegion = kv.Key;
+
+        //            sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey).Add(kv.Value);
+        //            sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+        //            sourceRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+
+        //            if (kv.Value != null)
+        //            {
+        //                sourceRegion.SetRegionDefinition(sourceDoc);
+        //                sourceRegion.SetAnnotationType(AnnotationType.Selection);
+        //                sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(sourceRegion);
+        //            }
+        //        }
+        //    }
+
+        //    if (tStartIndex is double tStart && tEndIndex is double tEnd)
+        //    {
+        //        RegionWithoutOverlaps(targetDoc, tStart, tEnd, out var regionsToCreate);
+        //        linkTargets = regionsToCreate.Where(r => r.Value != null).Select(r => r.Key).ToList();
+
+        //        foreach (var kv in regionsToCreate)
+        //        {
+        //            DocumentController targetRegion = kv.Key;
+
+        //            targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey).Add(kv.Value);
+        //            targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+        //            targetRegion.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+
+        //            if (kv.Value != null)
+        //            {
+        //                targetRegion.SetRegionDefinition(sourceDoc);
+        //                targetRegion.SetAnnotationType(AnnotationType.Selection);
+        //                sourceDoc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(targetRegion);
+        //            }
+        //        }
+        //    }
+
+        //    foreach (DocumentController target in linkTargets)
+        //    {
+        //        foreach (DocumentController source in linkSources)
+        //        {
+        //            if (linkTag != null) source.Link(target, LinkContexts.None, linkTag);
+        //            else source.Link(target, LinkContexts.None);
+        //        }
+        //    }
+        //}
+
+        private static DocumentController ExistingRegionAtIndices(DocumentController doc, double startIndex, double endIndex)
+        {
+            var regions = doc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+
+            if (regions.IsEmpty) return null;
+
+            foreach (DocumentController reg in regions)
+            {
+                var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+                if (selectionIndices.Count > 1) return null;
+                PointController selection = selectionIndices[0];
+                var start = (int)selection.Data.X;
+                var end = (int)selection.Data.Y;
+                if ((int)startIndex == start && (int)endIndex == end) return reg;
+            }
+
+            return null;
+        }
+
+        //private static void RegionWithoutOverlaps(DocumentController doc, double startIndex, double endIndex, out List<KeyValuePair<DocumentController, PointController>> result)
+        //{
+        //    var regions = doc.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+
+        //    if (regions.IsEmpty)
+        //    {
+        //        result = new List<KeyValuePair<DocumentController, PointController>>
+        //        {
+        //            new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(startIndex, endIndex))
+        //        };
+        //        return;
+        //    }
+
+        //    foreach (DocumentController reg in regions)
+        //    {
+        //        var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+        //        foreach (PointController range in selectionIndices)
+        //        {
+        //            var rStart = (int)range.Data.X;
+        //            var rEnd = (int)range.Data.Y;
+
+        //            bool contained = startIndex >= rStart && endIndex <= rEnd;
+
+        //            if (contained)
+        //            {
+        //                result = new List<KeyValuePair<DocumentController, PointController>>
+        //                {
+        //                    new KeyValuePair<DocumentController, PointController>(reg, null)
+        //                };
+        //                return;
+        //            }
+
+        //            bool isolated = startIndex < rStart && endIndex < rStart || startIndex > rEnd && endIndex > rEnd;
+
+        //            if (isolated)
+        //            {
+        //                result = new List<KeyValuePair<DocumentController, PointController>>
+        //                {
+        //                    new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(startIndex, endIndex))
+        //                };
+        //                return;
+        //            }
+
+        //            bool leftOverlap = startIndex < rStart && endIndex >= rStart;
+        //            bool rightOverlap = endIndex > rEnd && startIndex <= rEnd;
+        //            bool doubleOverlap = leftOverlap && rightOverlap;
+
+        //            Debug.Assert(leftOverlap || rightOverlap);
+
+        //            if (doubleOverlap)
+        //            {
+        //                result = new List<KeyValuePair<DocumentController, PointController>>
+        //                {
+        //                    new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(startIndex, rStart)),
+        //                    new KeyValuePair<DocumentController, PointController>(reg, null),
+        //                    new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(rEnd, endIndex))
+        //                };
+        //                return;
+        //            }
+
+        //            if (leftOverlap)
+        //            {
+        //                result = new List<KeyValuePair<DocumentController, PointController>>
+        //                {
+        //                    new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(startIndex, rStart)),
+        //                    new KeyValuePair<DocumentController, PointController>(reg, null),
+        //                };
+        //                return;
+        //            }
+
+        //            // if (rightOverlap)
+        //            result = new List<KeyValuePair<DocumentController, PointController>>
+        //            {
+        //                new KeyValuePair<DocumentController, PointController>(reg, null),
+        //                new KeyValuePair<DocumentController, PointController>(new RichTextNote().Document, new PointController(rEnd, endIndex))
+        //            };
+        //            return;
+        //        }
+        //    }
+
+        //    Debug.Fail("Text selections should be separate from, contained within or one of three forms of overlapping with existing regions. One of the above five cases should be met. If not, maybe Sam messed up!");
+        //    result = null;
+        //    return;
+        //}
 
         #region General Annotation
 
