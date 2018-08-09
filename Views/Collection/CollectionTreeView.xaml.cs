@@ -127,7 +127,7 @@ namespace Dash
             MainPage.Instance.FadeIn.Begin();
             MainPage.Instance.FadeOut.Begin();
            
-            if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+            if (SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
             {
                 var snapshot = freeFormView.Snapshot();
                 var freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();

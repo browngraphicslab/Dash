@@ -621,7 +621,7 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) continue;
 
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = @where;
                     mainPageCollectionView.ViewModel.AddDocument(docController);
@@ -670,11 +670,11 @@ namespace Dash
                 {
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     docController.GetDataDocument().SetTitle(file.Name);
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
 
                 //add error message for null file?
@@ -708,11 +708,11 @@ namespace Dash
                 {
                     //create a doc controller for the audio, set position, and add to canvas
                     var docController = await new AudioToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     docController.GetDataDocument().SetTitle(file.Name);
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
                 //add error message for null file?
             }
@@ -723,10 +723,10 @@ namespace Dash
 	    private void Add_Group_On_Click(object sender, RoutedEventArgs e)
 	    {
 			//create and add group to workspace
-		    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+		    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
 			var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
 
-			MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
+			mainPageCollectionView.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
 		}
 
 

@@ -744,7 +744,7 @@ namespace Dash
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
                 if (senderView is CollectionFreeformBase freeformBase)
-                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainDocView));
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
                 else if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
@@ -1216,7 +1216,6 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
-            MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
             HighlightPotentialDropTarget(sender as ICollectionView);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

@@ -47,8 +47,8 @@ namespace Dash
 
         public BrowserView WebContext => BrowserView.Current;
         public DocumentController MainDocument { get; private set; }
-        public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
-        public DockingFrame DockManager => xDockFrame;
+
+        public SplitManager MainSplitter => XMainSplitter;
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
@@ -96,8 +96,6 @@ namespace Dash
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
             };
-
-            xDockFrame.Loaded += (s, e) => xDockFrame.DocController = MainDocument;
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
             xBackButton.Tapped += (s, e) => GoBack();
@@ -162,8 +160,6 @@ namespace Dash
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
-                xDockFrame.DocController = MainDocument;
-                xDockFrame.LoadDockedItems();
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
@@ -281,7 +277,7 @@ namespace Dash
             var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
             workspaceView.SetWidth(double.NaN);
             workspaceView.SetHeight(double.NaN);
-            MainDocView.DataContext = new DocumentViewModel(workspaceView);
+            SplitFrame.OpenInActiveFrame(workspaceView);
             if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 workspaceView.SetFitToParent(false);

@@ -270,7 +270,7 @@ namespace Dash
             };
 
             // set the top-level viewtype to be freeform by default
-            if (ParentDocument != MainPage.Instance.MainDocView || _viewType == CollectionViewType.Freeform ||
+            if (!ParentDocument.GetAncestorsOfType<DocumentView>().Any() || _viewType == CollectionViewType.Freeform ||
                 _viewType == CollectionViewType.Standard)
             {
                 SetView(_viewType);

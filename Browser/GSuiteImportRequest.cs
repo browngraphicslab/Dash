@@ -31,16 +31,16 @@ namespace Dash
                 () =>
                 {
                     var doc = new PdfToDashUtil().GetPDFDoc(file);
-                    if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase cfb)
+                    if (SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase cfb)
                     {
                         var point = Util.GetCollectionFreeFormPoint(cfb, new Point(
-                            (MainPage.Instance.MainDocView.ActualWidth - MainPage.Instance.xMainTreeView.ActualWidth) / 2,
-                            MainPage.Instance.MainDocView.ActualHeight / 2));
+                            (SplitFrame.ActiveFrame.ActualWidth - MainPage.Instance.xMainTreeView.ActualWidth) / 2,
+                            SplitFrame.ActiveFrame.ActualHeight / 2));
                         doc.SetField(KeyStore.PositionFieldKey, new PointController(point), true);
                     }
 
                     doc.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(url), true);
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()?.ViewModel
+                    SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>()?.ViewModel
                         .AddDocument(doc);
                 });
         }

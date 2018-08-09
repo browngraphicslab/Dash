@@ -77,7 +77,7 @@ namespace Dash
 
             if (image == null)
             {
-                image = await Util.ExportAsImage(MainPage.Instance.MainDocView, "snapshot.png", true);
+                image = await Util.ExportAsImage(SplitFrame.ActiveFrame.Document, "snapshot.png", true);
                 doc?.SetField<TextController>(KeyStore.SnapshotImage, image, true);
                 time = DateTime.Now.ToString(new CultureInfo("en-US"));
                 doc?.SetField<TextController>(KeyStore.DateModifiedKey, time, true);

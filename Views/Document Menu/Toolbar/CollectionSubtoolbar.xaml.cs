@@ -85,7 +85,11 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 //get list of doc views in the collection
-                var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                var mainPageCollectionView = _collection.GetFirstAncestorOfType<CollectionView>();
+                if (mainPageCollectionView == null)
+                {
+                    return;
+                }
                 var vms = _collection.ViewModel.DocumentViewModels.ToList();
 
                 //add them each to the main canvas

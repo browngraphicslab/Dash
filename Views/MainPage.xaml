@@ -54,16 +54,7 @@
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
-        <!-- MainDocView -->
-        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
-            <local:DockingFrame.DocumentContent>
-                <Grid>
-                    <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-                </Grid>
-            </local:DockingFrame.DocumentContent>
-        </local:DockingFrame>
         <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
-
 
         <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">

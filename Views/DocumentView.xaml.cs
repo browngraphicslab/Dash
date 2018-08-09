@@ -829,7 +829,7 @@ namespace Dash
 			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
 			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
 
-            if (this != MainPage.Instance.MainDocView) return;
+		    if (!IsTopLevel()) return;
             view.xOuterGrid.BorderThickness = new Thickness(0);
             foreach (var handle in new Rectangle[]
             {
@@ -1388,26 +1388,9 @@ namespace Dash
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
         {
-
-            var docs = new List<ListController<DocumentController>>
-            {
-                MainPage.Instance.DockManager.DocController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey, null)
-            };
-
             using (UndoManager.GetBatchHandle())
             {
-                var dockedView = this.GetFirstAncestorOfType<DockedView>();
-                ViewModel.DocumentController.SetField<NumberController>(KeyStore.TextWrappingKey, (int)DashShared.TextWrapping.Wrap, true);
-                if (dockedView != null)
-                {
-                    dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(ViewModel.DocumentController)});
-                }
-                else
-                {
-                    MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
-                }
-
-                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
             }
                 
         }
@@ -1628,9 +1611,14 @@ namespace Dash
             ViewModel.DecorationState = false;
         }
 
+        public bool IsTopLevel()
+        {
+            return VisualTreeHelper.GetParent(this) is SplitFrame;
+        }
+
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (Equals(MainPage.Instance.MainDocView)) return;
+            if (IsTopLevel()) return;
             
             MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
             if (ViewModel.LayoutDocument == null)

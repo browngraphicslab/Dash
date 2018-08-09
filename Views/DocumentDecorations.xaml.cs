@@ -250,7 +250,7 @@ namespace Dash
             
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+                var viewModelBounds = doc.TransformToVisual(SplitFrame.ActiveFrame).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
                 topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTargetBorder.BorderThickness.Top, topLeft.Y);
@@ -377,9 +377,9 @@ namespace Dash
             }
 
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            if (MainPage.Instance.MainDocView == doc && MainPage.Instance.MainDocView.ViewModel != null)
+            if (VisualTreeHelper.GetParent(doc) is SplitFrame && doc.ViewModel != null)
             {
-                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
+                var level = doc.ViewModel.ViewLevel;
                 if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
                     level.Equals(CollectionViewModel.StandardViewLevel.Region))
                     Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
@@ -401,9 +401,10 @@ namespace Dash
             }
 
             MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
-            if (MainPage.Instance.MainDocView != doc)
+            //tfs - this was the equivalent of !(VisualTreeHelper.GetParent(doc) is SplitFrame), but I think that was wrong
+            if (VisualTreeHelper.GetParent(doc) is SplitFrame && doc.ViewModel != null)
             {
-                var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
+                var viewlevel = doc.ViewModel.ViewLevel;
                 if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
                     viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
                     Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);

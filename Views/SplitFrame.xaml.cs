@@ -21,6 +21,8 @@ namespace Dash
     public sealed partial class SplitFrame : UserControl
     {
 
+        public DocumentView Document => XDocView;
+
         public static SplitFrame ActiveFrame { get; set; }
 
         public static void OpenInActiveFrame(DocumentController doc)
@@ -37,6 +39,11 @@ namespace Dash
             }
 
             ActiveFrame.DataContext = new DocumentViewModel(doc) { Undecorated = true };
+        }
+
+        public static void OpenInInactiveFrame(DocumentController doc, SplitFrame frame = null)
+        {
+            throw new NotImplementedException();
         }
 
         private DocumentViewModel ViewModel => DataContext as DocumentViewModel;

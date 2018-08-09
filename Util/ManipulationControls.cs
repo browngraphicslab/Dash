@@ -463,53 +463,6 @@ namespace Dash
             return newTopLeftPoint;
         }
 
-        private void Dock(bool preview)
-        {
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                MainPage.Instance.DockManager.UnhighlightDock();
-                return;
-            }
-
-            DockDirection overlappedDirection = GetDockIntersection();
-
-            if (overlappedDirection != DockDirection.None)
-            {
-                if (preview)
-                {
-                    MainPage.Instance.DockManager.HighlightDock(overlappedDirection);
-                }
-                else
-                {
-                    ParentDocument.ViewModel.XPos = ManipulationStartX;
-                    ParentDocument.ViewModel.YPos = ManipulationStartY;
-                    MainPage.Instance.DockManager.UnhighlightDock();
-                    MainPage.Instance.DockManager.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
-                }
-            }
-            else
-            {
-                MainPage.Instance.DockManager.UnhighlightDock();
-            }
-        }
-
-        private DockDirection GetDockIntersection()
-        {
-            var actualX = ParentDocument.ViewModel.ActualSize.X * ParentDocument.ViewModel.Scale.X *
-                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1);
-            var actualY = ParentDocument.ViewModel.ActualSize.Y * ParentDocument.ViewModel.Scale.Y *
-                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                               .GetField<PointController>(KeyStore.PanZoomKey)?.Data.Y ?? 1);
-
-            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(actualX, actualY));
-
-            return MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
-
-        }
-
-
         //END OF NEW SNAPPING
 
 
@@ -608,7 +561,7 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public async void TranslateAndScale(Point position, Point translate, double scaleFactor, ManipulationDeltaRoutedEventArgs e, ManipulationControlHelper helper, PointerRoutedEventArgs ptrArgs)
+        public void TranslateAndScale(Point position, Point translate, double scaleFactor, ManipulationDeltaRoutedEventArgs e, ManipulationControlHelper helper, PointerRoutedEventArgs ptrArgs)
         {
             ElementScale *= scaleFactor;
 
@@ -632,8 +585,7 @@ namespace Dash
                 {
                     e.Complete();
                 }
-            } else
-                Dock(true);
+            } 
         }
 
         // DO NOT ADD CODE INTO THIS METHOD: add into the overloaded ElementOnManipulationCompleted method below. Not all documents will
@@ -667,7 +619,6 @@ namespace Dash
             else
             {
                 OnManipulatorCompleted?.Invoke();
-                Dock(false);
             }
 
             UndoManager.EndBatch();

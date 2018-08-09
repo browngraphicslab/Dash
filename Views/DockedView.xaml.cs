@@ -46,7 +46,6 @@ namespace Dash
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.DockManager.Undock(this);
         }
 
         public void ChangeView(DocumentView view)

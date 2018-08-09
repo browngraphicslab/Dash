@@ -474,7 +474,7 @@ namespace Dash
 
             if (!navigated)
             {
-                MainPage.Instance.DockManager.Dock(resultVm.ViewDocument, DockDirection.Right);
+                SplitFrame.OpenInInactiveFrame(resultVm.ViewDocument);
             }
         }
 
