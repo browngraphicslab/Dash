@@ -785,7 +785,7 @@ namespace Dash
                  !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
                                                                translate.Y + ActualHeight))))
             {
-                return;
+                // return;  // bcz: need to abort only if the view is being pushed *farther* out of bounds
             }
 
             ViewModel.InteractiveManipulationPosition = translate;

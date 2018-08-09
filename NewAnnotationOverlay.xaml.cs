@@ -314,11 +314,12 @@ namespace Dash
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
                         var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
                         var imgView = this.GetFirstAncestorOfType<EditableImage>();
-                        var scale = pdfView != null ? pdfView.Width / pdfView.PdfMaxWidth : 1;
-                        var vOffset = rect.Y * scale;
+                        var scale = pdfView != null ? pdfView.ActualWidth / pdfView.PdfMaxWidth : 1;
+                        var vOffset = rect.Y * scale; 
                         var scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
+                        Debug.Assert(!double.IsNaN(scrollRatio));
                         subRegionsOffsets.Add(scrollRatio);
-                        minRegionY = Math.Min(rect.Y, minRegionY);
+                        minRegionY = Math.Min(rect.Y, minRegionY );
                     }
 
                     // loop through each selection and add the indices in each selection set
@@ -350,6 +351,7 @@ namespace Dash
                             var scale = pdfView.Width / pdfView.PdfMaxWidth;
                             var vOffset = elem.Bounds.Y * scale;
                             var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
+                            Debug.Assert(!double.IsNaN(scrollRatio));
                             subRegionsOffsets.Add(scrollRatio);
                         }
                         regionPosList.Add(new PointController(elem.Bounds.X, elem.Bounds.Y));
