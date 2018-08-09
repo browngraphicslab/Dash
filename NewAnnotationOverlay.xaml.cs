@@ -812,10 +812,12 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(pin, tip);
 
+            pin.PointerExited += (s, e) => tip.IsOpen = false;
 	        pin.PointerEntered += (s, e) =>
-	        {
-				//update tag content based on current tags of region
-		        var tags = new ObservableCollection<string>();
+            {
+                tip.IsOpen = true;
+                //update tag content based on current tags of region
+                var tags = new ObservableCollection<string>();
 				ListController<DocumentController> linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
 
 				if (linksFrom != null)
@@ -1198,8 +1200,10 @@ namespace Dash
 		        Placement = PlacementMode.Bottom,
 	        };
 	        ToolTipService.SetToolTip(r, tip);
-			r.PointerEntered += (s, e) =>
+            r.PointerExited += (s, e) => tip.IsOpen = false;
+            r.PointerEntered += (s, e) =>
 	        {
+                tip.IsOpen = true;
 		        //update tag content based on current tags of region
 		        var tags = new ObservableCollection<string>();
 		        ListController<DocumentController> linksFrom = vm.RegionDocument.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
