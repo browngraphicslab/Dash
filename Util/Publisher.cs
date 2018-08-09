@@ -21,7 +21,7 @@ namespace Dash
 		private string _sidebarText;
 		private bool _mediaFolderMade = false;
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
-		private Dictionary<DocumentController, Dictionary<DocumentController, string>> _colorPairs = new Dictionary<DocumentController, Dictionary<DocumentController, string>>();
+		private Dictionary<DocumentController, string> _colorPairs = new Dictionary<DocumentController, string>();
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -87,7 +87,7 @@ namespace Dash
 				
 				// ADD IN MAIN CONTENT
 				"<div id=\"main\">",
-				"<div class=\"heading\">" + dc.Title + "</div>",
+				"<div class=\"heading\" style=\"border-bottom:4px solid " + _colorPairs[dc] + "\">" + dc.Title + "</div>",
 				"<div id=\"noteContent\">" + RenderNoteToHtml(dc) + "</div>",
 				"</div>",
 
@@ -130,25 +130,26 @@ namespace Dash
 		/// This method renders the document's content and returns it.
 		/// </summary>
 		/// <param name="dc"></param>
+		/// <param name="regionsToRender">if you want to selectively choose which regions to render (useful for annotation sidebar things), pass in a list here</param>
 		/// <returns></returns>
-		private string RenderNoteToHtml(DocumentController dc)
+		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var content = "";
 			switch (dc.DocumentType.Type)
 			{
 				case "Rich Text Note":
-					content += RenderRichTextToHtml(dc);
+					content += RenderRichTextToHtml(dc, regionsToRender);
 					break;
 				case "Markdown Note":
-					content += RenderMarkdownToHtml(dc);
+					content += RenderMarkdownToHtml(dc, regionsToRender);
 					break;
 				case "Image Note":
-					content += RenderImageToHtml(dc);
+					content += RenderImageToHtml(dc, regionsToRender);
 					break;
 				case "Pdf Note":
 					break;
 				case "Video Note":
-					content += RenderVideoToHtml(dc);
+					content += RenderVideoToHtml(dc, regionsToRender);
 					break;
 				case "Audio Note":
 					break;
@@ -159,14 +160,16 @@ namespace Dash
 			return content;
 		}
 
-		private string RenderRichTextToHtml(DocumentController dc)
+		// TODO HI THERE tomorrow make every document have its own color instead of each pair having a color, and display the color below the title. then do youtube.
+
+		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			var richText = dc.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
 			// TODO: replace URLs linked to actual websites as well
-
+			
 			// do the regioning
-			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
+			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
 				foreach (var region in regions)
@@ -180,7 +183,8 @@ namespace Dash
 					if (regionLinkTo == null && regionLinkFrom != null && regionLinkFrom.Count == 1)
 					{
 						oneTarget = regionLinkFrom.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
-					} else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
+					}
+					else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
 					{
 						oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
 					}
@@ -193,7 +197,7 @@ namespace Dash
 							oneTarget = oneTarget.GetRegionDefinition().GetDataDocument();
 						}
 						// insert the appropriate color pair.
-						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + GetPairedColor(dc, oneTarget) + "\">";
+						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget] + "\">";
 					}
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
@@ -201,20 +205,21 @@ namespace Dash
 					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
 				}
 			}
-
+			
+			// be careful that this line needs to go after the hyperlink regions, or you'll be messing up the indicing 
 			plainText = plainText.Replace("\n", "<br/>");
 
 			return plainText;
 		}
 
-		private string RenderMarkdownToHtml(DocumentController dc)
+		private string RenderMarkdownToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			content = content.Replace("\n", "<br/>");
 			return content;
 		}
 
-		private string RenderImageToHtml(DocumentController dc)
+		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
 			var path = "media\\" + imgTitle;
@@ -222,7 +227,7 @@ namespace Dash
 		}
 
 		//TODO: deal with YouTube videos
-		private string RenderVideoToHtml(DocumentController dc)
+		private string RenderVideoToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
 			var path = "media\\" + vidTitle;
@@ -245,19 +250,19 @@ namespace Dash
 			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
-				html.AddRange(regions.Select(region => RenderImmediateLinksToHtml(region, dc)));
+				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
 			}
 
 			return ConcatenateList(html);
 		}
 
 		/// <summary>
-		/// This method returns all of the to and from targets in HTML. If you're calling this on a region, be sure to pass in the parent as well.
+		/// This method returns all of the to and from targets in HTML, whether it's a main document or a region.
 		/// </summary>
 		/// <param name="dc"></param>
 		/// <param name="parent"></param>
 		/// <returns></returns>
-		private string RenderImmediateLinksToHtml(DocumentController dc, DocumentController parent = null)
+		private string RenderImmediateLinksToHtml(DocumentController dc)
 		{
 			var html = new List<string>();
 
@@ -268,7 +273,7 @@ namespace Dash
 				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument(), parent ?? dc, link.Title));
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument(), link.Title));
 				}
 			}
 
@@ -278,7 +283,7 @@ namespace Dash
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument(), parent ?? dc, link.Title));
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument(), link.Title));
 				}
 			}
 
@@ -286,22 +291,24 @@ namespace Dash
 		}
 
 		/// <summary>
-		/// This method takes in a link's DocumentController and renders it in an annotationWrapper CSS class, using RenderNoteToHtml to help with it.
+		/// This method takes in an annotation's DocumentController and renders it in an annotationWrapper CSS class, using RenderNoteToHtml to help with it.
 		/// </summary>
-		/// <param name="link"></param>
-		/// <param name="main"></param>
+		/// <param name="annotation"></param>
 		/// <param name="linkTitle"></param>
 		/// <returns></returns>
-		private string RenderLinkToHtml(DocumentController link, DocumentController main, string linkTitle)
+		private string RenderLinkToHtml(DocumentController annotation, string linkTitle)
 		{
-			if (!_fileNames.ContainsKey(link))
+			DocumentController region = null;
+			DocumentController parentAnnotation = annotation;
+			if (!_fileNames.ContainsKey(annotation))
 			{
 				// if it wasn't found in the filename, then it means that we're annotating to a region.
 				// TODO: in the future stylize the regions a bit, e.g. only excerpts of text, a region over an image, etc.
-				var parent = link.GetDataDocument().GetRegionDefinition().GetDataDocument();
+				var parent = annotation.GetDataDocument().GetRegionDefinition().GetDataDocument();
 				if (_fileNames.ContainsKey(parent))
 				{
-					link = parent;
+					region = annotation;
+					parentAnnotation = parent;
 				}
 			}
 
@@ -309,12 +316,12 @@ namespace Dash
 			{
 				"<div class=\"annotationWrapper\">",
 				"<div>",
-				"<div style=\"border-left:3px solid " + GetPairedColor(main, link) + "\"/>",
+				"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
 				"<div class=\"annotation\">",
-				RenderNoteToHtml(link),
+				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[link] + ".html\">" + linkTitle + " → " + link.Title +
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + linkTitle + " → " + parentAnnotation.Title +
 				"</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
@@ -324,29 +331,6 @@ namespace Dash
 		#endregion 
 
 		#region UTIL
-
-		/// <summary>
-		/// This gets the paired linking color between two DocumentControllers. If it didn't exist before, this will make it. If it existed already, it will return it.
-		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
-		/// <returns></returns>
-		private string GetPairedColor(DocumentController a, DocumentController b)
-		{
-			string color;
-			if (_colorPairs[a].ContainsKey(b))
-			{
-				color = _colorPairs[a][b];
-			}
-			else
-			{
-				color = _regionColors[new Random().Next(0, 10)];
-				_colorPairs[a].Add(b, color);
-				_colorPairs[b].Add(a, color);
-			}
-
-			return color;
-		}
 
 		/// <summary>
 		/// This takes the templated sidebar and adds in the decorations necessary to indicate the active link currently.
@@ -473,9 +457,11 @@ namespace Dash
 		/// </summary>
 		private void InitializeColorPairs(List<DocumentController> dcs)
 		{
+			var i = 0;
 			foreach (var dc in dcs)
 			{
-				_colorPairs.Add(dc, new Dictionary<DocumentController, string>());
+				_colorPairs.Add(dc, _regionColors[i++]);
+				if (i > 9) i = 0;
 			}
 		}
 

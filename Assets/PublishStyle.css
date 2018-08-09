@@ -16,7 +16,8 @@ body {
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
 }
 
 #sidebar {
@@ -30,30 +31,30 @@ body {
     word-wrap: break-word
 }
 
-/* we don't want the bullet points in the list '*/
-#sidebar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
+    /* we don't want the bullet points in the list '*/
+    #sidebar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
 
-#sidebar ul li {
-    margin: 20px 0;
-}
+        #sidebar ul li {
+            margin: 20px 0;
+        }
 
-/* we don't want the underlines showing in the sidebar links */
-#sidebar a {
-    text-decoration: none;
-    color: inherit;
-}
+    /* we don't want the underlines showing in the sidebar links */
+    #sidebar a {
+        text-decoration: none;
+        color: inherit;
+    }
 
-/* for the link in the sidebar that's the current page */
-#sidebar .activeNote {
-    padding-left: 5px;
-    border-left: 3px solid #383A42;
-    text-transform: uppercase;
-    font-weight: 700;
-}
+    /* for the link in the sidebar that's the current page */
+    #sidebar .activeNote {
+        padding-left: 5px;
+        border-left: 3px solid #383A42;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
 
 #main {
     margin-left: 20%; /* same width as sidebar */
@@ -97,10 +98,10 @@ body {
     font-family: "Karla", sans-serif;
 }
 
-.annotationLink a {
-    text-decoration: none;
-    color: inherit;
-}
+    .annotationLink a {
+        text-decoration: none;
+        color: inherit;
+    }
 
 /* to prevent images from overflowing */
 img {
