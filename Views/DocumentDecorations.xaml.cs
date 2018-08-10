@@ -41,6 +41,7 @@ namespace Dash
 		public Tag CurrEditTag;
 		private DocumentController currEditLink;
 		private Button _activeBtn;
+		private bool _flyoutOpen;
 		private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
 		private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
@@ -50,14 +51,20 @@ namespace Dash
 			get => _visibilityState;
 			set
 			{
-				if (value != _visibilityState && !_visibilityLock)
+				if (value != _visibilityState && !_visibilityLock && !_flyoutOpen)
 				{
 					_visibilityState = value;
-					//if (value == Visibility.Collapsed) SuggestGrid.Visibility = Visibility.Collapsed;
+					SuggestGrid.Visibility = CurrEditTag != null ? Visibility.Visible : Visibility.Collapsed;
 					SetPositionAndSize();
 					OnPropertyChanged(nameof(VisibilityState));
 				}
 			}
+		}
+
+		public bool IsFlyoutOpen
+		{
+			get => _flyoutOpen;
+			set => _flyoutOpen = value;
 		}
 
 		public double DocWidth
@@ -167,6 +174,7 @@ namespace Dash
 		private void DocView_OnDeleted()
 		{
 			VisibilityState = Visibility.Collapsed;
+			SuggestGrid.Visibility = Visibility.Collapsed;
 		}
 
 		private void ManipulatorCompleted()
@@ -178,7 +186,9 @@ namespace Dash
 		private void ManipulatorStarted()
 		{
 			VisibilityState = Visibility.Collapsed;
+			SuggestGrid.Visibility = VisibilityState;
 			_isMoving = true;
+			
 		}
 
 		private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -468,6 +478,7 @@ namespace Dash
 				ToggleTagEditor(_tagNameDict[linkName]);
 				
 			};
+			button.PointerPressed += (s, e) => { e.Handled = true; };
 		}
 
 		/*
@@ -753,7 +764,7 @@ namespace Dash
 				     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
 					VisibilityState = Visibility.Collapsed;
 				//xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
-				//SuggestGrid.Visibility = Visibility.Collapsed;
+				SuggestGrid.Visibility = Visibility.Collapsed;
 			}
 
 			MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
@@ -1011,6 +1022,7 @@ namespace Dash
 			//if one link has this tag, open tag editor for that link
 			if (tagMap[currTag.Text].Count == 1)
 			{
+				_flyoutOpen = false;
 				//update selected recent tag
 				foreach (var tag in _recentTags)
 				{
@@ -1023,6 +1035,7 @@ namespace Dash
 			}
 			else if (chosenLink != null)
 			{
+				_flyoutOpen = false;
 				currEditLink = chosenLink;
 				//update selected recent tag
 				foreach (var tag in _recentTags)
@@ -1035,6 +1048,7 @@ namespace Dash
 			}
 			else //open context menu to let user decide which link to edit
 			{
+				_flyoutOpen = true;
 				var flyout = new MenuFlyout();
 
 				foreach (DocumentController link in tagMap[currTag.Text])
@@ -1052,14 +1066,19 @@ namespace Dash
 							DataContext = link
 						};
 						//clicking menu item should open the editor with the chosen, affected doc as the chosen item
-						var itemHdlr = new RoutedEventHandler((s, e) => OpenTagEditor(currTag, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+						var itemHdlr = new RoutedEventHandler((s, e) =>
+							OpenTagEditor(currTag, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+						
 						item.Click += itemHdlr;
 						flyout.Items?.Add(item);
 						
 					}
 				}
-
-				if (_activeBtn != null) flyout.ShowAt(_activeBtn);
+				//show flyout @ correct point
+				if (_activeBtn != null)
+				{
+					flyout.ShowAt(_activeBtn);
+				}
 			}
 
 			
