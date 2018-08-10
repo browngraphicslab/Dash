@@ -351,8 +351,9 @@ namespace Dash
             {
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
-                    if (!_regionRectangles.Any() && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
+                    if (!_regionRectangles.Any(rect => rect.Width > 10 && rect.Height > 10) && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
                     {
+                        ClearSelection(true);
                         goto case AnnotationType.None;
                     }
 
@@ -810,7 +811,6 @@ namespace Dash
 
             RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
-		    RenderPin(annotation, linkedDoc);
             //format pin annotation
             return annotation;
         }
@@ -1348,6 +1348,7 @@ namespace Dash
             _selectionStartPoint = hardReset ? null : _selectionStartPoint;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
+            XPreviewRect.Width = XPreviewRect.Height = 0;
             _regionRectangles.Clear();
             var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
             if (XAnnotationCanvas.Children.Any())

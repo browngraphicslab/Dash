@@ -526,10 +526,12 @@ namespace Dash
 			//else, make a new push pin region closest to given point
 			Point nonNullPoint = point ?? new Point(0, 0);
 			var newPoint = calculateClosestPointOnPDF(nonNullPoint);
-			SetAnnotationType(AnnotationType.Pin);
+            var annoType = CurrentAnnotationType;
+            SetAnnotationType(AnnotationType.Pin);
 
-			return _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
-
+            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
+            SetAnnotationType(annoType);
+            return makeAnnotationPinDoc;
 		}
 
 		private Point calculateClosestPointOnPDF(Point from)
