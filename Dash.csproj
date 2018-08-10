@@ -149,6 +149,7 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
+    <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="win32\Office.Interop.exe">
@@ -174,6 +175,7 @@
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
+    <Compile Include="Controllers\CountOperatorController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -190,6 +192,7 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\DebugPrintOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
@@ -198,17 +201,41 @@
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\DocumentLinkOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFDocTextOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFToReferencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ContainsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ParseDoubleOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TemplateAssignmentOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
+    <Compile Include="LinkActivationManager.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\DashPopup.cs" />
+    <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
+      <DependentUpon>HTMLRTFPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ImportImagePopup.xaml.cs">
+      <DependentUpon>ImportImagePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ImportVideoPopup.xaml.cs">
+      <DependentUpon>ImportVideoPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\PushpinTypePopup.xaml.cs">
+      <DependentUpon>PushpinTypePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\YouTubeLinkPopup.xaml.cs">
+      <DependentUpon>YouTubeLinkPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="RegionAnnotation.xaml.cs">
       <DependentUpon>RegionAnnotation.xaml</DependentUpon>
@@ -253,7 +280,7 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
-    <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
@@ -344,6 +371,8 @@
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\VariableDeclarationExpression.cs" />
     <Compile Include="Util\DSL\VariableSuggestion.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
@@ -448,6 +477,7 @@
     <Compile Include="Util\TypeTimer.cs" />
     <Compile Include="Util\UndoCommand.cs" />
     <Compile Include="Util\UndoManager.cs" />
+    <Compile Include="Util\VideoWrapper.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
@@ -873,6 +903,9 @@
     <Compile Include="Views\ContextPreview.xaml.cs">
       <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Tag.xaml.cs">
+      <DependentUpon>Tag.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
       <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
     </Compile>
@@ -990,6 +1023,26 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="NewAnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\HTMLRTFPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportImagePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportVideoPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\PushpinTypePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\YouTubeLinkPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1381,6 +1434,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Tag.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1428,6 +1485,9 @@
     <PackageReference Include="Flurl.Http">
       <Version>2.3.1</Version>
     </PackageReference>
+    <PackageReference Include="FontAwesome.UWP">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
     </PackageReference>
@@ -1469,6 +1529,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
       <Version>3.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="MyToolkit.Extended">
+      <Version>2.5.16</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>

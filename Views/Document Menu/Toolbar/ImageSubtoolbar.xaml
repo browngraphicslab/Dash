@@ -10,21 +10,44 @@
     d:DesignWidth="800">
 
     <Grid>
-        <StackPanel Orientation="Horizontal" Background="LightGray" x:Name="xImageCommandbar" Height="60" Spacing="10" Padding="10,0,10,0">
-            <ComboBox x:Name="xScaleOptionsDropdown" SelectedIndex="0" VerticalAlignment="Center" >
+        <StackPanel Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" x:Name="xImageCommandbar" Height="40">
+            <ComboBox x:Name="xScaleOptionsDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 0 0 0" VerticalAlignment="Center" >
                 <ComboBoxItem Content="Scale to Size"/>
                 <ComboBoxItem Content="Stretch"/>
                 <ComboBoxItem Content="Clipped"/>
                 <ComboBoxItem Content="SmartFit"/>
             </ComboBox>
+            <AppBarSeparator Height="45">
 
-            <AppBarToggleButton x:Name="xToggleAnnotations" Icon="ClearSelection" Label="Show" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked"/>
-            <AppBarButton x:Name="xCrop" Icon="Crop" Label="Crop" Click="Crop_Click"/>
-            <AppBarButton x:Name="xReplace" Icon="Upload" Label="Replace" Click="Replace_Click"/>
-            <AppBarButton x:Name="xRotate" Icon="Sync" Label="Rotate" Click="Rotate_Click"/>
-            <AppBarButton x:Name="xHorizontalMirror" Icon="Switch"  Label="Horizontal" Click="HorizontalMirror_Click"/>
-            <AppBarButton x:Name="xVerticalMirror" Icon="Sort" Label="Vertical" Click="VerticalMirror_Click"/>
-            <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
+            </AppBarSeparator>
+            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xToggleAnnotations" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked" PointerEntered="ShowAppBarToolTip"
+                                PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xToggleAnnotationsIcon" Text="&#xE8E6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarToggleButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xCrop" Click="Crop_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xCropIcon" Text="&#xE7A8;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xReplace" Click="Replace_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xReplaceIcon" Text="&#xE898;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xRotate" Click="Rotate_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xRotateIcon" Text="&#xE7AD;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xHorizontalMirror" Click="HorizontalMirror_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xHorizontalMirrorIcon" Text="&#xE8AB;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xVerticalMirror" Click="VerticalMirror_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xVerticalMirrorIcon" Text="&#xE8CB;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xRevert" Click="Revert_Click" PointerEntered="ShowAppBarToolTip"
+                          PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xRevertIcon" Text="&#xE72B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
         </StackPanel>
         
 <!--

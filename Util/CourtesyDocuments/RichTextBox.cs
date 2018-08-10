@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Dash.Converters;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dash
 {
@@ -71,7 +72,7 @@ namespace Dash
                 element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
             }
         }
-        public static DocumentController MakeRegionDocument(DocumentView richTextBox)
+        public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return rtv.GetRegionDocument();
@@ -95,7 +96,7 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
-
+			
             return rtv;
         }
 

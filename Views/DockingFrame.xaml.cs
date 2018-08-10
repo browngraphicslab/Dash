@@ -395,7 +395,7 @@ namespace Dash
             HandleDrop(e, DockDirection.Left);
         }
 
-        private void HandleDrop(DragEventArgs e, DockDirection dir)
+        private async void HandleDrop(DragEventArgs e, DockDirection dir)
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -410,6 +410,20 @@ namespace Dash
                 {
                     var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                     Dock(dragModel.GetDropDocument(new Point()), dir);
+                }
+                // if we drag from the file system
+                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+                {
+                    try
+                    {
+                        var droppedDoc = await FileDropHelper.HandleDrop(new Point(), e.DataView);
+                        Dock(droppedDoc, dir);
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.WriteLine(exception);
+                    }
                 }
             }
         }
@@ -434,6 +448,10 @@ namespace Dash
             if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            }
+            if (e.DataView?.Properties.ToList().Count == 0)
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
             }
         }
 

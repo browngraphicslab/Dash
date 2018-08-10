@@ -30,11 +30,12 @@ namespace Dash
     /// </summary>
     public sealed partial class RichTextSubtoolbar : UserControl
     {
-        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(RichTextSubtoolbar), new PropertyMetadata(default(Orientation)));
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation",
+            typeof(Orientation), typeof(RichTextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
-            get { return (Orientation)GetValue(OrientationProperty); }
+            get { return (Orientation) GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
         }
 
@@ -97,6 +98,14 @@ namespace Dash
                     Mode = BindingMode.OneWay
                 });
                 Visibility = Visibility.Collapsed;
+
+
+                xHighlightColorPicker.ParentFlyout = xHighlightColorFlyout;
+                xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
+                foreach (var toolbarButton in xDashTextSubtoolbar.GetDescendantsOfType<ToolbarButton>())
+                {
+                    toolbarButton.Style = xToolbarButtonStyler;
+                }
             };
         }
 
@@ -113,7 +122,8 @@ namespace Dash
         /**
 		 * Helper method for adding custom buttons.
 		 */
-        public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 70, int height = 60, bool includeSeparator = false)
+        public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 40,
+            int height = 40, bool includeSeparator = false)
         {
             //instantiate ToolbarButton & set properties
             var button = new ToolbarButton
@@ -121,7 +131,7 @@ namespace Dash
                 Name = name,
                 Icon = new SymbolIcon(icon),
                 Position = position,
-                Background = new SolidColorBrush(Colors.LightSlateGray),
+                Foreground = new SolidColorBrush(Colors.White),
                 Width = width,
                 Height = height,
             }; //add to toolbar
@@ -129,8 +139,8 @@ namespace Dash
             xDashTextSubtoolbar.CustomButtons.Add(button);
             //assign event handler to button on tapped
             button.Tapped += onTapped;
-            //add small separation between other buttons
-            if (includeSeparator) xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator { Position = position + 1 });
+            ////add small separation between other buttons
+            //if (includeSeparator) xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator {Position = position + 1});
             //add button to dictionary for accessibility
             _buttons.Add(name, button);
             return button;
@@ -175,10 +185,11 @@ namespace Dash
 
         private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
         {
-            _docs?.SetBackgroundColor(e);
+            _docs?.ViewModel?.LayoutDocument?.SetBackgroundColor(e);
         }
 
         #region Old Opacity/Color Code No Longer In Use
+
         /*
 		/*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
@@ -216,6 +227,7 @@ namespace Dash
             UpdateColor();
         }
 		*/
+
         #endregion
 
         //prevents the color from seeing invisible
@@ -231,7 +243,8 @@ namespace Dash
                 //create a formatting menu and bind it to the currently selected richEditBox's view
                 xInitialGrid.Visibility = Visibility.Collapsed;
                 xMenuView.Visibility = Visibility.Visible;
-                xMoreButton.Icon = new SymbolIcon(Symbol.Back);
+                xMoreIcon.Visibility = Visibility.Collapsed;
+                xMoreIconBack.Visibility = Visibility.Visible;
                 xMenuView?.SetRichTextBinding(_docs.GetFirstDescendantOfType<RichTextView>());
 
                 //_buttons.TryGetValue("Font", out var fontButton);
@@ -246,9 +259,30 @@ namespace Dash
             {
                 xInitialGrid.Visibility = Visibility.Visible;
                 xMenuView.Visibility = Visibility.Collapsed;
-                xMoreButton.Icon = new SymbolIcon(Symbol.Add);
+                xMoreIcon.Visibility = Visibility.Visible;
+                xMoreIconBack.Visibility = Visibility.Collapsed;
 
             }
+        }
+
+        private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xMenuView.SubscriptButton_Tapped(sender, e);
+        }
+
+        private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xMenuView.SuperscriptButton_Tapped(sender, e);
+        }
+
+        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
+        {
+            xMenuView.xBackgroundColorPicker_SelectedColorChanged(sender, e);
+        }
+
+        private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
+        {
+            xMenuView.xForegroundColorPicker_SelectedColorChanged(sender, e);
         }
     }
 }

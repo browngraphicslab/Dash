@@ -20,6 +20,8 @@ namespace Dash
 
         public Rect Bounds { get; }
         public int Index { get; set; }
+
+        public int RawIndex { get; set; }
         public object Contents { get; }
         public ElementType Type { get; }
     }

@@ -51,7 +51,7 @@ namespace Dash
                 varEditor.Replace(phrase, "");
             }
 
-            if(varEditor.ToString().Equals(varText)) throw new ScriptExecutionException(new AbsentStringScriptErrorModel(varText, $"[{string.Join(", ", absentPhrases)}]"));
+            //if (varEditor.ToString().Equals(varText)) throw new ScriptExecutionException(new AbsentStringScriptErrorModel(varText, $"[{string.Join(", ", absentPhrases)}]"));
             outputs[ComputedResultKey] = new TextController(varEditor.ToString());
         }
 

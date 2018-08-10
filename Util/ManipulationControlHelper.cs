@@ -20,7 +20,13 @@ namespace Dash
         PointerEventHandler release_hdlr;
         Point _rightDragLastPosition, _rightDragStartPosition;
         int _numMovements;
-        private bool _useCache;
+        bool _useCache;
+
+        Point GetPointerPosition()
+        {
+            var container = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>() as FrameworkElement;
+            return container.PointerPos();
+        }
 
         public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown, bool useCache = false)
         {
@@ -41,34 +47,28 @@ namespace Dash
             _collection = _eventElement as CollectionView;
             if (_collection != null)
                 _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
-
-            var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
+			
+            if (_manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
 
             _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
-
-            if (false) // bcz: set to 'true' for drag/Drop interactions
-                _manipulationDocumentTarget.SetupDragDropDragging(null);
-            else
-            {
-                _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
-                _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-                if (!_eventElement.IsShiftPressed() && pointer != null)
-                    _eventElement.CapturePointer(pointer);
-            }
+            
+            _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
+            _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
+            if (!_eventElement.IsShiftPressed() && pointer != null)
+                _eventElement.CapturePointer(pointer);
         }
 
 
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _numMovements = 0;
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
             if (_useCache) _eventElement.CacheMode = null;
-            //MainPage.Instance.Focus(FocusState.Programmatic);
         }
+
 
         /// <summary>
         /// Move view around if right mouse button is held down
@@ -80,20 +80,34 @@ namespace Dash
             if (e?.Pointer != null)
                 _eventElement.CapturePointer(e.Pointer);
             _numMovements++;
-            var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
+            if (_manipulationDocumentTarget.ManipulationControls == null) return;
             
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
             var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
 
             var translationAfterAlignment = _manipulationDocumentTarget.ManipulationControls.SimpleAlign(translationBeforeAlignment);
 
-            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f);
+            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f, null, this, e);
 
             if (e != null)
                 e.Handled = true;
+        }
+
+        public void Abort(PointerRoutedEventArgs e)
+        {
+            foreach (var n in _ancestorDocs)
+                n.ManipulationMode = ManipulationModes.All;
+            if (_collection != null)
+                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
+            _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
+            _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            if (e!= null)
+                _eventElement.ReleasePointerCapture(e.Pointer);
+            if (_useCache) _eventElement.CacheMode = new BitmapCache();
+            if (_eventElement is WebView web)
+                web.Tag = null;
         }
 
         public void PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -110,7 +124,7 @@ namespace Dash
             if (_collection != null)
                 _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
-            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
+            var pointerPosition = GetPointerPosition();
 
             var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);

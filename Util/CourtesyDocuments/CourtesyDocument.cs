@@ -384,10 +384,10 @@ namespace Dash
                 : Enum.Parse<AnnotationType>(t.Data);
         }
 
-        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction)
+        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
         {
-            var key = direction == LinkDirection.ToDestination ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
-            return document.GetDereferencedField<DocumentController>(key, null);
+            var key = (direction == LinkDirection.ToDestination ^ inverse) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
+            return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
 
         public static void GotoRegion(this DocumentController document, DocumentController region,
@@ -397,6 +397,8 @@ namespace Dash
             {
                 return;
             }
+            document.RemoveField(KeyStore.GoToRegionLinkKey);
+            document.RemoveField(KeyStore.GoToRegionKey);
             document.SetFields(new []
             {
                 new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),

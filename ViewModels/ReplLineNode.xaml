@@ -44,7 +44,7 @@
                 HorizontalAlignment="Left"
                 FontSize="{StaticResource dataSizing}" 
                 Grid.Column="1" 
-                FontFamily="Consolas"
+                FontFamily="Lucida Sans Typewriter"
                 Style="{StaticResource xMenuItemExpandRight}" 
                 Tapped="XArrowBlock_OnTapped" 
                 RightTapped="XSnapshotArrowBlock_OnRightTapped"

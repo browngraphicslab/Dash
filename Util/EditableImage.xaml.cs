@@ -58,7 +58,7 @@ namespace Dash
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter);
+            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
             _annotationOverlay.SetAnnotationType(AnnotationType.Region);
             XAnnotationGrid.Children.Add(_annotationOverlay);
 
@@ -213,7 +213,7 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
-            _docview.hideControls();
+            _docview.ViewModel.DecorationState = false;
             IsCropping = true;
         }
 
@@ -386,7 +386,7 @@ namespace Dash
                         IsCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
-                        _docview.hideControls();
+                        _docview.ViewModel.DecorationState = false;
 
                         break;
                     case VirtualKey.Left:
@@ -405,7 +405,7 @@ namespace Dash
         {
             if (!IsCropping) return;
             IsCropping = false;
-            _docview.showControls();
+            _docview.ViewModel.DecorationState = true;
             xGrid.Children.Remove(_cropControl);
         }
 
@@ -439,13 +439,17 @@ namespace Dash
             {
                 _annotationOverlay.EndAnnotation(point.Position);
                 e.Handled = true;
-                if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
-                {
-                    SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
-                }
+            }
+            var curPt = e.GetCurrentPoint(this).Position;
+            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
+            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
+            {
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
             }
         }
 
+        Point _downPt = new Point();
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (IsCropping) e.Handled = true;
@@ -456,7 +460,7 @@ namespace Dash
                 _annotationOverlay.StartAnnotation(point.Position);
                 e.Handled = true;
             }
-
+            _downPt = e.GetCurrentPoint(this).Position;
         }
 
         public DocumentController GetRegionDocument()

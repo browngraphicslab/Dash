@@ -63,15 +63,64 @@
                         <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                             <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                         </Grid>
-                        <Button Name="xSearchButton" Height="30" Width="30"  Tapped="xSearchButton_Tapped" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xBackButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
-                        <Button Name="xForwardButton" Height="30" Width="30" Background="{ThemeResource WindowsBlue}" VerticalAlignment="Top">
-                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0"/>
-                        </Button>
+                        <Grid  Name="xSearchButton" Tapped="xSearchButton_Tapped" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                            </Ellipse>
+                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                        <Grid x:Name="xSnapshotButton" Tapped="Snapshot_OnTapped" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top"/>
+                            <TextBlock x:Name="xSnapshot" Text="&#xE722;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+
+                        </Grid>
+
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationIn">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="xSearchBoxGrid"
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0.0" To="1.0" Duration="0:0:.5"
+                                />
+                            </Storyboard>
+
+                            <Storyboard x:Name="xFadeAnimationOut">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="xSearchBoxGrid"
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="1.0" To="0.0" Duration="0:0:.5"
+                                />
+                            </Storyboard>
+                        </StackPanel.Resources>
+
+
                     </StackPanel>
                 </Grid>
             </local:DockingFrame.DocumentContent>
@@ -79,17 +128,24 @@
 
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
-        <Grid x:Name="xSettingsGrid" Grid.Column="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
-            <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
-            <SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>
+        <Grid x:Name="xSettingsGrid" Grid.Column="2" Tapped="xSettingsButton_Tapped">
+            <Ellipse x:Name="xSettingsButton" PointerExited="XOnPointerExited" PointerEntered="XOnPointerEntered" Width="34" Height="34" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{StaticResource DashDarkDarkBlueBrush}" ></Ellipse>
+            <TextBlock x:Name="xSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="28"/>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30"
+                />
+            </ToolTipService.ToolTip>
+            <!--<SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>-->
         </Grid>
+        
+        
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-            <local:DocumentDecorations />
-            <Grid x:Name="xOverlay" Background="Black" Height="5000" Width="5000" Opacity="0.3" Visibility="Collapsed">
-            
+            <local:DocumentDecorations x:Name="XDocumentDecorations"/>
+            <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
+
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
             
@@ -119,49 +175,8 @@
             </Grid>
 
         </Grid>
+
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
-        
-        
-
-        <!--drag in html popup-->
-        <Grid Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
-            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened" Closed="Popup_OnClosed">
-                <Border x:Name="xBorder"
-                        BorderBrush="{StaticResource AccentGreenLight}"
-                        Background="White"
-                        BorderThickness="2 40 2 2" Width="400" Height="300">
-                    <Grid>
-
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock FontSize="18" Margin="-10 -100 0 0">A webpage has been dragged into Dash.</TextBlock>
-                            <ComboBox x:Name="xComboBox" Width="350" Margin="0 -40 0 -20" Header="Which format should be applied to this webpage?">
-                                <ComboBoxItem>HTML</ComboBoxItem>
-                                <ComboBoxItem>RTF</ComboBoxItem>
-                            </ComboBox>
-                            <CheckBox x:Name="xSaveHtmlType" Margin="0,30,0,0" IsChecked="False"
-                                      Content="Remember my choice." FontSize="18" RenderTransformOrigin="0.5,0.5" >
-                                <CheckBox.RenderTransform>
-                                    <CompositeTransform ScaleX="0.7" ScaleY="0.7"/>
-                                </CheckBox.RenderTransform>
-                              </CheckBox>
-                        </StackPanel>
-
-
-                        <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
-                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
-                        </Button>
-
-                        <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
-                            <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"
-                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ErrorIcon}"/>
-                            <TextBlock x:Name="xErrorMessageText" Visibility="Collapsed" FontSize="12" Foreground="DarkRed" Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
-
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Popup>
-        </Grid>
-       
 
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>

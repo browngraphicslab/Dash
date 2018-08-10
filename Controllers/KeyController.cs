@@ -105,6 +105,8 @@ namespace Dash
             return k != null && k.Id.Equals(Id);
         }
 
+        public static bool IsPresent(string key) => _nameDictionary.ContainsKey(key);
+
         public override int GetHashCode()
         {
 
