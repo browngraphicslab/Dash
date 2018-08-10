@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using DashShared;
 
 namespace Dash
 {
@@ -70,12 +71,12 @@ namespace Dash
 			}
 		}
 
-		/// <summary>
-		/// This method generates the HTML content for each DocumentController.
-		/// </summary>
-		/// <param name="dc"></param>
-		/// <returns></returns>
-		private string GetFileContents(DocumentController dc)
+        /// <summary>
+        /// This method generates the HTML content for each DocumentController.
+        /// </summary>
+        /// <param name="dc"></param>
+        /// <returns></returns>
+        private string GetFileContents(DocumentController dc)
 		{
 			var fileText = new List<string>
 			{
@@ -195,14 +196,33 @@ namespace Dash
 					break;
 				case "Audio Note":
 					break;
+                case "Html Note":
+                    content += RenderHtmlToHtml(dc, regionsToRender);
+                    break;
 				default:
 					break;
 			}
 
 			return content;
 		}
+		
+	    public string RenderHtmlToHtml(DocumentController htmlDoc, List<DocumentController> regionsToRender)
+	    {
+	        //Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
 
-		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender, bool truncate)
+	        var htmlString = (htmlDoc.GetDataDocument().GetField(KeyStore.DataKey) as TextController)?.Data;
+	        var startIndex = htmlString?.IndexOf("<body>");
+	        var endIndex = htmlString?.IndexOf("</body>") + 7;
+	        if (startIndex > 0)
+	        {
+	            return htmlString.Substring((int)startIndex, (int)(endIndex - startIndex));
+	        }
+
+            // This means the htmlString is a website url
+	        return "<embed src=" + htmlString + "/>";
+	    }
+
+        private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender, bool truncate)
 		{
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
