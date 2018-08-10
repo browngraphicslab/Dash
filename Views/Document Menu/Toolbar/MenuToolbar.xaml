@@ -294,124 +294,124 @@
         <!--APP BAR BUTTON STYLER-->
         <!--APP BAR BUTTON STYLER-->
         <!--APP BAR BUTTON STYLER-->
-    <Style x:Name="AppBarButtonStyler" TargetType="AppBarButton">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
-        <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="Width" Value="40"/>
+        <Style x:Name="AppBarButtonStyler" TargetType="AppBarButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Width" Value="40"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="AppBarButton">
-                    <Grid
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="AppBarButton">
+                        <Grid
                         x:Name="Root"
                         MinWidth="{TemplateBinding MinWidth}"
                         MaxWidth="{TemplateBinding MaxWidth}"
                         Background="{StaticResource DashToolBarBrush}">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="ApplicationViewStates">
-                                <VisualState x:Name="FullSize"/>
-                                <VisualState x:Name="Compact">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Overflow">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="OverflowWithToggleButtons">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Margin">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="38,0,12,0"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="PointerOver">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashDarkBlueBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashMediumBlueBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashToolBarDisabledBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="InputModeStates">
-                                <VisualState x:Name="InputModeDefault" />
-                                <VisualState x:Name="TouchInputMode" >
-                                    <VisualState.Setters>
-                                        <Setter Target="OverflowTextLabel.Padding" Value="0,11,0,13" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="ApplicationViewStates">
+                                    <VisualState x:Name="FullSize"/>
+                                    <VisualState x:Name="Compact">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Overflow">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="OverflowWithToggleButtons">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentRoot" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Visibility">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Margin">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="38,0,12,0"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashDarkBlueBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashMediumBlueBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource DashToolBarDisabledBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OverflowTextLabel" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="InputModeStates">
+                                    <VisualState x:Name="InputModeDefault" />
+                                    <VisualState x:Name="TouchInputMode" >
+                                        <VisualState.Setters>
+                                            <Setter Target="OverflowTextLabel.Padding" Value="0,11,0,13" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
 
-                        <StackPanel x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeCompactHeight}">
-                            <ContentPresenter
+                            <StackPanel x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeCompactHeight}">
+                                <ContentPresenter
                                 x:Name="Content"
                                 Height="20"
                                 Margin="0,14,0,4"
@@ -419,7 +419,7 @@
                                 Foreground="{TemplateBinding Foreground}"
                                 HorizontalAlignment="Stretch"
                                 AutomationProperties.AccessibilityView="Raw"/>
-                            <TextBlock
+                                <TextBlock
                                 x:Name="TextLabel"
                                 Text="{TemplateBinding Label}"
                                 Foreground="White"
@@ -428,9 +428,9 @@
                                 TextAlignment="Center"
                                 TextWrapping="Wrap"
                                 Margin="0,0,0,6"/>
-                        </StackPanel>
+                            </StackPanel>
 
-                        <TextBlock
+                            <TextBlock
                             x:Name="OverflowTextLabel"
                             Text="{TemplateBinding Label}"
                             Foreground="{TemplateBinding Foreground}"
@@ -444,11 +444,11 @@
                             Margin="12,0,12,0"
                             Padding="0,5,0,7"
                             Visibility="Collapsed"/>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
@@ -457,10 +457,15 @@
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
-            <ctrl:CommandBar x:Name="xToolbar" Height="42" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
+            <Grid Background="{StaticResource DashToolBarBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <ctrl:CommandBar x:Name="xToolbar" Height="42" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" Background="{StaticResource DashToolBarBrush}">
 
-                
-                <AppBarButton Visibility="Collapsed"
+
+                    <AppBarButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xPin" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -468,10 +473,10 @@
                     Click="XPin_OnClick"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <!--<Image x:Name="xLockIcon" Width="20" Source="ms-appx:///Assets/unpinned.png" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>-->
-                    <TextBlock x:Name="xLockIcon" Text="&#xE840;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton 
+                        <!--<Image x:Name="xLockIcon" Width="20" Source="ms-appx:///Assets/unpinned.png" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>-->
+                        <TextBlock x:Name="xLockIcon" Text="&#xE840;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
                     Margin="0 1 0 0"
                     x:Name="xCollapse" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -479,15 +484,15 @@
                     Tapped="XCollapse_OnTapped"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <Grid>
-                        <TextBlock x:Name="xOpenIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Visible"/>
-                        <TextBlock x:Name="xCollapseIcon" Text="&#xE73F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                    </Grid>
-                </AppBarButton>
+                        <Grid>
+                            <TextBlock x:Name="xOpenIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Visible"/>
+                            <TextBlock x:Name="xCollapseIcon" Text="&#xE73F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                        </Grid>
+                    </AppBarButton>
 
-                <AppBarSeparator x:Name="xSepThree"  Foreground="Gray"/>
+                    <AppBarSeparator x:Name="xSepThree"  Foreground="Gray"/>
 
-                <AppBarToggleButton Visibility="Collapsed"
+                    <AppBarToggleButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xTouch"
                     Style="{StaticResource AppBarToggleButtonStyler}" 
@@ -495,9 +500,9 @@
                     Checked="AppBarToggleButton_Checked"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xTouchIcon" Text="&#xE14E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarToggleButton>
-                <AppBarToggleButton  Visibility="Collapsed"
+                        <TextBlock x:Name="xTouchIcon" Text="&#xE14E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarToggleButton>
+                    <AppBarToggleButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xInk" 
                     Style="{StaticResource AppBarToggleButtonStyler}" 
@@ -507,9 +512,9 @@
                     Checked="AppBarToggleButton_Checked"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xInkIcon" Text="&#xE104;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarToggleButton>
-                <AppBarToggleButton  Visibility="Collapsed"
+                        <TextBlock x:Name="xInkIcon" Text="&#xE104;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarToggleButton>
+                    <AppBarToggleButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xGroup"
                     Style="{StaticResource AppBarToggleButtonStyler}"
@@ -517,11 +522,11 @@
                     Checked="AppBarToggleButton_Checked"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xPanIcon" Text="&#xE1E3;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarToggleButton>
+                        <TextBlock x:Name="xPanIcon" Text="&#xE1E3;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarToggleButton>
 
-                <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton  Visibility="Collapsed"
+                    <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
+                    <AppBarButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddGroup" 
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -530,37 +535,37 @@
                     Click="Add_Group_On_Click"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xGroupIcon" Text="&#xE138;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton 
+                        <TextBlock x:Name="xGroupIcon" Text="&#xE138;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
                     Margin="0 1 0 0"
                     x:Name="xAddImage"
                     Style="{StaticResource AppBarButtonStyler}" 
                     Tapped="AddImage_OnTapped"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton Visibility="Collapsed"
+                        <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddVideo" 
                     Style="{StaticResource AppBarButtonStyler}"
                     Click="Add_Video_On_Click"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xVideoIcon" Text="&#xE116;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton  Visibility="Collapsed"
+                        <TextBlock x:Name="xVideoIcon" Text="&#xE116;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton  Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddAudio" 
                     Style="{StaticResource AppBarButtonStyler}" 
                     Click="Add_Audio_On_Click"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xAudioIcon" Text="&#xE189;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
+                        <TextBlock x:Name="xAudioIcon" Text="&#xE189;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
 
-                <AppBarButton 
+                    <AppBarButton 
                     x:Name="xCopy" 
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}"
@@ -569,9 +574,9 @@
                     Click="Copy"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xCopyIcon" Text="&#xE16F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton 
+                        <TextBlock x:Name="xCopyIcon" Text="&#xE16F;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
                     x:Name="xDelete" 
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -580,13 +585,13 @@
                     Click="Delete"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xDeleteIcon" Text="&#xE107;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
+                        <TextBlock x:Name="xDeleteIcon" Text="&#xE107;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
-                <AppBarSeparator x:Name="xSepFour" Foreground="Gray"/>
+                    <AppBarSeparator x:Name="xSepFour" Foreground="Gray"/>
 
-                <AppBarButton 
+                    <AppBarButton 
                     x:Name="xExport" 
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -595,9 +600,9 @@
                     Click="XExport_OnClick"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xExportIcon" Text="&#xEDE1;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton 
+                        <TextBlock x:Name="xExportIcon" Text="&#xEDE1;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
                     x:Name="xPresentationMode"
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -606,13 +611,13 @@
                     Click="XPresentationMode_OnClick"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xPresentationIcon" Text="&#xE768;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
+                        <TextBlock x:Name="xPresentationIcon" Text="&#xE768;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
 
-                <AppBarSeparator x:Name="xSepFive" Foreground="Gray"/>
+                    <AppBarSeparator x:Name="xSepFive" Foreground="Gray"/>
 
-                <!-- Bind is enabled-->
-                <AppBarButton 
+                    <!-- Bind is enabled-->
+                    <AppBarButton 
                     x:Name="xUndo" 
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -621,9 +626,9 @@
                     Click="xUndo_Click"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xUndoIcon" Text="&#xE10E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
-                <AppBarButton 
+                        <TextBlock x:Name="xUndoIcon" Text="&#xE10E;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
                     x:Name="xRedo"
                     Margin="0 1 0 0"
                     Style="{StaticResource AppBarButtonStyler}" 
@@ -632,10 +637,11 @@
                     Click="xRedo_Click"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                    <TextBlock x:Name="xRedoIcon" Text="&#xE10D;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-                </AppBarButton>
+                        <TextBlock x:Name="xRedoIcon" Text="&#xE10D;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
 
-            </ctrl:CommandBar>
+                </ctrl:CommandBar>
+            </Grid>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">
                 <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />

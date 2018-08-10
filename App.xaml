@@ -43,7 +43,7 @@
             <Color x:Key="DashDarkDarkBlueColor">#306199</Color>
             <Color x:Key="DashOverlayColor">#D4E0F7</Color>
             <Color x:Key="DashBorderColor">#96ffffff</Color>
-            <Color x:Key="ToolBarColor">#282828</Color>
+            <Color x:Key="ToolBarColor">#6DA8DE</Color>
             <Color x:Key="ToolBarDisabledColor">#60646d</Color>
             <SolidColorBrush x:Key="DashToolBarBrush" Color="{StaticResource ToolBarColor}"/>
             <SolidColorBrush x:Key="DashToolBarDisabledBrush" Color="{StaticResource ToolBarDisabledColor}"/>

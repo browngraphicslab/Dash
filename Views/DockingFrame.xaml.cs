@@ -95,7 +95,7 @@ namespace Dash
                         {
                             Width = double.NaN,
                             Height = double.NaN,
-                            Undecorated = true
+                            Undecorated = false
                         }
             };
 

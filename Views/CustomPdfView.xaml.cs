@@ -1331,6 +1331,7 @@ namespace Dash
             //This makes the assumption that both overlays are kept in sync
             return _bottomAnnotationOverlay.AnnotationVisibility;
         }
+
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))

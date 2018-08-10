@@ -337,6 +337,7 @@ namespace Dash
         {
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
         }
+
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
             var todocs = document.GetLinks(LinkFromOrToKey);
@@ -347,10 +348,12 @@ namespace Dash
             else
                 todocs.AddRange(docs);
         }
+
         public static ListController<DocumentController> GetRegions(this DocumentController document)
         {
             return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
         }
+
         public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
         {
             var curRegions = document.GetLinks(KeyStore.RegionsKey);

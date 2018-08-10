@@ -42,25 +42,38 @@ namespace Dash
                         linksFrom.AddRange(sublinksFrom);
                 }
             }
-            var linkToCount = linksTo?.Count ?? 0;
-            var linkFromCount = linksFrom?.Count ?? 0;
-            var linkCount = linkToCount + linkFromCount;
-            if (linkCount == 0)
-            {
-                return;
-	        }
+            int linkToCount = linksTo?.Count ?? 0;
+            int linkFromCount = linksFrom?.Count ?? 0;
+            int linkCount = linkToCount + linkFromCount;
+            if (linkCount == 0) return;
 
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
                 if (string.Join(", ", link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]) == linkType || linkType == null)
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
-	        } else if (!MainPage.Instance.IsShiftPressed())
+	        }
+	        else if (!MainPage.Instance.IsShiftPressed())
             {
-                foreach (var link in linksTo)
-                    FollowLink(link, LinkDirection.ToDestination, linkHandlers);
-                foreach (var link in linksFrom)
-                    FollowLink(link, LinkDirection.ToSource, linkHandlers);
+                if (linksTo != null)
+                {
+                    foreach (DocumentController linkTo in linksTo)
+                        if (linkType == null || linkType == string.Join(", ", linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]))
+                        {
+                            FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
+                        }
+                }
+
+                _linkFlyout.Items?.Add(new MenuFlyoutSeparator());
+
+                if (linksFrom != null)
+                {
+                    foreach (var linkFrom in linksFrom)
+                        if (linkType == null || linkType == string.Join(", ", linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data) ?? new string[0]))
+                        {
+                            FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
+                        }
+                }
             }
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
