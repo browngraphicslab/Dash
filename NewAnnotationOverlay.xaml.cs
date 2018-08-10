@@ -776,6 +776,7 @@ namespace Dash
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
 		    annotation.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, nameof(AnnotationType.Pin), true);
+            annotation.GetDataDocument().SetRegionDefinition(_mainDocument);
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkContexts.PushPin);

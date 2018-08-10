@@ -1423,7 +1423,10 @@ namespace Dash
                 ViewModel.DocumentController.SetField<NumberController>(KeyStore.TextWrappingKey, (int)DashShared.TextWrapping.Wrap, true);
                 if (dockedView != null)
                 {
-                    dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(ViewModel.DocumentController)});
+                    var toDock = ViewModel.DocumentController.GetViewCopy();
+                    toDock.SetWidth(double.NaN);
+                    toDock.SetHeight(double.NaN);
+                    dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(toDock) });
                 }
                 else
                 {

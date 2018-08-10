@@ -115,7 +115,7 @@ namespace Dash
 				}
             };
 
-            Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+            xToolbar.SetValue(Canvas.ZIndexProperty, 20);
 
             xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
             xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
@@ -780,7 +780,7 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            Toolbar.SwitchTheme(nightModeOn);
+            xToolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -867,7 +867,7 @@ namespace Dash
         {
             xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
             //Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
-            Toolbar.ChangeVisibility(!changeToVisible);
+            xToolbar.ChangeVisibility(!changeToVisible);
         }
 
         //private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)

@@ -200,7 +200,7 @@
 
         <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
-            <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+            <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
 
         <local:ActionTextBox 
             x:Name="xLinkInputBox"

@@ -77,6 +77,14 @@ namespace Dash
             }
         }
 
+        public void Update(AnnotationType type)
+        {
+            xInkToggle.IsChecked = type == AnnotationType.Ink;
+            xTextToggle.IsChecked = type == AnnotationType.Selection;
+            xRegionToggle.IsChecked = type == AnnotationType.Region;
+
+        }
+
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
         {
             xRegionToggle.IsChecked = false;
