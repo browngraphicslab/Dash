@@ -188,7 +188,7 @@ namespace Dash
 					content += RenderImageToHtml(dc, regionsToRender);
 					break;
 				case "Pdf Note":
-					content += RenderPdfToHtml(dc, regionsToRender);
+					content += RenderPdfToHtml(dc, regionsToRender, truncate);
 					break;
 				case "Video Note":
 					content += RenderVideoToHtml(dc, regionsToRender);
@@ -202,16 +202,35 @@ namespace Dash
 			return content;
 		}
 
-		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender, bool truncate)
 		{
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
 
-			for (int i = 1; i <= numPages; i++)
+			for (var i = 1; i <= numPages; i++)
 			{
 				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
 				var path = "media\\" + _fileNames[dc] + "/" + fileName;
 				html.Add("<div class=\"pdf\"><img src=\"" + path + "\"></div>");
+			}
+
+			// do the regioning: use IndexOf to find the appropriate <img src> endpoint to insert the annotation
+			var regions = dc.GetRegions();
+			if (regions != null)
+			{
+				foreach (var region in regions.TypedData)
+				{
+					// render this region on the pdf's page
+				}
+			}
+
+			var pushpins = dc.GetDereferencedField<ListController<DocumentController>>(KeyStore.PinAnnotationsKey, null);
+			if (pushpins != null)
+			{
+				foreach (var pushpin in pushpins.TypedData)
+				{
+					// render this pushpin on the pdf's page
+				}
 			}
 
 			return ConcatenateList(html);
@@ -388,16 +407,24 @@ namespace Dash
 		/// <returns></returns>
 		private string RenderAllLinksToHtml(DocumentController dc)
 		{
+			// first get all of the document's immediate links (not through its regions)
 			var html = new List<string> {RenderImmediateLinksToHtml(dc)};
 
+			// then add in its regions
 			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
-				foreach (var region in regions)
-				{
-					html.Add(RenderImmediateLinksToHtml(region));
-				}
+				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
 			}
+
+			//if (dc.DocumentType.Type.Equals("Pdf Note"))
+			//{
+			//	var annotations = dc.GetDereferencedField<ListController<DocumentController>>(KeyStore.PinAnnotationsKey, null)?.Select(pin => pin.GetDataDocument());
+			//	if (annotations != null)
+			//	{
+			//		html.AddRange(annotations.Select(RenderLinkToHtml));
+			//	}
+			//}
 
 			return ConcatenateList(html);
 		}
@@ -419,7 +446,14 @@ namespace Dash
 				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument(), link.Title));
+					var linkDestination = link.GetDataDocument()
+						.GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+					//if (linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null) != null && linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data.Equals("link"))
+					//{
+					//	// if the link says "link", it's just some unexposed link document, and we should skip directly to what's on the other side
+						
+					//}
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument()));
 				}
 			}
 
@@ -429,7 +463,7 @@ namespace Dash
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument(), link.Title));
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument()));
 				}
 			}
 
@@ -442,7 +476,7 @@ namespace Dash
 		/// <param name="annotation"></param>
 		/// <param name="linkTitle"></param>
 		/// <returns></returns>
-		private string RenderLinkToHtml(DocumentController annotation, string linkTitle)
+		private string RenderLinkToHtml(DocumentController annotation)
 		{
 			DocumentController region = null;
 			DocumentController parentAnnotation = annotation;
