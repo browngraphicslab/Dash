@@ -16,10 +16,7 @@
             <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0"  SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
                 <ComboBoxItem Content="Freeform"/>
             </ComboBox>
-            <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>
-            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="0, -3, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-            </AppBarButton>
+            <AppBarSeparator Height="45" VerticalAlignment="Center" Foreground="White" Background="White"></AppBarSeparator>
 
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBackgroundColor" Label="Background" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Button.Flyout>
@@ -28,6 +25,10 @@
                     </Flyout>
                 </Button.Flyout>
                 <Image Source="ms-appx:///Assets/GroupColorIcon.png" Width="20" Margin="2, -10, 0, 0"/>
+            </AppBarButton>
+
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -3, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
         </StackPanel>
 <!--

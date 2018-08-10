@@ -32,8 +32,6 @@ namespace Dash
 
         }
 
-      
-
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
             // xPdfCommandbar.IsOpen = true;
@@ -71,11 +69,7 @@ namespace Dash
                 case AnnotationType.Region:
                     xRegionToggle.IsChecked = true;
                     break;
-                case AnnotationType.Pin:
-                    xPinToggle.IsChecked = true;
-                    break;
                 default:
-                    xPinToggle.IsChecked = false;
                     xInkToggle.IsChecked = false;
                     xTextToggle.IsChecked = false;
                     xRegionToggle.IsChecked = false;
@@ -83,11 +77,18 @@ namespace Dash
             }
         }
 
+        public void Update(AnnotationType type)
+        {
+            xInkToggle.IsChecked = type == AnnotationType.Ink;
+            xTextToggle.IsChecked = type == AnnotationType.Selection;
+            xRegionToggle.IsChecked = type == AnnotationType.Region;
+
+        }
+
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
         {
             xRegionToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Ink);
         }
@@ -96,7 +97,6 @@ namespace Dash
         {
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Selection);
         }
@@ -105,7 +105,6 @@ namespace Dash
         {
             xInkToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Region);
         }
@@ -123,19 +122,10 @@ namespace Dash
 
         private void Toggle_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false && xPinToggle.IsChecked == false)
+            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false )
             {
                 _currentPdfView.SetAnnotationType(AnnotationType.None);
             }
-        }
-
-        private void XPinToggle_OnChecked_(object sender, RoutedEventArgs e)
-        {
-            xInkToggle.IsChecked = false;
-            xTextToggle.IsChecked = false;
-            xRegionToggle.IsChecked = false;
-
-            _currentPdfView.SetAnnotationType(AnnotationType.Pin);
         }
 
         //private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -202,21 +192,21 @@ namespace Dash
             
 
         }
+
         private ToolTip _toggle;
 	    private ToolTip _scrollVis;
         private ToolTip _ink;
         private ToolTip _text;
         private ToolTip _region;
-        private ToolTip _pin;
 
         private void SetUpToolTips()
         {
-            var placementMode = PlacementMode.Bottom;
+            const PlacementMode placementMode = PlacementMode.Bottom;
             const int offset = 5;
 
             _toggle = new ToolTip()
             {
-                Content = "Toggle annotations",
+                Content = "Toggle Annotations",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -224,7 +214,7 @@ namespace Dash
 
 	        _scrollVis = new ToolTip()
 	        {
-		        Content = "Annotations visible on scroll",
+		        Content = "Annotations Visible on Scroll",
 		        Placement = placementMode,
 		        VerticalOffset = offset
 	        };
@@ -232,7 +222,7 @@ namespace Dash
 
 			_ink = new ToolTip()
             {
-                Content = "Ink annotation",
+                Content = "Ink Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -240,7 +230,7 @@ namespace Dash
 
             _text = new ToolTip()
             {
-                Content = "Text annotation",
+                Content = "Text Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -249,20 +239,11 @@ namespace Dash
           
             _region = new ToolTip()
             {
-                Content = "Region annotation",
+                Content = "Region Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
-            ToolTipService.SetToolTip(xRegionToggle, _region);
-
-            _pin = new ToolTip()
-            {
-                Content = "Pin annotation",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xPinToggle, _pin);
-            
+            ToolTipService.SetToolTip(xRegionToggle, _region);            
         }
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)

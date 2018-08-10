@@ -96,7 +96,7 @@ namespace Dash.Models.DragModels
             var vcopy = DraggedDocument.GetViewCopy(where);
             // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
             // an arbitrary size for it and zero out its pan position so that it will FitToParent
-            if (//vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType) &&
+            if (!vcopy.DocumentType.Equals(RichTextBox.DocumentType) &&
                 double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data))
             {
                 vcopy.SetWidth(500);

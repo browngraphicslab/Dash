@@ -383,10 +383,17 @@ namespace Dash
         {
 			//document that represents the actual link
             DocumentController linkDocument = new RichTextNote("link").Document;
+
+	        if (specTitle == null)
+	        {
+				//create unique, default tag 
+	            var newTitle = "Annotation";
+		        specTitle = newTitle;
+	        }
+
             if (specTitle != null)
             {
-                linkDocument.GetDataDocument().SetField(KeyStore.LinkTagKey,
-                    new ListController<TextController>{new TextController(specTitle)}, true);
+                linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
             }
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);

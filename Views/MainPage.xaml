@@ -154,7 +154,7 @@
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-            <local:DocumentDecorations x:Name="XDocumentDecorations"/>
+            <local:DocumentDecorations x:Name="XDocumentDecorations" x:FieldModifier="public"/>
             <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
 
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
@@ -189,7 +189,7 @@
 
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
 
-        <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xLeftGrid" x:FieldModifier="public" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="7" x:Name="xTreeSplitter"/>
@@ -211,7 +211,7 @@
 
         <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
-            <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+            <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
 
         <local:ActionTextBox 
             x:Name="xLinkInputBox"
