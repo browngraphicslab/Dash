@@ -385,8 +385,7 @@ namespace Dash
             DocumentController linkDocument = new RichTextNote("link").Document;
             if (specTitle != null)
             {
-                linkDocument.GetDataDocument().SetField(KeyStore.LinkTagKey,
-                    new ListController<TextController>{new TextController(specTitle)}, true);
+                linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
             }
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);

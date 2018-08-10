@@ -441,8 +441,7 @@ namespace Dash
                 if (doc.ViewModel != null)
                 {
                     LinkNames.Clear();
-                    GetLinkTypes(doc.ViewModel.DataDocument,
-                        LinkNames); // make sure all of this documents link types have been added to the menu of link types
+                    GetLinkTypes(doc.ViewModel.DataDocument, LinkNames); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
 
@@ -531,22 +530,24 @@ namespace Dash
 				}
 			};
 
-			ToolTip toolTip = new ToolTip();
-			toolTip.Content = linkName;
-			toolTip.HorizontalOffset = 5;
-			toolTip.Placement = PlacementMode.Right;
-			ToolTipService.SetToolTip(button, toolTip);
+		    ToolTip toolTip = new ToolTip
+		    {
+		        Content = linkName,
+		        HorizontalOffset = 5,
+		        Placement = PlacementMode.Right
+		    };
+		    ToolTipService.SetToolTip(button, toolTip);
 			xButtonsPanel.Children.Add(button);
 			button.PointerEntered += (s, e) => toolTip.IsOpen = true;
 			button.PointerExited += (s, e) => toolTip.IsOpen = false;
 
 			button.Tapped += (s, e) =>
 			{
+			    if (ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
 				var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
 			    if (doq != null)
 			    {
-			        new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
-			            doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
+			        new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController, doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
                 }
 					
 			};
@@ -664,8 +665,6 @@ namespace Dash
 		{
 			if (doc == null)
 				return;
-			//ADDED: cleared linknames
-			linknames.Clear();
 			var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
 			if (linkedTo != null)
 				foreach (var l in linkedTo)
