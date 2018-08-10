@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -212,41 +213,43 @@ namespace Dash
             }
         }
 
-        public static async Task<Image> PdfPages(DocumentController pdf, uint pageNum)
-        {
-            var pdfUri = new Uri(pdf.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey).Data);
-            StorageFile file;
-            try
+        public static async Task<WriteableBitmap> GetImageFromPdf(WPdf.PdfDocument pdf, uint pageNum)
+		{
+			WriteableBitmap wb;
+            using (var page = pdf.GetPage(pageNum))
             {
-                file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
-            }
-            catch (ArgumentException)
-            {
-                try
-                {
-                    file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
-                }
-                catch (ArgumentException)
-                {
-                    return null;
-                }
-            }
-            var pdfDoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
-            var source = new BitmapImage();
-            using (var page = pdfDoc.GetPage(pageNum))
-            {
-                //get a way to write out to disk as opposed to memory
+                //todo get a way to write out to disk as opposed to memory
                 var stream = new InMemoryRandomAccessStream();
                 await page.RenderToStreamAsync(stream);
-                await source.SetSourceAsync(stream);
-            }
 
-           return new Image
-            {
-                Source = source,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
+	            wb = new WriteableBitmap((int) page.Dimensions.MediaBox.Width, (int) page.Dimensions.MediaBox.Height);
+	            await wb.SetSourceAsync(stream);
+			}
+
+	        return wb;
         }
+
+	    public static async Task<WPdf.PdfDocument> GetPdf(DocumentController pdf)
+	    {
+		    var pdfUri = pdf.GetDataDocument().GetField<ImageController>(KeyStore.DataKey).Data;
+		    StorageFile file;
+		    try
+		    {
+			    file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
+		    }
+		    catch (ArgumentException)
+		    {
+			    try
+			    {
+				    file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
+			    }
+			    catch (ArgumentException)
+			    {
+				    return null;
+			    }
+		    }
+			return await WPdf.PdfDocument.LoadFromFileAsync(file);
+		}
        
     }
 }

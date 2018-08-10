@@ -39,29 +39,29 @@ body {
     margin-right: 10px;
 }
 
-    /* we don't want the bullet points in the list '*/
-    #sidebar ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
+/* we don't want the bullet points in the list '*/
+#sidebar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
 
-        #sidebar ul li {
-            margin: 20px 0;
-        }
+#sidebar ul li {
+    margin: 20px 0;
+}
 
-    /* we don't want the underlines showing in the sidebar links */
-    #sidebar a {
-        text-decoration: none;
-        color: inherit;
-    }
+/* we don't want the underlines showing in the sidebar links */
+#sidebar a {
+    text-decoration: none;
+    color: inherit;
+}
 
     /* for the link in the sidebar that's the current page */
-    #sidebar .activeNote {
-        border-bottom: 3px solid #383A42;
-        text-transform: uppercase;
-        font-weight: 700;
-    }
+#sidebar .activeNote {
+    border-bottom: 3px solid #383A42;
+    text-transform: uppercase;
+    font-weight: 700;
+}
 
 #main {
     margin-left: 20%; /* same width as sidebar */
@@ -133,4 +133,14 @@ img, video, iframe {
 iframe {
     width: 100%;
     height: 500px;
+}
+
+/* pdfs have a small margin at the bottom -- the relative position is for annotations to eventually be able to go on the page */
+.pdf {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.pdf img {
+    width: 100%;
 }

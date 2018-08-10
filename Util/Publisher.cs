@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -22,6 +25,7 @@ namespace Dash
 		private bool _mediaFolderMade = false;
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
 		private Dictionary<DocumentController, string> _colorPairs = new Dictionary<DocumentController, string>();
+		private Dictionary<DocumentController, int> _pdfNumbers = new Dictionary<DocumentController, int>(); // for storing number of pages in a PDF -- kind of a hack until we find a not-async method to do this
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -51,7 +55,7 @@ namespace Dash
 				InitializeColorPairs(dcs);
 
 				// copy all the media
-				CopyMedia(dcs);
+				await CopyMedia(dcs);
 
 				// get the sidebar thing going
 				_sidebarText = GetSidebarText(dcs);
@@ -129,7 +133,7 @@ namespace Dash
 		/// </summary>
 		/// <param name="dc"></param>
 		/// <returns></returns>
-		private object GetIconClass(DocumentController dc)
+		private string GetIconClass(DocumentController dc)
 		{
 			var content = "";
 			switch (dc.DocumentType.Type)
@@ -184,6 +188,7 @@ namespace Dash
 					content += RenderImageToHtml(dc, regionsToRender);
 					break;
 				case "Pdf Note":
+					content += RenderPdfToHtml(dc, regionsToRender);
 					break;
 				case "Video Note":
 					content += RenderVideoToHtml(dc, regionsToRender);
@@ -195,6 +200,21 @@ namespace Dash
 			}
 
 			return content;
+		}
+
+		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+		{
+			var html = new List<string>();
+			var numPages = _pdfNumbers[dc];
+
+			for (int i = 1; i <= numPages; i++)
+			{
+				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
+				var path = "media\\" + _fileNames[dc] + "/" + fileName;
+				html.Add("<div class=\"pdf\"><img src=\"" + path + "\"></div>");
+			}
+
+			return ConcatenateList(html);
 		}
 
 		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
@@ -338,7 +358,7 @@ namespace Dash
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
-			var path = "media\\" + imgTitle;
+			var path = "Media\\" + imgTitle;
 			return "<img src=\"" + path + "\">";
 		}
 
@@ -353,7 +373,7 @@ namespace Dash
 
 			// if not a YouTube video, the it's on here
 			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
-			var path = "media\\" + vidTitle;
+			var path = "Media\\" + vidTitle;
 			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
 		}
 
@@ -373,7 +393,10 @@ namespace Dash
 			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
-				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
+				foreach (var region in regions)
+				{
+					html.Add(RenderImmediateLinksToHtml(region));
+				}
 			}
 
 			return ConcatenateList(html);
@@ -626,7 +649,7 @@ namespace Dash
 		/// This method copies all of the media from each of the documents. This is the only time these files are written.
 		/// </summary>
 		/// <param name="dcs"></param>
-		private async void CopyMedia(IEnumerable<DocumentController> dcs)
+		private async Task CopyMedia(IEnumerable<DocumentController> dcs)
 		{
 			foreach (var dc in dcs)
 			{
@@ -636,6 +659,7 @@ namespace Dash
 						await CopyImage(dc);
 						break;
 					case "Pdf Note":
+						await CopyPdf(dc);
 						break;
 					case "Video Note":
 						await CopyVideo(dc);
@@ -644,6 +668,44 @@ namespace Dash
 						break;
 					default:
 						break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Pdfs are copied as a series of images.
+		/// </summary>
+		/// <returns></returns>
+		private async Task CopyPdf(DocumentController dc)
+		{
+			// if we haven't made a Media folder yet, make it now
+			if (!_mediaFolderMade)
+			{
+				_mediaFolderMade = true;
+				await _folder.CreateFolderAsync("Media");
+			}
+
+			var media = await _folder.GetFolderAsync("Media");
+			var folder = await media.CreateFolderAsync(_fileNames[dc]);
+
+			var pdf = await DataVirtualizationSource<DocumentController>.GetPdf(dc);
+			var numPages = pdf.PageCount;
+			_pdfNumbers[dc] = (int) numPages;
+			for (var i = 0; i < numPages; i++)
+			{
+				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint) i);
+				var file = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i+1) + ".jpg",
+					CreationCollisionOption.GenerateUniqueName);
+				using (var stream = await file.OpenStreamForWriteAsync())
+				{
+					var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream.AsRandomAccessStream());
+					var pixelStream = bitmap.PixelBuffer.AsStream();
+					byte[] pixels = new byte[bitmap.PixelBuffer.Length];
+
+					await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+					encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint) bitmap.PixelWidth, (uint) bitmap.PixelHeight, 96,
+						96, pixels);
+					await encoder.FlushAsync();
 				}
 			}
 		}

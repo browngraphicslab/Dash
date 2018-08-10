@@ -10,11 +10,14 @@ using Windows.Storage.Streams;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.ApplicationModel.DataTransfer;
+using MyToolkit.Resources;
 
 namespace Dash
 {
+
     public class PdfToDashUtil : IFileParser
     {
+	    public static DocumentType PdfType = new DocumentType("150FD51D-E421-44ED-A3C8-AB9A932B2C7C", "Pdf Note");
 
         public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
@@ -32,7 +35,7 @@ namespace Dash
                 [KeyStore.DataKey] = new ImageController(new Uri(file.Path)),
                 [KeyStore.TitleKey] = new TextController(title)
             };
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+            var dataDoc = new DocumentController(fields, PdfType);
 
 //#pragma warning disable 4014
 //            Task.Run(async () =>
