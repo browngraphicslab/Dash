@@ -105,36 +105,26 @@ namespace Dash
 
         public void SelectRegion(DocumentController region)
         {
-            if (region.Equals(_selectedRegion?.RegionDocument))
-            {
-                if (this.GetFirstAncestorOfType<DocumentView>().Visibility.Equals(Visibility.Collapsed))
-                {
-                    this.GetFirstAncestorOfType<DocumentView>().Visibility = Visibility.Visible;
-                }
+            var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            documentView.Visibility = Visibility.Visible;
 
-                if (_selectedRegion.Selected)
+            var deselect = _selectedRegion?.Selected == true;
+            var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
+            foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
                 {
-                    _selectedRegion.Deselect();
-                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
-                    if (vm != null)
-                    {
-                        vm.SearchHighlightState = new Thickness(0);
+                    nvo._selectedRegion?.Deselect();
+                    nvo._selectedRegion = deselect ? null : r;
+                    if (!deselect) { 
+                        r.Select();
                     }
-                }
-                else
-                {
-                    _selectedRegion.Select();
-                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
-                    if (vm != null)
+                    if (documentView.ViewModel != null)
                     {
-                        vm.SearchHighlightState = new Thickness(8);
-                    };
+                        documentView.ViewModel.SearchHighlightState = new Thickness(deselect ? 0 : 8);
+                    }
+                    else
+                        ;
                 }
-                return;
-            }
-            _selectedRegion?.Deselect();
-            _selectedRegion = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            _selectedRegion?.Select();
         }
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)
@@ -288,13 +278,7 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     foreach (DocumentController documentController in listArgs.NewItems)
                     {
-	                    var userCreated = documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData
-		                                      .First()?.GetDataDocument()
-		                                      .GetField<DocumentController>(KeyStore.LinkDestinationKey, true)
-		                                      .GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
-	                                      nameof(LinkContexts.PushPin);
-
-						if (!userCreated) RenderAnnotation(documentController);
+						RenderAnnotation(documentController);
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
@@ -344,8 +328,9 @@ namespace Dash
             {
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
-                    if (!(_regionRectangles.Count > 1) && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
+                    if (!_regionRectangles.Any(rect => rect.Width > 10 && rect.Height > 10) && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
                     {
+                        ClearSelection(true);
                         goto case AnnotationType.None;
                     }
 
@@ -428,8 +413,6 @@ namespace Dash
                     break;
                 case AnnotationType.Ink:
                 case AnnotationType.None:
-                    return null;
-                case AnnotationType.Pin:
                     return null;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -566,7 +549,7 @@ namespace Dash
             foreach (DocumentController reg in regions)
             {
                 var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                if (selectionIndices.Count > 1) return null;
+                if (selectionIndices.Count != 1) return null;
                 PointController selection = selectionIndices[0];
                 var start = (int)selection.Data.X;
                 var end = (int)selection.Data.Y;
@@ -663,27 +646,26 @@ namespace Dash
 
         #region General Annotation
 
-        public void StartAnnotation(Point p)
+        public void StartAnnotation(Point p, bool forcePin = false)
         {
             ClearPreviewRegion();
-            //ClearSelection();
-            switch (_currentAnnotationType)
-            {
-                case AnnotationType.Region:
-                    StartRegion(p);
-                    break;
-                case AnnotationType.Selection:
-                    StartTextSelection(p);
-                    break;
-                case AnnotationType.None:
-                case AnnotationType.Ink:
-                    return;
-                case AnnotationType.Pin:
-                    CreatePin(p);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (forcePin)
+                CreatePin(p);
+            else
+                switch (_currentAnnotationType)
+                {
+                    case AnnotationType.Region:
+                        StartRegion(p);
+                        break;
+                    case AnnotationType.Selection:
+                        StartTextSelection(p);
+                        break;
+                    case AnnotationType.None:
+                    case AnnotationType.Ink:
+                        return;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
         }
 
         public void UpdateAnnotation(Point p)
@@ -698,7 +680,6 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
-                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -718,8 +699,6 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
-                    return;
-                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -789,37 +768,30 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
-	    public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
-	    {
-			//format pin annotation
-		    var annotation = _regionGetter(AnnotationType.Pin);
+        public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
+        {
+			var annotation = _regionGetter(AnnotationType.Pin);
+		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
-			
-			//this differentiates a push pin created manually vs during activation mode
-		    linkedDoc?.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-		    
-			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-		    annotation.GetDataDocument()
-			    .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, nameof(AnnotationType.Pin), true);
+            if (linkedDoc != null)
+            {
+                annotation.Link(linkedDoc, LinkContexts.PushPin);
+            }
 
+            RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
-		    RenderPin(annotation, linkedDoc);
-			
-			return annotation;
-		}
+            //format pin annotation
+            return annotation;
+        }
 
-		/// <summary>
-		/// Call this method if you just want to make a pushpin annotation with the default text.
-		/// </summary>
-		/// <param name="point"></param>
+        /// <summary>
+        /// Call this method if you just want to make a pushpin annotation with the default text.
+        /// </summary>
+        /// <param name="point"></param>
         private async void CreatePin(Point point)
         {
-            if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
-            {
-                return;
-            }
-            
             foreach (var region in XAnnotationCanvas.Children)
             {
                 if (region is Ellipse existingPin && existingPin.GetBoundingRect(this).Contains(point))
@@ -918,9 +890,9 @@ namespace Dash
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, target);
 			*/
-			MakeAnnotationPinDoc(point, target);
+			var annotation = MakeAnnotationPinDoc(point, target);
 
-			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
 			var width = pdfView?.PdfMaxWidth ??
 			            this.GetFirstAncestorOfType<DocumentView>().ActualWidth;
 			var height= pdfView?.PdfTotalHeight ??
@@ -1120,8 +1092,10 @@ namespace Dash
                 args.Handled = true;
             };
 
-			//handlers for moving pin
-	        pin.ManipulationMode = ManipulationModes.All;
+            pin.PointerPressed += (s, e) => e.Handled = true;
+
+            //handlers for moving pin
+            pin.ManipulationMode = ManipulationModes.All;
 	        pin.ManipulationStarted += (s, e) =>
 	        {
 		        pin.ManipulationMode = ManipulationModes.All;
@@ -1218,6 +1192,7 @@ namespace Dash
                 return;
             }
 
+
             _annotatingRegion = false;
 
             if (_regionRectangles.Count > 0)
@@ -1226,6 +1201,11 @@ namespace Dash
                     new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
                         XPreviewRect.Height);
 
+                if (_regionRectangles.Last().Width < 4 || _regionRectangles.Last().Height < 4)
+                {
+                    _regionRectangles.RemoveAt(_regionRectangles.Count - 1);
+                    return;
+                }
             }
 
             var viewRect = new Rectangle
@@ -1342,6 +1322,7 @@ namespace Dash
             _selectionStartPoint = hardReset ? null : _selectionStartPoint;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
+            XPreviewRect.Width = XPreviewRect.Height = 0;
             _regionRectangles.Clear();
             var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is SelectionViewModel) && i != XPreviewRect).ToList();
             if (XAnnotationCanvas.Children.Any())
@@ -1733,7 +1714,8 @@ namespace Dash
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
-		    if (!target.DocumentType.Type.Equals("Rich Text Box") && !target.DocumentType.Type.Equals("Text Box"))
+            target.SetBackgroundColor(Colors.White);
+		    if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
 		    {
 			    if (target.GetActualSize()?.X > 200)
 			    {

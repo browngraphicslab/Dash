@@ -74,7 +74,7 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-<!--
+            <!--
             <Border x:Name="xAddLinkTypeBorder" Grid.Row="1" CanDrag="True" Background="Transparent" 
                     PointerPressed="XAddLinkTypeBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAddLinkTypeBorder_OnTapped" 
                     HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0 0 0 0" Visibility="Collapsed">
@@ -88,7 +88,7 @@
 -->
             <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="1" Visibility="{x:Bind VisibilityState, Mode=OneWay}" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,0">
                 <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Stretch" Spacing="4" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-                    
+
                 </StackPanel>
             </ScrollViewer>
 
@@ -112,7 +112,7 @@
             </Grid>
         </Grid>
 
-       
+
 
         <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="1" Grid.Column="1" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">
 
@@ -121,18 +121,6 @@
 
 
                 <Grid Margin="0,3,0,0">
-                   <!-- <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
-                        <Grid  Name="xNewButton"  Tapped="XNewButton_OnTapped"  PointerEntered="XNewButton_OnPointerEntered"  PointerExited="XNewButton_OnPointerExited"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Ellipse Height="25" Width="25" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="White" StrokeThickness="1">
-
-                            </Ellipse>
-                            <TextBlock x:Name="xNewButtonIcon" Text="&#xE710;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="0 0 0 0" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-                        </Grid>
-
-                    </StackPanel> -->
-
-
 
                     <AutoSuggestBox Grid.Column="0" MinHeight="25" Height="33" FontSize="7"
                                     PlaceholderText="Enter link type" 
@@ -157,7 +145,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" FontSize="9" Foreground="{StaticResource DashDarkBlueBrush}" FontWeight="SemiBold"  Height="10" Padding="0" Width="35" VerticalAlignment="Top" TextAlignment="Left"  Margin="0,-5.5,0,0">RECENT</TextBlock>
                     <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0"/>
-                   
+
                 </Grid>
                 <Grid Margin="0 0 0 0" x:Name="xRecentTagsGrid">
                     <controls:WrapPanel x:Name="xTest" HorizontalAlignment="Center" Margin="5 0 0 0" Padding="0"></controls:WrapPanel>

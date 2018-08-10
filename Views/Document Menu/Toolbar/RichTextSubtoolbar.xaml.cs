@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,10 @@ using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats;
 using Windows.UI.Xaml.Documents;
 using Windows.UI;
 using Windows.UI.Text;
+using Windows.UI.Xaml.Shapes;
+using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons.Common;
+using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats.RichText;
+using Frame = Microsoft.Office.Interop.Word.Frame;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -44,6 +49,45 @@ namespace Dash
         private Dictionary<string, Button> _buttons;
         private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
+
+        private sealed class MyFormatter : RichTextFormatter
+        {
+            public MyFormatter(TextToolbar model, ResourceDictionary xTextGridResources) : base(model)
+            {
+                var tbStyle = (Style) xTextGridResources["TextBlockStyle"];
+                var gridStyle = (Style) xTextGridResources["GridStyle"];
+                DefaultButtons = new ButtonMap();
+                base.DefaultButtons.Where((v, i) => i != 3 && i != 4).ToList().ForEach(DefaultButtons.Add);
+                var bold = (ToolbarButton)DefaultButtons[0];
+                var italics = (ToolbarButton)DefaultButtons[1];
+                //var underline = buttons.;
+                var strikethrough = (ToolbarButton)DefaultButtons[3];
+                var list = (ToolbarButton)DefaultButtons[5];
+                var orderedList = (ToolbarButton)DefaultButtons[6];
+                bold.Loaded += (sender, args) => bold.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                italics.Loaded += (sender, args) => italics.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                strikethrough.Loaded += (sender, args) => strikethrough.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                //underline.Loaded += (sender, args) => underline.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                list.Loaded += (sender, args) =>
+                {
+                    list.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Foreground = new SolidColorBrush(Colors.White));
+                    var attach = list.GetDescendants().Where(dob => (dob as FrameworkElement).Name == "Attach").ToList();
+                    (attach.First() as Grid).Background = new SolidColorBrush(Colors.White);
+                };
+                orderedList.Loaded += (sender, args) =>
+                {
+                    orderedList.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Foreground = new SolidColorBrush(Colors.White));
+                    var attach = orderedList.GetDescendants().Where(dob => (dob as FrameworkElement).Name == "Attach").ToList();
+                    (attach.First() as Grid).Background = new SolidColorBrush(Colors.White);
+                };
+                var underline = (ToolbarButton)DefaultButtons[2];
+                underline.Loaded += (sender, args) => underline.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                var sep = (ToolbarSeparator)DefaultButtons[4];
+                sep.Loaded += (sender, args) => sep.GetDescendantsOfType<Rectangle>().ToList().ForEach(rect => rect.Fill = new SolidColorBrush(Colors.White));
+            }
+
+            public override ButtonMap DefaultButtons { get; }
+        }
 
         public RichTextSubtoolbar()
         {
@@ -102,12 +146,11 @@ namespace Dash
 
                 xHighlightColorPicker.ParentFlyout = xHighlightColorFlyout;
                 xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
-                foreach (var toolbarButton in xDashTextSubtoolbar.GetDescendantsOfType<ToolbarButton>())
-                {
-                    toolbarButton.Style = xToolbarButtonStyler;
-                }
             };
+            _formatter = new MyFormatter(xDashTextSubtoolbar, xTextGridResources);
         }
+
+        private Formatter _formatter;
 
         /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.
@@ -117,6 +160,7 @@ namespace Dash
             xDashTextSubtoolbar.Editor = selection;
             xDashTextSubtoolbar.Visibility = Visibility.Visible;
             xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>().Orientation = Orientation;
+            xDashTextSubtoolbar.Formatter = _formatter;
         }
 
         /**

@@ -71,11 +71,7 @@ namespace Dash
                 case AnnotationType.Region:
                     xRegionToggle.IsChecked = true;
                     break;
-                case AnnotationType.Pin:
-                    xPinToggle.IsChecked = true;
-                    break;
                 default:
-                    xPinToggle.IsChecked = false;
                     xInkToggle.IsChecked = false;
                     xTextToggle.IsChecked = false;
                     xRegionToggle.IsChecked = false;
@@ -87,7 +83,6 @@ namespace Dash
         {
             xRegionToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Ink);
         }
@@ -96,7 +91,6 @@ namespace Dash
         {
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Selection);
         }
@@ -105,7 +99,6 @@ namespace Dash
         {
             xInkToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Region);
         }
@@ -123,19 +116,10 @@ namespace Dash
 
         private void Toggle_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false && xPinToggle.IsChecked == false)
+            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false )
             {
                 _currentPdfView.SetAnnotationType(AnnotationType.None);
             }
-        }
-
-        private void XPinToggle_OnChecked_(object sender, RoutedEventArgs e)
-        {
-            xInkToggle.IsChecked = false;
-            xTextToggle.IsChecked = false;
-            xRegionToggle.IsChecked = false;
-
-            _currentPdfView.SetAnnotationType(AnnotationType.Pin);
         }
 
         //private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -254,14 +238,6 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xRegionToggle, _region);
-
-            _pin = new ToolTip()
-            {
-                Content = "Pin annotation",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xPinToggle, _pin);
             
         }
 

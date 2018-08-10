@@ -700,11 +700,6 @@
                                 PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xRegionToggleIcon" Text="&#xE70B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
-            <!--pin-->
-            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xPinToggle" Checked="XPinToggle_OnChecked_"  Unchecked="Toggle_OnUnchecked" PointerEntered="ShowAppBarToolTip"
-                                PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xPinToggleIcon" Text="&#xE7B7;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
-            </AppBarToggleButton>
             <AppBarSeparator Height="45" VerticalAlignment="Center"></AppBarSeparator>
             <TextBox Name="xToPageBox" Style="{StaticResource TextBoxStyler}" Height="30" FontSize="12" Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Padding="5 5 0 0"  BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown"/>
            
