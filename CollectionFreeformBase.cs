@@ -974,6 +974,7 @@ namespace Dash
         #region TextInputBox
 
         string previewTextBuffer = "";
+	    private bool previewSelectText = false;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
@@ -990,6 +991,19 @@ namespace Dash
         }
 
         bool loadingPermanentTextbox;
+
+		/// <summary>
+		/// THIS IS KIND OF A HACK, DON'T USE THIS
+		/// </summary>
+	    public void MarkLoadingNewTextBox(string text = "", bool selectText = false)
+		{
+			previewTextBuffer = text;
+			previewSelectText = selectText;
+		    if (!loadingPermanentTextbox)
+		    {
+			    loadingPermanentTextbox = true;
+		    }
+	    }
 
         TextBox previewTextbox { get; set; }
 
@@ -1112,7 +1126,25 @@ namespace Dash
                         postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                     }
-                }
+					//move link activation stuff here
+	                //check if a doc is currently in link activation mode
+	                if (LinkActivationManager.ActivatedDocs.Count >= 1)
+	                {
+		                foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+		                {
+							//make this rich text an annotation for activated  doc
+							if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+							{
+								var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
+									postitNote.GetPosition());
+
+								//link region to this text 
+								region.Link(postitNote, LinkContexts.PushPin, "quick annotation");
+								region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+							}
+						}
+	                }
+				}
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
@@ -1236,6 +1268,19 @@ namespace Dash
                         richEditBox.GotFocus -= RichEditBox_GotFocus;
                         richEditBox.GotFocus += RichEditBox_GotFocus;
                         richEditBox.Focus(FocusState.Programmatic);
+	                    //if (previewSelectText)
+	                    //{
+		                   // RoutedEventHandler loaded = null;
+		                   // loaded = (o, args) =>
+		                   // {
+			                  //  richEditBox.Loaded -= loaded;
+			                  //  richEditBox.Document.GetText(TextGetOptions.None, out var str);
+			                  //  richEditBox.Document.Selection.SetRange(0, str.Length);
+		                   // };
+		                   // richEditBox.Loaded += loaded;
+		                    
+		                   // previewSelectText = false;
+	                    //}
                     }
                     var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
                     if (textBox != null)

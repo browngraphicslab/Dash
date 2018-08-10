@@ -212,7 +212,7 @@ namespace Dash
             }
         }
 
-        public static async Task<ImageSource> PdfPages(DocumentController pdf, uint pageNum)
+        public static async Task<Image> PdfPages(DocumentController pdf, uint pageNum)
         {
             var pdfUri = new Uri(pdf.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey).Data);
             StorageFile file;
@@ -232,15 +232,20 @@ namespace Dash
                 }
             }
             var pdfDoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            var source = new BitmapImage();
             using (var page = pdfDoc.GetPage(pageNum))
             {
                 //get a way to write out to disk as opposed to memory
                 var stream = new InMemoryRandomAccessStream();
                 await page.RenderToStreamAsync(stream);
-                var source = new BitmapImage();
                 await source.SetSourceAsync(stream);
-                return source;
             }
+
+           return new Image
+            {
+                Source = source,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
         }
        
     }

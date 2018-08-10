@@ -1395,7 +1395,7 @@ namespace Dash
 				{
 					try
 					{
-						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, null);
+						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
 						if (droppedDoc != null)
 							DocumentControllers.Add(droppedDoc.GetViewCopy(new Point(0, 0)));
 						return;

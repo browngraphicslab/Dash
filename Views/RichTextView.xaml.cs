@@ -85,7 +85,7 @@ namespace Dash
             xSearchDelete.Click += (s, e) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
@@ -93,7 +93,7 @@ namespace Dash
 
             xSearchBox.QuerySubmitted += (s, e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
-           xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
+            xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
 
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
 
@@ -564,7 +564,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(RichTextView)] = this;
+            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }

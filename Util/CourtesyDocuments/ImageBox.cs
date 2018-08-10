@@ -73,7 +73,7 @@ namespace Dash
             image.AddFieldBinding(Image.SourceProperty, binding);
         }
 
-	    public static DocumentController MakeRegionDocument(DocumentView image)
+	    public static DocumentController MakeRegionDocument(DocumentView image, Point? point)
 	    {
 		    var im = image.GetFirstDescendantOfType<EditableImage>();
 		    return im.GetRegionDocument();

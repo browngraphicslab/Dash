@@ -74,8 +74,7 @@ namespace Dash
         /// </summary>
         /// <param name="where"></param>
         /// <param name="e"></param>
-        /// <param name="collectionViewModel"></param>
-        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
+        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -179,7 +178,9 @@ namespace Dash
 							// make the video box with the Uri set as the video's, and return it
 			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
 			                var uri = url.Uri;
-			                return VideoToDashUtil.CreateVideoBoxFromUri(uri);
+							var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+			                video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+			                return video;
 		                }
 		                // if that returns an error somehow, just return the page instead
 		                catch (Exception)
