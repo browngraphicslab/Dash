@@ -265,7 +265,6 @@ namespace Dash
             }
 
 			SetPositionAndSize();
-			SetTitleIcon();
 			if (SelectedDocs.Any() && !this.IsRightBtnPressed())
 			{
 				VisibilityState = Visibility.Visible;
@@ -363,61 +362,6 @@ namespace Dash
 			}
 		}
 
-		private void SetTitleIcon()
-		{
-			if (SelectedDocs.Count == 1)
-			{
-				var type = SelectedDocs.First().ViewModel?.DocumentController
-					.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
-				switch (type)
-				{
-					case DashShared.TypeInfo.Image:
-						xTitleIcon.Text = Application.Current.Resources["ImageDocumentIcon"] as string;
-						break;
-					case DashShared.TypeInfo.Audio:
-						xTitleIcon.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
-						break;
-					case DashShared.TypeInfo.Video:
-						xTitleIcon.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
-						break;
-					case DashShared.TypeInfo.RichText:
-					case DashShared.TypeInfo.Text:
-						xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
-						break;
-					case DashShared.TypeInfo.Document:
-						xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
-						break;
-					case DashShared.TypeInfo.Template:
-						xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-						break;
-					default:
-						xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
-						break;
-				}
-			}
-			else
-			{
-				xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-			}
-
-			//if (type.Equals(DashShared.TypeInfo.Template))
-			//{
-			//    xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-			//}
-
-			//if (_newpoint.X.Equals(0) && _newpoint.Y.Equals(0))
-			//{
-			//    xOperatorEllipseBorder.Margin = new Thickness(10, 0, 0, 0);
-			//    xAnnotateEllipseBorder.Margin = new Thickness(10, AnnotateEllipseUnhighlight.Width + 5, 0, 0);
-			//    xTemplateEditorEllipseBorder.Margin =
-			//        new Thickness(10, 2 * (AnnotateEllipseUnhighlight.Width + 5), 0, 0);
-			//}
-			//else
-			//{
-			//    UpdateEllipses(_newpoint);
-			//}
-		}
-
 		static HashSet<string> LinkNames = new HashSet<string>();
 
 		private void SetPositionAndSize()
@@ -471,7 +415,7 @@ namespace Dash
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value, 
+                X = topLeft.X, 
                 Y = topLeft.Y
             };
 

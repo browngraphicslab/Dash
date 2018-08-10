@@ -15,7 +15,6 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0" x:Name="xLeftColumn"/>
             <ColumnDefinition x:Name="ContentColumn" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
@@ -42,21 +41,10 @@
             </Storyboard>
         </Grid.Resources>
 
-        <Border Grid.Row="0" x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Grid.Column="0" Visibility="{x:Bind VisibilityState, Mode=OneWay}" Tapped="XTitleBorder_OnTapped"
-                Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" PointerPressed="XTitleBorder_OnPointerPressed">
-            <TextBlock x:Name="xTitleIcon" 
-                       FontSize="16"
-                       FontFamily="{StaticResource FontAwesome}" 
-                       Foreground="{StaticResource TitleText}"           
-                       Text="{StaticResource DocumentPlainIcon}" 
-                       HorizontalAlignment="Stretch"
-            />
-        </Border>
-
-        <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+         <Border Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-        <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+        <Grid x:Name="xStackPanel" Grid.Column="1" Height="Auto" Background="Transparent" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
            <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
                 <RowDefinition Height="26"/>
@@ -89,11 +77,9 @@
                 </Grid>
             </Border>
 
-            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="2" Visibility="{x:Bind VisibilityState, Mode=OneWay}" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,0">
-                <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Stretch" Visibility="Visible" Spacing="4">
-                    
-                </StackPanel>
-            </ScrollViewer>
+            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Visibility="Visible" Spacing="4">
+
+            </StackPanel>
 
             <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
                 <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
