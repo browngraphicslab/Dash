@@ -469,6 +469,26 @@ namespace Dash
             ToFront();
         }
 
+        private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is MenuFlyoutItem item) || !(ViewModel.DataDocument.GetField<DocumentController>(KeyStore.RegionsKey) is DocumentController regionDoc)) return;
+
+            bool state = item.Text.Equals("Show Annotation On Scroll");
+            item.Text = state ? "Hide Annotation On Scroll" : "Show Annotation On Scroll";
+
+            var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+            var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+            var links = new List<DocumentController>();
+            links.AddRange(toLinks);
+            links.AddRange(fromLinks);
+
+            foreach (DocumentController l in links)
+            {
+                l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, state, true);
+            }
+        }
+
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
         {
             if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
@@ -1513,9 +1533,9 @@ namespace Dash
 					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
 					//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
-                    dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-	                dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-	                annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+                    dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+	                dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+	                annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
 				}
                 else
                 {
@@ -1560,9 +1580,9 @@ namespace Dash
 							dragDoc.Link(annotNote, LinkContexts.None, null);
 	                        dropDoc.Link(annotNote, LinkContexts.None, null);
 	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-	                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-	                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-	                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+	                        dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+	                        dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+	                        annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
 						}
 
                        
@@ -1963,5 +1983,5 @@ namespace Dash
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
 		    xToYellow.Begin();
 	    }
-	}
+    }
 }

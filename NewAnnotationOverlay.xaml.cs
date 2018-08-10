@@ -40,7 +40,7 @@ namespace Dash
     }
 
 
-	public enum PinAnnotationVisibility
+	public enum AnnotationScrollVisibility
 	{
 		VisibleOnScroll,
 		ManualToggle,
@@ -1098,12 +1098,12 @@ namespace Dash
 		    MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
 		    visOnScrollON.Text = "Unpin Annotation";
 		    visOnScrollOFF.Text = "Pin Annotation";
-		    visOnScrollON.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.VisibleOnScroll; };
-		    visOnScrollOFF.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.ManualToggle; };
+		    visOnScrollON.Click += (sender, args) => { region.Tag = AnnotationScrollVisibility.VisibleOnScroll; };
+		    visOnScrollOFF.Click += (sender, args) => { region.Tag = AnnotationScrollVisibility.ManualToggle; };
 		    regionGraphic.ContextFlyout = flyout;
 		    regionGraphic.RightTapped += (s, e) =>
 		    {
-			    var currVisibileOnScroll = region.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
+			    var currVisibileOnScroll = region.Tag?.Equals(AnnotationScrollVisibility.VisibleOnScroll) ?? false;
 			    var item = currVisibileOnScroll ? visOnScrollOFF : visOnScrollON;
 			    flyout.Items.Clear();
 			    flyout.Items.Add(item);

@@ -1072,7 +1072,7 @@ namespace Dash
                         if (_linkDoc != null)
                         {
 
-                            postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                            postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                             _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                         }
 
@@ -1090,7 +1090,7 @@ namespace Dash
 
                                     //link region to this text 
                                     region.Link(postitNote, LinkContexts.PushPin);
-                                    region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+                                    region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
                                 }
                             }
                         }
@@ -1133,7 +1133,7 @@ namespace Dash
                     Actions.DisplayDocument(ViewModel, postitNote, where);
                     if (_linkDoc != null)
                     {
-                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
 
                     }
@@ -1144,7 +1144,7 @@ namespace Dash
                     Actions.DisplayDocument(ViewModel, postitNote, where);
                     if (_linkDoc != null)
                     {
-                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                     }
 					//move link activation stuff here
@@ -1161,7 +1161,7 @@ namespace Dash
 
                                 //link region to this text 
                                 region.Link(postitNote, LinkContexts.PushPin);
-                                region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+                                region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
                             }
                         }
                     }
