@@ -796,30 +796,29 @@ namespace Dash
             _regionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
-	    public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
-	    {
-			//format pin annotation
-		    var annotation = _regionGetter(AnnotationType.Pin);
+        public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
+        {
+			var annotation = _regionGetter(AnnotationType.Pin);
+		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
-			
-			//this differentiates a push pin created manually vs during activation mode
-		    linkedDoc?.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
-		    
-			annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-		    annotation.GetDataDocument()
-			    .SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+            if (linkedDoc != null)
+            {
+                annotation.Link(linkedDoc, LinkContexts.PushPin);
+            }
 
+            RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, linkedDoc);
-			
-			return annotation;
-		}
+            //format pin annotation
+            return annotation;
+        }
 
-		/// <summary>
-		/// Call this method if you just want to make a pushpin annotation with the default text.
-		/// </summary>
-		/// <param name="point"></param>
+        /// <summary>
+        /// Call this method if you just want to make a pushpin annotation with the default text.
+        /// </summary>
+        /// <param name="point"></param>
         private async void CreatePin(Point point)
         {
             if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
