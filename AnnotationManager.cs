@@ -117,16 +117,14 @@ namespace Dash
 	                    var itemHdlr = new RoutedEventHandler((s, e) =>
 	                    {
 		                    FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
+							_linkFlyout.Hide();
 							MainPage.Instance.XDocumentDecorations.IsFlyoutOpen = false;
 	                    });
 	                    item.Click += itemHdlr;
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
                     }
-
-					
                 }
-
 
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
