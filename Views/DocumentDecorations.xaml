@@ -41,11 +41,11 @@
             </Storyboard>
         </Grid.Resources>
 
-         <Border Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+        <Border Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
         <Grid x:Name="xStackPanel" Grid.Column="1" Height="Auto" Background="Transparent" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-           <Grid.RowDefinitions>
+            <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -62,24 +62,10 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-            <!--
-            <Border x:Name="xAddLinkTypeBorder" Grid.Row="1" CanDrag="True" Background="Transparent" 
-                    PointerPressed="XAddLinkTypeBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAddLinkTypeBorder_OnTapped" 
-                    HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0 0 0 0" Visibility="Collapsed">
-                <Grid  >
-                    <Ellipse x:Name="xAddLinkTypeUnhighlight" Width="22" Height="22"/>
-                    <Ellipse x:Name="xAddLinkTypeHighlight" Visibility="Collapsed" Width="22" Height="22"/>
-                    <TextBlock x:Name="xAddLinkText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE710;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Add Link Type" Placement="Right" HorizontalOffset="30" VerticalOffset="0"/>
-                    </ToolTipService.ToolTip>
--->
-            <ScrollViewer IsEnabled="True" HorizontalScrollBarVisibility="Disabled"  VerticalScrollMode="Auto" Grid.Row="1" Visibility="{x:Bind VisibilityState, Mode=OneWay}" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,0">
-                <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Stretch" Spacing="4" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-                </StackPanel>
-            </ScrollViewer>
+            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Spacing="4" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+            </StackPanel>
 
-                <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
+            <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
                 <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
                     PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
