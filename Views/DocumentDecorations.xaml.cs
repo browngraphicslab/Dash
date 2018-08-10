@@ -157,8 +157,9 @@ namespace Dash
 			if (!_isMoving)
 			{
 				_isMoving = true;
-			}
-		}
+            }
+            VisibilityState = Visibility.Collapsed; 
+        }
 
 		private void DocView_OnDeleted()
 		{
@@ -467,8 +468,8 @@ namespace Dash
 				return;
 			}
 
-            if (botRight.X > MainPage.Instance.ActualWidth-xStackPanel.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth, botRight.Y);
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X - xLeftColumn.Width.Value, 
@@ -611,6 +612,7 @@ namespace Dash
 				if (linkName == comp.Text)
 				{
 					unique = false;
+                    comp.Select();
 					return comp.Color;
 				}
 			}
@@ -645,6 +647,7 @@ namespace Dash
 				{
 					xTest.Children.Add(recent);
 				}
+                tag.Select();
 			}
 			return hexColor;
 		}
@@ -733,7 +736,6 @@ namespace Dash
 				    (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
 				     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
 					VisibilityState = Visibility.Collapsed;
-				xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
 				SuggestGrid.Visibility = Visibility.Collapsed;
 			}
 
@@ -839,7 +841,6 @@ namespace Dash
 		{
 			VisibilityState = Visibility.Collapsed;
 			SuggestGrid.Visibility = Visibility.Collapsed;
-			xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
 		}
 
 
@@ -946,31 +947,6 @@ namespace Dash
 			}
 
 		}
-
-
-		private void XNewButton_OnTapped(object sender, TappedRoutedEventArgs e)
-		{
-		
-		    string entry = xAutoSuggestBox.Text.Trim();
-		    if (string.IsNullOrEmpty(entry)) return;
-
-		    e.Handled = true;
-		    AddTag(entry);
-		    xAutoSuggestBox.Text = "";
-        }
-
-		private void XNewButton_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-		{
-			Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-				new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-		}
-
-		private void XNewButton_OnPointerExited(object sender, PointerRoutedEventArgs e)
-		{
-			Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-				new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-		}
-
         
 
 	    private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)

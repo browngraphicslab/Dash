@@ -62,8 +62,7 @@ namespace Dash
 
         public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
-            var pdf = documentView.GetFirstDescendantOfType<CustomPdfView>();
-            return pdf.GetRegionDocument(point);
+            return documentView.GetFirstDescendantOfType<CustomPdfView>().GetRegionDocument(point);
         }
 
         protected static void SetupPdfBinding(CustomPdfView pdf, DocumentController controller,

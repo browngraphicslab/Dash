@@ -294,14 +294,14 @@ namespace Dash
             {
                 handle.Tag = handle.ManipulationMode;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.PointerReleased += (s, e) => ResizeHandles_restorePointerTracking();
+                handle.PointerReleased += (s, e) => { handle.ReleasePointerCapture(e.Pointer); ResizeHandles_restorePointerTracking(); e.Handled = true; };
                 handle.PointerPressed += (s, e) =>
                 {
                     ManipulationMode = ManipulationModes.None;
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                     if (e.Handled)
                     {
-                        CapturePointer(e.Pointer);
+                        handle.CapturePointer(e.Pointer);
                         handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
                     }
                     else
@@ -774,7 +774,6 @@ namespace Dash
                 currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-
             if (ViewModel.DragBounds != null && 
                 (!ViewModel.DragBounds.Rect.Contains(translate) ||
                  !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
@@ -1190,7 +1189,16 @@ namespace Dash
 	    {
 		    var brush = new SolidColorBrush(color);
 
-		    xTopLeftResizeControl.Fill = brush;
+            xTopLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xTopResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xTopRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xBottomLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xBottomResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xBottomRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+            xLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
+
+            xTopLeftResizeControl.Fill = brush;
 		    xTopResizeControl.Fill = brush;
 			xTopRightResizeControl.Fill = brush;
 		    xBottomLeftResizeControl.Fill = brush;
@@ -1944,7 +1952,6 @@ namespace Dash
 	    public void SetLinkBorderColor()
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-			xToBlue.Begin();
 	    }
 
 	    public void RemoveLinkBorderColor()
