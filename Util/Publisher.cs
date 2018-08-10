@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using DashShared;
@@ -23,6 +26,7 @@ namespace Dash
 		private bool _mediaFolderMade = false;
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
 		private Dictionary<DocumentController, string> _colorPairs = new Dictionary<DocumentController, string>();
+		private Dictionary<DocumentController, int> _pdfNumbers = new Dictionary<DocumentController, int>(); // for storing number of pages in a PDF -- kind of a hack until we find a not-async method to do this
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -52,7 +56,7 @@ namespace Dash
 				InitializeColorPairs(dcs);
 
 				// copy all the media
-				CopyMedia(dcs);
+				await CopyMedia(dcs);
 
 				// get the sidebar thing going
 				_sidebarText = GetSidebarText(dcs);
@@ -94,7 +98,7 @@ namespace Dash
 				// CREATE THE INDEX
 				"<!DOCTYPE html>",
 				"<title>" + dc.Title + "</title>",
-				"<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">",
+				"<link rel=\"stylesheet\" href=\"https://use.fontawesome.com/releases/v5.2.0/css/all.css\" integrity=\"sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ\" crossorigin=\"anonymous\">",
 				"<link href=\"PublishStyle.css\" rel=\"stylesheet\">",
 				"<html><body>",
 
@@ -132,12 +136,48 @@ namespace Dash
 
 			sidebar.Add("<div class=\"heading\">NOTES</div>");
 			sidebar.Add("<ul>");
-			sidebar.AddRange(dcs.Select(dc => "<li><a href=\"" + _fileNames[dc] + ".html\">" + dc.Title + "</a></li>"));
+			sidebar.AddRange(dcs.Select(dc => "<li><i class=\"" + GetIconClass(dc) + " icon\"></i><a href=\"" + _fileNames[dc] + ".html\">" + (dc.Title.Length > 25 ? dc.Title.Substring(0, 25) + "..." : dc.Title) + "</a></li>"));
 			sidebar.Add("</ul>");
 
 			sidebar.Add("</div>");
 
 			return ConcatenateList(sidebar);
+		}
+		
+		/// <summary>
+		/// Returns the FontAwesome icon class for the given document's type.
+		/// </summary>
+		/// <param name="dc"></param>
+		/// <returns></returns>
+		private string GetIconClass(DocumentController dc)
+		{
+			var content = "";
+			switch (dc.DocumentType.Type)
+			{
+				case "Rich Text Note":
+					content += "fas fa-file-alt";
+					break;
+				case "Markdown Note":
+					content += "fas fa-sticky-note";
+					break;
+				case "Image Note":
+					content += "fas fa-image";
+					break;
+				case "Pdf Note":
+					content += "fas fa-file-pdf";
+					break;
+				case "Video Note":
+					content += "fas fa-video";
+					break;
+				case "Audio Note":
+					content += "fas fa-music";
+					break;
+				default:
+					content += "fas fa-file";
+					break;
+			}
+
+			return content;
 		}
 
 		#region RENDERING MAIN CONTENT
@@ -147,14 +187,15 @@ namespace Dash
 		/// </summary>
 		/// <param name="dc"></param>
 		/// <param name="regionsToRender">if you want to selectively choose which regions to render (useful for annotation sidebar things), pass in a list here</param>
+		/// <param name="truncate">Make the note smaller (used for annotation sidebar things)</param>
 		/// <returns></returns>
-		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
+		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var content = "";
 			switch (dc.DocumentType.Type)
 			{
 				case "Rich Text Note":
-					content += RenderRichTextToHtml(dc, regionsToRender);
+					content += RenderRichTextToHtml(dc, regionsToRender, truncate);
 					break;
 				case "Markdown Note":
 					content += RenderMarkdownToHtml(dc, regionsToRender);
@@ -163,6 +204,7 @@ namespace Dash
 					content += RenderImageToHtml(dc, regionsToRender);
 					break;
 				case "Pdf Note":
+					content += RenderPdfToHtml(dc, regionsToRender);
 					break;
 				case "Video Note":
 					content += RenderVideoToHtml(dc, regionsToRender);
@@ -176,7 +218,22 @@ namespace Dash
 			return content;
 		}
 
-		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
+		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+		{
+			var html = new List<string>();
+			var numPages = _pdfNumbers[dc];
+
+			for (int i = 1; i <= numPages; i++)
+			{
+				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
+				var path = "media\\" + _fileNames[dc] + "/" + fileName;
+				html.Add("<div class=\"pdf\"><img src=\"" + path + "\"></div>");
+			}
+
+			return ConcatenateList(html);
+		}
+
+		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			var richText = dc.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
@@ -184,6 +241,7 @@ namespace Dash
 			
 			// do the regioning
 			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
+			var stringsToInsert = new SortedDictionary<int, string>();
 			if (regions != null)
 			{
 				foreach (var region in regions)
@@ -216,14 +274,93 @@ namespace Dash
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
-					plainText = plainText.Insert(startIndex, htmlToInsert);
-					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
+					stringsToInsert.Add(startIndex, htmlToInsert);
+					stringsToInsert.Add(startIndex + regionText.Length, "</b></a>");
+				}
+
+				// insert the HTML into the plaintext, going from last position to first position
+				plainText = stringsToInsert.Keys.Reverse().Aggregate(plainText, (current, pos) => current.Insert(pos, stringsToInsert[pos]));
+			}
+
+			if (truncate && plainText.Length > 500)
+			{
+				// try to figure out where the links are and get long text to some reasonable length
+				var truncated = "";
+				var remainingText = plainText;
+				var totalKeys = stringsToInsert.Keys.Count;
+				if (totalKeys != 0)
+				{
+					var threshold = 500 / totalKeys / 2; // this is how much space is roughly "allocated" to each link
+					for (int i = 0; i < totalKeys; i++)
+					{
+						var nextIndex =
+							remainingText.IndexOf(GetString(i), StringComparison.Ordinal); // next place that it occurs in the remaining text
+						if (nextIndex > threshold / 2) // divide by two since threshold is front and back
+						{
+							// was too far away, so now we have to truncate off the front a bit
+							var diff = nextIndex - threshold;
+							truncated += " ... ";
+							try
+							{
+								diff = remainingText.IndexOf(" ", diff, StringComparison.Ordinal) < 0 ? diff : remainingText.IndexOf(" ", diff, StringComparison.Ordinal);
+							}
+							catch (Exception)
+							{
+								// ignored
+							}
+							
+							remainingText = remainingText.Substring(diff);
+						}
+
+						// now within acceptable distance, we want to find the end of the URL and add it to truncated
+						i++;
+						var lastLinkIndex = remainingText.IndexOf(GetString(i), StringComparison.Ordinal) + GetString(i).Length;
+						try
+						{
+							var heuristic =
+								remainingText.IndexOf(" ", lastLinkIndex + threshold / 3,
+									StringComparison.Ordinal); // heuristically find the next occurrence of a word break to stop at
+							lastLinkIndex =
+								heuristic < 0
+									? lastLinkIndex
+									: heuristic; // if it returned -1, then it means it didn't actually find the space, so keep where it was before
+						}
+						catch (Exception)
+						{
+							// ignored
+						}
+
+						truncated += remainingText.Substring(0, lastLinkIndex);
+						remainingText =
+							remainingText.Substring(lastLinkIndex); // remove everything up to this point
+					}
+
+					if (remainingText.Length < threshold / 4)
+					{
+						truncated += remainingText;
+					}
+					else
+					{
+						truncated += "...";
+					}
+
+					string GetString(int i)
+					{
+						return stringsToInsert[stringsToInsert.Keys.ToList()[i]];
+					}
+
+					plainText = truncated;
+				}
+				else
+				{
+					var heuristicWrap = plainText.IndexOf(" ", 500, StringComparison.Ordinal);
+					if (heuristicWrap < 0) heuristicWrap = 500;
+					plainText = plainText.Substring(0, heuristicWrap) + "...";
 				}
 			}
-			
+
 			// be careful that this line needs to go after the hyperlink regions, or you'll be messing up the indicing 
 			plainText = plainText.Replace("\n", "<br/>");
-
 			return plainText;
 		}
 
@@ -237,7 +374,7 @@ namespace Dash
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
-			var path = "media\\" + imgTitle;
+			var path = "Media\\" + imgTitle;
 			return "<img src=\"" + path + "\">";
 		}
 
@@ -252,7 +389,7 @@ namespace Dash
 
 			// if not a YouTube video, the it's on here
 			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
-			var path = "media\\" + vidTitle;
+			var path = "Media\\" + vidTitle;
 			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
 		}
 
@@ -272,7 +409,10 @@ namespace Dash
 			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
 			if (regions != null)
 			{
-				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
+				foreach (var region in regions)
+				{
+					html.Add(RenderImmediateLinksToHtml(region));
+				}
 			}
 
 			return ConcatenateList(html);
@@ -340,11 +480,10 @@ namespace Dash
 				"<div>",
 				"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
 				"<div class=\"annotation\">",
-				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}),
+				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}, true),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">Tag: " + linkTitle + " &nbsp;| &nbsp;" + parentAnnotation.Title +
-				"</a></div>",
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + parentAnnotation.Title + "</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
 			return ConcatenateList(html);
@@ -526,7 +665,7 @@ namespace Dash
 		/// This method copies all of the media from each of the documents. This is the only time these files are written.
 		/// </summary>
 		/// <param name="dcs"></param>
-		private async void CopyMedia(IEnumerable<DocumentController> dcs)
+		private async Task CopyMedia(IEnumerable<DocumentController> dcs)
 		{
 			foreach (var dc in dcs)
 			{
@@ -536,6 +675,7 @@ namespace Dash
 						await CopyImage(dc);
 						break;
 					case "Pdf Note":
+						await CopyPdf(dc);
 						break;
 					case "Video Note":
 						await CopyVideo(dc);
@@ -544,6 +684,44 @@ namespace Dash
 						break;
 					default:
 						break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Pdfs are copied as a series of images.
+		/// </summary>
+		/// <returns></returns>
+		private async Task CopyPdf(DocumentController dc)
+		{
+			// if we haven't made a Media folder yet, make it now
+			if (!_mediaFolderMade)
+			{
+				_mediaFolderMade = true;
+				await _folder.CreateFolderAsync("Media");
+			}
+
+			var media = await _folder.GetFolderAsync("Media");
+			var folder = await media.CreateFolderAsync(_fileNames[dc]);
+
+			var pdf = await DataVirtualizationSource<DocumentController>.GetPdf(dc);
+			var numPages = pdf.PageCount;
+			_pdfNumbers[dc] = (int) numPages;
+			for (var i = 0; i < numPages; i++)
+			{
+				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint) i);
+				var file = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i+1) + ".jpg",
+					CreationCollisionOption.GenerateUniqueName);
+				using (var stream = await file.OpenStreamForWriteAsync())
+				{
+					var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream.AsRandomAccessStream());
+					var pixelStream = bitmap.PixelBuffer.AsStream();
+					byte[] pixels = new byte[bitmap.PixelBuffer.Length];
+
+					await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+					encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint) bitmap.PixelWidth, (uint) bitmap.PixelHeight, 96,
+						96, pixels);
+					await encoder.FlushAsync();
 				}
 			}
 		}
