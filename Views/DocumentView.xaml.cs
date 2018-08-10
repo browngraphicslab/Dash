@@ -774,7 +774,6 @@ namespace Dash
                 currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-
             if (ViewModel.DragBounds != null && 
                 (!ViewModel.DragBounds.Rect.Contains(translate) ||
                  !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
@@ -1945,7 +1944,6 @@ namespace Dash
 	    public void SetLinkBorderColor()
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-			xToBlue.Begin();
 	    }
 
 	    public void RemoveLinkBorderColor()

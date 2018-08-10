@@ -638,53 +638,7 @@ namespace Dash
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
-
-		//private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-		//{
-
-		//    if (false) //AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
-		//    {
-		//        var mouse = new Point(e.GetPosition(xPdfGrid).X, e.GetPosition(xPdfGrid).Y);
-		//        var closest = GetClosestElementInDirection(mouse, mouse);
-
-		//        //space, tab, enter
-
-		//        if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && (Math.Abs(closest.Bounds.Y - mouse.Y) < 10))
-		//        {
-		//            SelectIndex(closest.Index);
-		//        }
-
-
-
-		//        for (var i = closest.Index; i >= 0; --i)
-		//        {
-		//            var selectableElement = _selectableElements[i];
-		//            if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
-		//            {
-		//                SelectIndex(selectableElement.Index);
-		//            }
-		//            else
-		//            {
-		//                break;
-		//            }
-		//        }
-
-		//        for (var i = closest.Index; i >= 0; ++i)
-		//        {
-		//            var selectableElement = _selectableElements[i];
-		//            if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
-		//            {
-		//                SelectIndex(selectableElement.Index);
-		//            }
-		//            else
-		//            {
-		//                break;
-		//            }
-		//        }
-		//    }
-
-		//}
-
+        
 		private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
 		{
 			if (CurrentAnnotationType == AnnotationType.Region)
