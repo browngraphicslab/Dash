@@ -199,8 +199,9 @@ namespace Dash
             //ADD NEW SEPARATORS HERE!!!
             AppBarSeparator[] tempSeparators =
             {
-                xSepThree,
-                xSepFour
+                xSepOne,
+                xSepTwo,
+                xSepThree
             };
             allSeparators = tempSeparators;
 
@@ -866,16 +867,16 @@ namespace Dash
             {
                 xOpenIcon.Visibility = Visibility.Collapsed;
                 xCollapseIcon.Visibility = Visibility.Visible;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Collapse Toolbar";
             }
             else
             {
                 xOpenIcon.Visibility = Visibility.Visible;
                 xCollapseIcon.Visibility = Visibility.Collapsed;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Expand Toolbar";
             }
             
-
-                        //
-                        var backgroundBinding = new Binding
+            var backgroundBinding = new Binding
             {
                 Source = this,
                 Mode = BindingMode.OneWay,
@@ -962,7 +963,7 @@ namespace Dash
 
             _pin = new ToolTip()
             {
-                Content = "Pin toolbar",
+                Content = "Pin Toolbar",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -970,7 +971,7 @@ namespace Dash
 
             _collapse = new ToolTip()
             {
-                Content = "Collapse toolbar",
+                Content = "Collapse Toolbar",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -994,7 +995,7 @@ namespace Dash
 
             _quickPan = new ToolTip()
             {
-                Content = "Quick pan",
+                Content = "Quick Pan",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -1002,7 +1003,7 @@ namespace Dash
 
             _addGroup = new ToolTip()
             {
-                Content = "Add group",
+                Content = "Add Group",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -1010,7 +1011,7 @@ namespace Dash
 
             _addImage = new ToolTip()
             {
-                Content = "Add image",
+                Content = "Add Image",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -1018,7 +1019,7 @@ namespace Dash
 
             _addVideo = new ToolTip()
             {
-                Content = "Add video",
+                Content = "Add Video",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -1026,7 +1027,7 @@ namespace Dash
 
             _addAudio = new ToolTip()
             {
-                Content = "Add audio",
+                Content = "Add Audio",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -1066,7 +1067,7 @@ namespace Dash
 
             _export = new ToolTip()
             {
-                Content = "Export workspace",
+                Content = "Export Workspace",
                 Placement = placementMode,
                 VerticalOffset = offset
             };

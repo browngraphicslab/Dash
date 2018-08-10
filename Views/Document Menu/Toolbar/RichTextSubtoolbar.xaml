@@ -160,13 +160,13 @@
 
     <Grid x:Name="xGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="44" />
+            <ColumnDefinition Width="47.5" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <AppBarButton x:Name="xMoreButton" Style="{StaticResource AppBarButtonStyler}" Background="{StaticResource DashMediumBlueBrush}" Click="XMoreButton_OnClick">
+        <AppBarButton x:Name="xMoreButton" Style="{StaticResource AppBarButtonStyler}" Background="{StaticResource DashMediumBlueBrush}" Margin="0, 0, 0, 0" Click="XMoreButton_OnClick">
             <StackPanel>
-                <TextBlock x:Name="xMoreIcon" Text="&#xE109;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Visible"/>
-                <TextBlock x:Name="xMoreIconBack" Text="&#xE72B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                <TextBlock x:Name="xMoreIcon" Text="&#xE109;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="0, -2.5, 0, 0" HorizontalAlignment="Center" Visibility="Visible"/>
+                <TextBlock x:Name="xMoreIconBack" Text="&#xE72B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="0, -2.5, 0, 0" HorizontalAlignment="Center" Visibility="Collapsed"/>
             </StackPanel>
 
         </AppBarButton>
@@ -186,23 +186,27 @@
                 </controls:TextToolbar.ButtonModifications>
             </controls:TextToolbar>
 
-            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Margin="0 0 0 0">
+            <!--Font color button-->
+            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Margin="0, 0, 0, 0">
                 <Button.Flyout>
                     <Flyout x:Name="xForegroundColorFlyout">
                         <local:DashColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged" />
                     </Flyout>
                 </Button.Flyout>
                 <Grid Width="25" Height="25" Margin="0,-8,0,0">
-                    <TextBlock FontSize="16" HorizontalAlignment="Center" Margin="0,-2,0,0" Foreground="White" VerticalAlignment="Center">A</TextBlock>
-                    <Rectangle Width="16" Height="4" Fill="White" Margin="-2,22,0,0"/>
+                    <TextBlock FontSize="16" HorizontalAlignment="Center" Margin="0,-8,0,0" Foreground="White" VerticalAlignment="Center">A</TextBlock>
+                    <Rectangle Width="16" Height="4" Fill="{x:Bind SelectedFontColor, Mode=OneWay}" Margin="0,16,0,0"/>
                 </Grid>
             </AppBarButton>
+
+            <AppBarSeparator Foreground="White" Background="White" Height="50" Margin="0, -1.5, 0, 0"/>
+            
             <!--Font highlight button-->
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" Margin="0 0 0 0">
 
                 <Button.Flyout >
                     <Flyout x:Name="xHighlightColorFlyout">
-                        <local:DashColorPicker x:Name="xHighlightColorPicker" SelectedColorChanged="xBackgroundColorPicker_SelectedColorChanged"/>
+                        <local:DashColorPicker x:Name="xHighlightColorPicker" SelectedColorChanged="xHighlightColorPicker_SelectedColorChanged"/>
                     </Flyout>
                 </Button.Flyout>
                 <!--<Grid BorderBrush="DarkSlateGray" Background="#ffe56f" BorderThickness="0" Width="20" Height="25" Margin="0,-5,0,0">
@@ -210,31 +214,30 @@
                 </Grid>-->
                 <StackPanel>
 
-                    <TextBlock x:Name="xHighlightIconFill" Text="&#xE891;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="Yellow" Padding="0" HorizontalAlignment="Center" />
+                    <TextBlock x:Name="xHighlightIconFill" Text="&#xE891;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="{x:Bind SelectedHighlightColor, Mode=OneWay}" Padding="0" HorizontalAlignment="Center" Margin="0, -2, 0, 0"/>
                     <TextBlock x:Name="xHighlightIcon" Text="&#xE7E6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Margin="0 -16 0 0"/>
                 </StackPanel>
 
             </AppBarButton>
 
-
             <!--Superscript button-->
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SuperscriptButton_Tapped">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25,-8,0,0">A</TextBlock>
-                    <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,-16,20,0">1</TextBlock>
-                </StackPanel>
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-3, -10, 0, 0">A</TextBlock>
+                    <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="12, -14, 0, 0">1</TextBlock>
+                </Grid>
             </AppBarButton>
 
             <!--Subscript button-->
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="25,-8,0,0">A</TextBlock>
-                    <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,0,20,0">1</TextBlock>
-                </StackPanel>
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-6, -14, 0, 0">A</TextBlock>
+                    <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="14, -4, 0, 0">1</TextBlock>
+                </Grid>
             </AppBarButton>
 
             <AppBarButton x:Name="xBackgroundColorButton" Style="{StaticResource AppBarButtonStyler}" Grid.Column="1" AllowFocusOnInteraction="True"
-            Click="XBackgroundColorButton_OnClick" Margin="0 0 0 0">
+            Click="XBackgroundColorButton_OnClick" Width="55"  Margin="0 0 0 0">
                 <Button.Flyout>
                     <Flyout x:Name="xColorPickerFlyout">
                         <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->

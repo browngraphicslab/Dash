@@ -1,30 +1,19 @@
 ﻿using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.System;
+using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats;
-using Windows.UI.Xaml.Documents;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml.Shapes;
-using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons.Common;
+using Dash.Annotations;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats.RichText;
-using Frame = Microsoft.Office.Interop.Word.Frame;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,15 +22,15 @@ namespace Dash
     /// <summary>
     /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
     /// </summary>
-    public sealed partial class RichTextSubtoolbar : UserControl
+    public sealed partial class RichTextSubtoolbar : INotifyPropertyChanged
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation",
             typeof(Orientation), typeof(RichTextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
-            get { return (Orientation) GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => (Orientation) GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         private RichEditBox _currBox;
@@ -55,44 +44,103 @@ namespace Dash
             public MyFormatter(TextToolbar model, ResourceDictionary xTextGridResources) : base(model)
             {
                 var tbStyle = (Style) xTextGridResources["TextBlockStyle"];
-                var gridStyle = (Style) xTextGridResources["GridStyle"];
+
                 DefaultButtons = new ButtonMap();
                 base.DefaultButtons.Where((v, i) => i != 3 && i != 4).ToList().ForEach(DefaultButtons.Add);
+
+                // BOLD
                 var bold = (ToolbarButton)DefaultButtons[0];
-                var italics = (ToolbarButton)DefaultButtons[1];
-                //var underline = buttons.;
-                var strikethrough = (ToolbarButton)DefaultButtons[3];
-                var list = (ToolbarButton)DefaultButtons[5];
-                var orderedList = (ToolbarButton)DefaultButtons[6];
                 bold.Loaded += (sender, args) => bold.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                var margin = bold.Margin;
+                margin.Top = -4;
+                bold.Margin = margin;
+
+                // ITALICS
+                var italics = (ToolbarButton)DefaultButtons[1];
                 italics.Loaded += (sender, args) => italics.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                margin = italics.Margin;
+                margin.Top = -4;
+                italics.Margin = margin;
+
+                // UNDERLINE
+                var underline = (ToolbarButton)DefaultButtons[2];
+                underline.Loaded += (sender, args) => underline.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                margin = underline.Margin;
+                margin.Top = -3;
+                underline.Margin = margin;
+
+                // STRIKETHROUGH
+                var strikethrough = (ToolbarButton)DefaultButtons[3];
                 strikethrough.Loaded += (sender, args) => strikethrough.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
-                //underline.Loaded += (sender, args) => underline.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
+                margin = strikethrough.Margin;
+                margin.Top = -4;
+                strikethrough.Margin = margin;
+                strikethrough.Width = 65;
+
+                // SEPARATOR ONE
+                var sepOne = (ToolbarSeparator)DefaultButtons[4];
+                sepOne.Loaded += (sender, args) => sepOne.GetDescendantsOfType<Rectangle>().ToList().ForEach(rect => rect.Fill = new SolidColorBrush(Colors.White));
+                margin = sepOne.Margin;
+                margin.Top = -7;
+                margin.Left = 12;
+                margin.Right = 12;
+                sepOne.Margin = margin;
+
+                // UNORDERED LIST
+                var list = (ToolbarButton)DefaultButtons[5];
                 list.Loaded += (sender, args) =>
                 {
                     list.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Foreground = new SolidColorBrush(Colors.White));
-                    var attach = list.GetDescendants().Where(dob => (dob as FrameworkElement).Name == "Attach").ToList();
-                    (attach.First() as Grid).Background = new SolidColorBrush(Colors.White);
+                    var attach = list.GetDescendants().Where(dob => (dob as FrameworkElement)?.Name == "Attach").ToList();
+                    ((Grid) attach.First()).Background = new SolidColorBrush(Colors.White);
                 };
+                margin = list.Margin;
+                margin.Top = -3;
+                list.Margin = margin;
+
+                // ORDERED LIST
+                var orderedList = (ToolbarButton)DefaultButtons[6];
                 orderedList.Loaded += (sender, args) =>
                 {
                     orderedList.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Foreground = new SolidColorBrush(Colors.White));
-                    var attach = orderedList.GetDescendants().Where(dob => (dob as FrameworkElement).Name == "Attach").ToList();
-                    (attach.First() as Grid).Background = new SolidColorBrush(Colors.White);
+                    var attach = orderedList.GetDescendants().Where(dob => (dob as FrameworkElement)?.Name == "Attach").ToList();
+                    ((Grid) attach.First()).Background = new SolidColorBrush(Colors.White);
                 };
-                var underline = (ToolbarButton)DefaultButtons[2];
-                underline.Loaded += (sender, args) => underline.Icon.GetDescendantsOfType<TextBlock>().ToList().ForEach(tb => tb.Style = tbStyle);
-                var sep = (ToolbarSeparator)DefaultButtons[4];
-                sep.Loaded += (sender, args) => sep.GetDescendantsOfType<Rectangle>().ToList().ForEach(rect => rect.Fill = new SolidColorBrush(Colors.White));
+                margin = orderedList.Margin;
+                margin.Top = -3;
+                orderedList.Margin = margin;
             }
 
             public override ButtonMap DefaultButtons { get; }
         }
 
+        public SolidColorBrush SelectedFontColor
+        {
+            get => _selectedFontColor;
+            set
+            {
+                _selectedFontColor = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public SolidColorBrush SelectedHighlightColor
+        {
+            get => _selectedHighlightColor;
+            set
+            {
+                _selectedHighlightColor = value;
+                OnPropertyChanged();
+            }
+        }
+
         public RichTextSubtoolbar()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             _buttons = new Dictionary<string, Button>();
+
+            SelectedFontColor = new SolidColorBrush(Colors.White);
+            SelectedHighlightColor = new SolidColorBrush(Colors.White);
 
             _currBox = null;
             //xBackgroundColorPicker.ParentFlyout = xColorPickerFlyout;
@@ -151,6 +199,8 @@ namespace Dash
         }
 
         private Formatter _formatter;
+        private SolidColorBrush _selectedFontColor;
+        private SolidColorBrush _selectedHighlightColor;
 
         /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.
@@ -319,14 +369,24 @@ namespace Dash
             xMenuView.SuperscriptButton_Tapped(sender, e);
         }
 
-        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
+        private void xHighlightColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            xMenuView.xBackgroundColorPicker_SelectedColorChanged(sender, e);
+            xMenuView.xHighlightColorPicker_SelectedColorChanged(sender, e);
+            SelectedHighlightColor = new SolidColorBrush(xHighlightColorPicker.SelectedColor);
         }
 
         private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
             xMenuView.xForegroundColorPicker_SelectedColorChanged(sender, e);
+            SelectedFontColor = new SolidColorBrush(xForegroundColorPicker.SelectedColor);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

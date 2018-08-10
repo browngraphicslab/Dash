@@ -1,17 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Dash.Converters;
-using System;
-using Windows.Networking.BackgroundTransfer;
 using Windows.UI;
-using Windows.UI.Xaml.Shapes;
-using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -62,7 +55,6 @@ namespace Dash
                 Visibility = Visibility.Collapsed;
             };
 
-            CheckForCustom();
 	        xGroupForegroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
@@ -150,33 +142,17 @@ namespace Dash
                     BackgroundShape.AdornmentShape.Clover.ToString(),
                 };
 
-                CheckForCustom();
-
                 var index = xShapeOptionsDropdown.SelectedIndex;
                 var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
                 _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
 
-                if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
-            
+                if (!(index == GroupGeometryConstants.CustomPolyDropdownIndex || index == GroupGeometryConstants.CustomStarDropdownIndex)) return;
+
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
                 var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
                 _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
                 xSideCounter.Text = safeSideCount.ToString("G");
-            }
-        }
-
-        private void CheckForCustom()
-        {
-            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex || xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
-            {
-                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
-                xRadialCol.Width = new GridLength(50);
-                xSliderCol.Width = new GridLength(300);
-            }
-            else
-            {
-                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
-                xRadialCol.Width = new GridLength(0);
-                xSliderCol.Width = new GridLength(300);
             }
         }
 
