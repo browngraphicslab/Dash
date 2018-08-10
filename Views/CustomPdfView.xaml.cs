@@ -609,7 +609,6 @@ namespace Dash
             _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
-            DataDocument.SetField<TextController>(KeyStore.TitleMatchKey, selectableElements.Item2.Substring(300).Replace("-", ""), true);
 
             reader.Close();
             pdfDocument.Close();

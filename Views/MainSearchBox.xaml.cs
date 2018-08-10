@@ -418,16 +418,14 @@ namespace Dash
 
         public static void UnHighlightDocs(DocumentController coll)
         {
-            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             //unhighlight each doc in collection
-            foreach (DocumentController doc in colDocs)
-            {
-                MainPage.Instance.HighlightDoc(doc, false, 2);
-                if (doc.DocumentType.ToString() == "Collection Box")
+            MainPage.Instance.HighlightDoc(coll, false, 2);
+            if (colDocs != null)
+                foreach (DocumentController doc in colDocs)
                 {
-                    UnHighlightDocs(doc);
+                   UnHighlightDocs(doc);
                 }
-            }
         }
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
