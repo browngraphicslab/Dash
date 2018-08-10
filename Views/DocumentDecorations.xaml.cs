@@ -155,6 +155,8 @@ namespace Dash
 			{
 				_isMoving = true;
 			}
+
+			VisibilityState = Visibility.Collapsed;
 		}
 
 		private void DocView_OnDeleted()
