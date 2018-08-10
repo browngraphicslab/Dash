@@ -315,8 +315,9 @@ namespace Dash
             {
                 return;
             }
-
-            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth) {
+            
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+            {
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
                 topLeft = new Point(topLeft.X, topLeft.Y + 30);
             }
