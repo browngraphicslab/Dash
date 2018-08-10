@@ -1715,7 +1715,7 @@ namespace Dash
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
             target.SetBackgroundColor(Colors.White);
-		    if (!target.DocumentType.Type.Equals("Rich Text Box") && !target.DocumentType.Type.Equals("Text Box"))
+		    if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
 		    {
 			    if (target.GetActualSize()?.X > 200)
 			    {
