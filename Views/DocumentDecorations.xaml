@@ -56,13 +56,13 @@
         <Border Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-        <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
+        <Grid x:Name="xStackPanel" Grid.Column="2" Height="Auto" Background="Transparent" VerticalAlignment="Stretch"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+           <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
                 <RowDefinition Height="26"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}"
+            <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent"
                 PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" RightTapped="XAnnotateEllipseBorder_OnRightTapped"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting" >
                 <Grid  >

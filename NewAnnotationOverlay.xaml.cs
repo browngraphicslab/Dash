@@ -84,8 +84,6 @@ namespace Dash
 
         private ISelectable _selectedRegion;
 
-		private bool _makingPin = false;
-
         public event EventHandler<DocumentController> RegionAdded;
         public event EventHandler<DocumentController> RegionRemoved;
 
@@ -236,8 +234,7 @@ namespace Dash
                     break;
                 case AnnotationType.Pin:
 					//render pin will be called with specific doc controller if in process of making pin
-                   if (!_makingPin)
-                        RenderPin(documentController);
+                   RenderPin(documentController);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -850,18 +847,6 @@ namespace Dash
 		/// <param name="target"></param>
 	    private void CreatePin(Point point, DocumentController target)
 		{
-			/*
-			var annotation = _regionGetter(AnnotationType.Pin);
-		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
-		    annotation.SetWidth(10);
-		    annotation.SetHeight(10);
-		    annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
-		    annotation.Link(target, LinkContexts.PushPin);
-		    RegionDocsList.Add(annotation);
-		    RegionAdded?.Invoke(this, annotation);
-		    RenderPin(annotation, target);
-			*/
-	        _makingPin = true;
 			var annotation = MakeAnnotationPinDoc(point, target);
 
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
@@ -894,7 +879,6 @@ namespace Dash
 		    _mainDocument.GetDataDocument()
 			    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
 			    .Add(dvm.DocumentController);
-	        _makingPin = false;
         }
 
         private async Task<DocumentController> CreateVideoPin(Point point)

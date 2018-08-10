@@ -736,7 +736,6 @@ namespace Dash
 				    (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
 				     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
 					VisibilityState = Visibility.Collapsed;
-				xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
 				SuggestGrid.Visibility = Visibility.Collapsed;
 			}
 
@@ -842,7 +841,6 @@ namespace Dash
 		{
 			VisibilityState = Visibility.Collapsed;
 			SuggestGrid.Visibility = Visibility.Collapsed;
-			xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
 		}
 
 
