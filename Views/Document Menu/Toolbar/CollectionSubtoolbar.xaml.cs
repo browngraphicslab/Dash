@@ -152,7 +152,7 @@ namespace Dash
 
             _break = new ToolTip()
             {
-                Content = "Break collection",
+                Content = "Break Collection",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -160,13 +160,11 @@ namespace Dash
 
             _color = new ToolTip()
             {
-                Content = "Background color",
+                Content = "Background Color",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xBackgroundColor, _color);
-
-
         }
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)

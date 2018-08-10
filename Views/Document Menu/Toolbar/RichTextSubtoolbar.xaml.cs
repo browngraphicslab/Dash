@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
+﻿using System;
+using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats;
 using Windows.UI;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats.RichText;
@@ -47,6 +49,8 @@ namespace Dash
 
                 DefaultButtons = new ButtonMap();
                 base.DefaultButtons.Where((v, i) => i != 3 && i != 4).ToList().ForEach(DefaultButtons.Add);
+                const PlacementMode placementMode = PlacementMode.Bottom;
+                const int offset = 5;
 
                 // BOLD
                 var bold = (ToolbarButton)DefaultButtons[0];
@@ -54,6 +58,16 @@ namespace Dash
                 var margin = bold.Margin;
                 margin.Top = -4;
                 bold.Margin = margin;
+                ToolTipService.SetToolTip(bold, null);
+                var boldTip = new ToolTip()
+                {
+                    Content = "Bold (Ctrl + B)",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(bold, boldTip);
+                bold.PointerEntered += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = true; };
+                bold.PointerExited += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = false; };
 
                 // ITALICS
                 var italics = (ToolbarButton)DefaultButtons[1];
@@ -61,6 +75,16 @@ namespace Dash
                 margin = italics.Margin;
                 margin.Top = -4;
                 italics.Margin = margin;
+                ToolTipService.SetToolTip(italics, null);
+                var italicTip = new ToolTip()
+                {
+                    Content = "Italics (Ctrl + I)",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(italics, italicTip);
+                italics.PointerEntered += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = true; };
+                italics.PointerExited += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = false; };
 
                 // UNDERLINE
                 var underline = (ToolbarButton)DefaultButtons[2];
@@ -68,6 +92,16 @@ namespace Dash
                 margin = underline.Margin;
                 margin.Top = -3;
                 underline.Margin = margin;
+                ToolTipService.SetToolTip(underline, null);
+                var underlineTip = new ToolTip()
+                {
+                    Content = "Underline (Ctrl + U)",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(underline, underlineTip);
+                underline.PointerEntered += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = true; };
+                underline.PointerExited += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = false; };
 
                 // STRIKETHROUGH
                 var strikethrough = (ToolbarButton)DefaultButtons[3];
@@ -76,6 +110,16 @@ namespace Dash
                 margin.Top = -4;
                 strikethrough.Margin = margin;
                 strikethrough.Width = 65;
+                ToolTipService.SetToolTip(strikethrough, null);
+                var strikethroughTip = new ToolTip()
+                {
+                    Content = "Strikethrough (Ctrl + -)",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(strikethrough, strikethroughTip);
+                strikethrough.PointerEntered += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = true; };
+                strikethrough.PointerExited += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = false; };
 
                 // SEPARATOR ONE
                 var sepOne = (ToolbarSeparator)DefaultButtons[4];
@@ -97,6 +141,30 @@ namespace Dash
                 margin = list.Margin;
                 margin.Top = -3;
                 list.Margin = margin;
+                ToolTipService.SetToolTip(list, null);
+                var ulTip = new ToolTip()
+                {
+                    Content = "List",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(list, ulTip);
+                list.PointerEntered += (sender, args) => {
+                    if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
+                    {
+                        tip.IsOpen = true;
+                        tip.VerticalOffset = 5;
+                        tip.Placement = PlacementMode.Bottom;
+                    }
+                };
+                list.PointerExited += (sender, args) => {
+                    if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
+                    {
+                        tip.IsOpen = false;
+                        tip.VerticalOffset = 5;
+                        tip.Placement = PlacementMode.Bottom;
+                    }
+                };
 
                 // ORDERED LIST
                 var orderedList = (ToolbarButton)DefaultButtons[6];
@@ -109,6 +177,17 @@ namespace Dash
                 margin = orderedList.Margin;
                 margin.Top = -3;
                 orderedList.Margin = margin;
+                list.Margin = margin;
+                ToolTipService.SetToolTip(orderedList, null);
+                var olTip = new ToolTip()
+                {
+                    Content = "Ordered List",
+                    Placement = placementMode,
+                    VerticalOffset = offset
+                };
+                ToolTipService.SetToolTip(orderedList, olTip);
+                orderedList.PointerEntered += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = true; };
+                orderedList.PointerExited += (sender, args) => { if (sender is ToolbarButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.IsOpen = false; };
             }
 
             public override ButtonMap DefaultButtons { get; }
@@ -196,6 +275,7 @@ namespace Dash
                 xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
             };
             _formatter = new MyFormatter(xDashTextSubtoolbar, xTextGridResources);
+            SetUpToolTips();
         }
 
         private Formatter _formatter;
@@ -387,6 +467,70 @@ namespace Dash
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private ToolTip _fontColor;
+        private ToolTip _highlightColor;
+        private ToolTip _subscript;
+        private ToolTip _superScript;
+        private ToolTip _backgroundColor;
+
+        private void SetUpToolTips()
+        {
+            const PlacementMode placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _fontColor = new ToolTip()
+            {
+                Content = "Text Color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFontColor, _fontColor);
+
+            _highlightColor = new ToolTip()
+            {
+                Content = "Highlight Color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xHighlightColor, _highlightColor);
+
+            _subscript = new ToolTip()
+            {
+                Content = "Subscript",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSubscript, _subscript);
+
+            _superScript = new ToolTip()
+            {
+                Content = "Superscript",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSuperscript, _superScript);
+
+            _backgroundColor = new ToolTip()
+            {
+                Content = "Background Color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackgroundColorButton, _backgroundColor);
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
     }
 }

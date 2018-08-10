@@ -32,8 +32,6 @@ namespace Dash
 
         }
 
-      
-
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
             // xPdfCommandbar.IsOpen = true;
@@ -202,6 +200,7 @@ namespace Dash
             
 
         }
+
         private ToolTip _toggle;
 	    private ToolTip _scrollVis;
         private ToolTip _ink;
@@ -216,7 +215,7 @@ namespace Dash
 
             _toggle = new ToolTip()
             {
-                Content = "Toggle annotations",
+                Content = "Toggle Annotations",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -224,7 +223,7 @@ namespace Dash
 
 	        _scrollVis = new ToolTip()
 	        {
-		        Content = "Annotations visible on scroll",
+		        Content = "Annotations Visible on Scroll",
 		        Placement = placementMode,
 		        VerticalOffset = offset
 	        };
@@ -232,7 +231,7 @@ namespace Dash
 
 			_ink = new ToolTip()
             {
-                Content = "Ink annotation",
+                Content = "Ink Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -240,7 +239,7 @@ namespace Dash
 
             _text = new ToolTip()
             {
-                Content = "Text annotation",
+                Content = "Text Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -249,7 +248,7 @@ namespace Dash
           
             _region = new ToolTip()
             {
-                Content = "Region annotation",
+                Content = "Region Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -257,7 +256,7 @@ namespace Dash
 
             _pin = new ToolTip()
             {
-                Content = "Pin annotation",
+                Content = "Pin Annotation",
                 Placement = placementMode,
                 VerticalOffset = offset
             };

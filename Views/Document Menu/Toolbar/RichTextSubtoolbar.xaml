@@ -187,7 +187,7 @@
             </controls:TextToolbar>
 
             <!--Font color button-->
-            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Margin="0, 0, 0, 0">
+            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Margin="0, 0, 0, 0" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Button.Flyout>
                     <Flyout x:Name="xForegroundColorFlyout">
                         <local:DashColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged" />
@@ -202,7 +202,7 @@
             <AppBarSeparator Foreground="White" Background="White" Height="50" Margin="0, -1.5, 0, 0"/>
             
             <!--Font highlight button-->
-            <AppBarButton Style="{StaticResource AppBarButtonStyler}" Margin="0 0 0 0">
+            <AppBarButton x:Name="xHighlightColor"  Style="{StaticResource AppBarButtonStyler}" Margin="0 0 0 0" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
 
                 <Button.Flyout >
                     <Flyout x:Name="xHighlightColorFlyout">
@@ -221,7 +221,7 @@
             </AppBarButton>
 
             <!--Superscript button-->
-            <AppBarButton Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SuperscriptButton_Tapped">
+            <AppBarButton x:Name="xSuperscript" Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SuperscriptButton_Tapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-3, -10, 0, 0">A</TextBlock>
                     <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="12, -14, 0, 0">1</TextBlock>
@@ -229,15 +229,16 @@
             </AppBarButton>
 
             <!--Subscript button-->
-            <AppBarButton Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
+            <AppBarButton x:Name="xSubscript" Style="{StaticResource AppBarButtonStyler}" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock FontSize="16" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-6, -14, 0, 0">A</TextBlock>
                     <TextBlock FontSize="10"  Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="14, -4, 0, 0">1</TextBlock>
                 </Grid>
             </AppBarButton>
 
+            <!--Background color button-->
             <AppBarButton x:Name="xBackgroundColorButton" Style="{StaticResource AppBarButtonStyler}" Grid.Column="1" AllowFocusOnInteraction="True"
-            Click="XBackgroundColorButton_OnClick" Width="55"  Margin="0 0 0 0">
+            Click="XBackgroundColorButton_OnClick" Width="55"  Margin="0 0 0 0" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Button.Flyout>
                     <Flyout x:Name="xColorPickerFlyout">
                         <!-- <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>-->

@@ -263,7 +263,7 @@ namespace Dash
 
             _group = new ToolTip()
             {
-                Content = "Group items",
+                Content = "Group Items",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -271,7 +271,7 @@ namespace Dash
 
             _ungroup = new ToolTip()
             {
-                Content = "Ungroup items",
+                Content = "Ungroup Items",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -279,7 +279,7 @@ namespace Dash
 
             _color = new ToolTip()
             {
-                Content = "Font color",
+                Content = "Font Color",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
