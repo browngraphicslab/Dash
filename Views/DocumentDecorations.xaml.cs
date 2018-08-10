@@ -429,7 +429,7 @@ namespace Dash
 
 			foreach (var doc in SelectedDocs)
 			{
-				var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView)
+				var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
 					.TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
 				topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
