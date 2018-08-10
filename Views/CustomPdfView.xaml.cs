@@ -687,59 +687,11 @@ namespace Dash
 
 		private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
 		{
-			if (CurrentAnnotationType.Equals(AnnotationType.Pin))
+			if (CurrentAnnotationType == AnnotationType.Region)
 			{
 				var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-				overlay.StartAnnotation(e.GetPosition(overlay));
+                overlay.StartAnnotation(e.GetPosition(overlay), true);
 			}
-
-			if (CurrentAnnotationType.Equals(AnnotationType.Region))
-			{
-				SetAnnotationType(AnnotationType.Pin);
-				var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-				overlay.StartAnnotation(e.GetPosition(overlay));
-				SetAnnotationType(AnnotationType.Region);
-			}
-			//    if (AnnotationManager.CurrentAnnotationType.Equals(Dash.AnnotationManager.AnnotationType.TextSelection))
-			//    {
-			//        var mouse = new Point(e.GetPosition(xPdfGrid).X, e.GetPosition(xPdfGrid).Y);
-			//        var closest = GetClosestElementInDirection(mouse, mouse);
-
-			//        //space, tab, enter
-
-			//        if ((Math.Abs(closest.Bounds.X - mouse.X) < 10) && Math.Abs(closest.Bounds.Y - mouse.Y) < 10)
-			//        {
-			//            SelectIndex(closest.Index);
-			//        }
-
-
-
-			//        for (var i = closest.Index; i >= 0; --i)
-			//        {
-			//            var selectableElement = SelectableElements[i];
-			//            if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
-			//            {
-			//                SelectIndex(selectableElement.Index);
-			//            }
-			//            else
-			//            {
-			//                break;
-			//            }
-			//        }
-
-			//        for (var i = closest.Index; i >= 0; ++i)
-			//        {
-			//            var selectableElement = SelectableElements[i];
-			//            if (!selectableElement.Contents.ToString().Equals(" ") && !selectableElement.Contents.ToString().Equals("\t") && !selectableElement.Contents.ToString().Equals("\n"))
-			//            {
-			//                SelectIndex(selectableElement.Index);
-			//            }
-			//            else
-			//            {
-			//                break;
-			//            }
-			//        }
-			//    }
 
 		}
 

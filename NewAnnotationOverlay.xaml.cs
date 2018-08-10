@@ -420,8 +420,6 @@ namespace Dash
                 case AnnotationType.Ink:
                 case AnnotationType.None:
                     return null;
-                case AnnotationType.Pin:
-                    return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -654,27 +652,26 @@ namespace Dash
 
         #region General Annotation
 
-        public void StartAnnotation(Point p)
+        public void StartAnnotation(Point p, bool forcePin = false)
         {
             ClearPreviewRegion();
-            //ClearSelection();
-            switch (_currentAnnotationType)
-            {
-                case AnnotationType.Region:
-                    StartRegion(p);
-                    break;
-                case AnnotationType.Selection:
-                    StartTextSelection(p);
-                    break;
-                case AnnotationType.None:
-                case AnnotationType.Ink:
-                    return;
-                case AnnotationType.Pin:
-                    CreatePin(p);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (forcePin)
+                CreatePin(p);
+            else
+                switch (_currentAnnotationType)
+                {
+                    case AnnotationType.Region:
+                        StartRegion(p);
+                        break;
+                    case AnnotationType.Selection:
+                        StartTextSelection(p);
+                        break;
+                    case AnnotationType.None:
+                    case AnnotationType.Ink:
+                        return;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
         }
 
         public void UpdateAnnotation(Point p)
@@ -689,7 +686,6 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
-                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -709,8 +705,6 @@ namespace Dash
                     break;
                 case AnnotationType.None:
                 case AnnotationType.Ink:
-                    return;
-                case AnnotationType.Pin:
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -786,7 +780,7 @@ namespace Dash
 		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
-		    annotation.GetDataDocument().SetField(KeyStore.RegionTypeKey, new TextController(nameof(AnnotationType.Pin)), true);
+		    annotation.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, nameof(AnnotationType.Pin), true);
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkContexts.PushPin);
@@ -804,11 +798,6 @@ namespace Dash
         /// <param name="point"></param>
         private async void CreatePin(Point point)
         {
-            if (_currentAnnotationType != AnnotationType.Pin && _currentAnnotationType != AnnotationType.Region)
-            {
-                return;
-            }
-            
             foreach (var region in XAnnotationCanvas.Children)
             {
                 if (region is Ellipse existingPin && existingPin.GetBoundingRect(this).Contains(point))
