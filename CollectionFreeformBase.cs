@@ -1135,8 +1135,8 @@ namespace Dash
 							//make this rich text an annotation for activated  doc
 							if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
 							{
-								var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-									postitNote.GetPosition());
+                                var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
+                                    Util.PointTransformFromVisual(postitNote.GetPosition()?? new Point(), this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
 
 								//link region to this text 
 								region.Link(postitNote, LinkContexts.PushPin);

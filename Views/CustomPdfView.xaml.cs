@@ -524,9 +524,7 @@ namespace Dash
 				return regionDoc;
 
 			//else, make a new push pin region closest to given point
-			Point nonNullPoint = point ?? new Point(0, 0);
-			var newPoint = calculateClosestPointOnPDF(nonNullPoint);
-			SetAnnotationType(AnnotationType.Pin);
+			var newPoint = calculateClosestPointOnPDF(point ?? new Point());
 
 			return _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
 
@@ -534,54 +532,9 @@ namespace Dash
 
 		private Point calculateClosestPointOnPDF(Point from)
 		{
-			//initialize variables
-			double closestX;
-			double closestY;
-
-			var xPos = from.X;
-			var yPos = from.Y;
-
-			//get PDF data
-			var docView = this.GetFirstAncestorOfType<DocumentView>();
-			var viewModel = docView.ViewModel;
-			var pdfX = viewModel.XPos;
-			var pdfY = viewModel.YPos;
-			var pdfWidth = _bottomAnnotationOverlay.ActualWidth;
-			var pdfHeight = _bottomAnnotationOverlay.ActualHeight * BottomScrollViewer.ViewportHeight /
-			                BottomScrollViewer.ExtentHeight;
-
-			//if point is to the left of the pdf, set x to 10 (margin)
-			if (xPos <= pdfX + 10)
-			{
-				closestX = 10;
-			} //else if it is within the width of the pdf, set x to itself (minus pdfx offset)
-			else if (xPos <= pdfX + pdfWidth - 20)
-			{
-				closestX = xPos - pdfX;
-			} //else, it is to the right of the pdf
-			else
-			{
-				closestX = pdfWidth - 20;
-			}
-
-			//same idea for y pos!
-			//if point is above the pdf, set x to 10 (margin)
-			double yOff = _bottomAnnotationOverlay.ActualHeight * BottomScrollViewer.VerticalOffset /
-			              BottomScrollViewer.ExtentHeight;
-			if (yPos <= pdfY + 30)
-			{
-				closestY = 30 + yOff;
-			} //else if it is within the height of the pdf, set x to itself
-			else if (yPos <= pdfY + pdfHeight - 30)
-			{
-				closestY = yPos - pdfY + yOff;
-			} //else, it is below the pdf
-			else
-			{
-				closestY = pdfHeight - 30 + yOff;
-			}
-
-			return new Point(closestX, closestY);
+            var p = Util.PointTransformFromVisual(from, MainPage.Instance, this._bottomAnnotationOverlay);
+            return  new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
+                                    p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
 		}
 
 		private static DocumentController RegionGetter(AnnotationType type)
@@ -823,7 +776,7 @@ namespace Dash
 				return;
 			}
 
-            if (!currentPoint.Properties.IsLeftButtonPressed)
+            if (currentPoint.Properties.IsLeftButtonPressed)
             {
                 overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
             }
@@ -838,8 +791,7 @@ namespace Dash
 			_downPt = e.GetCurrentPoint(this).Position;
 			var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
 			var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||
-                CurrentAnnotationType.Equals(AnnotationType.Pin))
+            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;

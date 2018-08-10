@@ -793,7 +793,6 @@ namespace Dash
 
             RegionDocsList.Add(annotation);
 		    RegionAdded?.Invoke(this, annotation);
-		    RenderPin(annotation, linkedDoc);
             //format pin annotation
             return annotation;
         }
@@ -907,9 +906,10 @@ namespace Dash
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, target);
 			*/
-			MakeAnnotationPinDoc(point, target);
+			var annotation = MakeAnnotationPinDoc(point, target);
+            RenderPin(annotation, target);
 
-			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
+            var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
 			var width = pdfView?.PdfMaxWidth ??
 			            this.GetFirstAncestorOfType<DocumentView>().ActualWidth;
 			var height= pdfView?.PdfTotalHeight ??
@@ -1109,8 +1109,10 @@ namespace Dash
                 args.Handled = true;
             };
 
-			//handlers for moving pin
-	        pin.ManipulationMode = ManipulationModes.All;
+            pin.PointerPressed += (s, e) => e.Handled = true;
+
+            //handlers for moving pin
+            pin.ManipulationMode = ManipulationModes.All;
 	        pin.ManipulationStarted += (s, e) =>
 	        {
 		        pin.ManipulationMode = ManipulationModes.All;
@@ -1207,6 +1209,7 @@ namespace Dash
                 return;
             }
 
+
             _annotatingRegion = false;
 
             if (_regionRectangles.Count > 0)
@@ -1215,6 +1218,11 @@ namespace Dash
                     new Rect(Canvas.GetLeft(XPreviewRect), Canvas.GetTop(XPreviewRect), XPreviewRect.Width,
                         XPreviewRect.Height);
 
+                if (_regionRectangles.Last().Width < 4 || _regionRectangles.Last().Height < 4)
+                {
+                    _regionRectangles.RemoveAt(_regionRectangles.Count - 1);
+                    return;
+                }
             }
 
             var viewRect = new Rectangle
