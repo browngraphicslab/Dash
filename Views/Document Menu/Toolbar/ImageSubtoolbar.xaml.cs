@@ -187,7 +187,7 @@ namespace Dash
 
             _toggle = new ToolTip()
             {
-                Content = "Toggle annotations",
+                Content = "Toggle Annotations",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -195,7 +195,7 @@ namespace Dash
 
             _crop = new ToolTip()
             {
-                Content = "Crop image",
+                Content = "Crop Image",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -203,7 +203,7 @@ namespace Dash
 
             _replace = new ToolTip()
             {
-                Content = "Replace image",
+                Content = "Replace Image",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -219,7 +219,7 @@ namespace Dash
 
             _hoz = new ToolTip()
             {
-                Content = "Horizontal mirror",
+                Content = "Horizontal Mirror",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -227,7 +227,7 @@ namespace Dash
 
             _vert = new ToolTip()
             {
-                Content = "Vertical mirror",
+                Content = "Vertical Mirror",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
@@ -235,14 +235,11 @@ namespace Dash
 
             _revert = new ToolTip()
             {
-                Content = "Revert image",
+                Content = "Revert Image",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xRevert, _revert);
-
-
-
         }
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
