@@ -431,67 +431,70 @@ namespace Dash
 
         public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
-            var dvm = MainDocView.DataContext as DocumentViewModel;
-            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            if (collection != null && document != null)
+            var dvm = MainDocView.ViewModel;
+            highlightDoc(dvm, document, flag, search, animate);
+
+            foreach (DockedView dockedView in this.GetDescendantsOfType<DockedView>())
             {
-                highlightDoc(collection, document, flag, search, animate);
+                highlightDoc(dockedView.ContainedDocumentView.ViewModel, document, flag, search, animate);
             }
         }
 
-        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag, int search, bool animate = false)
+        private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
         {
             if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+            if (dm.DocumentController.Equals(document))
+            {
+                //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
+                if (search == 0)
                 {
-                    //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
-                    if (search == 0)
+                    if (flag == null)
                     {
-                        if (flag == null)
-                        {
-                            dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                        }
-                        else if (flag == true)
-                        {
-                            dm.DecorationState = (dm.Undecorated == false);
-                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
-                        }
-                        else if (flag == false)
-                        {
-                            dm.DecorationState = false;
-                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
-                        }
+                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
                     }
-                    else if (search == 1)
+                    else if (flag == true)
                     {
-                        //highlight doc
-                        if (animate)
-                        {
-                            dm.ExpandBorder();
-                        }
-                        else
-                        {
-                            dm.SearchHighlightState = new Thickness(8);
-                        }
+                        dm.DecorationState = (dm.Undecorated == false);
+                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
+                    }
+                    else if (flag == false)
+                    {
+                        dm.DecorationState = false;
+                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
+                    }
+                }
+                else if (search == 1)
+                {
+                    //highlight doc
+                    if (animate)
+                    {
+                        dm.ExpandBorder();
                     }
                     else
                     {
-                        //unhighlight doc
-                        if (animate)
-                        {
-                            dm.RetractBorder();
-                        }
-                        else
-                        {
-                            dm.SearchHighlightState = new Thickness(0);
-                        }
+                        dm.SearchHighlightState = new Thickness(8);
                     }
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
+                else
                 {
-                    highlightDoc(freeformView, document, flag, search);
+                    //unhighlight doc
+                    if (animate)
+                    {
+                        dm.RetractBorder();
+                    }
+                    else
+                    {
+                        dm.SearchHighlightState = new Thickness(0);
+                    }
                 }
+            }
+            else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
+            {
+                foreach (var vm in freeformView.ViewModel.DocumentViewModels)
+                {
+                    highlightDoc(vm, document, flag, search, animate);
+                }
+            }
         }
 
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)

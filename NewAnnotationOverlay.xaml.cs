@@ -573,7 +573,7 @@ namespace Dash
             foreach (DocumentController reg in regions)
             {
                 var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                if (selectionIndices.Count > 1) return null;
+                if (selectionIndices.Count != 1) return null;
                 PointController selection = selectionIndices[0];
                 var start = (int)selection.Data.X;
                 var end = (int)selection.Data.Y;
