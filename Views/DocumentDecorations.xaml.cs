@@ -39,6 +39,8 @@ namespace Dash
 		private bool _isMoving;
 		public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
 		public Tag CurrEditTag;
+		private DocumentController currEditLink;
+		private Button _activeBtn;
 		private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
 		private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
@@ -391,11 +393,6 @@ namespace Dash
 
 		private void AddLinkTypeButton(string linkName)
 		{
-			//check if link type button already exists 
-			if (tagMap[linkName] == null)
-			{
-
-			}
 			var tb = new TextBlock()
 			{
                 Text = linkName.Substring(0, 1),
@@ -466,7 +463,10 @@ namespace Dash
 			//allow users to change default tag titles by right click
 			button.RightTapped += (s, e) =>
 			{
+				_activeBtn = (s as Button);
+				e.Handled = true;
 				ToggleTagEditor(_tagNameDict[linkName]);
+				
 			};
 		}
 
@@ -998,18 +998,71 @@ namespace Dash
 			
 		}
 
-		private void OpenTagEditor(Tag currTag)
+		/// <summary>
+		/// Opens the editor beneath the document to edit the tags of the selected links. This is called when the user right clicks a link bubble.
+		/// </summary>
+		/// <param name="currTag"></param>
+		private void OpenTagEditor(Tag currTag, DocumentController chosenLink = null)
 		{
+			//TODO: DO I NEED THIS?
 			CurrEditTag = currTag;
 			//TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
-			foreach (var tag in _recentTags)
+			
+			//if one link has this tag, open tag editor for that link
+			if (tagMap[currTag.Text].Count == 1)
 			{
-				tag.RidSelectionBorder();
-				if (tag == currTag) tag.AddSelectionBorder();
+				//update selected recent tag
+				foreach (var tag in _recentTags)
+				{
+					tag.RidSelectionBorder();
+					if (tag.Text.Equals(currTag.Text)) tag.AddSelectionBorder();
+				}
+				currEditLink = tagMap[currTag.Text].First();
+				SuggestGrid.Visibility = Visibility.Visible;
+				xFadeAnimationIn.Begin();
+			}
+			else if (chosenLink != null)
+			{
+				currEditLink = chosenLink;
+				//update selected recent tag
+				foreach (var tag in _recentTags)
+				{
+					tag.RidSelectionBorder();
+					if (chosenLink.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(tag.Text) ?? false) tag.AddSelectionBorder();
+				}
+				SuggestGrid.Visibility = Visibility.Visible;
+				xFadeAnimationIn.Begin();
+			}
+			else //open context menu to let user decide which link to edit
+			{
+				var flyout = new MenuFlyout();
+
+				foreach (DocumentController link in tagMap[currTag.Text])
+				{
+					if (link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(currTag.Text) ?? false)
+					{
+						//get title of target
+						var targetTitle = link.GetLinkedDocument(LinkDirection.ToDestination)?
+							.Title ?? link.GetLinkedDocument(LinkDirection.ToSource)
+							                  .Title;
+
+						var item = new MenuFlyoutItem
+						{
+							Text = targetTitle,
+							DataContext = link
+						};
+						//clicking menu item should open the editor with the chosen, affected doc as the chosen item
+						var itemHdlr = new RoutedEventHandler((s, e) => OpenTagEditor(currTag, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+						item.Click += itemHdlr;
+						flyout.Items?.Add(item);
+						
+					}
+				}
+
+				if (_activeBtn != null) flyout.ShowAt(_activeBtn);
 			}
 
-			SuggestGrid.Visibility = Visibility.Visible;
-			xFadeAnimationIn.Begin();
+			
 		}
 
 		//temporary method for telling all links associated with this tag that an additional tag has been added
