@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using DashShared;
 
 namespace Dash
 {
@@ -66,12 +67,27 @@ namespace Dash
 			}
 		}
 
-		/// <summary>
-		/// This method generates the HTML content for each DocumentController.
-		/// </summary>
-		/// <param name="dc"></param>
-		/// <returns></returns>
-		private string GetFileContents(DocumentController dc)
+        public string getHtmlBody(DocumentController htmlDoc)
+        {
+            Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
+
+            var htmlString = (htmlDoc.GetDataDocument().GetField(KeyStore.DataKey) as TextController)?.Data;
+            var startIndex = htmlString?.IndexOf("<body>");
+            var endIndex = htmlString?.IndexOf("<\\body>") + 7;
+            if (startIndex > 0)
+            {
+                return htmlString.Substring((int)startIndex, (int)endIndex);
+            }
+
+            return htmlString;
+        }
+
+        /// <summary>
+        /// This method generates the HTML content for each DocumentController.
+        /// </summary>
+        /// <param name="dc"></param>
+        /// <returns></returns>
+        private string GetFileContents(DocumentController dc)
 		{
 			var fileText = new List<string>
 			{
