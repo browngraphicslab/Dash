@@ -793,8 +793,9 @@ namespace Dash
 		#region Region/Selection Events
 
 		private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
-		{
-			var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
+        {
+            (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
+            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
 			if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
 			{
 				return;
@@ -822,12 +823,10 @@ namespace Dash
 				return;
 			}
 
-			if (!currentPoint.Properties.IsLeftButtonPressed)
-			{
-				return;
-			}
-
-			overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
+            if (!currentPoint.Properties.IsLeftButtonPressed)
+            {
+                overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
+            }
 
 			//e.Handled = true;
 		}
@@ -839,13 +838,13 @@ namespace Dash
 			_downPt = e.GetCurrentPoint(this).Position;
 			var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
 			var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-			if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||
-			    CurrentAnnotationType.Equals(AnnotationType.Pin))
-			{
-				return;
-			}
-
-			overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
+            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed ||
+                CurrentAnnotationType.Equals(AnnotationType.Pin))
+            {
+                overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
+                (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
+                (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
+            }
 		}
 
 
@@ -1430,6 +1429,11 @@ namespace Dash
         }
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
+            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            {
+                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+                ScrollToRegion(src);
+            }
             var target = linkDoc.GetLinkedDocument(direction);
             if (_bottomAnnotationOverlay.RegionDocsList.Contains(target))
             {

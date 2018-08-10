@@ -397,6 +397,8 @@ namespace Dash
             {
                 return;
             }
+            document.RemoveField(KeyStore.GoToRegionLinkKey);
+            document.RemoveField(KeyStore.GoToRegionKey);
             document.SetFields(new []
             {
                 new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),

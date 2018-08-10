@@ -105,43 +105,26 @@ namespace Dash
 
         public void SelectRegion(DocumentController region)
         {
-            if (region.Equals(_selectedRegion?.RegionDocument))
-            {
-                if (this.GetFirstAncestorOfType<DocumentView>().Visibility.Equals(Visibility.Collapsed))
-                {
-                    this.GetFirstAncestorOfType<DocumentView>().Visibility = Visibility.Visible;
-                }
+            var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            documentView.Visibility = Visibility.Visible;
 
-                if (_selectedRegion.Selected)
-                {
-                    _selectedRegion.Deselect();
-                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
-                    if (vm != null)
-                    {
-                        vm.SearchHighlightState = new Thickness(0);
-                    }
-                }
-                else
-                {
-                    _selectedRegion.Select();
-                    var vm = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel;
-                    if (vm != null)
-                    {
-                        vm.SearchHighlightState = new Thickness(8);
-                    };
-                }
-            }
+            var deselect = _selectedRegion?.Selected == true;
             var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            //if (_selectedRegion != selectable)
-            {
-                foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
-                    {
-                        nvo._selectedRegion?.Deselect();
-                        nvo._selectedRegion = r;
+            foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                {
+                    nvo._selectedRegion?.Deselect();
+                    nvo._selectedRegion = deselect ? null : r;
+                    if (!deselect) { 
                         r.Select();
                     }
-            }
+                    if (documentView.ViewModel != null)
+                    {
+                        documentView.ViewModel.SearchHighlightState = new Thickness(deselect ? 0 : 8);
+                    }
+                    else
+                        ;
+                }
         }
 
         private void SelectRegion(ISelectable selectable, Point? mousePos)
