@@ -518,7 +518,7 @@ namespace Dash
 			AddTag(name);
 		}
 
-		private void AddTag(string linkName)
+		private Tag AddTag(string linkName)
 		{
 			xRecentTagsDivider.Visibility = Visibility.Visible;
 
@@ -553,6 +553,8 @@ namespace Dash
 				{
 					xTest.Children.Add(recent);
 				}
+
+			return tag;
 		}
 
 		private void rebuildMenuIfNeeded()
@@ -858,7 +860,8 @@ namespace Dash
 	            if (string.IsNullOrEmpty(entry)) return;
 
 
-	            AddTag(entry);
+	            AddTag(entry).Select();
+
 	            box.Text = "";
             }
         }
