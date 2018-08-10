@@ -84,6 +84,8 @@ namespace Dash
 
         private ISelectable _selectedRegion;
 
+		private bool _makingPin = false;
+
         public event EventHandler<DocumentController> RegionAdded;
         public event EventHandler<DocumentController> RegionRemoved;
 
@@ -233,7 +235,9 @@ namespace Dash
                 case AnnotationType.Ink:
                     break;
                 case AnnotationType.Pin:
-                    RenderPin(documentController);
+					//render pin will be called with specific doc controller if in process of making pin
+                   if (!_makingPin)
+                        RenderPin(documentController);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -799,39 +803,6 @@ namespace Dash
                     return;
                 }
             }
-/*
-			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
-		        new Size(150, 75));
-	        richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-	        var annotation = MakeAnnotationPinDoc(point, richText.Document);
-	        richText.Document.SetHidden(true); // hidden flag will be toggled off when annotation is rendered after annotation is added to RegionDocsList-- why??
-	        //set pos & region type
-			annotation.Link(richText.Document, LinkContexts.PushPin);
-
-			var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-            var scale = pdfView.Width / pdfView.PdfMaxWidth;
-
-            var dvm = new DocumentViewModel(richText.Document) { Undecorated = true, ResizersVisible = true,
-                   DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, pdfView.PdfMaxWidth, pdfView.PdfTotalHeight) } };
-            (DataContext as NewAnnotationOverlayViewModel).ViewModels.Add(dvm);
-
-            // bcz: should this be called in LoadPinAnnotations as well?
-             dvm.DocumentController.AddFieldUpdatedListener(KeyStore.GoToRegionLinkKey,
-                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-                {
-                    if (args.NewValue != null)
-                    {
-                        var regionDef = (args.NewValue as DocumentController).GetDataDocument()
-                            .GetField<DocumentController>(KeyStore.LinkDestinationKey).GetDataDocument().GetRegionDefinition();
-                        var pos = regionDef.GetPosition().Value;
-                        pdfView.ScrollToPosition(pos.Y);
-                        dvm.DocumentController.RemoveField(KeyStore.GoToRegionLinkKey);
-                    }
-                });
-            _mainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-                .Add(dvm.DocumentController);
-				*/
 
 	        DocumentController annotationController;
 
@@ -890,6 +861,7 @@ namespace Dash
 		    RegionAdded?.Invoke(this, annotation);
 		    RenderPin(annotation, target);
 			*/
+	        _makingPin = true;
 			var annotation = MakeAnnotationPinDoc(point, target);
 
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
@@ -922,6 +894,7 @@ namespace Dash
 		    _mainDocument.GetDataDocument()
 			    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
 			    .Add(dvm.DocumentController);
+	        _makingPin = false;
         }
 
         private async Task<DocumentController> CreateVideoPin(Point point)
@@ -1077,16 +1050,18 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    (DataContext as NewAnnotationOverlayViewModel).ViewModels.Remove(pin.DataContext as DocumentViewModel);
-                    var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
+                    XAnnotationCanvas.Children.Remove(pin);
+	                RegionDocsList.Remove(region);
+
+					var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
                     if (docView != null)
                     {
                         if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
-                        _mainDocument.GetDataDocument()
-                            .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-                            .Remove(docView.ViewModel.DocumentController);
-                    }
+	                    _mainDocument.GetDataDocument()
+		                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
+		                    .Remove(docView.ViewModel.DocumentController);
+					}
                 }
                 SelectRegion(vm, args.GetPosition(this));
                 args.Handled = true;
