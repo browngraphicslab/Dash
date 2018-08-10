@@ -71,21 +71,6 @@ namespace Dash
 			}
 		}
 
-        public string getHtmlBody(DocumentController htmlDoc)
-        {
-            Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
-
-            var htmlString = (htmlDoc.GetDataDocument().GetField(KeyStore.DataKey) as TextController)?.Data;
-            var startIndex = htmlString?.IndexOf("<body>");
-            var endIndex = htmlString?.IndexOf("<\\body>") + 7;
-            if (startIndex > 0)
-            {
-                return htmlString.Substring((int)startIndex, (int)endIndex);
-            }
-
-            return htmlString;
-        }
-
         /// <summary>
         /// This method generates the HTML content for each DocumentController.
         /// </summary>
@@ -211,6 +196,9 @@ namespace Dash
 					break;
 				case "Audio Note":
 					break;
+                case "Html Note":
+                    content += RenderHtmlToHtml(dc, regionsToRender);
+                    break;
 				default:
 					break;
 			}
@@ -218,7 +206,22 @@ namespace Dash
 			return content;
 		}
 
-		private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+	    public string RenderHtmlToHtml(DocumentController htmlDoc, List<DocumentController> regionsToRender)
+	    {
+	        //Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
+
+	        var htmlString = (htmlDoc.GetDataDocument().GetField(KeyStore.DataKey) as TextController)?.Data;
+	        var startIndex = htmlString?.IndexOf("<body>");
+	        var endIndex = htmlString?.IndexOf("</body>") + 7;
+	        if (startIndex > 0)
+	        {
+	            return htmlString.Substring((int)startIndex, (int)(endIndex - startIndex));
+	        }
+
+	        return htmlString;
+	    }
+
+        private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
 		{
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
