@@ -1096,8 +1096,8 @@ namespace Dash
 		    MenuFlyout flyout = new MenuFlyout();
 		    MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
 		    MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
-		    visOnScrollON.Text = "Annotations Visibile On Scroll : TURN ON";
-		    visOnScrollOFF.Text = "Annotations Visibile On Scroll : TURN OFF";
+		    visOnScrollON.Text = "Unpin Annotation";
+		    visOnScrollOFF.Text = "Pin Annotation";
 		    visOnScrollON.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.VisibleOnScroll; };
 		    visOnScrollOFF.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.ManualToggle; };
 		    regionGraphic.ContextFlyout = flyout;

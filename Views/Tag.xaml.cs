@@ -21,6 +21,7 @@ namespace Dash
 {
     public sealed partial class Tag : IComparable, IComparer<Tag>
     {
+	   
 
         public string Text
         {
@@ -36,7 +37,10 @@ namespace Dash
         private string _text;
         private Color _color;
         private DocumentDecorations _docdecs;
-        public Tag(DocumentDecorations docdecs, String text, Color color)
+	    public bool Selected = false;
+	    public SolidColorBrush selectedBrush = new SolidColorBrush(Color.FromArgb(240, 64, 123, 177));
+
+		public Tag(DocumentDecorations docdecs, String text, Color color)
         {
             this.InitializeComponent();
             xTagContainer.Background = new SolidColorBrush(color);
@@ -49,18 +53,33 @@ namespace Dash
 
         private void XTagContainer_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xTagContainer.BorderThickness.Equals(new Thickness(0)))
+            if (xTagContainer.BorderBrush.Equals(selectedBrush))
             {
-                Select();
-            }
+				Deselect();
+			}
             else
             {
-                Deselect();
+	            Select();
 
-            }
+			}
         }
 
-        private void AddLink(DocumentController link, ListController<TextController> currtags)
+	    public void AddLink(DocumentController link)
+	    {
+			//get the list of current tags for this link
+		    var tags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+			AddLink(link, tags);
+		}
+
+		//temporary method for telling all links associated with this tag that an additional tag has been added
+	    public void UpdateOtherTags()
+	    {
+		    //get active links from doc dec based on last-pressed btn & add this tag to them
+			_docdecs.UpdateAllTags(this);
+
+		}
+
+		public void AddLink(DocumentController link, ListController<TextController> currtags)
         {
             var uniqueTag = true;
 
@@ -84,9 +103,11 @@ namespace Dash
                 currtags.Add(new TextController(this.Text));
             }
 
-
+			//add all the found tags to the link doc
             link.GetDataDocument()
                 .SetField(KeyStore.LinkTagKey, currtags, true);
+
+			
         }
 
         private void RemoveLink(DocumentController link, ListController<TextController> currtags)
@@ -126,8 +147,8 @@ namespace Dash
 
 	    public void Deselect()
 	    {
-
-			xTagContainer.BorderThickness = new Thickness(0);
+		    Selected = false;
+		    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
 			if (_docdecs.SelectedDocs.Count == 1)
 			{
 				ListController<DocumentController> linksFrom = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
@@ -183,8 +204,14 @@ namespace Dash
 
 	    public void Select()
 	    {
-			xTagContainer.BorderThickness = new Thickness(2);
-			xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+		    Selected = true;
+
+		    xTagContainer.BorderBrush = selectedBrush;
+			//xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+
+			//tell doc decs to change currently activated buttons 
+
+			
 			bool unique = true;
 			foreach (var recent in _docdecs.RecentTags)
 			{
@@ -262,20 +289,23 @@ namespace Dash
 						}
 					}
 				}
-
+			
 
 			}
-		}
+
+		    UpdateOtherTags();
+
+	    }
 
 	    public void RidSelectionBorder()
 	    {
-		    xTagContainer.BorderThickness = new Thickness(0);
+		    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
-		}
+	    }
 
 		public void AddSelectionBorder()
-	    {
-		    xTagContainer.BorderThickness = new Thickness(2);
+		{
+			xTagContainer.BorderBrush = selectedBrush;
 
 		}
 	}

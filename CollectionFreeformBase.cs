@@ -1135,6 +1135,7 @@ namespace Dash
                     {
                         postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+
                     }
                 }
                 else
