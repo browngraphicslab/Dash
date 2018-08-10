@@ -218,7 +218,7 @@ namespace Dash
                         var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
                         var nchar = ((string)selectableElement.Contents).First();
                         if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length-1]) && !char.IsLower(sb[sb.Length-1]))) && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
-                            sb.Append("\r\n");
+                            sb.Append("\r\n\r\n");
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             sb.Append((string)selectableElement.Contents);

@@ -19,12 +19,12 @@ namespace Dash
         public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             var localFile = await CopyFileToLocal(fileData);
-            return GetPDFDoc(localFile);
+            return GetPDFDoc(localFile, fileData.File.Name);
         }
 
-        public DocumentController GetPDFDoc(StorageFile file)
+        public DocumentController GetPDFDoc(StorageFile file, string title = null)
         {
-            var title = file.DisplayName;
+            title = title ?? file.DisplayName;
 
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
