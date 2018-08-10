@@ -64,7 +64,22 @@ namespace Dash
 			}
         }
 
-        private void AddLink(DocumentController link, ListController<TextController> currtags)
+	    public void AddLink(DocumentController link)
+	    {
+			//get the list of current tags for this link
+		    var tags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+			AddLink(link, tags);
+		}
+
+		//temporary method for telling all links associated with this tag that an additional tag has been added
+	    public void UpdateOtherTags()
+	    {
+		    //get active links from doc dec based on last-pressed btn & add this tag to them
+			_docdecs.UpdateAllTags(this);
+
+		}
+
+		public void AddLink(DocumentController link, ListController<TextController> currtags)
         {
             var uniqueTag = true;
 
@@ -88,9 +103,11 @@ namespace Dash
                 currtags.Add(new TextController(this.Text));
             }
 
-
+			//add all the found tags to the link doc
             link.GetDataDocument()
                 .SetField(KeyStore.LinkTagKey, currtags, true);
+
+			
         }
 
         private void RemoveLink(DocumentController link, ListController<TextController> currtags)
@@ -275,8 +292,10 @@ namespace Dash
 			
 
 			}
-			
-		}
+
+		    UpdateOtherTags();
+
+	    }
 
 	    public void RidSelectionBorder()
 	    {

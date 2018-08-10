@@ -38,7 +38,10 @@ namespace Dash
 		private List<DocumentView> _selectedDocs;
 		private bool _isMoving;
 		public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
-		private Tag _currEditTag;
+		public Tag CurrEditTag;
+		private ObservableCollection<string> currNames = new ObservableCollection<string>();
+
+		private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
 		public Visibility VisibilityState
 		{
@@ -342,25 +345,26 @@ namespace Dash
 
                 if (doc.ViewModel != null)
                 {
-                    LinkNames.Clear();
+                    tagMap.Clear();
                     GetLinkTypes(doc.ViewModel.DataDocument,
-                        LinkNames); // make sure all of this documents link types have been added to the menu of link types
+                        tagMap); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
 
 
 			rebuildMenuIfNeeded();
 
+			//TODO: DO WE NEED THIS STILL?
 			// update menu items to point to the currently selected document
 			foreach (var item in xButtonsPanel.Children.OfType<Button>())
 			{
 				var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
-				var names = new HashSet<string>();
-				GetLinkTypes(target, names);
+				//tagMap.Clear();
+				//GetLinkTypes(target, tagMap);
 				var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
-				item.Background = names.Contains(menuLinkName)
-					? new SolidColorBrush(new Windows.UI.Color() {A = 0x10, R = 0, G = 0xff, B = 0})
-					: null;
+				//item.Background = map.ContainsKey(menuLinkName)
+				//	? new SolidColorBrush(new Windows.UI.Color() {A = 0x10, R = 0, G = 0xff, B = 0})
+				//	: null;
 				item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
 			}
 
@@ -387,6 +391,11 @@ namespace Dash
 
 		private void AddLinkTypeButton(string linkName)
 		{
+			//check if link type button already exists 
+			if (tagMap[linkName] == null)
+			{
+
+			}
 			var tb = new TextBlock()
 			{
                 Text = linkName.Substring(0, 1),
@@ -506,30 +515,71 @@ namespace Dash
 		}
 		*/
 
-		private void AddTagIfApplicable(string name)
+		private Tag AddTagIfUnique(string name)
 		{
-			bool unique = true;
 			foreach (var comp in Tags)
 			{
 				if (name == comp.Text)
 				{
-					return;
+					return null;
 				}
 			}
 
-			AddTag(name);
+			return AddTag(name);
 		}
 
-		private Tag AddTag(string linkName)
+		private Tag AddTag(string linkName, List<DocumentController> links = null)
 		{
 			xRecentTagsDivider.Visibility = Visibility.Visible;
-
+			
 			var r = new Random();
 			var hexColor = Color.FromArgb(150, (byte) r.Next(256), (byte) r.Next(256), (byte) r.Next(256));
 
-				var tag = new Tag(this, linkName, hexColor);
+			Tag tag = null;
+
+			//REMOVE OLD TAG
+			if (_tagNameDict.ContainsKey(linkName))
+			{
+				/*
+				var oldTag = _tagNameDict[linkName];
+				hexColor = oldTag.Color;
+				Tags.Remove(oldTag);
+				DocumentController oldTagDoc = null;
+				foreach (var docC in TagsSave)
+				{
+					if (docC.GetField<TextController>(KeyStore.DataKey, true).Data.Equals(linkName))
+					{
+						oldTagDoc = docC;
+						break;
+					}
+				}
+
+				if (oldTagDoc != null)
+				{
+					if (RecentTagsSave.Contains(oldTagDoc))
+					{
+						RecentTagsSave.Remove(oldTagDoc);
+						//check if this tag is in recent tags & replace
+						int index;
+						Queue<Tag> catchQueue = new Queue<Tag>();
+						foreach (var recent in _recentTags)
+						{
+
+						}
+					}
+					TagsSave.Remove(oldTagDoc);
+					hexColor = oldTagDoc.GetField<ColorController>(KeyStore.BackgroundColorKey, true).Data;
+				}
+				*/
+				tag = _tagNameDict[linkName];
+				//hexColor = tag.Color;
+			}
+			else
+			{
+				tag = new Tag(this, linkName, hexColor);
 
 				Tags.Add(tag);
+				_tagNameDict.Remove(linkName);
 				_tagNameDict.Add(linkName, tag);
 
 				var doc = new DocumentController();
@@ -555,24 +605,50 @@ namespace Dash
 				{
 					xTest.Children.Add(recent);
 				}
+			}
 
+			if (links != null)
+			{
+				//connect link to tag
+				foreach (DocumentController link in links)
+				{
+					tag.AddLink(link);
+				}
+			}
 			return tag;
 		}
 
+		//adds the tag box & link button that connexts the name of the tag to all link docs included in the list
+		private void AddTagGraphic(string name, List<DocumentController> linkList)
+		{
+			//maybe call this
+			AddTag(name, tagMap[name]);
+			AddLinkTypeButton(name);
+		}
+
+
 		private void rebuildMenuIfNeeded()
 		{
+			if (SuggestGrid.Visibility == Visibility.Visible) return;
 			xButtonsPanel.Children.Clear();
-			foreach (var linkName in LinkNames)
+			//_tagNameDict.Clear();
+			//check each relevant tag name & create the tag graphic & button for it!
+			foreach (var name in tagMap.Keys)
 			{
-			    if (linkName != "")
+			    if (name != "")
 			    {
-				    AddTagIfApplicable(linkName);
-			        AddLinkTypeButton(linkName);
+				    AddTagGraphic(name, tagMap[name]);
                 }
 			}
 		}
 
-		private static void GetLinkTypes(DocumentController doc, HashSet<string> linknames)
+		private Dictionary<string, List<DocumentController>> UpdateTags()
+		{
+			return null;
+			//TODO: IMPLEMENT
+		}
+
+		private static void GetLinkTypes(DocumentController doc, Dictionary<string, List<DocumentController>> map)
 		{
 			if (doc == null)
 				return;
@@ -580,26 +656,58 @@ namespace Dash
 			//linknames.Clear();
 			var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
 			if (linkedTo != null)
+				//for each link
 				foreach (var l in linkedTo)
 				{
-				    var tags = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-                    linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
+				    var tagNames = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
+					//for each tag name of this link
+					foreach (TextController name in tagNames)
+					{
+						var str = name.Data;
+						//tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
+						if (map.ContainsKey(str))
+						{
+							if (!map[str].Contains(l.GetDataDocument())) map[str].Add(l.GetDataDocument());
+						}
+						else //create new list containing link doc
+						{
+							map.Add(str, new List<DocumentController> {l.GetDataDocument()});
+						}
+					}
+                    //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
+
 				}
 
 			var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
 			if (linkedFrom != null)
 				foreach (var l in linkedFrom)
 				{
-				    var tags = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
+				    var tagNames = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
 
-                    linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
-                }
+					//linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
+
+					//for each tag name of this link
+					foreach (TextController name in tagNames)
+					{
+						var str = name.Data;
+						//tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
+						if (map.ContainsKey(str))
+						{
+							map[str].Add(l.GetDataDocument());
+						}
+						else //create new list containing link doc
+						{
+							map.Add(str, new List<DocumentController> { l.GetDataDocument() });
+						}
+					}
+
+				}
 
 			var regions = doc.GetDataDocument().GetRegions();
 			if (regions != null)
 				foreach (var region in regions.TypedData)
 				{
-					GetLinkTypes(region.GetDataDocument(), linknames);
+					GetLinkTypes(region.GetDataDocument(), map);
 				}
 		}
 
@@ -862,7 +970,7 @@ namespace Dash
 	            if (string.IsNullOrEmpty(entry)) return;
 
 
-	            AddTag(entry).Select();
+	            AddTagIfUnique(entry).Select();
 
 	            box.Text = "";
             }
@@ -870,7 +978,7 @@ namespace Dash
 
 		private void ToggleTagEditor(Tag tagPressed = null)
 		{
-			if (tagPressed == _currEditTag)
+			if (tagPressed == CurrEditTag)
 			{
 				if (SuggestGrid.Visibility == Visibility.Collapsed)
 				{
@@ -880,7 +988,7 @@ namespace Dash
 				{
 					xFadeAnimationOut.Begin();
 					xFadeAnimationOut.Completed += (s, en) => { SuggestGrid.Visibility = Visibility.Collapsed; };
-					_currEditTag = null;
+					CurrEditTag = null;
 				}
 			}
 			else
@@ -892,7 +1000,7 @@ namespace Dash
 
 		private void OpenTagEditor(Tag currTag)
 		{
-			_currEditTag = currTag;
+			CurrEditTag = currTag;
 			//TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 			foreach (var tag in _recentTags)
 			{
@@ -902,6 +1010,18 @@ namespace Dash
 
 			SuggestGrid.Visibility = Visibility.Visible;
 			xFadeAnimationIn.Begin();
+		}
+
+		//temporary method for telling all links associated with this tag that an additional tag has been added
+		public void UpdateAllTags(Tag selected)
+		{
+			//get active links from last-pressed btn & add this tag to them
+
+			foreach (var link in tagMap[CurrEditTag.Text])
+			{
+				selected.AddLink(link);
+			}
+
 		}
 
 	}
