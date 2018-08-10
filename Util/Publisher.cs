@@ -218,7 +218,8 @@ namespace Dash
 	            return htmlString.Substring((int)startIndex, (int)(endIndex - startIndex));
 	        }
 
-	        return htmlString;
+            // This means the htmlString is a website url
+	        return "<embed src=" + htmlString + "/>";
 	    }
 
         private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender)
