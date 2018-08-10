@@ -258,7 +258,6 @@ namespace Dash
             }
 
 			SetPositionAndSize();
-			SetTitleIcon();
 			if (SelectedDocs.Any() && !this.IsRightBtnPressed())
 			{
 				VisibilityState = Visibility.Visible;
@@ -270,6 +269,7 @@ namespace Dash
 			}
 		}
 
+		/*
 		private void SetTitleIcon()
 		{
 			if (SelectedDocs.Count == 1)
@@ -323,8 +323,8 @@ namespace Dash
 			//{
 			//    UpdateEllipses(_newpoint);
 			//}
-		}
-
+*/
+		
 		static HashSet<string> LinkNames = new HashSet<string>();
 
 		private void SetPositionAndSize()
@@ -374,19 +374,19 @@ namespace Dash
 				return;
 			}
 
-            if (botRight.X > MainPage.Instance.ActualWidth-xStackPanel.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth, botRight.Y);
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - xLeftColumn.Width.Value, 
+                X = topLeft.X, 
                 Y = topLeft.Y
             };
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
             xRow.Height = new GridLength(botRight.Y - topLeft.Y);
-            VisibilityState = Visibility.Visible; // bcz: want decorations to be visible for docked view .. this needs to be fixed elsewhere
-			if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
 
+            //VisibilityState = Visibility.Visible; // bcz: want decorations to be visible for docked view .. this needs to be fixed elsewhere
+			if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
 		}
 
 		private void AddLinkTypeButton(string linkName)

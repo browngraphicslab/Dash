@@ -11,7 +11,7 @@
     d:DesignWidth="600">
 
         <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
-    <Grid Width="600" Height="40">
+    <Grid Height="40">
         <Grid.Resources>
             <!--Button style set here-->
             <Style x:Key="xButtonStyle" TargetType="Button">
@@ -28,15 +28,43 @@
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
-            <!--All caps-->
             <!--Font family combo box-->
-            <ComboBox Name="xFontFamilyComboBox" PlaceholderText="Choose a font..." Style="{StaticResource ComboBoxStyler}" Height="35" HorizontalAlignment="Stretch" Margin="10,0,9.5,0" Grid.Column="0" ItemsSource="{x:Bind FontFamilyNames, Mode=OneWay}" DisplayMemberPath="Source" SelectionChanged="FontFamilyComboBox_SelectionChanged" VerticalAlignment="Center"/>
+            <ComboBox 
+                Name="xFontFamilyComboBox" 
+                Padding="0, -2, 0, 0" 
+                PlaceholderText="Choose a font..." 
+                Style="{StaticResource ComboBoxStyler}" 
+                Height="30" 
+                HorizontalAlignment="Stretch" 
+                Margin="6,0,9.5,0" 
+                Grid.Column="0" 
+                ItemsSource="{x:Bind FontFamilyNames, Mode=OneWay}" 
+                DisplayMemberPath="Source" 
+                SelectionChanged="FontFamilyComboBox_SelectionChanged"
+                VerticalAlignment="Center"/>
             <!--Font size combo box-->
-            <TextBox Name="xFontSizeTextBox" Height="35"  Foreground="Transparent" HorizontalAlignment="Stretch" Margin="10,0,45,0" Grid.Column="1"   VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" TextChanged="XFontSizeTextBox_OnTextChanged"/>
-            <ComboBox Name="xFontSizeComboBox" Style="{StaticResource ComboBoxStyler}"  Height="35" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" SelectionChanged="FontSizeComboBox_SelectionChanged" VerticalAlignment="Center" Canvas.ZIndex="0" 
-                      Foreground="Black"/>
-            <!--Font color button-->
-           
+            <TextBox 
+                Name="xFontSizeTextBox" 
+                Height="18" 
+                Foreground="Transparent" 
+                HorizontalAlignment="Stretch" 
+                Margin="-4,0,41,0" 
+                Grid.Column="1" 
+                VerticalAlignment="Center" 
+                Background="White"
+                Opacity="1" 
+                Canvas.ZIndex="2" 
+                TextChanged="XFontSizeTextBox_OnTextChanged"/>
+            <ComboBox 
+                Name="xFontSizeComboBox" 
+                Style="{StaticResource ComboBoxStyler}"  
+                Height="30" 
+                HorizontalAlignment="Stretch" 
+                Margin="-4,0,10,0" 
+                Grid.Column="1" 
+                SelectionChanged="FontSizeComboBox_SelectionChanged" 
+                VerticalAlignment="Center" Canvas.ZIndex="0" 
+                Foreground="Black"/>
         </Grid>
 
       

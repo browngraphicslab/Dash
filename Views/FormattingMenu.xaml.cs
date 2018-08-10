@@ -432,7 +432,7 @@ namespace Dash
             }
         }
 
-        public void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
+        public void xHighlightColorPicker_SelectedColorChanged(object sender, Color e)
         {
             if (sender is DashColorPicker colorPicker)
             {

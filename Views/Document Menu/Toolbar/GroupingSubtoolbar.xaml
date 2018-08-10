@@ -13,13 +13,7 @@
 
     <Grid>
         <StackPanel Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" x:Name="xGroupCommandbar" Height="40">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition x:Name="xRadialCol" Width="50"/>
-                    <ColumnDefinition x:Name="xSliderCol" Width="300"/>
-                </Grid.ColumnDefinitions>
-                <ComboBox x:Name="xShapeOptionsDropdown" Style="{StaticResource ComboBoxStyler}"  SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
+            <ComboBox x:Name="xShapeOptionsDropdown" Style="{StaticResource ComboBoxStyler}"  SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
                     <ComboBoxItem Content="Rectangle"/>
                     <ComboBoxItem Content="Ellipse"/>
                     <ComboBoxItem Content="Rounded"/>
@@ -31,28 +25,28 @@
                     <ComboBoxItem Content="CustomStar"/>
                     <ComboBoxItem Content="Clover"/>
                 </ComboBox>
-                <Grid x:Name="xSideToggleButtonGrid" Grid.Column ="1">
-                    <Button x:Name="xAddSide" Margin="2, -17, 0, 0" Width="20" Height="20" Background="Transparent" Tapped="XAddSide_OnTapped" RightTapped="XAddSide_OnRightTapped">
-                        <StackPanel>
-                            <Border CornerRadius="1" 
+            <Grid x:Name="xSideToggleButtonGrid" Visibility="Collapsed">
+                <Button x:Name="xAddSide" Margin="2, -17, 0, 0" Width="20" Height="20" Background="Transparent" Tapped="XAddSide_OnTapped" RightTapped="XAddSide_OnRightTapped">
+                    <StackPanel>
+                        <Border CornerRadius="1" 
                                     Background="Transparent" 
                                     BorderBrush="Green" 
                                     BorderThickness="6">
-                            </Border>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="xRemoveSide" Margin="2, 17, 0, 0"  Width="20" Height="20" Background="Transparent" Tapped="XRemoveSide_OnTapped" RightTapped="XRemoveSide_OnRightTapped">
-                        <StackPanel>
-                            <Border CornerRadius="1" 
+                        </Border>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="xRemoveSide" Margin="2, 17, 0, 0"  Width="20" Height="20" Background="Transparent" Tapped="XRemoveSide_OnTapped" RightTapped="XRemoveSide_OnRightTapped">
+                    <StackPanel>
+                        <Border CornerRadius="1" 
                                     Background="Transparent" 
                                     BorderBrush="Red" 
                                     BorderThickness="6">
-                            </Border>
-                        </StackPanel>
-                    </Button>
-                    <TextBlock x:Name="xSideCounter" Margin="13, 2, 0, 0" Text="7" Foreground="White"/>
-                </Grid>
+                        </Border>
+                    </StackPanel>
+                </Button>
+                <TextBlock x:Name="xSideCounter" Margin="13, 2, 0, 0" Text="7" Foreground="White"/>
             </Grid>
+            <AppBarSeparator Height="45" Margin="0, -2, 0, 0" Background="White" Foreground="White"/>
             <AppBarButton x:Name="xGroup" Style="{StaticResource AppBarButtonStyler}" Tapped="XGroup_OnTapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xGroupIcon" Text="&#xEF20;" FontSize="16" Margin="0, -3, 0, 0" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
@@ -64,10 +58,10 @@
                         </local:DashColorPicker>
                     </Flyout>
                 </Button.Flyout>
-                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Width="20" Margin="2, -10, 0, 0"/>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Width="20" Margin="2, -9, 0, 0"/>
             </AppBarButton>
             <AppBarButton x:Name="xUngroup" Style="{StaticResource AppBarButtonStyler}" Tapped="XUngroup_OnTapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xUngroupIcon" Text="&#xE8C6;" FontSize="16" Margin="0, -3, 0, 0"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="xUngroupIcon" Text="&#xE8C6;" FontSize="16" Margin="2, -3, 0, 0"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
 
         </StackPanel>

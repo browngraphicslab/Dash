@@ -99,36 +99,8 @@ namespace Dash
                         }
             };
 
-            if (toDock.DocumentType.Equals(PdfBox.DocumentType) || toDock.DocumentType.Equals(ImageBox.DocumentType))
-            {
-                toDock.AddFieldUpdatedListener(KeyStore.GoToRegionKey,
-                    delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-                        Context context)
-                    {
-                        if (args.NewValue == null)
-                        {
-                            return;
-                        }
-
-                        copiedView.GetDescendantsOfType<NewAnnotationOverlay>().ToList()
-                            .ForEach(i => i.SelectRegion(args.NewValue as DocumentController));
-
-                        sender.RemoveField(KeyStore.GoToRegionKey);
-                    });
-            }
-
-            if (toDock.DocumentType.Equals(RichTextBox.DocumentType)) toDock.SetField<NumberController>(KeyStore.TextWrappingKey, (int) TextWrapping.Wrap, true);
-
-            if (toDock.DocumentType.Equals(PdfBox.DocumentType))
-            {
-                copiedView.Loaded += PDFView_Loaded;
-                copiedView.Unloaded -= PDFView_Loaded;
-            }
             DockedView dockedView = new DockedView(dir, toDock);
-            dockedView.NestedLengthChanged += OnNestedLengthChanged;
             dockedView.ChangeView(copiedView);
-            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
-            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
 
             if (_firstDock[(int)dir])
             {
@@ -193,27 +165,12 @@ namespace Dash
 	        return copiedView;
         }
 
-        private void PDFView_Loaded(object sender, RoutedEventArgs e)
-        {
-            var docView = sender as DocumentView;
-            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.DockedLength, DockedLength_OnChanged);
-            
-            void DockedLength_OnChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
-            {
-                docView.GetFirstDescendantOfType<CustomPdfView>().UnFreeze();
-            }
-
-            docView.Unloaded += delegate
-            {
-                docView.ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.DockedLength,
-                    DockedLength_OnChanged);
-            };
-        }
-
         private void OnNestedLengthChanged(object sender, GridSplitterEventArgs e)
         {
-            e.DocumentToUpdate.SetField(KeyStore.DockedLength, new NumberController(e.NewLength), true);
+            e.DocumentToUpdate.SetField<NumberController>(KeyStore.DockedLength, e.NewLength, true);
         }
+
+
 
         private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
         {
@@ -372,7 +329,7 @@ namespace Dash
 
         private void xRightSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[1].GetElements().First(), NewLength = xRightDockColumn.Width.Value });
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate =  _dockControllers[1].GetElements().First(), NewLength = xRightDockColumn.Width.Value });
         }
 
         private void xLeftSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)

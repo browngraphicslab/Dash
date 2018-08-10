@@ -162,7 +162,7 @@ namespace Dash
 		private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
 		{
 			LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-			Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+            this.KeyDown += CustomPdfView_KeyDown;
 			_bottomAnnotationOverlay.LoadPinAnnotations(this);
 			_topAnnotationOverlay.LoadPinAnnotations(this);
 		}
@@ -172,18 +172,21 @@ namespace Dash
             public Rect ClipRect;
         }
 
-        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        private void CustomPdfView_KeyDown(object sender, KeyRoutedEventArgs args)
         {
+
+            if (args.Key == VirtualKey.Space)
+                MainPage.Instance.xToolbar.xPdfToolbar.Update(
+                    CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
             if (this.IsCtrlPressed())
             {
-
                 var selections = new List<List<SelRange>>
                 {
                     _bottomAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
                     _topAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-                if (args.VirtualKey == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
+                if (args.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
                 {
                     Debug.Assert(allSelections.Last().Range.Value != -1);
                     Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
@@ -253,7 +256,6 @@ namespace Dash
 			LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
 			_bottomAnnotationOverlay._textSelectableElements?.Clear();
 			_topAnnotationOverlay._textSelectableElements?.Clear();
-			Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
 		}
 
 		private readonly NewAnnotationOverlay _topAnnotationOverlay;
@@ -609,7 +611,6 @@ namespace Dash
             _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
-            DataDocument.SetField<TextController>(KeyStore.TitleMatchKey, selectableElements.Item2.Substring(300).Replace("-", ""), true);
 
             reader.Close();
             pdfDocument.Close();
@@ -670,6 +671,7 @@ namespace Dash
 			{
 				SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
 			}
+            this.Focus(FocusState.Pointer);
 		}
 
 		private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -703,7 +705,7 @@ namespace Dash
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }
-		}
+        }
 
 
 
@@ -1509,7 +1511,7 @@ namespace Dash
 		{
 			xFirstPanelRow.Height = new GridLength(0);
 		}
-	}
+    }
 
 }
 
