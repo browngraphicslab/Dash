@@ -62,7 +62,7 @@
                     </ToolTipService.ToolTip>
                 </Grid>
             </Border>
-            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Spacing="4" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Grid.Row="1" Spacing="4" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
             </StackPanel>
 
             <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
