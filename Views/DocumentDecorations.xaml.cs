@@ -316,16 +316,18 @@ namespace Dash
                 return;
             }
 
-            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth) {
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+                topLeft = new Point(topLeft.X, topLeft.Y + 30);
+            }
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X,
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
+            xRow.Height = new GridLength(Math.Max(0,botRight.Y - topLeft.Y));
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
@@ -365,6 +367,7 @@ namespace Dash
                 Content = g,
                 Width = 22,
                 Height = 22,
+                Background = new SolidColorBrush(Colors.Transparent),
                 CanDrag = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
@@ -391,6 +394,7 @@ namespace Dash
             xButtonsPanel.Children.Add(button);
             button.PointerEntered += (s, e) => toolTip.IsOpen = true;
             button.PointerExited += (s, e) => toolTip.IsOpen = false;
+            button.DragStarting += XAnnotateEllipseBorder_OnDragStarting;
 
             button.Tapped += (s, e) =>
             {
