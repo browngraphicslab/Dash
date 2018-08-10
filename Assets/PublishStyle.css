@@ -31,6 +31,14 @@ body {
     word-wrap: break-word
 }
 
+#sidebar i {
+    color: #8BBBE5;
+}
+
+#sidebar .icon {
+    margin-right: 10px;
+}
+
     /* we don't want the bullet points in the list '*/
     #sidebar ul {
         list-style-type: none;
@@ -50,8 +58,7 @@ body {
 
     /* for the link in the sidebar that's the current page */
     #sidebar .activeNote {
-        padding-left: 5px;
-        border-left: 3px solid #383A42;
+        border-bottom: 3px solid #383A42;
         text-transform: uppercase;
         font-weight: 700;
     }

@@ -78,7 +78,7 @@ namespace Dash
 				// CREATE THE INDEX
 				"<!DOCTYPE html>",
 				"<title>" + dc.Title + "</title>",
-				"<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">",
+				"<link rel=\"stylesheet\" href=\"https://use.fontawesome.com/releases/v5.2.0/css/all.css\" integrity=\"sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ\" crossorigin=\"anonymous\">",
 				"<link href=\"PublishStyle.css\" rel=\"stylesheet\">",
 				"<html><body>",
 
@@ -116,12 +116,48 @@ namespace Dash
 
 			sidebar.Add("<div class=\"heading\">NOTES</div>");
 			sidebar.Add("<ul>");
-			sidebar.AddRange(dcs.Select(dc => "<li><a href=\"" + _fileNames[dc] + ".html\">" + dc.Title + "</a></li>"));
+			sidebar.AddRange(dcs.Select(dc => "<li><i class=\"" + GetIconClass(dc) + " icon\"></i><a href=\"" + _fileNames[dc] + ".html\">" + (dc.Title.Length > 25 ? dc.Title.Substring(0, 25) + "..." : dc.Title) + "</a></li>"));
 			sidebar.Add("</ul>");
 
 			sidebar.Add("</div>");
 
 			return ConcatenateList(sidebar);
+		}
+		
+		/// <summary>
+		/// Returns the FontAwesome icon class for the given document's type.
+		/// </summary>
+		/// <param name="dc"></param>
+		/// <returns></returns>
+		private object GetIconClass(DocumentController dc)
+		{
+			var content = "";
+			switch (dc.DocumentType.Type)
+			{
+				case "Rich Text Note":
+					content += "fas fa-file-alt";
+					break;
+				case "Markdown Note":
+					content += "fas fa-sticky-note";
+					break;
+				case "Image Note":
+					content += "fas fa-image";
+					break;
+				case "Pdf Note":
+					content += "fas fa-file-pdf";
+					break;
+				case "Video Note":
+					content += "fas fa-video";
+					break;
+				case "Audio Note":
+					content += "fas fa-music";
+					break;
+				default:
+					content += "fas fa-file";
+					break;
+			}
+
+			return content;
 		}
 
 		#region RENDERING MAIN CONTENT
@@ -131,14 +167,15 @@ namespace Dash
 		/// </summary>
 		/// <param name="dc"></param>
 		/// <param name="regionsToRender">if you want to selectively choose which regions to render (useful for annotation sidebar things), pass in a list here</param>
+		/// <param name="truncate">Make the note smaller (used for annotation sidebar things)</param>
 		/// <returns></returns>
-		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
+		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var content = "";
 			switch (dc.DocumentType.Type)
 			{
 				case "Rich Text Note":
-					content += RenderRichTextToHtml(dc, regionsToRender);
+					content += RenderRichTextToHtml(dc, regionsToRender, truncate);
 					break;
 				case "Markdown Note":
 					content += RenderMarkdownToHtml(dc, regionsToRender);
@@ -160,7 +197,7 @@ namespace Dash
 			return content;
 		}
 
-		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
+		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			var richText = dc.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
@@ -168,6 +205,7 @@ namespace Dash
 			
 			// do the regioning
 			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
+			var stringsToInsert = new SortedDictionary<int, string>();
 			if (regions != null)
 			{
 				foreach (var region in regions)
@@ -200,14 +238,93 @@ namespace Dash
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
-					plainText = plainText.Insert(startIndex, htmlToInsert);
-					plainText = plainText.Insert(startIndex + regionText.Length + htmlToInsert.Length, "</b></a>"); // need to add length to account for what was inserted in the beginning
+					stringsToInsert.Add(startIndex, htmlToInsert);
+					stringsToInsert.Add(startIndex + regionText.Length, "</b></a>");
+				}
+
+				// insert the HTML into the plaintext, going from last position to first position
+				plainText = stringsToInsert.Keys.Reverse().Aggregate(plainText, (current, pos) => current.Insert(pos, stringsToInsert[pos]));
+			}
+
+			if (truncate && plainText.Length > 500)
+			{
+				// try to figure out where the links are and get long text to some reasonable length
+				var truncated = "";
+				var remainingText = plainText;
+				var totalKeys = stringsToInsert.Keys.Count;
+				if (totalKeys != 0)
+				{
+					var threshold = 500 / totalKeys / 2; // this is how much space is roughly "allocated" to each link
+					for (int i = 0; i < totalKeys; i++)
+					{
+						var nextIndex =
+							remainingText.IndexOf(GetString(i), StringComparison.Ordinal); // next place that it occurs in the remaining text
+						if (nextIndex > threshold / 2) // divide by two since threshold is front and back
+						{
+							// was too far away, so now we have to truncate off the front a bit
+							var diff = nextIndex - threshold;
+							truncated += " ... ";
+							try
+							{
+								diff = remainingText.IndexOf(" ", diff, StringComparison.Ordinal) < 0 ? diff : remainingText.IndexOf(" ", diff, StringComparison.Ordinal);
+							}
+							catch (Exception)
+							{
+								// ignored
+							}
+							
+							remainingText = remainingText.Substring(diff);
+						}
+
+						// now within acceptable distance, we want to find the end of the URL and add it to truncated
+						i++;
+						var lastLinkIndex = remainingText.IndexOf(GetString(i), StringComparison.Ordinal) + GetString(i).Length;
+						try
+						{
+							var heuristic =
+								remainingText.IndexOf(" ", lastLinkIndex + threshold / 3,
+									StringComparison.Ordinal); // heuristically find the next occurrence of a word break to stop at
+							lastLinkIndex =
+								heuristic < 0
+									? lastLinkIndex
+									: heuristic; // if it returned -1, then it means it didn't actually find the space, so keep where it was before
+						}
+						catch (Exception)
+						{
+							// ignored
+						}
+
+						truncated += remainingText.Substring(0, lastLinkIndex);
+						remainingText =
+							remainingText.Substring(lastLinkIndex); // remove everything up to this point
+					}
+
+					if (remainingText.Length < threshold / 4)
+					{
+						truncated += remainingText;
+					}
+					else
+					{
+						truncated += "...";
+					}
+
+					string GetString(int i)
+					{
+						return stringsToInsert[stringsToInsert.Keys.ToList()[i]];
+					}
+
+					plainText = truncated;
+				}
+				else
+				{
+					var heuristicWrap = plainText.IndexOf(" ", 500, StringComparison.Ordinal);
+					if (heuristicWrap < 0) heuristicWrap = 500;
+					plainText = plainText.Substring(0, heuristicWrap) + "...";
 				}
 			}
-			
+
 			// be careful that this line needs to go after the hyperlink regions, or you'll be messing up the indicing 
 			plainText = plainText.Replace("\n", "<br/>");
-
 			return plainText;
 		}
 
@@ -324,11 +441,10 @@ namespace Dash
 				"<div>",
 				"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
 				"<div class=\"annotation\">",
-				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}),
+				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}, true),
 				"</div>", // close annotation tag
 				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">Tag: " + linkTitle + " &nbsp;| &nbsp;" + parentAnnotation.Title +
-				"</a></div>",
+				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + parentAnnotation.Title + "</a></div>",
 				"</div>" //close the annotationWrapper tag
 			};
 			return ConcatenateList(html);
