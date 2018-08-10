@@ -526,8 +526,8 @@ namespace Dash
 			//else, make a new push pin region closest to given point
 			var newPoint = calculateClosestPointOnPDF(point ?? new Point());
 
-			return _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
-
+            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
+            return makeAnnotationPinDoc;
 		}
 
 		private Point calculateClosestPointOnPDF(Point from)
