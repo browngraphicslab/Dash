@@ -278,13 +278,7 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     foreach (DocumentController documentController in listArgs.NewItems)
                     {
-	                    var userCreated = documentController.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData
-		                                      .First()?.GetDataDocument()
-		                                      .GetField<DocumentController>(KeyStore.LinkDestinationKey, true)
-		                                      .GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
-	                                      nameof(LinkContexts.PushPin);
-
-						if (!userCreated) RenderAnnotation(documentController);
+						RenderAnnotation(documentController);
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
@@ -897,7 +891,6 @@ namespace Dash
 		    RenderPin(annotation, target);
 			*/
 			var annotation = MakeAnnotationPinDoc(point, target);
-            RenderPin(annotation, target);
 
             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
 			var width = pdfView?.PdfMaxWidth ??
@@ -1721,6 +1714,7 @@ namespace Dash
 			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
 		    var where = e.GetPosition(XAnnotationCanvas);
 		    var target = dragModel.GetDropDocument(where);
+            target.SetBackgroundColor(Colors.White);
 		    if (!target.DocumentType.Type.Equals("Rich Text Box") && !target.DocumentType.Type.Equals("Text Box"))
 		    {
 			    if (target.GetActualSize()?.X > 200)
