@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -11,6 +12,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
+using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
@@ -188,23 +190,58 @@ namespace Dash
             }
         }
 
-        private async Task<ImageSource> RenderPage(uint page)
+        private async Task<ImageSource> RenderPage(uint pageNum)
         {
             if (_view.PdfUri == null)
             {
                 return null;
             }
 
-            var options = new Windows.Data.Pdf.PdfPageRenderOptions();
-            var stream = new InMemoryRandomAccessStream();
-            var widthRatio = _view.ActualWidth == 0 ? 1 : _view.ActualWidth / _view.PdfMaxWidth;
-            var box = _view.PDFdoc.GetPage(page).Dimensions.MediaBox;
-            options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, 1000);
-            options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, 1000 * box.Height / box.Width);
-            await _view.PDFdoc.GetPage(page).RenderToStreamAsync(stream, options);
-            var source = new BitmapImage();
-            await source.SetSourceAsync(stream);
-            return source;
+            using (var page = _view.PDFdoc.GetPage(pageNum))
+            {
+                var options = new WPdf.PdfPageRenderOptions();
+                var stream = new InMemoryRandomAccessStream();
+                var widthRatio = _view.ActualWidth == 0 ? 1 : _view.ActualWidth / _view.PdfMaxWidth;
+                var box = page.Dimensions.MediaBox;
+                options.DestinationWidth = (uint) Math.Min(widthRatio * box.Width, 1000);
+                options.DestinationHeight = (uint) Math.Min(widthRatio * box.Height, 1000 * box.Height / box.Width);
+                await page.RenderToStreamAsync(stream, options);
+                var source = new BitmapImage();
+                await source.SetSourceAsync(stream);
+                return source;
+            }
         }
+
+        public static async Task<ImageSource> PdfPages(DocumentController pdf, uint pageNum)
+        {
+            var pdfUri = new Uri(pdf.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey).Data);
+            StorageFile file;
+            try
+            {
+                file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
+            }
+            catch (ArgumentException)
+            {
+                try
+                {
+                    file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
+                }
+                catch (ArgumentException)
+                {
+                    return null;
+                }
+            }
+            var pdfDoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            using (var page = pdfDoc.GetPage(pageNum))
+            {
+                //get a way to write out to disk as opposed to memory
+                var stream = new InMemoryRandomAccessStream();
+                await page.RenderToStreamAsync(stream);
+                var source = new BitmapImage();
+                await source.SetSourceAsync(stream);
+                return source;
+            }
+        }
+       
     }
 }
