@@ -124,28 +124,9 @@
 
 
                 <Grid Margin="0,3,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" x:Name="xSearch"/>
-                        <ColumnDefinition x:Name="xAddNew" Width="30"/>
-                    </Grid.ColumnDefinitions>
-
-
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
-                        <Grid  Name="xNewButton"  Tapped="XNewButton_OnTapped"  PointerEntered="XNewButton_OnPointerEntered"  PointerExited="XNewButton_OnPointerExited"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Ellipse Height="25" Width="25" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="White" StrokeThickness="1">
-
-                            </Ellipse>
-                            <TextBlock x:Name="xNewButtonIcon" Text="&#xE710;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="0 0 0 0" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-                        </Grid>
-
-                    </StackPanel>
-
-
 
                     <AutoSuggestBox Grid.Column="0" MinHeight="25" Height="33" FontSize="7"
                                     PlaceholderText="Enter link type" 
-                                    QueryIcon="Find"
                                     TextChanged="AutoSuggestBox_TextChanged"
                                     UpdateTextOnSelect="False"
                                     Name="xAutoSuggestBox"
@@ -158,11 +139,6 @@
                                     Margin="3 0 0 0"
                                     KeyUp="XAutoSuggestBox_OnKeyUp"
                                     AllowDrop="True" HorizontalAlignment="Stretch"/>
-
-
-
-
-                    
 
                 </Grid>
 

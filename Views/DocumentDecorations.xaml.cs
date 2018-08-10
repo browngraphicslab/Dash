@@ -611,6 +611,7 @@ namespace Dash
 				if (linkName == comp.Text)
 				{
 					unique = false;
+                    comp.Select();
 					return comp.Color;
 				}
 			}
@@ -645,6 +646,7 @@ namespace Dash
 				{
 					xTest.Children.Add(recent);
 				}
+                tag.Select();
 			}
 			return hexColor;
 		}
@@ -948,31 +950,6 @@ namespace Dash
 			}
 
 		}
-
-
-		private void XNewButton_OnTapped(object sender, TappedRoutedEventArgs e)
-		{
-		
-		    string entry = xAutoSuggestBox.Text.Trim();
-		    if (string.IsNullOrEmpty(entry)) return;
-
-		    e.Handled = true;
-		    AddTag(entry);
-		    xAutoSuggestBox.Text = "";
-        }
-
-		private void XNewButton_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-		{
-			Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-				new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-		}
-
-		private void XNewButton_OnPointerExited(object sender, PointerRoutedEventArgs e)
-		{
-			Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-				new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-		}
-
         
 
 	    private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
