@@ -158,7 +158,6 @@ namespace Dash
 			{
 				_isMoving = true;
             }
-            VisibilityState = Visibility.Collapsed; 
         }
 
 		private void DocView_OnDeleted()
@@ -478,7 +477,6 @@ namespace Dash
 
             ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
             xRow.Height = new GridLength(botRight.Y - topLeft.Y);
-            VisibilityState = Visibility.Visible; // bcz: want decorations to be visible for docked view .. this needs to be fixed elsewhere
 
         }
 
