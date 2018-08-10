@@ -25,6 +25,7 @@ using Windows.UI;
 using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Windows.UI;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -256,6 +257,7 @@ namespace Dash
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
+	        CurrEditTag = null;
 
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
@@ -288,7 +290,7 @@ namespace Dash
 
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
+                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView)
                     .TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
@@ -310,15 +312,10 @@ namespace Dash
 
             //TODO: DO WE NEED THIS STILL?
             // update menu items to point to the currently selected document
-            foreach (var item in xButtonsPanel.Children.OfType<Button>())
+            foreach (var item in xButtonsPanel.Children.OfType<Grid>())
             {
                 var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
-                //tagMap.Clear();
-                //GetLinkTypes(target, tagMap);
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
-                //item.Background = map.ContainsKey(menuLinkName)
-                //	? new SolidColorBrush(new Windows.UI.Color() {A = 0x10, R = 0, G = 0xff, B = 0})
-                //	: null;
                 item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
             }
 
@@ -327,26 +324,24 @@ namespace Dash
             {
                 return;
             }
-            
+
             if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-            {
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
-                topLeft = new Point(topLeft.X, topLeft.Y + 30);
-            }
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X,
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
-            xRow.Height = new GridLength(Math.Max(0,botRight.Y - topLeft.Y));
+            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
 
 		private void AddLinkTypeButton(string linkName)
 		{
+			//button formatting
 			var tb = new TextBlock()
 			{
                 Text = linkName.Substring(0, 1),
@@ -354,32 +349,29 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = new SolidColorBrush(Colors.White)
             };
-            var g = new Grid()
+            var button = new Grid()
             {
-                Background = new SolidColorBrush(Colors.Transparent)
+                Background = new SolidColorBrush(Colors.Transparent),
+				CanDrag = true,
+				Width = 22,
+				Height = 22,
             };
             //set button color to tag color
             var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
             var btnColorFinal = btnColorOrig != null
                 ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                 : Color.FromArgb(255, 64, 123, 177);
-            g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse()
+            var ellipse = new Ellipse()
             {
-                Width = 22,
-                Height = 22,
-                Fill = new SolidColorBrush(btnColorFinal)
-            });
-            g.Children.Add(tb);
-            var button = new Button()
-            {
-                Content = g,
-                Width = 22,
-                Height = 22,
-                Background = new SolidColorBrush(Colors.Transparent),
+	            Width = 22,
+	            Height = 22,
+	            Fill = new SolidColorBrush(btnColorFinal),
                 CanDrag = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-            button.DragStarting += (s, args) =>
+			button.Children.Add(ellipse);
+			button.Children.Add(tb);
+			button.DragStarting += (s, args) =>
             {
                 var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
                 if (doq != null)
@@ -394,6 +386,7 @@ namespace Dash
                 }
             };
 
+			//tooltip formatting
             ToolTip toolTip = new ToolTip();
             toolTip.Content = linkName;
             toolTip.HorizontalOffset = 5;
@@ -402,7 +395,6 @@ namespace Dash
             xButtonsPanel.Children.Add(button);
             button.PointerEntered += (s, e) => toolTip.IsOpen = true;
             button.PointerExited += (s, e) => toolTip.IsOpen = false;
-            button.DragStarting += XAnnotateEllipseBorder_OnDragStarting;
 
             button.Tapped += (s, e) =>
             {
@@ -425,7 +417,12 @@ namespace Dash
 				ToggleTagEditor(_tagNameDict[linkName]);
 				
 			};
-			button.PointerPressed += (s, e) => { e.Handled = true; };
+			button.PointerPressed += (s, e) => {
+				foreach (var doc in SelectedDocs)
+				{
+					doc.ManipulationMode = ManipulationModes.None;
+				}
+			};
 		}
 
         /*
@@ -498,39 +495,7 @@ namespace Dash
             //REMOVE OLD TAG
             if (_tagNameDict.ContainsKey(linkName))
             {
-                /*
-				var oldTag = _tagNameDict[linkName];
-				hexColor = oldTag.Color;
-				Tags.Remove(oldTag);
-				DocumentController oldTagDoc = null;
-				foreach (var docC in TagsSave)
-				{
-					if (docC.GetField<TextController>(KeyStore.DataKey, true).Data.Equals(linkName))
-					{
-						oldTagDoc = docC;
-						break;
-					}
-				}
-
-				if (oldTagDoc != null)
-				{
-					if (RecentTagsSave.Contains(oldTagDoc))
-					{
-						RecentTagsSave.Remove(oldTagDoc);
-						//check if this tag is in recent tags & replace
-						int index;
-						Queue<Tag> catchQueue = new Queue<Tag>();
-						foreach (var recent in _recentTags)
-						{
-
-						}
-					}
-					TagsSave.Remove(oldTagDoc);
-					hexColor = oldTagDoc.GetField<ColorController>(KeyStore.BackgroundColorKey, true).Data;
-				}
-				*/
                 tag = _tagNameDict[linkName];
-                //hexColor = tag.Color;
             }
             else
             {
@@ -589,7 +554,6 @@ namespace Dash
         {
             if (SuggestGrid.Visibility == Visibility.Visible) return;
             xButtonsPanel.Children.Clear();
-            //_tagNameDict.Clear();
             //check each relevant tag name & create the tag graphic & button for it!
             foreach (var name in tagMap.Keys)
             {
@@ -802,21 +766,17 @@ namespace Dash
         [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            //ShowTags();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void DocumentDecorations_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Visible;
-            // ShowTags();
         }
 
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Collapsed;
-            //SuggestGrid.Visibility = Visibility.Collapsed;
-            //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
