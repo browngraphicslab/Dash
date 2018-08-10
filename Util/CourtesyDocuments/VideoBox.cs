@@ -51,8 +51,9 @@ namespace Dash
 			};
 
 			video.TransportControls.IsCompact = true;
-			video.PointerEntered += (s, e) => { video.TransportControls.Show(); };
-			video.PointerExited += (s, e) => { video.TransportControls.Hide(); };
+			video.PointerEntered += (s, e) => video.TransportControls.Show();
+			video.PointerExited += (s, e) => video.TransportControls.Hide();
+            video.Unloaded += (s, e) => video.MediaPlayer.Pause();
 
 			// setup bindings on the video
 			SetupBindings(video, docController, context);

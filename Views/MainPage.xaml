@@ -178,7 +178,7 @@
 
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
 
-        <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xLeftGrid" x:FieldModifier="public" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="7" x:Name="xTreeSplitter"/>

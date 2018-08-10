@@ -1664,29 +1664,49 @@ namespace Dash
 		    //e.Handled = true;
 	    }
 
-	    public void OnDrop(object sender, DragEventArgs e)
-	    {
-	        if (!this.IsShiftPressed())
-	        {
-	            return;
-	        }
-			var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
-		    var where = e.GetPosition(XAnnotationCanvas);
-		    var target = dragModel.GetDropDocument(where);
-            target.SetBackgroundColor(Colors.White);
-		    if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
-		    {
-			    if (target.GetActualSize()?.X > 200)
-			    {
-					var ratio = target.GetHeight() / target.GetWidth();
-					target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
-					target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
-				}
-			}
-		    CreatePin(where, target);
-		    e.Handled = true;
-	    }
+        public async void OnDrop(object sender, DragEventArgs e)
+        {
+            var where = e.GetPosition(XAnnotationCanvas);
+            if (this.IsShiftPressed() && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                var target = dragModel?.GetDropDocument(where);
+                target.SetBackgroundColor(Colors.White);
+                if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                {
+                    if (target.GetActualSize()?.X > 200)
+                    {
+                        var ratio = target.GetHeight() / target.GetWidth();
+                        target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+                        target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                    }
+                }
+                CreatePin(where, target);
+                e.Handled = true;
+            }
+            // if we drag from the file system
+            if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+            {
+                e.Handled = true;
+                try
+                {
+                    var target = await FileDropHelper.HandleDrop(where, e.DataView);
+                    if (target != null)
+                        CreatePin(where, target);
+                    if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                    {
+                        var ratio = target.GetHeight() / target.GetWidth();
+                        target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+                    }
+                    return;
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine(exception);
+                }
+            }
 
+        }
 	    
     }
 

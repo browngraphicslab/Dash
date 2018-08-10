@@ -468,8 +468,8 @@ namespace Dash
 				return;
 			}
 
-            if (botRight.X > MainPage.Instance.ActualWidth-xStackPanel.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth, botRight.Y);
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X - xLeftColumn.Width.Value, 
