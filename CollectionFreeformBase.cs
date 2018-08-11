@@ -753,14 +753,24 @@ namespace Dash
             }
         }
 
-        void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
         {
-            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
-            {
-                TriggerActionFromSelection(e.Key, true);
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                e.Handled = true;
-            }
+            VirtualKey.A,
+            VirtualKey.Back,
+            VirtualKey.C,
+            VirtualKey.Delete,
+            VirtualKey.G,
+            VirtualKey.R,
+            VirtualKey.T
+        };
+
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (_marquee == null || !MarqueeKeys.Contains(e.Key)) return;
+
+            TriggerActionFromSelection(e.Key, true);
+            MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+            e.Handled = true;
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
@@ -910,6 +920,26 @@ namespace Dash
                         {
                             ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
                                 where, size.Width, size.Height));
+                        });
+                        deselect = true;
+                        break;
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                        });
+                        deselect = true;
+                        break;
+                }
+            }
+            else if (this.IsShiftPressed())
+            {
+                switch (modifier)
+                {
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
                         });
                         deselect = true;
                         break;
