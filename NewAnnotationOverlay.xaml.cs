@@ -773,6 +773,11 @@ namespace Dash
         {
 			var annotation = _regionGetter(AnnotationType.Pin);
 		    annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+            annotation.SetField(KeyStore.PDFSubregionKey,
+                new ListController<NumberController>
+                {
+                    new NumberController((point.Y + 10) / this.GetFirstAncestorOfType<CustomPdfView>().PdfTotalHeight)
+                }, true);
 		    annotation.SetWidth(10);
 		    annotation.SetHeight(10);
 		    annotation.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, nameof(AnnotationType.Pin), true);

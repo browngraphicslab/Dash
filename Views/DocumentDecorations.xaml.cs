@@ -323,7 +323,7 @@ namespace Dash
             }
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X,
+                X = topLeft.X-3,
                 Y = topLeft.Y
             };
 
