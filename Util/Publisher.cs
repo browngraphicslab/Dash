@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -27,6 +28,7 @@ namespace Dash
 		private List<string> _regionColors = new List<string> { "#95B75F", "#65A4DE", "#ED726A", "#DF8CE1", "#977ABC", "#F8AC75", "#97DFC0", "#FF9FAB", "#B4A8FF", "#91DBF3" };
 		private Dictionary<DocumentController, string> _colorPairs = new Dictionary<DocumentController, string>();
 		private Dictionary<DocumentController, int> _pdfNumbers = new Dictionary<DocumentController, int>(); // for storing number of pages in a PDF -- kind of a hack until we find a not-async method to do this
+		private Dictionary<DocumentController, Size> _pdfPageSize = new Dictionary<DocumentController, Size>(); // for storing pdf page sizes -- again, kind of a hack until we find a not-async method to do this
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -226,34 +228,151 @@ namespace Dash
 		{
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
+			//var regions = regionsToRender ?? dc.GetRegions()?.TypedData;
+			var regions = dc.GetRegions()?.TypedData;
+			var pageSize = _pdfPageSize[dc];
 
+			// render the whole pdf
 			for (var i = 1; i <= numPages; i++)
 			{
 				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
 				var path = "media\\" + _fileNames[dc] + "/" + fileName;
-				html.Add("<div class=\"pdf\"><img src=\"" + path + "\"></div>");
+				html.Add("<div class=\"pdf\">");
+				html.Add("<img src=\"" + path + "\">");
+				html.Add("</div>");
 			}
+
+			//// todo: clean this up lol
+			//if (!truncate)
+			//{
+			//	// render the whole pdf
+			//	for (var i = 1; i <= numPages; i++)
+			//	{
+			//		var fileName = _fileNames[dc] + "_page" + i + ".jpg";
+			//		var path = "media\\" + _fileNames[dc] + "/" + fileName;
+			//		html.Add("<div class=\"pdf\">");
+			//		html.Add("<img src=\"" + path + "\">");
+			//		html.Add("</div>");
+			//	}
+			//} else if (regionsToRender != null)
+			//{
+			//	// only render the pages with things on them
+			//	List<int> pageNumbers = regionsToRender.Select(region =>
+			//		GetPageAtOffset(region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data.Y)).ToList();
+			//	foreach (var i in pageNumbers)
+			//	{
+			//		var fileName = _fileNames[dc] + "_page" + i + ".jpg";
+			//		var path = "media\\" + _fileNames[dc] + "/" + fileName;
+			//		html.Add("<div class=\"pdf\">");
+			//		html.Add("<img src=\"" + path + "\">");
+			//		html.Add("</div>");
+			//	}
+			//}
+			//else
+			//{
+			//	// only render the first page
+			//	var fileName = _fileNames[dc] + "_page" + 1 + ".jpg";
+			//	var path = "media\\" + _fileNames[dc] + "/" + fileName;
+			//	html.Add("<div class=\"pdf\">");
+			//	html.Add("<img src=\"" + path + "\">");
+			//	html.Add("</div>");
+			//}
 
 			// do the regioning: use IndexOf to find the appropriate <img src> endpoint to insert the annotation
-			var regions = dc.GetRegions();
 			if (regions != null)
 			{
-				foreach (var region in regions.TypedData)
+				Debug.WriteLine("DOC PAGE SIZE: " + pageSize);
+				foreach (var region in regions)
 				{
-					// render this region on the pdf's page
+					switch (region.GetAnnotationType())
+					{
+						case AnnotationType.Pin:
+							var pos = region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
+							if (pos != null)
+							{
+								var offsets = GetPercentileOffsets(pos.Data.X, pos.Data.Y);
+
+								var indexToInsert = html.IndexOf("<img src=\"media\\" + _fileNames[dc] + "/" + _fileNames[dc] + "_page" + GetPageAtOffset(pos.Data.Y) + ".jpg\">");
+								if (indexToInsert < 0)
+								{
+									Debug.WriteLine("UH OH");
+									continue;
+								}
+
+								var circle = "<i style=\"font-size: 200%; position:absolute; top:" + offsets.Y + "%; left:" + offsets.X + "%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i>";
+								html.Insert(indexToInsert + 1, circle); // insert an ellipse to go right after the img src thing
+							}
+							break;
+						case AnnotationType.Region:
+							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data;
+							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).TypedData.First().Data;
+							var offset = GetPercentileOffsets(point.X + 20, point.Y + 20);
+							var oneTarget = GetOppositeLinkTarget(region);
+							if (oneTarget != null)
+							{
+								var index = html.IndexOf("<img src=\"media\\" + _fileNames[dc] + "/" + _fileNames[dc] + "_page" + GetPageAtOffset(point.Y) + ".jpg\">");
+								if (index < 0)
+								{
+									Debug.WriteLine("UH OH");
+									continue;
+								}
+
+								var rect = "<a href=\"" + _fileNames[oneTarget] + ".html\"><svg class=\"pdfOverlay\" height=\"" + size.Y / pageSize.Height * 100 + "%\" width=\"" + size.X / pageSize.Width * 100 + "%\" style=\"position:absolute; top:" + 
+								           offset.Y + "%; left:" + offset.X + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget] + "\"></rect></svg></a>";
+								html.Insert(index + 1, rect);
+							}
+
+							break;
+						case AnnotationType.Selection:
+							break;
+						default:
+							break;
+					}
+				}
+
+				Point GetPercentileOffsets(double xpos, double ypos)
+				{
+					var pageNumber = GetPageAtOffset(ypos);
+
+					// the 8 and 16 constants are from the fact that it looks like the height is affected by some external XAML visual bound thing...?
+					var pageTop = (pageSize.Height + 8) * (pageNumber - 1) + 8;
+					var yDiff = ((ypos - pageTop - 16) / (pageSize.Height + 10) * 100);
+					var xDiff = (xpos - 16) / (pageSize.Width) * 100;
+					return new Point(xDiff, yDiff);
 				}
 			}
 
-			var pushpins = dc.GetDereferencedField<ListController<DocumentController>>(KeyStore.PinAnnotationsKey, null);
-			if (pushpins != null)
+			// this method takes in the vertical offset of something and returns what page of the PDF it's on
+			int GetPageAtOffset(double verticalOffset)
 			{
-				foreach (var pushpin in pushpins.TypedData)
+				int page = 1;
+				while (verticalOffset > (pageSize.Height + 10) * page)
 				{
-					// render this pushpin on the pdf's page
+					page++;
 				}
+				return page;
 			}
 
 			return ConcatenateList(html);
+		}
+
+		private DocumentController GetOppositeLinkTarget(DocumentController link)
+		{
+			DocumentController oneTarget = null; // most of the time, each region will only link to one target, and this variable describes it.
+
+			var regionLinkTo = link.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+			var regionLinkFrom = link.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
+			// trying to see if the one target is linkTo or linkFrom, and if it's one of them, set it to that target
+			if (regionLinkTo == null && regionLinkFrom != null && regionLinkFrom.Count == 1)
+			{
+				oneTarget = regionLinkFrom.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
+			}
+			else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
+			{
+				oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+			}
+
+			return oneTarget;
 		}
 
 		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
@@ -269,20 +388,8 @@ namespace Dash
 			{
 				foreach (var region in regions)
 				{
-					var regionLinkTo = region.GetLinks(KeyStore.LinkToKey);
-					var regionLinkFrom = region.GetLinks(KeyStore.LinkFromKey);
-					DocumentController oneTarget = null; // most of the time, each region will only link to one target, and this variable describes it.
 					string htmlToInsert = "<b>"; // this is the string of formatting applied at the start of the link
-
-					// trying to see if the one target is linkTo or linkFrom, and if it's one of them, set it to that target
-					if (regionLinkTo == null && regionLinkFrom != null && regionLinkFrom.Count == 1)
-					{
-						oneTarget = regionLinkFrom.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
-					}
-					else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
-					{
-						oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
-					}
+					var oneTarget = GetOppositeLinkTarget(region);
 
 					if (oneTarget != null)
 					{
@@ -500,30 +607,54 @@ namespace Dash
 		{
 			DocumentController region = null;
 			DocumentController parentAnnotation = annotation;
+			bool hasOwnPage = true;
+			List<string> html;
 			if (!_fileNames.ContainsKey(annotation))
 			{
 				// if it wasn't found in the filename, then it means that we're annotating to a region.
 				// TODO: in the future stylize the regions a bit, e.g. only excerpts of text, a region over an image, etc.
-				var parent = annotation.GetDataDocument().GetRegionDefinition().GetDataDocument();
-				if (_fileNames.ContainsKey(parent))
+				var parent = annotation.GetDataDocument().GetRegionDefinition()?.GetDataDocument();
+				// if the parent is also null, then this annotation doesn't have a file to link to. In that case, we don't actually link it to anything.
+				if (parent != null && _fileNames.ContainsKey(parent))
 				{
 					region = annotation;
 					parentAnnotation = parent;
 				}
+				else
+				{
+					hasOwnPage = false;
+				}
 			}
 
-			var html = new List<string>
+			if (hasOwnPage)
 			{
-				"<div class=\"annotationWrapper\">",
-				"<div>",
-				"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
-				"<div class=\"annotation\">",
-				RenderNoteToHtml(parentAnnotation, region == null ? null : new List<DocumentController> {region}, true),
-				"</div>", // close annotation tag
-				"</div>", // close top area div tag
-				"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + parentAnnotation.Title + "</a></div>",
-				"</div>" //close the annotationWrapper tag
-			};
+				html = new List<string>
+				{
+					"<div class=\"annotationWrapper\">",
+					"<div>",
+					"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
+					"<div class=\"annotation\">",
+					RenderNoteToHtml(parentAnnotation, region == null ? new List<DocumentController>() : new List<DocumentController> {region}, true),
+					"</div>", // close annotation tag
+					"</div>", // close top area div tag
+					"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + parentAnnotation.Title + "</a></div>",
+					"</div>" //close the annotationWrapper tag
+				};
+			}
+			else
+			{
+				html = new List<string>
+				{
+					"<div class=\"annotationWrapper\">",
+					"<div>",
+					"<div><i class=\"fas fa-thumbtack\"></i></div>",
+					"<div class=\"annotation\">",
+					RenderNoteToHtml(parentAnnotation, new List<DocumentController>(), true),
+					"</div>",
+					"</div>",
+					"</div>"
+				};
+			}
 			return ConcatenateList(html);
 		}
 
@@ -745,10 +876,13 @@ namespace Dash
 			var pdf = await DataVirtualizationSource<DocumentController>.GetPdf(dc);
 			var numPages = pdf.PageCount;
 			_pdfNumbers[dc] = (int) numPages;
+			var size = dc.GetDereferencedField<PointController>(KeyStore.PdfHeightKey, null).Data;
+			_pdfPageSize[dc] = new Size(size.X, size.Y);
+
 			for (var i = 0; i < numPages; i++)
 			{
-				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint) i);
-				var file = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i+1) + ".jpg",
+				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint)i);
+				var file = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i + 1) + ".jpg",
 					CreationCollisionOption.GenerateUniqueName);
 				using (var stream = await file.OpenStreamForWriteAsync())
 				{
@@ -757,7 +891,7 @@ namespace Dash
 					byte[] pixels = new byte[bitmap.PixelBuffer.Length];
 
 					await pixelStream.ReadAsync(pixels, 0, pixels.Length);
-					encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint) bitmap.PixelWidth, (uint) bitmap.PixelHeight, 96,
+					encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)bitmap.PixelWidth, (uint)bitmap.PixelHeight, 96,
 						96, pixels);
 					await encoder.FlushAsync();
 				}

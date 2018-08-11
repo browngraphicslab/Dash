@@ -144,3 +144,7 @@ iframe {
 .pdf img {
     width: 100%;
 }
+
+.pdfOverlay {
+    opacity: 0.2;
+}

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -221,14 +222,26 @@ namespace Dash
             {
                 //todo get a way to write out to disk as opposed to memory
                 var stream = new InMemoryRandomAccessStream();
-                await page.RenderToStreamAsync(stream);
+                await page.RenderToStreamAsync(stream, new WPdf.PdfPageRenderOptions(){DestinationHeight = (uint)page.Size.Height, DestinationWidth = (uint)page.Size.Width});
 
-	            wb = new WriteableBitmap((int) page.Dimensions.MediaBox.Width, (int) page.Dimensions.MediaBox.Height);
+	            wb = new WriteableBitmap((int)page.Size.Width, (int)page.Size.Height);
 	            await wb.SetSourceAsync(stream);
 			}
 
 	        return wb;
         }
+
+	    public static async Task<Size> RenderPageToFile(WPdf.PdfDocument pdf, uint pageNum, StorageFile file)
+	    {
+		    using (var page = pdf.GetPage(pageNum))
+		    {
+			    var randomStream = await file.OpenAsync(FileAccessMode.ReadWrite);
+			    await page.RenderToStreamAsync(randomStream, new WPdf.PdfPageRenderOptions{DestinationWidth = (uint)page.Size.Width, BitmapEncoderId = BitmapEncoder.JpegEncoderId});
+			    await randomStream.FlushAsync();
+			    randomStream.Dispose();
+			    return page.Size;
+		    }
+	    }
 
 	    public static async Task<WPdf.PdfDocument> GetPdf(DocumentController pdf)
 	    {
@@ -251,6 +264,5 @@ namespace Dash
 		    }
 			return await WPdf.PdfDocument.LoadFromFileAsync(file);
 		}
-       
     }
 }

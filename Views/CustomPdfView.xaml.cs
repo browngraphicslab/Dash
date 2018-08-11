@@ -595,7 +595,8 @@ namespace Dash
 				_currentPageCount = (int) _wPdfDocument.PageCount;
 			}
 
-            await Task.Run(() => {
+			iText.Kernel.Geom.Rectangle pageSize = null;
+			await Task.Run(() => {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
@@ -603,7 +604,8 @@ namespace Dash
                     strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
-                }
+					pageSize = pdfDocument.GetPage(1).GetPageSize();
+				}
             });
             
             var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
@@ -615,6 +617,7 @@ namespace Dash
             reader.Close();
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
+			DataDocument.SetField(KeyStore.PdfHeightKey, new PointController(pageSize.GetWidth(), pageSize.GetHeight()), true);
             DocumentLoaded?.Invoke(this, new EventArgs());
 
 			_bottomAnnotationOverlay.LoadPinAnnotations(this);
