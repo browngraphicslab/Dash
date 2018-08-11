@@ -471,22 +471,27 @@ namespace Dash
 
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!(sender is MenuFlyoutItem item) || !(ViewModel.DataDocument.GetField<DocumentController>(KeyStore.RegionsKey) is DocumentController regionDoc)) return;
+            if (!(sender is MenuFlyoutItem item)) return;
 
-            bool state = item.Text.Equals("Show Annotation On Scroll");
-            item.Text = state ? "Hide Annotation On Scroll" : "Show Annotation On Scroll";
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
 
-            var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-            var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-            var links = new List<DocumentController>();
-            links.AddRange(toLinks);
-            links.AddRange(fromLinks);
-
-            foreach (DocumentController l in links)
+            bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
+            
+            foreach (var docs in linkDocs)
             {
-                l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, state, true);
+                foreach (DocumentController l in docs)
+                {
+                    l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
+                    l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
+                }
             }
+        }
+
+        private void XMenuFlyout_OnOpening(object sender, object e)
+        {
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
+            xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
 
         private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)

@@ -422,8 +422,11 @@ namespace Dash
 				    var child = (FrameworkElement) uiElement;
 				    //get linked annotations
 					DocumentController regionDoc = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
-				    var toLinks = regionDoc?.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-				    var fromLinks = regionDoc?.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+				    if (regionDoc == null) continue;
+
+				    var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				    var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
 
 				    var allLinks = new List<DocumentController>();
 				    if (toLinks != null) allLinks.AddRange(toLinks);
@@ -432,19 +435,21 @@ namespace Dash
 				    //bool for checking whether child is currently in view of scrollviewer
 				    bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-					if (toLinks != null)
+					foreach (DocumentController link in allLinks)
 					{
-						foreach (DocumentController link in allLinks)
-						{
-						    bool pinned = link.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false;
+						bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
-                            var sourceDoc = link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
-						    sourceDoc?.SetHidden(!inView && !pinned);
-                        }
-					}
+                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
+                    }
 				}
 			}
 		}
+
+	    public void CheckForVisibilityButtonToggle()
+	    {
+
+	    }
 
 		public void SetAnnotationType(AnnotationType type)
 		{
@@ -1460,18 +1465,34 @@ namespace Dash
 			if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
 		}
 
-		public void SetAnnotationsVisibleOnScroll(bool enabled)
-		{
+		public void SetAnnotationsVisibleOnScroll(bool status)
+	    {
 		    var allChildren = new List<UIElement>();
             allChildren.AddRange(_bottomAnnotationOverlay.XAnnotationCanvas.Children);
-		    allChildren.AddRange(_topAnnotationOverlay.XAnnotationCanvas.Children);
+		    //allChildren.AddRange(_topAnnotationOverlay.XAnnotationCanvas.Children);
 
             foreach (UIElement uiElement in allChildren)
 			{
 			    //get linked annotations
-			    if ((((FrameworkElement)uiElement).DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument is DocumentController docController)
+			    if ((((FrameworkElement)uiElement).DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
 			    {
-			        docController.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, enabled, true);
+			        var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+			        var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+			        var allLinks = new List<DocumentController>();
+			        if (toLinks != null) allLinks.AddRange(toLinks);
+			        if (fromLinks != null) allLinks.AddRange(fromLinks);
+
+			        //bool for checking whether child is currently in view of scrollviewer
+			        bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(uiElement.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+
+                    foreach (DocumentController link in allLinks)
+			        {
+			            link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, status, true);
+
+			            if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!status && !inView);
+			            if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!status && !inView);
+                    }
                 }
 			}
 		}

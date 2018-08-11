@@ -168,7 +168,7 @@
  
                      Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                 <Grid.ContextFlyout>
-                    <MenuFlyout x:Name="xMenuFlyout">
+                    <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
 
                         <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
 
