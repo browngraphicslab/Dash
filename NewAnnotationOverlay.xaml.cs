@@ -106,24 +106,26 @@ namespace Dash
         public void SelectRegion(DocumentController region)
         {
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            documentView.Visibility = Visibility.Visible;
+            if (documentView != null)
+            {
+                documentView.Visibility = Visibility.Visible;
+            }
+            
 
             var deselect = _selectedRegion?.Selected == true;
             var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
                     nvo._selectedRegion?.Deselect();
                     nvo._selectedRegion = deselect ? null : r;
                     if (!deselect) { 
                         r.Select();
                     }
-                    if (documentView.ViewModel != null)
+                    if (documentView?.ViewModel != null)
                     {
                         documentView.ViewModel.SearchHighlightState = new Thickness(deselect ? 0 : 8);
                     }
-                    else
-                        ;
                 }
         }
 
