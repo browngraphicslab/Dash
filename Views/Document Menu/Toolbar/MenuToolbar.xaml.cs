@@ -24,15 +24,15 @@ namespace Dash
     /// <summary>
     /// The top level toolbar in Dash, which will always be present on screen. Subtoolbars are added below the main toolbar according to the type of data that was selected. 
     /// </summary>
-    public sealed partial class MenuToolbar : UserControl
+    public sealed partial class MenuToolbar
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
             "Orientation", typeof(Orientation), typeof(MenuToolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
-            get { return (Orientation)GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => (Orientation)GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         public static readonly DependencyProperty ExpandColorProperty = DependencyProperty.Register(
@@ -40,8 +40,8 @@ namespace Dash
 
         public SolidColorBrush ExpandColor
         {
-            get { return (SolidColorBrush)GetValue(ExpandColorProperty); }
-            set { SetValue(ExpandColorProperty, value); }
+            get => (SolidColorBrush)GetValue(ExpandColorProperty);
+            set => SetValue(ExpandColorProperty, value);
         }
 
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(

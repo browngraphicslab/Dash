@@ -370,8 +370,10 @@ namespace Dash
 
         private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
         {
-            var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
-            var index = data.Index;
+            var data = (SnapshotView)((e.OriginalSource as TextBlock)?.DataContext ?? (e.OriginalSource as Grid)?.DataContext);
+            if (data == null) return;
+
+            int index = data.Index;
             if (!_items.Count.Equals(0))
             {
                 _items.RemoveAt(index);
