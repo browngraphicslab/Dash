@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -21,7 +20,6 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Office.Interop.Word;
 using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -31,7 +29,6 @@ using DashShared;
 using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
-using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -144,7 +141,6 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
         }
-
 
         public DocumentController Snapshot(bool copyData = false)
         {
@@ -926,7 +922,10 @@ namespace Dash
                     case VirtualKey.R:
                         DoAction((views, where, size) =>
                         {
-                            ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
                         });
                         deselect = true;
                         break;
