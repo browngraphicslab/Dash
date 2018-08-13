@@ -44,8 +44,17 @@
                
 
                 <Button Tapped="xCloseButton_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        Grid.Column="1" Grid.Row="0" x:Name="xCloseButton" Opacity="1" Margin="5" Background="Transparent">
-                    <SymbolIcon Symbol="Cancel"/>
+                        Grid.Column="1" Grid.Row="0" x:Name="xCloseButton" Opacity="1" Margin="5" Background="White" >
+                    <Button.Resources>
+                        <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Light">
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Gray"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Button.Resources>
+                        <SymbolIcon Symbol="Cancel"/>
                 </Button>
 
             </Grid>
