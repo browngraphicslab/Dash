@@ -491,8 +491,9 @@ namespace Dash
                 }
                 else if (docs.Count<DocumentView>() > 1)
                 {
-                    // TODO: multi select
-                }
+					// TODO: multi select
+					subtoolbarElement = null;
+				}
                 else
                 {
                     subtoolbarElement = null;
@@ -505,6 +506,7 @@ namespace Dash
             else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
+	            subtoolbarElement = null;
             }
             else
             {

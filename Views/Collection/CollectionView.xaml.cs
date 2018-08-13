@@ -221,14 +221,14 @@ namespace Dash
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishScriptBox(@where.X, @where.Y, 300, 400).Document;
+            var note = new DishScriptBox(@where.X, @where.Y).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
         private void ReplFlyout_OnClick(object sender, RoutedEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
+            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            DocumentController note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
