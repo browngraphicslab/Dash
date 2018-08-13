@@ -40,8 +40,6 @@ namespace Dash
         /// </summary>
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
-        private AnnotationScrollVisibility _scrollVisibility;
-
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
 
         public DocumentController(DocumentModel model) : base(model)
