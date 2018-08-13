@@ -938,7 +938,10 @@ namespace Dash
                     case VirtualKey.R:
                         DoAction((views, where, size) =>
                         {
-                            ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
                         });
                         deselect = true;
                         break;
