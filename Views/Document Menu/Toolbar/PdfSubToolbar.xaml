@@ -680,8 +680,16 @@
                 <TextBlock x:Name="xToggleAnnotationsIcon" Text="&#xE8E6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="0, -1, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
             <!--annotations visible on scrolle mode-->
-            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xAnnotationsVisibleOnScroll" Foreground="White" Checked="XAnnotationsVisibleOnScroll_OnChecked" Unchecked="XAnnotationsVisibleOnScroll_OnUnchecked" PointerEntered="ShowAppBarToolTip"
-                                PointerExited="HideAppBarToolTip">
+            <AppBarToggleButton 
+                Style="{StaticResource AppBarToggleButtonStyler}" 
+                x:Name="xAnnotationsVisibleOnScroll" 
+                Foreground="White" 
+                Checked="XAnnotationsVisibleOnScroll_OnChecked" 
+                Unchecked="XAnnotationsVisibleOnScroll_OnUnchecked"
+                PointerEntered="ShowAppBarToolTip"
+                IsChecked="True"
+                x:FieldModifier="public"
+                PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xAnnotationsVisibleOnScrollIcon" Text="&#xE8D0;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="0, -1.5, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
 

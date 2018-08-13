@@ -40,7 +40,7 @@ namespace Dash
     }
 
 
-	public enum PinAnnotationVisibility
+	public enum AnnotationScrollVisibility
 	{
 		VisibleOnScroll,
 		ManualToggle,
@@ -901,15 +901,40 @@ namespace Dash
 		    MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
 		    visOnScrollON.Text = "Unpin Annotation";
 		    visOnScrollOFF.Text = "Pin Annotation";
-		    visOnScrollON.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.VisibleOnScroll; };
-		    visOnScrollOFF.Click += (sender, args) => { region.Tag = PinAnnotationVisibility.ManualToggle; };
-		    regionGraphic.ContextFlyout = flyout;
+
+	        void VisOnScrollOnOnClick(object o, RoutedEventArgs routedEventArgs)
+	        {
+	            var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+	            var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+	            var allLinks = new List<DocumentController>();
+	            if (toLinks != null) allLinks.AddRange(toLinks);
+	            if (fromLinks != null) allLinks.AddRange(fromLinks);
+
+	            bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
+
+	            foreach (DocumentController link in allLinks)
+	            {
+	                link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
+	            }
+	        }
+            visOnScrollON.Click += VisOnScrollOnOnClick;
+		    visOnScrollOFF.Click += VisOnScrollOnOnClick;
+            regionGraphic.ContextFlyout = flyout;
 		    regionGraphic.RightTapped += (s, e) =>
 		    {
-			    var currVisibileOnScroll = region.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
-			    var item = currVisibileOnScroll ? visOnScrollOFF : visOnScrollON;
-			    flyout.Items.Clear();
-			    flyout.Items.Add(item);
+		        var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+		        var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+		        var allLinks = new List<DocumentController>();
+		        if (toLinks != null) allLinks.AddRange(toLinks);
+		        if (fromLinks != null) allLinks.AddRange(fromLinks);
+
+		        bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
+
+                MenuFlyoutItem item = allVisible ? visOnScrollON : visOnScrollOFF;
+			    flyout.Items?.Clear();
+			    flyout.Items?.Add(item);
 			    flyout.ShowAt(regionGraphic as FrameworkElement);
 		    };
 		}

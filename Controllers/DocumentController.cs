@@ -10,23 +10,21 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Type = Zu.TypeScript.TsTypes.Type;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
 	/// <summary>
 	/// Allows interactions with underlying DocumentModel.
 	/// </summary>
-	[DebuggerDisplay("DocumentController: {Tag}")]
+	//[DebuggerDisplay("DocumentController")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args,
-            Context context);
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
-        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary
-            = new Dictionary<KeyController, DocumentUpdatedHandler>();
+        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, DocumentUpdatedHandler>();
 
         public event EventHandler DocumentDeleted;
 
@@ -43,9 +41,11 @@ namespace Dash
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
+
         public DocumentController(DocumentModel model) : base(model)
         {
         }
+
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
@@ -64,7 +64,7 @@ namespace Dash
 
         public bool IsMovingCollections { get; set; }
 
-        public override void Init()
+        public sealed override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary

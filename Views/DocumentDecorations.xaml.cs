@@ -41,7 +41,7 @@ namespace Dash
         public Tag CurrEditTag;
         private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
-        private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
+        public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
         public Visibility VisibilityState
         {
