@@ -19,7 +19,7 @@ namespace Dash.Controllers
         /*
          * Default parameterless constructor sets Data to the current local time. 
          */
-        public DateTimeController() : this(DateTime.Now.Date) { }
+        public DateTimeController() : this(DateTime.Now) { }
 
         /*
          * Primary constructor recieves data of type DateTime and uses it to construct a new DateTimeModel. Default value is set to 1/1/0001 0:00:00.
