@@ -209,6 +209,11 @@ namespace Dash
 				MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
+
+	            if (parentParentFreeform != null && !this.IsShiftPressed())
+	            {
+		            e.Handled = false;
+	            }
             };
             
             RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);

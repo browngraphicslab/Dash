@@ -138,10 +138,9 @@ namespace Dash
 		public DocumentController DataDocument { get; }
 
 		//This makes the assumption that both pdf views are always in the same annotation mode
-		public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.AnnotationType;
+		public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
 		private WPdf.PdfDocument _wPdfDocument;
-		private PDFRegionMarker _currentMarker;
 
 		private Stack<double> _topBackStack;
 		private Stack<double> _bottomBackStack;
@@ -453,8 +452,8 @@ namespace Dash
 
 		public void SetAnnotationType(AnnotationType type)
 		{
-			_bottomAnnotationOverlay.SetAnnotationType(type);
-			_topAnnotationOverlay.SetAnnotationType(type);
+			_bottomAnnotationOverlay.CurrentAnnotationType = type;
+			_topAnnotationOverlay.CurrentAnnotationType = type;
 		}
 
 		//private void OnNewRegionMade(object sender, RegionEventArgs e)
@@ -697,9 +696,6 @@ namespace Dash
 		private double _topScrollRatio;
 		private double _bottomScrollRatio;
 		private double _height;
-		private double _width;
-		private double _verticalOffset;
-		private bool _isCtrlPressed;
 		private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
 
 		public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)

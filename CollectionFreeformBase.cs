@@ -698,10 +698,10 @@ namespace Dash
                     _marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
                     MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
                     _marquee.AllowFocusOnInteraction = true;
-                    SelectionCanvas.Children.Add(_marquee);
+                    SelectionCanvas?.Children.Add(_marquee);
 
                     mInfo = new MarqueeInfo();
-                    SelectionCanvas.Children.Add(mInfo);
+                    SelectionCanvas?.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
