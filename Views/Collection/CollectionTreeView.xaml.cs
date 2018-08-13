@@ -152,31 +152,27 @@ namespace Dash
 
         public void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-
             MainPage.Instance.SnapshotOverlay.Visibility = Visibility.Visible;
             MainPage.Instance.FadeIn.Begin();
             MainPage.Instance.FadeOut.Begin();
-           
-            if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+
+            if (!(MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)) return;
+
+            DocumentController snapshot = freeFormView.Snapshot();
+            DocumentController freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
+            var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
+
+            if (snapshots == null)
             {
-                var snapshot = freeFormView.Snapshot();
-                var freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
-                var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
-                if (snapshots == null)
-                {
-                    var nsnapshots = new List<DocumentController>();
-                    nsnapshots.Add(snapshot);
-                    freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
-                }
-                else
-                    snapshots.Add(snapshot);
-                
-                foreach (var node in TreeViewNodes)
-                {
-                   node.UpdateSnapshots();
-                }
+                var nsnapshots = new List<DocumentController> {snapshot};
+                freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
             }
-            
+            else snapshots.Add(snapshot);
+                
+            foreach (TreeViewNode node in TreeViewNodes)
+            {
+                node.UpdateSnapshots();
+            }
         }
 
         public void SetDropIndicationFill(Brush fill) { }

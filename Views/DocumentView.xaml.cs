@@ -200,8 +200,8 @@ namespace Dash
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
 				ManipulationMode = ManipulationModes.All;
-				//var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-				//var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+				var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+				var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
 				ManipulationMode =
 					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
 						? ManipulationModes.All
