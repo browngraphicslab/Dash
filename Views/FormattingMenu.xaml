@@ -46,7 +46,7 @@
             <TextBox 
                 Name="xFontSizeTextBox" 
                 Height="18" 
-                Foreground="Transparent" 
+                Foreground="Black" 
                 HorizontalAlignment="Stretch" 
                 Margin="-4,0,41,0" 
                 Grid.Column="1" 
@@ -64,7 +64,7 @@
                 Grid.Column="1" 
                 SelectionChanged="FontSizeComboBox_SelectionChanged" 
                 VerticalAlignment="Center" Canvas.ZIndex="0" 
-                Foreground="Black"/>
+                Foreground="Transparent"/>
         </Grid>
 
       
