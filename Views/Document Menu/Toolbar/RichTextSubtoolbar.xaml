@@ -250,7 +250,7 @@
             </AppBarButton>
 
         </StackPanel>
-        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Grid.Column="1"></local:FormattingMenuView>
+        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Grid.Column="1" x:FieldModifier="public"></local:FormattingMenuView>
     </Grid>
 
 </UserControl>

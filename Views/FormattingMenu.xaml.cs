@@ -144,7 +144,7 @@ namespace Dash
         private void UpdateFontFamilyDisplay()
         {
 
-            if (xFontFamilyComboBox.Items.Count > 0)
+            if (xFontFamilyComboBox.Items?.Count > 0)
             {
                 var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
                 var index = _fontNames.IndexOf(currentFontStyle);

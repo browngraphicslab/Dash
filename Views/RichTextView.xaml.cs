@@ -72,6 +72,9 @@ namespace Dash
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
 
+                //update text subtoolbar drop downs based on selection
+                MainPage.Instance.xToolbar.xRichTextToolbar.xMenuView?.SetRichTextBinding(this);
+
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
@@ -415,6 +418,9 @@ namespace Dash
         {
             e.Handled = false;
             RegionSelected(e.GetPosition(MainPage.Instance));
+
+            //update text subtoolbar drop downs based on selection
+            MainPage.Instance.xToolbar.xRichTextToolbar.xMenuView?.SetRichTextBinding(this);
         }
 
         private void CursorToEnd()
