@@ -191,7 +191,10 @@ namespace Dash
                 xTouch,
                 xPin,
                 xUndo,
-                xRedo
+                xRedo,
+                xExport,
+                xPresentationMode
+
             };
             allButtons = tempButtons;
 
