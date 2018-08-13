@@ -329,7 +329,7 @@ namespace Dash
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X,
+                X = topLeft.X-3,
                 Y = topLeft.Y
             };
 
