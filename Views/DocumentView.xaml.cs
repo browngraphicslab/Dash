@@ -200,10 +200,9 @@ namespace Dash
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
 				ManipulationMode = ManipulationModes.All;
-				var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-				var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-				ManipulationMode =
-					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+                ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
 						? ManipulationModes.All
 						: ManipulationModes.None;
 				MainPage.Instance.Focus(FocusState.Programmatic);
@@ -1539,8 +1538,8 @@ namespace Dash
 		                ParentCollection?.ViewModel.AddDocument(annotNote);
 					}
 					//TODO: ensure LinkType is what the user plugged in
-					dragDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
-					dropDoc.Link(annotNote, LinkContexts.None, dragModel.LinkType);
+					dragDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
+					dropDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
 					//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
@@ -1587,8 +1586,8 @@ namespace Dash
 				                ParentCollection?.ViewModel.AddDocument(annotNote);
 			                }
 							//TODO: ensure LinkType is what the user plugged in
-							dragDoc.Link(annotNote, LinkContexts.None, null);
-	                        dropDoc.Link(annotNote, LinkContexts.None, null);
+							dragDoc.Link(annotNote, LinkTargetPlacement.Default, null);
+	                        dropDoc.Link(annotNote, LinkTargetPlacement.Default, null);
 	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
 	                        dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
 	                        dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);

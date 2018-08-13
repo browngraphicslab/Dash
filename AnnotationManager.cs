@@ -8,9 +8,9 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash
 {
-    public enum LinkContexts
+    public enum LinkTargetPlacement
     {
-        PDFSplitScreen, None, PushPin
+        Docked, Default, Overlay, Floating
     }
     public class AnnotationManager
 	{

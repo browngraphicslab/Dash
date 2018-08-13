@@ -633,7 +633,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkContexts.None);
+                                region.Link(sourceDoc, LinkTargetPlacement.Default);
 
                             }
                             else
@@ -862,6 +862,7 @@ namespace Dash
                     htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
                     htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
+                    // this should be put into an operator so that it can be invoked from the scripting language, not automatically from here.
                     if (imgs.Count() > 0)
                     {
                         var related = new List<DocumentController>();

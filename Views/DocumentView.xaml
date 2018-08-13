@@ -205,34 +205,34 @@
                 <!--New resize handler controls-->
 
                 <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
+                               Grid.Row="0" PointerExited="AllResizers_PointerExited" Visibility="Collapsed"
                                Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
                 <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited"
+                               Grid.Row="0" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
                                Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
                                PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch"
+                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
                                VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
                                Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
                 <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
+                               Grid.Row="1" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
                                Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateX"
                                PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
                 <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"
+                               Grid.Row="1" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
                                Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateX"
                                PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch"
+                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
                                VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
                                Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
                 <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="2" PointerExited="AllResizers_PointerExited"
+                               Grid.Row="2" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
                                Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
                                PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch"
+                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
                                VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
                                Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
