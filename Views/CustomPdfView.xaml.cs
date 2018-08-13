@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -139,10 +138,9 @@ namespace Dash
 		public DocumentController DataDocument { get; }
 
 		//This makes the assumption that both pdf views are always in the same annotation mode
-		public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.AnnotationType;
+		public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
 		private WPdf.PdfDocument _wPdfDocument;
-		private PDFRegionMarker _currentMarker;
 
 		private Stack<double> _topBackStack;
 		private Stack<double> _bottomBackStack;
@@ -260,8 +258,6 @@ namespace Dash
 
 		private readonly NewAnnotationOverlay _topAnnotationOverlay;
 		private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
-
-
 
 		public CustomPdfView(DocumentController document)
 		{
@@ -397,9 +393,7 @@ namespace Dash
 				//_bottomTimer.Start();
 			}
 		}
-
-
-
+        
 		private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			if (sender.Equals(TopScrollViewer))
@@ -422,57 +416,44 @@ namespace Dash
 				}
 
 				//check if annotations have left the screen
-				foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
+				foreach (UIElement uiElement in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
 				{
-					//get linked annotations
-					var docController = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
-					bool scrollVisMode = docController?.Tag?.Equals(PinAnnotationVisibility.VisibleOnScroll) ?? false;
-					if (scrollVisMode)
+				    var child = (FrameworkElement) uiElement;
+				    //get linked annotations
+					DocumentController regionDoc = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
+
+				    if (regionDoc == null) continue;
+
+				    var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+				    var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+
+				    var allLinks = new List<DocumentController>();
+				    if (toLinks != null) allLinks.AddRange(toLinks);
+				    if (fromLinks != null) allLinks.AddRange(fromLinks);
+
+				    //bool for checking whether child is currently in view of scrollviewer
+				    bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+
+					foreach (DocumentController link in allLinks)
 					{
-						var toLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-						var fromLinks = docController?.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
+						bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
-						//bool for checking whether child is currently in view of scrollviewer
-						bool inView =
-							new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(
-								child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
-
-						if (toLinks != null)
-						{
-							foreach (var link in toLinks)
-							{
-								var sourceDoc = link.GetDataDocument()
-									.GetField<DocumentController>(KeyStore.LinkDestinationKey, true);
-								//if ui element is currently visible, show annotations
-								bool userCreated =
-									sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data ==
-									nameof(LinkContexts.PushPin);
-								sourceDoc?.SetHidden(!inView);
-							}
-						}
-
-						if (fromLinks != null)
-						{
-							foreach (var link in fromLinks)
-							{
-								var sourceDoc = link.GetDataDocument()
-									.GetField<DocumentController>(KeyStore.LinkSourceKey, true);
-								if (sourceDoc?.GetField<TextController>(KeyStore.LinkContextKey, true)?.Data !=
-								    nameof(LinkContexts.PushPin)) sourceDoc?.SetHidden(!inView);
-							}
-						}
-					}
+                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
+                    }
 				}
-
-
 			}
-
 		}
+
+	    public void CheckForVisibilityButtonToggle()
+	    {
+
+	    }
 
 		public void SetAnnotationType(AnnotationType type)
 		{
-			_bottomAnnotationOverlay.SetAnnotationType(type);
-			_topAnnotationOverlay.SetAnnotationType(type);
+			_bottomAnnotationOverlay.CurrentAnnotationType = type;
+			_topAnnotationOverlay.CurrentAnnotationType = type;
 		}
 
 		//private void OnNewRegionMade(object sender, RegionEventArgs e)
@@ -715,9 +696,6 @@ namespace Dash
 		private double _topScrollRatio;
 		private double _bottomScrollRatio;
 		private double _height;
-		private double _width;
-		private double _verticalOffset;
-		private bool _isCtrlPressed;
 		private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
 
 		public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -1483,34 +1461,39 @@ namespace Dash
 			if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
 		}
 
-		public void SetAnnotationsVisibleOnScroll(bool enabled)
-		{
-			foreach (FrameworkElement child in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
-			{
-				//get linked annotations
-				var docController = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
-				if (docController != null)
-					docController.Tag = enabled
-						? PinAnnotationVisibility.VisibleOnScroll
-						: PinAnnotationVisibility.ManualToggle;
-			}
+		public void SetAnnotationsVisibleOnScroll(bool status)
+	    {
+		    var allChildren = new List<UIElement>();
+            allChildren.AddRange(_bottomAnnotationOverlay.XAnnotationCanvas.Children);
+		    //allChildren.AddRange(_topAnnotationOverlay.XAnnotationCanvas.Children);
 
-			foreach (FrameworkElement child in _topAnnotationOverlay.XAnnotationCanvas.Children)
+            foreach (UIElement uiElement in allChildren)
 			{
-				//get linked annotations
-				var docController = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
-				if (docController != null)
-					docController.Tag = enabled
-						? PinAnnotationVisibility.VisibleOnScroll
-						: PinAnnotationVisibility.ManualToggle;
-			}
+			    //get linked annotations
+			    if ((((FrameworkElement)uiElement).DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
+			    {
+			        var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+			        var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
 
+			        var allLinks = new List<DocumentController>();
+			        if (toLinks != null) allLinks.AddRange(toLinks);
+			        if (fromLinks != null) allLinks.AddRange(fromLinks);
+
+			        //bool for checking whether child is currently in view of scrollviewer
+			        bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(uiElement.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+
+                    foreach (DocumentController link in allLinks)
+			        {
+			            link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, status, true);
+
+			            if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!status && !inView);
+			            if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!status && !inView);
+                    }
+                }
+			}
 		}
 
-		private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e)
-		{
-			xFirstPanelRow.Height = new GridLength(0);
-		}
+        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
     }
 
 }

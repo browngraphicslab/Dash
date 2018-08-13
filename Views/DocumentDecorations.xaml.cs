@@ -45,7 +45,7 @@ namespace Dash
 		private bool _flyoutOpen;
 		private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
-        private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
+        public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
 		public Visibility VisibilityState
 		{

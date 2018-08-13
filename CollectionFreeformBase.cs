@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -21,7 +20,6 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Office.Interop.Word;
 using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -31,7 +29,6 @@ using DashShared;
 using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
-using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -144,7 +141,6 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
         }
-
 
         public DocumentController Snapshot(bool copyData = false)
         {
@@ -753,14 +749,24 @@ namespace Dash
             }
         }
 
-        void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
         {
-            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
-            {
-                TriggerActionFromSelection(e.Key, true);
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                e.Handled = true;
-            }
+            VirtualKey.A,
+            VirtualKey.Back,
+            VirtualKey.C,
+            VirtualKey.Delete,
+            VirtualKey.G,
+            VirtualKey.R,
+            VirtualKey.T
+        };
+
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (_marquee == null || !MarqueeKeys.Contains(e.Key)) return;
+
+            TriggerActionFromSelection(e.Key, true);
+            MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+            e.Handled = true;
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
@@ -910,6 +916,32 @@ namespace Dash
                         {
                             ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
                                 where, size.Width, size.Height));
+                        });
+                        deselect = true;
+                        break;
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
+                        });
+                        deselect = true;
+                        break;
+                }
+            }
+            else if (this.IsShiftPressed())
+            {
+                switch (modifier)
+                {
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
                         });
                         deselect = true;
                         break;
@@ -1072,7 +1104,7 @@ namespace Dash
                         if (_linkDoc != null)
                         {
 
-                            postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                            postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                             _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                         }
 
@@ -1090,7 +1122,7 @@ namespace Dash
 
                                     //link region to this text 
                                     region.Link(postitNote, LinkContexts.PushPin);
-                                    region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+                                    region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
                                 }
                             }
                         }
@@ -1133,7 +1165,7 @@ namespace Dash
                     Actions.DisplayDocument(ViewModel, postitNote, where);
                     if (_linkDoc != null)
                     {
-                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
 
                     }
@@ -1144,7 +1176,7 @@ namespace Dash
                     Actions.DisplayDocument(ViewModel, postitNote, where);
                     if (_linkDoc != null)
                     {
-                        postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
+                        postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                         _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
                     }
 					//move link activation stuff here
@@ -1161,7 +1193,7 @@ namespace Dash
 
                                 //link region to this text 
                                 region.Link(postitNote, LinkContexts.PushPin);
-                                region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+                                region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
                             }
                         }
                     }
