@@ -1066,7 +1066,7 @@ namespace Dash
             }
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
 
-            if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
+            if (target.GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data.Equals(nameof(LinkTargetPlacement.Overlay)) ?? false)
             {
                 target.GotoRegion(region, linkDoc);
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;

@@ -1105,7 +1105,7 @@ namespace Dash
                         {
 
                             postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-                            _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                            _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
                         }
 
                         //move link activation stuff here
@@ -1121,8 +1121,7 @@ namespace Dash
                                         postitNote.GetPosition());
 
                                     //link region to this text 
-                                    region.Link(postitNote, LinkContexts.PushPin);
-                                    region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
+                                    region.Link(postitNote, LinkTargetPlacement.Overlay);
                                 }
                             }
                         }
@@ -1166,7 +1165,7 @@ namespace Dash
                     if (_linkDoc != null)
                     {
                         postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-                        _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                        _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
 
                     }
                 }
@@ -1177,7 +1176,7 @@ namespace Dash
                     if (_linkDoc != null)
                     {
                         postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-                        _linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+                        _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
                     }
 					//move link activation stuff here
 	                //check if a doc is currently in link activation mode
@@ -1192,8 +1191,7 @@ namespace Dash
                                     Util.PointTransformFromVisual(postitNote.GetPosition()?? new Point(), this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
 
                                 //link region to this text 
-                                region.Link(postitNote, LinkContexts.PushPin);
-                                region.Tag = AnnotationScrollVisibility.VisibleOnScroll;
+                                region.Link(postitNote, LinkTargetPlacement.Overlay);
                             }
                         }
                     }

@@ -180,8 +180,8 @@ namespace Dash
             {
                 var selections = new List<List<SelRange>>
                 {
-                    _bottomAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
-                    _topAnnotationOverlay._currentSelections.Zip(_bottomAnnotationOverlay._currentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                    _bottomAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                    _topAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
                 if (args.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
@@ -199,7 +199,7 @@ namespace Dash
                         {
                             if (!indices.Contains(i))
                             {
-                                var eleBounds = _bottomAnnotationOverlay._textSelectableElements[i].Bounds;
+                                var eleBounds = _bottomAnnotationOverlay.TextSelectableElements[i].Bounds;
                                 if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||  selection.ClipRect.Contains(new Point(eleBounds.X+eleBounds.Width/2, eleBounds.Y + eleBounds.Height/2)))
                                     indices.Add(i);
                             }
@@ -214,9 +214,9 @@ namespace Dash
                         {
                             sb.Append("\r\n\r\n");
                         }
-                        var selectableElement = _bottomAnnotationOverlay._textSelectableElements[index];
+                        var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
                         var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length-1]) && !char.IsLower(sb[sb.Length-1]))) && _bottomAnnotationOverlay._textSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay._textSelectableElements[index].Bounds.Top)
+                        if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length-1]) && !char.IsLower(sb[sb.Length-1]))) && _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
                             sb.Append("\r\n\r\n");
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
@@ -252,8 +252,8 @@ namespace Dash
 		private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
 		{
 			LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-			_bottomAnnotationOverlay._textSelectableElements?.Clear();
-			_topAnnotationOverlay._textSelectableElements?.Clear();
+			_bottomAnnotationOverlay.TextSelectableElements?.Clear();
+			_topAnnotationOverlay.TextSelectableElements?.Clear();
 		}
 
 		private readonly NewAnnotationOverlay _topAnnotationOverlay;
@@ -943,7 +943,7 @@ namespace Dash
 				var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0),
 					new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
 
-				region.Link(note, LinkContexts.None);
+				region.Link(note, LinkTargetPlacement.Default);
 				var docview = new DocumentView
 				{
 					DataContext = new DocumentViewModel(note) {Undecorated = true},
@@ -969,7 +969,7 @@ namespace Dash
 				var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN))
 					.Document;
 
-				region.Link(note, LinkContexts.None);
+				region.Link(note, LinkTargetPlacement.Default);
 				var docview = new DocumentView
 				{
 					DataContext = new DocumentViewModel(note) {DecorationState = false},
