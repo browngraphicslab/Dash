@@ -338,6 +338,11 @@ namespace Dash
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
         }
 
+        public static ListController<TextController> GetLinkTags(this DocumentController document)
+        {
+            return document.GetDereferencedField<ListController<TextController>>(KeyStore.LinkTagKey, null);
+        }
+
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
             var todocs = document.GetLinks(LinkFromOrToKey);
