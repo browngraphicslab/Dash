@@ -304,7 +304,7 @@ namespace Dash
 
                 ToggleSelectOptions(docs.Count() > 0);
 
-
+	            subtoolbarElement = null;
                 // just single select
                 if (docs.Count() == 1 )
                 {
@@ -760,8 +760,10 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-
-            }
+	            
+	            // get proper subtoolbar
+	            Update(SelectionManager.GetSelectedDocs());
+			}
             else
             {
                 //otherwise, it is about to expand. In this case, update visibility of separators before buttons
