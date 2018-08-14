@@ -94,8 +94,6 @@ namespace Dash
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (CurrentView?.UserControl != null)
-                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
         }
