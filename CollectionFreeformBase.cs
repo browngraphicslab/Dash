@@ -408,6 +408,15 @@ namespace Dash
             //Internally null checks _background
             //NOTE *** Invalid or null input will end the entire update chain and, to the user, nothing will visibily change. ***
             ChangeBackground(_background);
+            this.Unloaded += CollectionFreeformBase_Unloaded;
+        }
+
+        private void CollectionFreeformBase_Unloaded(object sender, RoutedEventArgs e)
+        {
+            this.Unloaded -= CollectionFreeformBase_Unloaded;
+            var ff = ((CollectionFreeformView)this);
+            this.GetBackgroundCanvas().RemoveFromVisualTree();
+            ff.xBackgroundCanvas = null;
         }
 
         // 3
