@@ -57,9 +57,13 @@ namespace Dash
     }
 
     public class NewAnnotationOverlayViewModel : ViewModelBase
-    { 
-        public ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
+    {
+        public ObservableCollection<DocumentViewModel> ViewModels { get; set; }
         // should also add all of the annotations in here as their own view model...
+        public NewAnnotationOverlayViewModel()
+        {
+            ViewModels = new ObservableCollection<DocumentViewModel>();
+        }
     }
 
     public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
@@ -248,7 +252,6 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
-            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
         public void LoadPinAnnotations(CustomPdfView pdfView)
