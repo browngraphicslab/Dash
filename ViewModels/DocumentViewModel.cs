@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Media.Animation;
 using static Dash.DocumentController;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -29,8 +30,6 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
-            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
             _isDeletedTemplate = false;
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
@@ -43,6 +42,21 @@ namespace Dash
             {
                 LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
+        }
+        
+        public void Load()
+        {
+            //UnLoad();
+            Debug.WriteLine("Load" + DocumentController.Tag);
+            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+        }
+
+        public void UnLoad()
+        {
+            Debug.WriteLine("UnLoad" + DocumentController.Tag);
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
 
@@ -268,10 +282,16 @@ namespace Dash
                 }
             }
         }
+        ~DocumentViewModel()
+        {
+            System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
+            System.Diagnostics.Debug.WriteLine(" ");
+            _content = null;
+        }
         public void Dispose()
         {
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-            _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            System.Diagnostics.Debug.WriteLine("Diposing dvm:" + DocumentController?.Tag);
+            UnLoad();
         }
     }
 }

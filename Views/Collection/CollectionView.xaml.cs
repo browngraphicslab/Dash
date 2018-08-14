@@ -13,6 +13,7 @@ using Windows.UI;
 using Dash.FontIcons;
 using Windows.UI.Core;
 using Dash.Converters;
+using System.Diagnostics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -58,6 +59,11 @@ namespace Dash
 	        var color = xOuterGrid.Background;
         }
 
+        ~CollectionView()
+        {
+            Debug.WriteLine("Finalizing CollectionView");
+        }
+
         /// <summary>
         /// Begins panning events.
         /// </summary>
@@ -88,6 +94,8 @@ namespace Dash
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
+            if (CurrentView?.UserControl != null)
+                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
         }
@@ -263,6 +271,8 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             }
             _viewType = viewType;
+            if (CurrentView?.UserControl != null)
+                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
@@ -306,10 +316,6 @@ namespace Dash
             }
             CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             CurrentView.UserControl.Loaded += CurrentView_Loaded;
-            // tfs - I don't think these three lines are actually doing anything...
-            //var selected = SelectionManager.SelectedDocs.ToArray();
-            //SelectionManager.DeselectAll();
-            //SelectionManager.SelectDocuments(selected.ToList());
 
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)

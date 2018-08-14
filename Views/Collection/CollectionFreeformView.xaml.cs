@@ -1,4 +1,5 @@
 ﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
@@ -18,10 +19,14 @@ namespace Dash
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
-            xOuterGrid.PointerPressed  += OnPointerPressed;
+            xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+        }
+        ~CollectionFreeformView()
+        {
+            Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
         protected override void OnLoad(object sender, RoutedEventArgs e)

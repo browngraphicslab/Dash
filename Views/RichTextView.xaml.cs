@@ -76,11 +76,6 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            Application.Current.Suspending += (sender, args) =>
-            {
-                ClearSearchHighlights();
-                //SetSelected("");
-            };
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -187,6 +182,10 @@ namespace Dash
                     relative.Height = double.NaN;
                 }
             };
+        }
+        ~RichTextView()
+        {
+            Debug.WriteLine("Finalized RichTextView");
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -583,8 +582,10 @@ namespace Dash
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            Debug.WriteLine("RICH TEXT VIEW IS UNLOADED");
             IsLoaded = false;
             ClearSearchHighlights(true);
+            Application.Current.Suspending -= AppSuspending;
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
@@ -592,6 +593,10 @@ namespace Dash
 
         public const string HyperlinkMarker = "<hyperlink marker>";
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
+        {
+            ClearSearchHighlights();
+        }
 
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -600,8 +605,9 @@ namespace Dash
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
-
+            
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             var documentView = this.GetFirstAncestorOfType<DocumentView>();

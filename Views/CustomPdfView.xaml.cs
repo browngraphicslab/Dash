@@ -116,7 +116,7 @@ namespace Dash
 				OnPropertyChanged();
 			}
 		}
-
+        
 
 		private List<DocumentController> _docControllers = new List<DocumentController>();
 
@@ -131,8 +131,6 @@ namespace Dash
 		}
 
 		private List<Size> Tops;
-
-
 
 		public DocumentController LayoutDocument { get; }
 		public DocumentController DataDocument { get; }
@@ -163,7 +161,8 @@ namespace Dash
             this.KeyDown += CustomPdfView_KeyDown;
 			_bottomAnnotationOverlay.LoadPinAnnotations(this);
 			_topAnnotationOverlay.LoadPinAnnotations(this);
-		}
+            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
+        }
 
         class SelRange {
             public KeyValuePair<int, int> Range;
@@ -254,7 +253,8 @@ namespace Dash
 			LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
 			_bottomAnnotationOverlay.TextSelectableElements?.Clear();
 			_topAnnotationOverlay.TextSelectableElements?.Clear();
-		}
+            SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
+        }
 
 		private readonly NewAnnotationOverlay _topAnnotationOverlay;
 		private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
@@ -267,29 +267,9 @@ namespace Dash
 			DataDocument = document.GetDataDocument();
 			_topPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
 			_bottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
-			//DocumentLoaded += (sender, e) =>
-			//{
-			//    AnnotationManager.NewRegionMade += OnNewRegionMade;
-			//    AnnotationManager.RegionRemoved += OnRegionRemoved;
 
-			//    var dataRegions = DataDocument.GetDataDocument()
-			//        .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-			//    if (dataRegions != null)
-			//    {
-			//        the VisualAnnotationManager will take care of the regioning, but here we need to put on the side markers on
-			//        xAnnotations.Height = PdfTotalHeight;
-			//        foreach (var region in dataRegions.TypedData)
-			//        {
-			//            var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey).Data;
-			//            MakeRegionMarker(offset, region);
-			//        }
-			//    }
-
-			//};
-			//AnnotationManager = new VisualAnnotationManager(this, LayoutDocument, xAnnotations);
 			Loaded += CustomPdfView_Loaded;
 			Unloaded += CustomPdfView_Unloaded;
-			SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
 
 			_bottomAnnotationOverlay =
 				new NewAnnotationOverlay(LayoutDocument, RegionGetter)
@@ -1494,6 +1474,12 @@ namespace Dash
 		}
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
+
+        ~CustomPdfView()
+        {
+
+            Debug.WriteLine("Disposing PDF");
+        }
     }
 
 }

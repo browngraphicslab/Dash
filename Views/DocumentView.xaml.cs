@@ -42,6 +42,7 @@ namespace Dash
         private bool               _isQuickEntryOpen;
         private Flyout             _flyout;
         private ImageSource        _docPreview = null;
+        private DocumentViewModel  _oldViewModel= null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
@@ -148,7 +149,8 @@ namespace Dash
                         Document = doc,
                         Key = KeyStore.HiddenKey,
                         Mode = BindingMode.OneWay,
-                        Tag = "Visibility binding in DocumentView"
+                        Tag = "Visibility binding in DocumentView",
+                        FallbackValue=false
                     };
                 this.AddFieldBinding(VisibilityProperty, binding);
             }
@@ -161,7 +163,7 @@ namespace Dash
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
                 this.BindBackgroundColor();
-
+                ViewModel?.Load();
             }
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
@@ -172,7 +174,12 @@ namespace Dash
             {
                 FadeIn.Begin();
                 updateBindings();
-                DataContextChanged += (s, a) => updateBindings();
+                DataContextChanged += (s, a) =>
+                {
+                    _oldViewModel?.UnLoad();
+                    updateBindings();
+                    _oldViewModel = ViewModel;
+                };
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
@@ -190,7 +197,13 @@ namespace Dash
                 SetZLayer();
                 UpdateResizers();
             };
-            Unloaded += (sender, args) => { SizeChanged -= sizeChangedHandler; SelectionManager.Deselect(this);  };
+            Unloaded += (sender, args) => {
+                SizeChanged -= sizeChangedHandler;
+                SelectionManager.Deselect(this);
+                ViewModel?.UnLoad();
+                DataContext = null;
+                GC.Collect();
+            };
 
             PointerPressed += (sender, e) =>
             {
@@ -1992,6 +2005,10 @@ namespace Dash
 	    {
 		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
 		    xToYellow.Begin();
-	    }
+        }
+        ~DocumentView()
+        {
+            Debug.Write("dispose DocumentView");
+        }
     }
 }

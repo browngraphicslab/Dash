@@ -81,6 +81,11 @@ namespace Dash
 
         }
 
+        ~CollectionViewModel()
+        {
+            Debug.WriteLine("FINALIZING CollectionViewModel");
+        }
+
         /// <summary>
         /// Sets the reference to the field that contains the documents to display.
         /// </summary>

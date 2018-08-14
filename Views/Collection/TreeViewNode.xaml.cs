@@ -297,7 +297,7 @@ namespace Dash
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+                MainPage.Instance.SetCurrentWorkspace(docToFocus);
 
             UnfocusText();
             ClosePopups();
