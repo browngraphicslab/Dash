@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -17,22 +18,25 @@ namespace Dash
     public class DataVirtualizationSource<T>
     {
         public List<Size> PageSizes;
-        private readonly ObservableCollection<UIElement> _visibleElements;
+        private readonly ObservableCollection<Image> _visibleElements = new ObservableCollection<Image>();
+        private readonly List<double> _visibleElementsRenderedWidth = new List<double>();
+        private readonly List<double> _visibleElementsTargetedWidth = new List<double>();
         private readonly ScrollViewer _scrollViewer;
         private readonly CustomPdfView _view;
-        private int _pageBuffer = 1;
-        private int _startIndex;
-        private int _endIndex;
-        private double _verticalOffset;
+        private double  _verticalOffset;
 
         public DataVirtualizationSource(CustomPdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
             _view = view;
             _scrollViewer = scrollviewer;
-            _visibleElements = new ObservableCollection<UIElement>();
             PageSizes = new List<Size>();
             pageItemsControl.ItemsSource = _visibleElements;
             view.DocumentLoaded += View_Loaded;
+        }
+
+        ~DataVirtualizationSource()
+        {
+            Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
 
         /// <summary>
@@ -60,14 +64,9 @@ namespace Dash
             // initializes the stackpanel with white rectangles
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
-                _visibleElements.Add(new Rectangle
-                {
-                    Width = PageSizes[i].Width,
-                    Height = PageSizes[i].Height,
-                    Margin = new Thickness(0, 0, 0, 10),
-                    Fill = new SolidColorBrush(Colors.White),
-                    Tag = false
-                });
+                _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10) });
+                _visibleElementsTargetedWidth.Add(-1);
+                _visibleElementsRenderedWidth.Add(-1);
             }
 
             // updates the scrollviewer to scroll to the previous scroll position if existent
@@ -77,137 +76,82 @@ namespace Dash
                 _scrollViewer.UpdateLayout();
                 _scrollViewer.ChangeView(null, scrollRatio.Data * _scrollViewer.ExtentHeight, null, true);
             }
-
-            _verticalOffset = scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0;
-            // get the start index and apply the buffer if possible
-            var startIndex = GetIndex(_verticalOffset);
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            _startIndex = startIndex;
-
-            // get the end index and apply the buffer if possible
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-            _endIndex = endIndex;
-
-            // render the indices requested
-            RenderIndices(startIndex, endIndex, true);
+            
+            RenderIndices(scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0);
             
             _scrollViewer.ViewChanging += ScrollViewer_ViewChanging;
-        }
-
-        public void View_SizeChanged()
-        {
-            if (!_visibleElements.Any()) return;
-
-            // get the start and end indices with buffers
-            var startIndex = GetIndex(_verticalOffset);
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-
-            // set the page buffer to the amount of pages visible at any given moment
-            _pageBuffer = endIndex - startIndex;
-
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-
-            // render the requested indices, force them to re-render (since the size has changed)
-            RenderIndices(startIndex, endIndex, true);
-
-            _startIndex = startIndex;
-            _endIndex = endIndex;
+            _view.SizeChanged += (s, e) => RenderIndices(_verticalOffset);
         }
 
         private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            // get the start and end vertices with buffers
-            _verticalOffset = e.FinalView.VerticalOffset;
-            var startIndex = GetIndex(e.FinalView.VerticalOffset);
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + e.FinalView.VerticalOffset) + 1;
-
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-
-            // render the requested indices
-            RenderIndices(startIndex, endIndex);
-
-            _startIndex = startIndex;
-            _endIndex = endIndex;
+            RenderIndices(e.FinalView.VerticalOffset);
         }
 
-        public void ForceRender()
+        private void RenderIndices(double scrollOffset)
         {
-            RenderIndices(_startIndex, _endIndex, true);
-        }
-
-        private async void RenderIndices(int startIndex, int endIndex, bool forceRender = false)
-        {
-            // don't re-render anything if we don't need to
-            if (startIndex == _startIndex && endIndex == _endIndex && !forceRender)
-            {
-                return;
-            }
-
-            // start with rendering the indices requested
-            for (var i = startIndex; i <= endIndex; i++)
-            {
-                // if the item is curerntly an image and we're forcing a re-render, re-render the image's source
-                if (_visibleElements[i] is Image img && forceRender)
-                {
-                    img.Source = await RenderPage((uint)i);
-                }
-                // otherwise, if it's currently a rectangle, create a new image with the rendered page
-                else if (_visibleElements[i] is Rectangle rect && !(bool)rect.Tag)
-                {
-                    rect.Tag = true;
-                    _visibleElements[i] = new Image
-                    {
-                        Source = await RenderPage((uint) i),
-                        Margin = new Thickness(0, 0, 0, 10)
-                    };
-                }
-                // if it's already an image and we don't want to force a re-render, don't do anything to it
-            }
-
-            // unrender anything that's no longer in the range of requested indices
+            _verticalOffset = scrollOffset;
+            var startIndex = GetIndex(scrollOffset);
+            var endIndex = GetIndex(_scrollViewer.ViewportHeight + scrollOffset) + 1;
+            var pageBuffer = endIndex - startIndex;
+            startIndex = Math.Max(startIndex - pageBuffer, 0);
+            endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
             for (var i = 0; i < _visibleElements.Count; i++)
             {
-                if (i < startIndex || i > endIndex)
+                var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
+                if (_visibleElementsRenderedWidth[i] < 0 &&
+                    targetWidth != _visibleElementsTargetedWidth[i])
                 {
-                    // if it's an image, change it to a rectangle with a matching size
-                    if (_visibleElements[i] is Image img)
-                    {
-                        _visibleElements[i] = new Rectangle
-                        {
-                            Width = img.ActualWidth,
-                            Height = img.ActualHeight,
-                            Margin = new Thickness(0, 0, 0, 10),
-                            Fill = new SolidColorBrush(Colors.White),
-                            Tag = false
-                        };
-                    }
+                    if (i == 5)
+                        Debug.WriteLine("Page #" + i + " width = " + _visibleElementsRenderedWidth[i] + " -> " + targetWidth);
+                    _visibleElementsRenderedWidth[i] = Math.Abs(_visibleElementsRenderedWidth[i]); // means rendering is in progress
+                    _visibleElementsTargetedWidth[i] = targetWidth; // set the target render width
+                    RenderPage(i);
+                }
+                else
+                {
+                    if (i == 5)
+                        Debug.WriteLine("Erasing page #" + i + " width = " + _visibleElementsRenderedWidth[i] + " -> " + targetWidth);
+                    _visibleElementsTargetedWidth[i] = targetWidth;
                 }
             }
         }
-
-        private async Task<ImageSource> RenderPage(uint pageNum)
+        private async void RenderPage(int pageNum)
         {
-            if (_view.PdfUri == null)
+            if (_view.PdfUri != null)
             {
-                return null;
-            }
-
-            using (var page = _view.PDFdoc.GetPage(pageNum))
-            {
-                var options = new Windows.Data.Pdf.PdfPageRenderOptions();
-                var stream = new InMemoryRandomAccessStream();
-                var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
-                var widthRatio = _view.ActualWidth == 0 ? 1 : (_view.ActualWidth / screenMap.X) / _view.PdfMaxWidth;
-                var box = page.Dimensions.MediaBox;
-                options.DestinationWidth = (uint) Math.Min(widthRatio * box.Width, 1500);
-                options.DestinationHeight = (uint) Math.Min(widthRatio * box.Height, 1500 * box.Height / box.Width);
-                await page.RenderToStreamAsync(stream, options);
-                var source = new BitmapImage();
-                await source.SetSourceAsync(stream);
-                return source;
+                using (var page = _view.PDFdoc.GetPage((uint)pageNum))
+                {
+                    while (Math.Abs(_visibleElementsRenderedWidth[pageNum]) != _visibleElementsTargetedWidth[pageNum] &&
+                        (_visibleElementsRenderedWidth[pageNum] != -1 || _visibleElementsTargetedWidth[pageNum] != 0))
+                    {
+                        if (pageNum == 5)
+                        Debug.WriteLine("Startomg Page #" + pageNum +  " width = " + _visibleElementsRenderedWidth[pageNum] + " -> "  + _visibleElementsTargetedWidth[pageNum]);
+                        var targetWidth = _visibleElementsTargetedWidth[pageNum];
+                        if (targetWidth != 0)
+                        {
+                            var options = new Windows.Data.Pdf.PdfPageRenderOptions();
+                            var stream = new InMemoryRandomAccessStream();
+                            var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
+                            var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
+                            var box = page.Dimensions.MediaBox;
+                            options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, 1500);
+                            options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, 1500 * box.Height / box.Width);
+                            await page.RenderToStreamAsync(stream, options);
+                            var source = new BitmapImage();
+                            await source.SetSourceAsync(stream);
+                            _visibleElements[pageNum].Source = source;
+                        }
+                        else
+                        {
+                            _visibleElements[pageNum].Source = null;
+                        }
+                        if (pageNum == 5)
+                            Debug.WriteLine("Rendered Page #" + pageNum + " width = " +  targetWidth);
+                        _visibleElementsRenderedWidth[pageNum] = targetWidth;
+                    }
+                    _visibleElementsRenderedWidth[pageNum] = _visibleElementsRenderedWidth[pageNum] == 0 ? -1: - _visibleElementsRenderedWidth[pageNum]; // marks the rendering as complete
+                }
             }
         }
     }

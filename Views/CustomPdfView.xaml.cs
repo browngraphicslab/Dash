@@ -265,8 +265,8 @@ namespace Dash
 			SetUpToolTips();
 			LayoutDocument = document.GetActiveLayout() ?? document;
 			DataDocument = document.GetDataDocument();
-			_topPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
-			_bottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
+			TopPages    = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
+			BottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
 
 			Loaded += CustomPdfView_Loaded;
 			Unloaded += CustomPdfView_Unloaded;
@@ -340,9 +340,15 @@ namespace Dash
 			_bottomTimer.Start();
 
 			SetAnnotationType(AnnotationType.Region);
-		}
+        }
+        ~CustomPdfView()
+        {
 
-		private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
+            Debug.WriteLine("FINALIZING CustomPdfView");
+        }
+
+
+        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
 		{
 			var docview = this.GetFirstAncestorOfType<DocumentView>();
 			if (SelectionManager.IsSelected(docview))
@@ -669,7 +675,6 @@ namespace Dash
         }
 
 
-
 		#endregion
 
 		// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
@@ -698,17 +703,11 @@ namespace Dash
 
 			//LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
 		}
-
-		public void UnFreeze()
-		{
-			//await RenderPdf(ScrollViewer.ActualWidth);
-			TopPages.View_SizeChanged();
-			BottomPages.View_SizeChanged();
-		}
+        
 
 		public void ScrollToPosition(double pos)
 		{
-			var sizes = _bottomPages.PageSizes;
+			var sizes = BottomPages.PageSizes;
 			var botOffset = 0.0;
 			var annoWidth = xBottomAnnotationBox.ActualWidth;
 			foreach (var size in sizes)
@@ -770,7 +769,7 @@ namespace Dash
             
             Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
-			var sizes = _bottomPages.PageSizes;
+			var sizes = BottomPages.PageSizes;
 			// TODO: functionality for more than one split maybe?
 			if (splits.Any())
 			{
@@ -1064,17 +1063,13 @@ namespace Dash
 			double annoWidth = 0;
 			if (scroller.Equals(TopScrollViewer))
 			{
-
-				pages = _topPages;
+				pages = TopPages;
 				annoWidth = xTopAnnotationBox.Width;
-
 			}
-
 			else
 			{
-				pages = _bottomPages;
+				pages = BottomPages;
 				annoWidth = xBottomAnnotationBox.Width;
-
 			}
 
 			var sizes = pages.PageSizes;
@@ -1084,7 +1079,6 @@ namespace Dash
 				var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
 
 				if (currOffset + (size.Height + 10) * scale - scroller.VerticalOffset >= -1)
-
 				{
 					break;
 				}
@@ -1111,14 +1105,14 @@ namespace Dash
 			if (scroller.Equals(TopScrollViewer))
 			{
 
-				pages = _topPages;
+				pages = TopPages;
 				annoWidth = xTopAnnotationBox.Width;
 
 			}
 
 			else
 			{
-				pages = _bottomPages;
+				pages = BottomPages;
 				annoWidth = xBottomAnnotationBox.Width;
 
 			}
@@ -1475,11 +1469,6 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
-        ~CustomPdfView()
-        {
-
-            Debug.WriteLine("Disposing PDF");
-        }
     }
 
 }
