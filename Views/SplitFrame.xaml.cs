@@ -46,7 +46,7 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
         public enum SplitDirection
         {

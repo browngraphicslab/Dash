@@ -10,6 +10,7 @@ using Dash.Models.DragModels;
 using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -197,12 +198,12 @@ namespace Dash
             if (show)
             {
                 xCollectionDragBorder.Visibility = Visibility.Visible;
-                ;
+                
             }
             else
             {
                 xCollectionDragBorder.Visibility = Visibility.Collapsed;
-                ;
+                
             }
         }
 
@@ -211,15 +212,25 @@ namespace Dash
         {
             if (xSearchCodeBox.Visibility == Visibility.Visible)
             {
+                var centX = (float)xArrow.ActualWidth / 2;
+                var centY = (float)xArrow.ActualHeight / 2;
+                //open search bar
+                xArrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
                 //collapse search bar
+                xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-                xArrow.Glyph = "\uE937";
+               
             }
             else
             {
+                var centX = (float)xArrow.ActualWidth / 2 + 1;
+                var centY = (float) xArrow.ActualHeight / 2 + 1;
                 //open search bar
+                xArrow.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
-                xArrow.Glyph = "\uE936";
+                xFadeAnimationIn.Begin();
             }
         }
 
@@ -312,8 +323,6 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
-
-            var a = DocumentTree.MainPageTree;
             
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
@@ -409,16 +418,14 @@ namespace Dash
 
         public static void UnHighlightDocs(DocumentController coll)
         {
-            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             //unhighlight each doc in collection
-            foreach (DocumentController doc in colDocs)
-            {
-                MainPage.Instance.HighlightDoc(doc, false, 2);
-                if (doc.DocumentType.ToString() == "Collection Box")
+            MainPage.Instance.HighlightDoc(coll, false, 2);
+            if (colDocs != null)
+                foreach (DocumentController doc in colDocs)
                 {
-                    UnHighlightDocs(doc);
+                   UnHighlightDocs(doc);
                 }
-            }
         }
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)

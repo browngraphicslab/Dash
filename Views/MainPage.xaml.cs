@@ -1,29 +1,25 @@
-﻿ using System;
+﻿using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using DashShared;
-using Windows.UI.ViewManagement;
-using Windows.ApplicationModel.Core;
-using Windows.UI;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Animation;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Views;
-using iText.Layout.Element;
-using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.UI.Xaml.Navigation;
+using Windows.Storage;
+using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 
@@ -43,6 +39,8 @@ namespace Dash
             Collapsed
         }
 
+
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
         public static MainPage Instance { get; private set; }
 
         public BrowserView WebContext => BrowserView.Current;
@@ -52,7 +50,7 @@ namespace Dash
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-
+		
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
@@ -67,7 +65,7 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
-        public Popup LayoutPopup => xLayoutPopup;
+        public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
@@ -85,7 +83,7 @@ namespace Dash
             Instance = this;
 
             InitializeComponent();
-
+            SetUpToolTips();
 
             Loaded += (s, e) =>
             {
@@ -107,11 +105,14 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-                LayoutPopup.HorizontalOffset = (newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2);
-                LayoutPopup.VerticalOffset = (newHeight / 2) - 150;
+	            if (ActivePopup != null)
+	            {
+		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+				}
             };
 
-            Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+            xToolbar.SetValue(Canvas.ZIndexProperty, 20);
 
             xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
             xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
@@ -180,10 +181,10 @@ namespace Dash
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
-                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
-                xMainTreeView.ToggleDarkMode(true);
+                xMainTreeView.ChangeTreeViewTitle("Workspaces");
+                //xMainTreeView.ToggleDarkMode(true);
 
-                setupMapView(lastWorkspace);
+                //setupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
@@ -218,7 +219,12 @@ namespace Dash
 
         #region LOAD AND UPDATE SETTINGS
 
-        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+        private void LoadSettings()
+        {
+            var settingsDoc = GetAppropriateSettingsDoc();
+            xSettingsView.LoadSettings(settingsDoc);
+            XDocumentDecorations.LoadTags(settingsDoc);
+        }
 
         private DocumentController GetAppropriateSettingsDoc()
         {
@@ -422,68 +428,67 @@ namespace Dash
 
         public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
-            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            if (collection != null && document != null)
+            foreach (var dockedView in this.GetDescendantsOfType<SplitFrame>())
             {
-                highlightDoc(collection, document, flag, search, animate);
+                highlightDoc(dockedView.ViewModel, document, flag, search, animate);
             }
         }
 
-        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag, int search, bool animate = false)
+        private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
         {
             if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+            if (dm.DocumentController.Equals(document))
+            {
+                //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
+                if (search == 0)
                 {
-                    //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
-                    if (search == 0)
+                    if (flag == null)
                     {
-                        if (flag == null)
-                        {
-                            dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                        }
-                        else if (flag == true)
-                        {
-                            dm.DecorationState = (dm.Undecorated == false);
-                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
-                        }
-                        else if (flag == false)
-                        {
-                            dm.DecorationState = false;
-                            dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
-                        }
+                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
                     }
-                    else if (search == 1)
+                    else if (flag == true)
                     {
-                        //highlight doc
-                        if (animate)
-                        {
-                            dm.ExpandBorder();
-                        }
-                        else
-                        {
-                            dm.SearchHighlightState = new Thickness(8);
-                        }
+                        dm.DecorationState = (dm.Undecorated == false);
+                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
+                    }
+                    else if (flag == false)
+                    {
+                        dm.DecorationState = false;
+                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
+                    }
+                }
+                else if (search == 1)
+                {
+                    //highlight doc
+                    if (animate)
+                    {
+                        dm.ExpandBorder();
                     }
                     else
                     {
-                        //unhighlight doc
-                        if (animate)
-                        {
-                            dm.RetractBorder();
-                        }
-                        else
-                        {
-                            dm.SearchHighlightState = new Thickness(0);
-                        }
+                        dm.SearchHighlightState = new Thickness(8);
                     }
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
+                else
                 {
-                    highlightDoc(freeformView, document, flag, search);
+                    //unhighlight doc
+                    if (animate)
+                    {
+                        dm.RetractBorder();
+                    }
+                    else
+                    {
+                        dm.SearchHighlightState = new Thickness(0);
+                    }
                 }
+            }
+            else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
+            {
+                foreach (var vm in freeformView.ViewModel.DocumentViewModels)
+                {
+                    highlightDoc(vm, document, flag, search, animate);
+                }
+            }
         }
 
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
@@ -639,6 +644,33 @@ namespace Dash
                 }
             }
 
+			//deactivate all docs if esc was pressed
+	        if (e.VirtualKey == VirtualKey.Escape )
+	        {
+		        using (UndoManager.GetBatchHandle())
+		        {
+			        LinkActivationManager.DeactivateAll();
+				}
+				
+	        }
+
+	        //activateall selected docs
+	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
+	        {
+		        var selected = SelectionManager.GetSelectedDocs();
+		        if (selected.Count > 0)
+		        {
+			        using (UndoManager.GetBatchHandle())
+			        {
+						foreach (var doc in SelectionManager.GetSelectedDocs())
+					        {
+						        LinkActivationManager.ActivateDoc(doc);
+					        }
+						}
+				        
+			        }
+			}
+
             var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
@@ -746,20 +778,22 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            Toolbar.SwitchTheme(nightModeOn);
+            xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
+                xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
                 xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
@@ -815,12 +849,12 @@ namespace Dash
             var mainFreeform = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>();
             var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2  / mainFreeformXf.M22);
+            var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2 / mainFreeformXf.M22);
             var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth , Y = -mapPt.Y  + SplitFrame.ActiveFrame.ActualWidth  },
+                new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth / 2, Y = -mapPt.Y + SplitFrame.ActiveFrame.ActualHeight / 2 },
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-         }
+        }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -831,22 +865,22 @@ namespace Dash
         {
             xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
             //Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
-            Toolbar.ChangeVisibility(!changeToVisible);
+            xToolbar.ChangeVisibility(!changeToVisible);
         }
 
-        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
-        }
+        //private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
+        //}
 
-        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-        }
+        //private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        //{
+        //    xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+        //}
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
-            xMainTreeView.TogglePresentationMode(expand);
+        //    TogglePresentationMode(expand);
 
             if (expand)
             {
@@ -911,67 +945,78 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
+		
 
+	    public async Task<PushpinType> GetPushpinType()
+	    {
+		    var typePopup = new PushpinTypePopup();
+			SetUpPopup(typePopup);
 
-        private void Popup_OnOpened(object sender, object e)
+		    var mode = await typePopup.GetPushpinType();
+		    UnsetPopup();
+
+		    return mode;
+	    }
+
+        public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-            xOverlay.Visibility = Visibility.Visible;
-            xComboBox.SelectedItem = null;
+	        var importPopup = new HTMLRTFPopup();
+			SetUpPopup(importPopup);
+
+	        var mode = await importPopup.GetLayoutMode();
+	        UnsetPopup();
+
+			return mode;
         }
 
-        private void Popup_OnClosed(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Collapsed;
-        }
+	    public async Task<VideoWrapper> GetVideoFile()
+	    {
+		    var videoPopup = new ImportVideoPopup();
+		    SetUpPopup(videoPopup);
 
-        public Task<SettingsView.WebpageLayoutMode> GetLayoutType()
-        {
-            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
-            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
-            {
-                xOverlay.Visibility = Visibility.Collapsed;
-                xLayoutPopup.IsOpen = false;
-                xErrorMessageIcon.Visibility = Visibility.Collapsed;
-                xErrorMessageText.Visibility = Visibility.Collapsed;
+		    var video = await videoPopup.GetVideoFile();
+			UnsetPopup();
 
-                var remember = xSaveHtmlType.IsChecked ?? false;
+		    return video;
+	    }
 
-                if (xComboBox.SelectedIndex == 0)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.HTML;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.HTML);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else if (xComboBox.SelectedIndex == 1)
-                {
-                    if (remember)
-                    {
-                        SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
-                        xSaveHtmlType.IsChecked = false;
-                    }
-                    tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
-                    xConfirmButton.Tapped -= XConfirmButton_OnClick;
-                }
-                else
-                {
-                    xOverlay.Visibility = Visibility.Visible;
-                    xLayoutPopup.IsOpen = true;
-                    xErrorMessageIcon.Visibility = Visibility.Visible;
-                    xErrorMessageText.Visibility = Visibility.Visible;
-                }
-            }
-            LayoutPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            LayoutPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+	    public async Task<StorageFile> GetImageFile()
+	    {
+		    var imagePopup = new ImportImagePopup();
+			SetUpPopup(imagePopup);
 
-            LayoutPopup.IsOpen = true;
-            xConfirmButton.Tapped += XConfirmButton_OnClick;
+		    var image = await imagePopup.GetImageFile();
+		    UnsetPopup();
 
-            return tcs.Task;
-        }
+		    return image;
+	    }
+
+		/// <summary>
+		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+		/// </summary>
+		/// <param name="popup"></param>
+	    private void SetUpPopup(DashPopup popup)
+		{
+			ActivePopup = popup;
+			xOverlay.Visibility = Visibility.Visible;
+			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+			Grid.SetColumn(popup.Self(), 2);
+			xOuterGrid.Children.Add(popup.Self());
+		}
+
+		/// <summary>
+		/// This method is called after a popup closes, to remove it from the page.
+		/// </summary>
+	    private void UnsetPopup()
+		{
+			xOverlay.Visibility = Visibility.Collapsed;
+			if (ActivePopup != null)
+		    {
+			    xOuterGrid.Children.Remove(ActivePopup.Self());
+			    ActivePopup = null;
+		    }
+	    }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {
@@ -1019,7 +1064,7 @@ namespace Dash
             }
             var onScreenView = GetTargetDocumentView(target);
 
-            if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
+            if (target.GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data.Equals(nameof(LinkTargetPlacement.Overlay)) ?? false)
             {
                 target.GotoRegion(region, linkDoc);
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
@@ -1033,6 +1078,7 @@ namespace Dash
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
 
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 //TODO Splitting
                 //if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
@@ -1178,5 +1224,112 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
+
+
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+        }
+
+        private void XLoadingPopup_OnClosed(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void XLoadingPopup_OnOpened(object sender, object e)
+        {
+            xOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void TogglePopup()
+        {
+            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
+            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
+            //xLoadingPopup.IsOpen = true;
+            //Load.Begin();
+        }
+
+        public void ClosePopup()
+        {
+            //Load.Stop();
+            //xLoadingPopup.HorizontalOffset = 0;
+            //xLoadingPopup.VerticalOffset = 0;
+            //xLoadingPopup.IsOpen = false;
+
+        }
+
+        private ToolTip _search;
+        private ToolTip _back;
+        private ToolTip _forward;
+        private ToolTip _snapshot;
+        private ToolTip _presentation;
+        private ToolTip _export;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _search = new ToolTip()
+            {
+                Content = "Search workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSearchButton, _search);
+
+            _back = new ToolTip()
+            {
+                Content = "Go back",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xBackButton, _back);
+
+            _forward = new ToolTip()
+            {
+                Content = "Go forward",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xForwardButton, _forward);
+
+            _snapshot = new ToolTip()
+            {
+                Content = "Snapshot workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
+
+
+        }
+
+        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.MakePdf_OnTapped(sender, e);
+        }
+
+        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.TogglePresentationMode(sender, e);
+        }
+
+        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+           xMainTreeView.Snapshot_OnTapped(sender, e);
+        }
+
+
+
     }
 }

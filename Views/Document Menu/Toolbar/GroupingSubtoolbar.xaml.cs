@@ -1,17 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Dash.Converters;
-using System;
-using Windows.Networking.BackgroundTransfer;
 using Windows.UI;
-using Windows.UI.Xaml.Shapes;
-using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -47,6 +40,8 @@ namespace Dash
 
             FormatDropdownMenu();
 
+            SetUpToolTips();
+
             //Sets orientation binding when the actual command bar UI element is loaded. 
             //Potential bug fix: if visibility of command bar is collapsed, will never load and will fail to add event handler
             xGroupCommandbar.Loaded += delegate
@@ -60,7 +55,6 @@ namespace Dash
                 Visibility = Visibility.Collapsed;
             };
 
-            CheckForCustom();
 	        xGroupForegroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
@@ -71,9 +65,9 @@ namespace Dash
          */
         private void FormatDropdownMenu()
         {
-            xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
+            //xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            //xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            //xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         /*
@@ -111,7 +105,7 @@ namespace Dash
             //Whether or not open or closed, should always be visible if some content is selected
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
-            xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
         }
 
@@ -148,33 +142,17 @@ namespace Dash
                     BackgroundShape.AdornmentShape.Clover.ToString(),
                 };
 
-                CheckForCustom();
-
                 var index = xShapeOptionsDropdown.SelectedIndex;
                 var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
                 _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
 
-                if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
-            
+                if (!(index == GroupGeometryConstants.CustomPolyDropdownIndex || index == GroupGeometryConstants.CustomStarDropdownIndex)) return;
+
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
                 var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
                 _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
                 xSideCounter.Text = safeSideCount.ToString("G");
-            }
-        }
-
-        private void CheckForCustom()
-        {
-            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex || xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
-            {
-                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
-                xRadialCol.Width = new GridLength(50);
-                xSliderCol.Width = new GridLength(316);
-            }
-            else
-            {
-                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
-                xRadialCol.Width = new GridLength(0);
-                xSliderCol.Width = new GridLength(344);
             }
         }
 
@@ -224,7 +202,6 @@ namespace Dash
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColor = _currentDocController?.GetDataDocument().GetBackgroundColor() ?? Windows.UI.Colors.Red;
-            UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
            // xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
@@ -232,13 +209,6 @@ namespace Dash
             //NUM SIDES
             xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
             
-        }
-
-        private void UpdateToolbarAccentColors()
-        {
-           // xOpacitySlider.Background = new SolidColorBrush(_currentColor);
-            xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
-            xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
 		
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -277,10 +247,57 @@ namespace Dash
 		private void XGroupForegroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
 			_currentColor = xGroupForegroundColorPicker.SelectedColor;
-		    UpdateToolbarAccentColors();
 			//have to use a different key so that background color is 
 		    _currentDocController?.SetField(KeyStore.GroupBackgroundColorKey, new TextController(e.ToString()), true);
 		   
 	    }
+
+        private ToolTip _group;
+        private ToolTip _ungroup;
+        private ToolTip _color;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _group = new ToolTip()
+            {
+                Content = "Group Items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _group);
+
+            _ungroup = new ToolTip()
+            {
+                Content = "Ungroup Items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUngroup, _ungroup);
+
+            _color = new ToolTip()
+            {
+                Content = "Font Color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFontColor, _color);
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
     }
 }

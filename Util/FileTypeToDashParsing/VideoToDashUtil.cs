@@ -107,7 +107,12 @@ namespace Dash
 			Debug.WriteLine("LOCAL FILE: " + localFile);
 
 			// return a video note
-			return new VideoNote(new Uri(localFile.Path)).Document;
+			return CreateVideoBoxFromUri(new Uri(localFile.Path));
+		}
+
+		public static DocumentController CreateVideoBoxFromUri(Uri uri)
+		{
+			return new VideoNote(uri).Document;
 		}
 
 	}

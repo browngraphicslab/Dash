@@ -1,27 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
-using Dash;
-using Dash.Views;
-using iText.StyledXmlParser.Jsoup.Select;
 
 namespace Dash
 {
-    public enum LinkContexts
+    public enum LinkTargetPlacement
     {
-        PDFSplitScreen, None, PushPin
+        Docked, Default, Overlay, Floating
     }
     public class AnnotationManager
 	{
@@ -54,37 +43,72 @@ namespace Dash
                         linksFrom.AddRange(sublinksFrom);
                 }
             }
-            var linkToCount = linksTo?.Count ?? 0;
-            var linkFromCount = linksFrom?.Count ?? 0;
-            var linkCount = linkToCount + linkFromCount;
-            if (linkCount == 0)
-            {
-                return;
-	        }
+            int linkToCount = linksTo?.Count ?? 0;
+            int linkFromCount = linksFrom?.Count ?? 0;
+            int linkCount = linkToCount + linkFromCount;
+            if (linkCount == 0) return;
 
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (link.Title == linkType || linkType == null)
+                if (linkType == null || (link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
+	        else if (!MainPage.Instance.IsShiftPressed())
+            {
+                if (linksTo != null)
+                {
+                    foreach (DocumentController linkTo in linksTo)
+                        if (linkType == null || (linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        {
+                            FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
+                        }
+                }
+
+                _linkFlyout.Items?.Add(new MenuFlyoutSeparator());
+
+                if (linksFrom != null)
+                {
+                    foreach (var linkFrom in linksFrom)
+                        if (linkType == null || (linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        {
+                            FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
+                        }
+                }
+            }
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
+				ObservableCollection<string> addedNames = new ObservableCollection<string>();
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || linkType == linkTo.Title) {
-                        var item = new MenuFlyoutItem
-                        {
-                            Text = linkTo.Title,
-                            DataContext = linkTo
-                        };
-                        var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers));
-                        item.Click += itemHdlr;
-                        defaultHdlr = itemHdlr;
-	                    _linkFlyout.Items?.Add(item);
-	                }
+                    if (linkType == null || (linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+	                    {
+		                    var targetTitle = linkTo.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination)
+			                    .Title;
+
+		                    var item = new MenuFlyoutItem
+		                    {
+			                    Text = targetTitle,
+			                    DataContext = linkTo
+		                    };
+		                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers));
+		                    item.Click += itemHdlr;
+		                    defaultHdlr = itemHdlr;
+		                    _linkFlyout.Items?.Add(item);
+
+							/*
+		                    foreach (string name in linkNames)
+		                    {
+			                    if (!addedNames.Contains(name))
+			                    {
+				                    addedNames.Add(name);
+				                    
+								}
+		                    }
+                        */
+						}
                 }
 
                 _linkFlyout.Items?.Add(new MenuFlyoutSeparator());
@@ -92,18 +116,23 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || linkType == linkFrom.Title)
+                    if (linkType == null || (linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
                     {
-                        var item = new MenuFlyoutItem
+	                    var targetTitle = linkFrom.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)
+		                    .Title;
+
+						var item = new MenuFlyoutItem
 	                    {
-	                        Text = linkFrom.Title,
-                            DataContext = linkFrom
+		                    Text = targetTitle,
+		                    DataContext = linkFrom
 	                    };
-                        var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));
+	                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));
 	                    item.Click += itemHdlr;
-                        defaultHdlr = itemHdlr;
+	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
-	                }
+                    }
+
+					
                 }
 
 

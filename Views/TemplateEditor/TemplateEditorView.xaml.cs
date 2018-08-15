@@ -1150,7 +1150,7 @@ namespace Dash
 			//updates and generates bounds for the children inside the template canvas
 			var bounds = new Rect(0, 0, xWorkspace.Width,
 				xWorkspace.Height);
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
+			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 
 			docView.DocumentDeleted += DocView_DocumentDeleted;
@@ -1258,7 +1258,7 @@ namespace Dash
 
 		private void DocView_DocumentSelected(DocumentView sender)
 		{
-			sender.Bounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
+			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
 
 			xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 			_selectedDocument = sender;
@@ -1394,7 +1394,7 @@ namespace Dash
 				{
 					try
 					{
-						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, null);
+						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
 						if (droppedDoc != null)
 							DocumentControllers.Add(droppedDoc.GetViewCopy(new Point(0, 0)));
 						return;
@@ -1700,7 +1700,7 @@ namespace Dash
 								KeyStore.RegionCreator[dragDoc.DocumentType] != null)
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 							var note = new RichTextNote("<annotation>", where).Document;
-							dragDoc.Link(note, LinkContexts.None);
+							dragDoc.Link(note, LinkTargetPlacement.Default);
 							DocumentControllers.Add(note.GetViewCopy(new Point(0, 0)));
 						}
 					}
@@ -2026,8 +2026,8 @@ namespace Dash
 
 			//if document view contains a text block, ensure its dimensions are within bounds
 			var textBlock = docView?.GetFirstDescendantOfType<EditableTextBlock>();
-			if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.Bounds.Rect.Width &&
-									  docView.ActualHeight + docView.ViewModel.YPos < docView.Bounds.Rect.Height))
+			if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.ViewModel.DragBounds.Rect.Width &&
+									  docView.ActualHeight + docView.ViewModel.YPos < docView.ViewModel.DragBounds.Rect.Height))
 				return;
 
 			//start by updating position to fit entire contents of text box on the canvas
@@ -2051,7 +2051,7 @@ namespace Dash
 			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
 				xWorkspace.Height - docView.ActualHeight);
 
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
+			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
 
 			//      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
 			//{

@@ -37,6 +37,9 @@ namespace Dash
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
         string _originalRtfFormat;
+        List<string> _queries;
+        int _textLength;
+        int queryIndex = -1;
         Dictionary<int, Color> _originalCharFormat = new Dictionary<int, Color>();
 
         private int NoteFontSize => SettingsView.Instance.NoteFontSize;
@@ -73,16 +76,10 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            Application.Current.Suspending += (sender, args) =>
-            {
-                ClearSearchHighlights();
-                //SetSelected("");
-            };
-
             xSearchDelete.Click += (s, e) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
@@ -90,7 +87,7 @@ namespace Dash
 
             xSearchBox.QuerySubmitted += (s, e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
-           xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
+            xSearchBox.QueryChanged += (s, e) => SetSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
 
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
 
@@ -125,6 +122,11 @@ namespace Dash
                 }
             };
 
+            xSearchBox.GotFocus += (s, e) =>
+            {
+                MatchQuery(getSelected());
+            };
+
             xRichEditBox.LostFocus += delegate
             {
                 if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
@@ -133,7 +135,7 @@ namespace Dash
             xSearchBox.LostFocus += (s, e) =>
             {
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
@@ -180,6 +182,10 @@ namespace Dash
                 }
             };
         }
+        ~RichTextView()
+        {
+            Debug.WriteLine("Finalized RichTextView");
+        }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
@@ -194,7 +200,10 @@ namespace Dash
         public void UpdateDocumentFromXaml()
         {
             if (!(getSelected()?.Count == 0 || getSelected()?.First()?.Data != ""))
+            {
                 _originalRtfFormat = getRtfText();
+                queryIndex = -1;
+            }
 
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
@@ -478,7 +487,7 @@ namespace Dash
                 xRichEditBox.IsEnabled = true;
                 xRichEditBox.IsTabStop = tab;
                 ClearSearchHighlights();
-                SetSelected("");
+                //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             }
 
@@ -553,7 +562,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(RichTextView)] = this;
+            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
@@ -572,8 +581,10 @@ namespace Dash
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            Debug.WriteLine("RICH TEXT VIEW IS UNLOADED");
             IsLoaded = false;
             ClearSearchHighlights(true);
+            Application.Current.Suspending -= AppSuspending;
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
@@ -581,6 +592,10 @@ namespace Dash
 
         public const string HyperlinkMarker = "<hyperlink marker>";
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
+        {
+            ClearSearchHighlights();
+        }
 
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -589,8 +604,9 @@ namespace Dash
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
-
+            
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
@@ -695,7 +711,7 @@ namespace Dash
             }
 
             var region = GetRegionDocument();
-            region.Link(theDoc, LinkContexts.None);
+            region.Link(theDoc, LinkTargetPlacement.Default);
 
             convertTextFromXamlRTF();
 
@@ -850,7 +866,7 @@ namespace Dash
                 return;
             ClearSearchHighlights();
             _originalRtfFormat = getRtfText();
-                                             
+
             //_nextMatch = 0;
             //_prevQueryLength = queries?.FirstOrDefault() == null ? 0 : queries.First().Data.Length;
             //string text;
@@ -866,21 +882,24 @@ namespace Dash
 
             xRichEditBox.Document.GetText(TextGetOptions.None, out string actualText);
 
+            _textLength = actualText.Length;
+
             var regList = queries.Select(t => new Regex((t.Data.Length - t.Data.TrimEnd('\\').Length) % 2 == 0 ? t.Data : t.Data.Substring(0, t.Data.Length - 1)));
             var matches = new List<string>();
+            _queries = new List<string>();
             foreach (var reg in regList)
             {
                 MatchCollection matchCol = reg.Matches(actualText);
                 foreach (Match match in reg.Matches(actualText))
                 {
-                    if (match.Success && !string.IsNullOrEmpty(match.Value) && !matches.Contains(match.Value))
+                    if (match.Success && !string.IsNullOrEmpty(match.Value))
                     {
-                        matches.Add(match.Value);
+                        _queries.Add(match.Value);
+                        if (!matches.Contains(match.Value))
+                            matches.Add(match.Value);
                     }
                 }
             }
-            
-
 
             string currentRtf = _originalRtfFormat;
             string newRtf = currentRtf;
@@ -1084,18 +1103,41 @@ namespace Dash
         /// </summary>
         private void NextResult()
         {
-            var keys = _originalCharFormat.Keys;
-            if (keys.Count != 0)
+            if (_queries.Count == 0)
+                return;
+            if (queryIndex >= _queries.Count())
+                queryIndex = -1;
+            queryIndex += 1;
+            if (queryIndex == _queries.Count)
             {
-                var start = keys.ElementAt(_nextMatch);
-                xRichEditBox.Document.Selection.StartPosition = start;
-                xRichEditBox.Document.Selection.EndPosition = start + _prevQueryLength;
-                xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
-                if (_nextMatch < keys.Count - 1)
-                    _nextMatch++;
-                else
-                    _nextMatch = 0;
+                xRichEditBox.Document.Selection.StartPosition = 0;
+                xRichEditBox.Document.Selection.EndPosition = 0;
             }
+            else
+            {
+                xRichEditBox.Document.Selection.FindText(_queries.ElementAt(queryIndex), _textLength, FindOptions.None);
+                var s = xRichEditBox.Document.Selection.StartPosition;
+                var selectedText = xRichEditBox.Document.Selection;
+            }
+            //if (selectedText != null)
+            //{
+            //    selectedText.CharacterFormat.BackgroundColor = Colors.Red;
+            //}
+            //xRichEditBox.Document.Selection.Collapse(false);
+
+
+            //var keys = _originalCharFormat.Keys;
+            //if (keys.Count != 0)
+            //{
+            //    var start = keys.ElementAt(_nextMatch);
+            //    xRichEditBox.Document.Selection.StartPosition = start;
+            //    xRichEditBox.Document.Selection.EndPosition = start + _prevQueryLength;
+            //    xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
+            //    if (_nextMatch < keys.Count - 1)
+            //        _nextMatch++;
+            //    else
+            //        _nextMatch = 0;
+            //}
         }
 
         /// <summary>
@@ -1109,6 +1151,7 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, _originalRtfFormat);
+            queryIndex = -1;
             xRichEditBox.Document.Selection.StartPosition = s1;
             xRichEditBox.Document.Selection.EndPosition = s2;
             

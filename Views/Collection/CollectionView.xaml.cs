@@ -13,6 +13,7 @@ using Windows.UI;
 using Dash.FontIcons;
 using Windows.UI.Core;
 using Dash.Converters;
+using System.Diagnostics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -56,6 +57,11 @@ namespace Dash
 
             DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
 	        var color = xOuterGrid.Background;
+        }
+
+        ~CollectionView()
+        {
+            Debug.WriteLine("Finalizing CollectionView");
         }
 
         /// <summary>
@@ -122,62 +128,12 @@ namespace Dash
             contextMenu.Items.Add(separatorOne);
             elementsToBeRemoved.Add(separatorOne);
 
-            // add the item to create a new collection
-            var newCollection = new MenuFlyoutItem()
-            {
-                Text = "Add new collection",
-                Icon = new FontIcon() {Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets")}
-            };
-            newCollection.Click += NewCollectionFlyout_OnClick;
-            contextMenu.Items.Add(newCollection);
-            elementsToBeRemoved.Add(newCollection);
-
-            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
-
-            void EnterTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= EnterTagMode;
-                tagMode.Click += ExitTagMode;
-
-                tagMode.Text = "Exit Tag Mode";
-
-                (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
-            }
-
-            void ExitTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click += EnterTagMode;
-
-                tagMode.Text = "Tag Notes";
-                var view = CurrentView as CollectionFreeformBase;
-                if (view != null)
-                {
-                    view.HideTagKeyBox();
-                    view.TagMode = false;
-                }
-            }
-
-                var icon1 = new FontAwesome
-                {
-                    Icon = FontAwesomeIcon.Tags
-                };
-                tagMode.Icon = icon1;
-
-                tagMode.Click += EnterTagMode;
-                contextMenu.Items.Add(tagMode);
-                elementsToBeRemoved.Add(tagMode);
-
-            // add another horizontal separator
-            var separatorTwo = new MenuFlyoutSeparator();
-
-            contextMenu.Items.Add(separatorTwo);
-            elementsToBeRemoved.Add(separatorTwo);
+           
 
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
 
-            var icon5 = new FontAwesome
+            var icon5 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.Code
             };
@@ -188,7 +144,7 @@ namespace Dash
             
             // add the item to create a scripting view
             var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
-            var icon6 = new FontAwesome
+            var icon6 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.WindowMaximize
             };
@@ -204,7 +160,7 @@ namespace Dash
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
-            var icon2 = new FontAwesome
+            var icon2 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.Eye
             };
@@ -228,20 +184,9 @@ namespace Dash
             }
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
-            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            var icon3 = new FontAwesome
-            {
-                Icon = FontAwesomeIcon.Search
-            };
-            viewCollectionPreview.Icon = icon3;
-            contextMenu.Items.Add(viewCollectionPreview);
-            elementsToBeRemoved.Add(viewCollectionPreview);
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
             fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
-            var icon4 = new FontAwesome
+            var icon4 = new FontIcons.FontAwesome
             {
                 Icon = FontAwesomeIcon.WindowMaximize
             };
@@ -261,10 +206,7 @@ namespace Dash
                 {
                     contextMenu.Items.Remove(flyoutItem);
                 }
-
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click -= EnterTagMode;
-                newCollection.Click -= NewCollectionFlyout_OnClick;
+                
                 newRepl.Click -= ReplFlyout_OnClick;
                 newScriptEdit.Click -= ScriptEdit_OnClick;
             };
@@ -285,14 +227,14 @@ namespace Dash
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishScriptBox(@where.X, @where.Y, 300, 400).Document;
+            var note = new DishScriptBox(@where.X, @where.Y).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
         private void ReplFlyout_OnClick(object sender, RoutedEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
+            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            DocumentController note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
@@ -327,6 +269,8 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             }
             _viewType = viewType;
+            if (CurrentView?.UserControl != null)
+                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
@@ -370,10 +314,6 @@ namespace Dash
             }
             CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             CurrentView.UserControl.Loaded += CurrentView_Loaded;
-            // tfs - I don't think these three lines are actually doing anything...
-            //var selected = SelectionManager.SelectedDocs.ToArray();
-            //SelectionManager.DeselectAll();
-            //SelectionManager.SelectDocuments(selected.ToList());
 
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
@@ -409,6 +349,6 @@ namespace Dash
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
 
-        public void SetDropIndicationFill(Brush fill) { CurrentView.SetDropIndicationFill(fill); } 
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
     }
 }

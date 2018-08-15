@@ -58,8 +58,8 @@ namespace Dash
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter);
-            _annotationOverlay.SetAnnotationType(AnnotationType.Region);
+            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
+            _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
             XAnnotationGrid.Children.Add(_annotationOverlay);
 
             Loaded += EditableImage_Loaded;

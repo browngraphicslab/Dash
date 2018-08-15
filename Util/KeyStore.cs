@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
+using Dash.Annotations;
 
 namespace Dash
 {
@@ -41,6 +43,9 @@ namespace Dash
         public static KeyController LinkDestinationKey = new KeyController("LinkDestination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
         public static KeyController LinkSourceKey = new KeyController("LinkSource", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
         public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
+        public static KeyController ReferencesDictKey = new KeyController("_PDF Reference Mapping", "6B06B539-614C-486F-97C7-7CDAA729C421");
+        public static KeyController ReferenceNumKey = new KeyController("Reference #", "FD61D5F0-8C31-4132-A6B2-02C58067B5EA");
+        public static KeyController ReferenceDateKey = new KeyController("Date Published", "57BC205D-B2E0-4E55-8114-A993A9376E1B");
         public static KeyController ScaleAmountFieldKey = new KeyController("_Scale Amount", "AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE");
         public static KeyController IconTypeFieldKey = new KeyController("_IconType", "ICON7D27-FA81-4D88-B2FA-42B7888525AF");
         public static KeyController SystemUriKey = new KeyController("File Path", "CA740B60-10D5-4B2C-9C9A-E6E4A7D2CA4E");
@@ -103,7 +108,8 @@ namespace Dash
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("_Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
         public static KeyController SelectionRegionTopLeftKey = new KeyController("_Selection Top Left", "B42844C8-B80A-4DE9-BFC3-AF3F94A83D2E");
         public static KeyController SelectionRegionSizeKey = new KeyController("_Selection Size", "34E957C1-A0FC-41B0-8862-174224FBE90B");
-	    public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
+        public static KeyController SelectionIndicesListKey = new KeyController("_Selected Indices", "9856A787-23C9-4961-AA53-41AECA20653E");
+        public static KeyController IsAnnotationScrollVisibleKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
         public static KeyController ReplCurrentIndentKey = new KeyController("_Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
@@ -121,7 +127,7 @@ namespace Dash
         public static KeyController AnnotationsKey = new KeyController("TopAnnotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
         public static KeyController GoToRegionKey = new KeyController("GotoRegion", "5A19BC33-4A83-4961-A230-4A0F8C949022");
         public static KeyController GoToRegionLinkKey = new KeyController("GotoRegionLink", "150C5291-0830-4095-9C18-FAE1F315599F");
-        public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
+        public static KeyController LinkTargetPlacement = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
         public static KeyController PresentationTitleKey = new KeyController("PresTitle", "3A153DAA-C2E1-40D9-9EE8-18CB09439EDD");
         public static KeyController PresentationViewVisibleKey = new KeyController("_Presentation Active", "7D999F66-A6A9-4A74-B2B3-AD12812FAAB6");
         public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
@@ -129,11 +135,20 @@ namespace Dash
         public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
         public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
         public static KeyController PinAnnotationsKey = new KeyController("_Pin Annotations", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
+        public static KeyController AnonymousGroupsKey = new KeyController("Anonymous Groups", "A35F8DA4-5471-4EA7-90D1-8F76F501FFB5");
+        public static KeyController TitleMatchKey = new KeyController("Title Match", "FEBBA568-0DC5-4E8E-8FFE-339CC3E0B1D2");
+        public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
+        public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
 
+        public static KeyController LinkTagKey =
+            new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
         /// <summary>
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
+
+        
+
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
             TypeRenderer[type] = makeViewFunc;
@@ -141,8 +156,9 @@ namespace Dash
         }
 
         public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-        public delegate DocumentController MakeRegionFunc(DocumentView view);
+        public delegate DocumentController MakeRegionFunc(DocumentView view, Point? point = null);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
+        
     }
 }

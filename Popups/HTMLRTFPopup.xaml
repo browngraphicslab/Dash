@@ -1,0 +1,51 @@
+﻿<UserControl
+    x:Class="Dash.Popups.HTMLRTFPopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Popups"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened">
+                <Border x:Name="xBorder"
+                        BorderBrush="{StaticResource AccentGreenLight}"
+                        Background="White"
+                        BorderThickness="2 40 2 2" Width="400" Height="300">
+                    <Grid>
+
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock FontSize="18" Margin="-10 -100 0 0">A webpage has been dragged into Dash.</TextBlock>
+                            <ComboBox x:Name="xComboBox" Width="350" Margin="0 -40 0 -20" Header="Which format should be applied to this webpage?">
+                                <ComboBoxItem>HTML</ComboBoxItem>
+                                <ComboBoxItem>RTF</ComboBoxItem>
+                            </ComboBox>
+                            <CheckBox x:Name="xSaveHtmlType" Margin="0,30,0,0" IsChecked="False"
+                                      Content="Remember my choice." FontSize="18" RenderTransformOrigin="0.5,0.5" >
+                                <CheckBox.RenderTransform>
+                                    <CompositeTransform ScaleX="0.7" ScaleY="0.7"/>
+                                </CheckBox.RenderTransform>
+                            </CheckBox>
+                        </StackPanel>
+
+
+                        <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
+                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
+                        </Button>
+
+                        <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ErrorIcon}"/>
+                            <TextBlock x:Name="xErrorMessageText" Visibility="Collapsed" FontSize="12" Foreground="DarkRed" Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
+
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Popup>
+        </Grid>
+    </Grid>
+</UserControl>

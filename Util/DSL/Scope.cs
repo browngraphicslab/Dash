@@ -43,15 +43,14 @@ namespace Dash
 
         public virtual void SetVariable(string variableName, FieldControllerBase valueToSet)
         {
-            var child = this;
-            while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            if (child == null) return;
+            Scope child = this;
+            while (child != null && !child._dictionary.ContainsKey(variableName) && child.Parent != null) { child = child.Parent; }
             child._dictionary[variableName] = valueToSet;
         }
 
         public FieldControllerBase GetVariable(string variableName)
         {
-            var child = this;
+            Scope child = this;
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
             return child?._dictionary[variableName];
         }

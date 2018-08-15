@@ -28,10 +28,9 @@ namespace Dash
         {
             this.InitializeComponent();
             Visibility = Visibility.Collapsed;
-            
-        }
+            SetUpToolTips();
 
-      
+        }
 
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
@@ -70,11 +69,7 @@ namespace Dash
                 case AnnotationType.Region:
                     xRegionToggle.IsChecked = true;
                     break;
-                case AnnotationType.Pin:
-                    xPinToggle.IsChecked = true;
-                    break;
                 default:
-                    xPinToggle.IsChecked = false;
                     xInkToggle.IsChecked = false;
                     xTextToggle.IsChecked = false;
                     xRegionToggle.IsChecked = false;
@@ -82,11 +77,18 @@ namespace Dash
             }
         }
 
+        public void Update(AnnotationType type)
+        {
+            xInkToggle.IsChecked = type == AnnotationType.Ink;
+            xTextToggle.IsChecked = type == AnnotationType.Selection;
+            xRegionToggle.IsChecked = type == AnnotationType.Region;
+
+        }
+
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
         {
             xRegionToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Ink);
         }
@@ -95,7 +97,6 @@ namespace Dash
         {
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Selection);
         }
@@ -104,7 +105,6 @@ namespace Dash
         {
             xInkToggle.IsChecked = false;
             xTextToggle.IsChecked = false;
-            xPinToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Region);
         }
@@ -122,19 +122,10 @@ namespace Dash
 
         private void Toggle_OnUnchecked(object sender, RoutedEventArgs e)
         {
-            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false && xPinToggle.IsChecked == false)
+            if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false )
             {
                 _currentPdfView.SetAnnotationType(AnnotationType.None);
             }
-        }
-
-        private void XPinToggle_OnChecked_(object sender, RoutedEventArgs e)
-        {
-            xInkToggle.IsChecked = false;
-            xTextToggle.IsChecked = false;
-            xRegionToggle.IsChecked = false;
-
-            _currentPdfView.SetAnnotationType(AnnotationType.Pin);
         }
 
         //private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -180,22 +171,105 @@ namespace Dash
 
                 if (!double.TryParse(desiredPage, out double pageNum))
                 {
-                    xFadeAnimationIn.Begin();
-                    xFadeAnimationOut.Begin();
+                    xToPageBox.PlaceholderText = "Error: invalid page #";
+                    xToPageBox.Text = "";
+                    //xFadeAnimationIn.Begin();
+                    //xFadeAnimationOut.Begin();
                     return;
                 }
                 if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
                 {
-
-                    xFadeAnimationIn.Begin();
-                    xFadeAnimationOut.Begin();
+                    xToPageBox.PlaceholderText = "Error: invalid page #";
+                    xToPageBox.Text = "";
+                    //xFadeAnimationIn.Begin();
+                    //xFadeAnimationOut.Begin();
                     return;
                 }
 
                 _currentPdfView.GoToPage(pageNum);
+                xToPageBox.PlaceholderText = "Go to page...";
             }
-
+            
 
         }
-    }
+
+        private ToolTip _toggle;
+	    private ToolTip _scrollVis;
+        private ToolTip _ink;
+        private ToolTip _text;
+        private ToolTip _region;
+
+        private void SetUpToolTips()
+        {
+            const PlacementMode placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _toggle = new ToolTip()
+            {
+                Content = "Toggle Annotations",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
+
+	        _scrollVis = new ToolTip()
+	        {
+		        Content = "Show Annotations on Scroll",
+		        Placement = placementMode,
+		        VerticalOffset = offset
+	        };
+	        ToolTipService.SetToolTip(xAnnotationsVisibleOnScroll, _scrollVis);
+
+			_ink = new ToolTip()
+            {
+                Content = "Ink Annotation",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xInkToggle, _ink);
+
+            _text = new ToolTip()
+            {
+                Content = "Text Annotation",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTextToggle, _text);
+
+          
+            _region = new ToolTip()
+            {
+                Content = "Region Annotation",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRegionToggle, _region);            
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
+	    {
+            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Show Annotations on Scroll";
+	        _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
+	    }
+
+	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
+	    {
+	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Hide Annotations on Scroll";
+            _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
+	    }
+	}
+
+
 }

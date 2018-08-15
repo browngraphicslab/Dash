@@ -19,12 +19,12 @@ namespace Dash
         public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             var localFile = await CopyFileToLocal(fileData);
-            return GetPDFDoc(localFile);
+            return GetPDFDoc(localFile, fileData.File.Name);
         }
 
-        public DocumentController GetPDFDoc(StorageFile file)
+        public DocumentController GetPDFDoc(StorageFile file, string title = null)
         {
-            var title = file.DisplayName;
+            title = title ?? file.DisplayName;
 
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -34,15 +34,15 @@ namespace Dash
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
 
-#pragma warning disable 4014
-            Task.Run(async () =>
-            {
-                var text = await GetPdfText(file);
-                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text), true));
-            });
+//#pragma warning disable 4014
+//            Task.Run(async () =>
+//            {
+//                var text = await GetPdfText(file);
+//                UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text), true));
+//            });
 
             // return a new pdf box
-            var layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
+            DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
             layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
             return layout;
         }

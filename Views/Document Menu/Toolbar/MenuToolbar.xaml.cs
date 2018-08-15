@@ -1,22 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using CsvHelper.Configuration.Attributes;
-using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
-using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
 using System.Threading.Tasks;
 using Windows.System;
@@ -152,6 +144,8 @@ namespace Dash
         {
             InitializeComponent();
 
+            SetUpToolTips();
+
             MenuToolbar.Instance = this;
             //set enum defaults
             mode = MouseMode.TakeNote;
@@ -207,8 +201,7 @@ namespace Dash
             {
                 xSepOne,
                 xSepTwo,
-                xSepThree,
-                xSepFour
+                xSepThree
             };
             allSeparators = tempSeparators;
 
@@ -495,8 +488,9 @@ namespace Dash
                 }
                 else if (docs.Count<DocumentView>() > 1)
                 {
-                    // TODO: multi select
-                }
+					// TODO: multi select
+					subtoolbarElement = null;
+				}
                 else
                 {
                     subtoolbarElement = null;
@@ -509,6 +503,7 @@ namespace Dash
             else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
+	            subtoolbarElement = null;
             }
             else
             {
@@ -754,7 +749,7 @@ namespace Dash
             if (state == State.Expanded)
             {
 				
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -767,7 +762,7 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-				
+
             }
             else
             {
@@ -776,7 +771,7 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -867,10 +862,22 @@ namespace Dash
         {
             //toggle state enum and update label & icon
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
-            xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
-            xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
+            //xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
+            //xCollapseIcon.Text = (state == State.Expanded) ? "&#xE1D8;" : "&#xE1D9;";
 
-            //
+            if (xOpenIcon.Visibility == Visibility.Visible)
+            {
+                xOpenIcon.Visibility = Visibility.Collapsed;
+                xCollapseIcon.Visibility = Visibility.Visible;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Collapse Toolbar";
+            }
+            else
+            {
+                xOpenIcon.Visibility = Visibility.Visible;
+                xCollapseIcon.Visibility = Visibility.Collapsed;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Expand Toolbar";
+            }
+            
             var backgroundBinding = new Binding
             {
                 Source = this,
@@ -899,7 +906,7 @@ namespace Dash
         public void SwitchTheme(bool nightModeOn)
         {
             //toggle night mode styles
-            xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
+            //xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
         }
 
@@ -912,18 +919,170 @@ namespace Dash
             //disables movement by updating Floating's boolean
             xFloating.ShouldManipulateChild = (pinned == Pinned.Unpinned);
             //update label & icon accordingly
-            xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
-            xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
-           // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+            //xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
+            
+            // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+
+            if (pinned == Pinned.Pinned)
+            {
+                var centX = (float) xLockIcon.ActualWidth / 2;
+                var centY = (float) xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: -45.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
+            else
+            {
+                var centX = (float)xLockIcon.ActualWidth / 2;
+                var centY = (float)xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
             xToolbar.IsOpen = true;
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
 
-       
-		
-      
-		
+        private ToolTip _pin;
+        private ToolTip _collapse;
+        private ToolTip _select;
+        private ToolTip _ink;
+        private ToolTip _quickPan;
+        private ToolTip _addGroup;
+        private ToolTip _addImage;
+        private ToolTip _addVideo;
+        private ToolTip _addAudio;
+        private ToolTip _copy;
+        private ToolTip _delete;
+        private ToolTip _undo;
+        private ToolTip _redo;
+        private ToolTip _presentation;
+        private ToolTip _export;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Top;
+            const int offset = 5;
+
+            _pin = new ToolTip()
+            {
+                Content = "Pin Toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPin, _pin);
+
+            _collapse = new ToolTip()
+            {
+                Content = "Collapse Toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCollapse, _collapse);
+
+            _select = new ToolTip()
+            {
+                Content = "Select",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTouch, _select);
+
+            _ink = new ToolTip()
+            {
+                Content = "Ink",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xInk, _ink);
+
+            _quickPan = new ToolTip()
+            {
+                Content = "Quick Pan",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _quickPan);
+
+            _addGroup = new ToolTip()
+            {
+                Content = "Add Group",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddGroup, _addGroup);
+
+            _addImage = new ToolTip()
+            {
+                Content = "Add Image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddImage, _addImage);
+
+            _addVideo = new ToolTip()
+            {
+                Content = "Add Video",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddVideo, _addVideo);
+
+            _addAudio = new ToolTip()
+            {
+                Content = "Add Audio",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddAudio, _addAudio);
+
+            _copy = new ToolTip()
+            {
+                Content = "Copy",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCopy, _copy);
+
+            _delete = new ToolTip()
+            {
+                Content = "Delete",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xDelete, _delete);
+
+            _undo = new ToolTip()
+            {
+                Content = "Undo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUndo, _undo);
+
+            _redo = new ToolTip()
+            {
+                Content = "Redo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRedo, _redo);
+
+            _export = new ToolTip()
+            {
+                Content = "Export Workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xExport, _export);
+
+            _presentation = new ToolTip()
+            {
+                Content = "Presentation Mode",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPresentationMode, _presentation);
+        }
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
         {
@@ -933,6 +1092,28 @@ namespace Dash
         private void xUndo_Click(object sender, RoutedEventArgs e)
         {
             UndoManager.UndoOccured();
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+        private void XExport_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.MakePdf_OnTapped(sender, null);
+        }
+
+        private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
         }
     }
 }
