@@ -10,28 +10,28 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView
     {
-        public CollectionFreeformView(): base()
+        public CollectionFreeformView()
         {
             InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
-            Loaded += OnLoad;
-            Unloaded += OnUnload;
+
+            //DataContextChanged += OnDataContextChanged;
+            //Loaded += OnLoad;
+            //Unloaded += (sender, args) => xBackgroundCanvas = null;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
             xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
-            ViewManipulationControls = new ViewManipulationControls(this);
-            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            //ViewManipulationControls = new ViewManipulationControls(this);
+            //ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
         ~CollectionFreeformView()
         {
             Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
-        protected override void OnLoad(object sender, RoutedEventArgs e)
+        protected void OnLoad(object sender, RoutedEventArgs e)
         {
-            base.OnLoad(sender, e);
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
@@ -59,9 +59,9 @@ namespace Dash
             return xItemsControl;
         }
 
-        public override CanvasControl GetBackgroundCanvas()
+        public override ContentPresenter GetBackgroundContentPresenter()
         {
-            return xBackgroundCanvas;
+            return xBackgroundContentPresenter;
         }
 
         public override Grid GetOuterGrid()

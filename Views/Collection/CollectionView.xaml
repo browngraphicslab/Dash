@@ -23,7 +23,7 @@
             </Grid.ColumnDefinitions>
             <!-- Collectionview Content-->
             <Grid Grid.Column="1" >
-                
+
                 <Grid x:Name="DocumentViewContainerGrid" 
                         AllowDrop="True"
                         HorizontalAlignment="Stretch"

@@ -296,6 +296,8 @@ namespace Dash
 
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             return true;
         }
 
@@ -845,17 +847,17 @@ namespace Dash
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
-            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
-            var mapPt = e.GetPosition(mapViewCanvas);
+            //var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            //var mapPt = e.GetPosition(mapViewCanvas);
 
-            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
-            var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
-            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
-            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-            mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+            //var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+            //var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            //var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+            //var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
+            //var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
+            //mainFreeform?.SetTransformAnimated(
+            //    new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+            //    new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
