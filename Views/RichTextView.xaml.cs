@@ -388,24 +388,24 @@ namespace Dash
         {
             double dist = double.MaxValue;
             DocumentView nearest = null;
-            //foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select(c => (c as ContentPresenter)))
-            //{
-            //    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-            //    if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
-            //    {
-            //        var mprect = dvm.GetBoundingRect(MainPage.Instance);
-            //        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-            //        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-            //        {
-            //            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-            //            if (d < dist)
-            //            {
-            //                d = dist;
-            //                nearest = dvm;
-            //            }
-            //        }
-            //    }
-            //}
+            foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select(c => (c as ContentPresenter)))
+            {
+                var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
+                {
+                    var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                    var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                    if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                    {
+                        var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                        if (d < dist)
+                        {
+                            d = dist;
+                            nearest = dvm;
+                        }
+                    }
+                }
+            }
 
             return nearest;
         }

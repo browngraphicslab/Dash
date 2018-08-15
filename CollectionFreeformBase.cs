@@ -88,7 +88,7 @@ namespace Dash
             Unloaded += OnBaseUnload;
         }
 
-        protected void OnBaseLoaded(object sender, RoutedEventArgs e)
+        private void OnBaseLoaded(object sender, RoutedEventArgs e)
         {
             _backgroundCanvas = new CanvasControl();
             _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
@@ -125,7 +125,7 @@ namespace Dash
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
 
-        protected void OnBaseUnload(object sender, RoutedEventArgs e)
+        private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
             _backgroundCanvas.RemoveFromVisualTree();
             GetBackgroundContentPresenter().Content = null;
