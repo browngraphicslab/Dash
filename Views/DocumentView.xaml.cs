@@ -1714,7 +1714,7 @@ namespace Dash
 
         private void ToggleQuickEntry()
         {
-            if (_animationBusy || Equals(MainPage.Instance.MainDocView) || Equals(MainPage.Instance.xMapDocumentView)) return;
+            if (_animationBusy || IsTopLevel() || Equals(MainPage.Instance.xMapDocumentView)) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;

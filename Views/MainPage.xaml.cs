@@ -176,8 +176,6 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
-                MainDocView.RemoveResizeHandlers();
                 XMainSplitter.SetContent(lastWorkspace);
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
@@ -299,7 +297,7 @@ namespace Dash
                 history.Remove(workspace);
                 MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceFutureKey)
                     .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
-                MainDocView.DataContext = new DocumentViewModel(workspace);
+                SplitFrame.OpenInActiveFrame(workspace);
                 setupMapView(workspace);
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
@@ -315,7 +313,7 @@ namespace Dash
                 future.Remove(workspace);
                 MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey)
                     .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
-                MainDocView.DataContext = new DocumentViewModel(workspace);
+                SplitFrame.OpenInActiveFrame(workspace);
                 setupMapView(workspace);
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
@@ -329,14 +327,16 @@ namespace Dash
         /// <param name="document"></param>
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
         {
+            //TODO Splitting: This method should be refactored...
+            var docView = SplitFrame.ActiveFrame.Document;
             RoutedEventHandler handler = null;
             handler =
                 delegate (object sender, RoutedEventArgs args)
                 {
-                    MainDocView.xContentPresenter.Loaded -= handler;
+                    docView.xContentPresenter.Loaded -= handler;
 
 
-                    var dvm = MainDocView.DataContext as DocumentViewModel;
+                    var dvm = docView.DataContext as DocumentViewModel;
                     var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
                     if (coll?.ViewModel?.DocumentViewModels != null)
                     {
@@ -391,10 +391,10 @@ namespace Dash
 
                     }
                 };
-            MainDocView.xContentPresenter.Loaded += handler;
+            docView.xContentPresenter.Loaded += handler;
             if (!SetCurrentWorkspace(workspace))
             {
-                MainDocView.xContentPresenter.Loaded -= handler;
+                docView.xContentPresenter.Loaded -= handler;
             }
         }
 
@@ -405,7 +405,8 @@ namespace Dash
         /// <returns></returns>
         public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
+            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
@@ -421,7 +422,8 @@ namespace Dash
 
         public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
+            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (collection != null && document != null)
             {
@@ -486,7 +488,8 @@ namespace Dash
 
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
         {
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
+            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null && document != null)
             {
@@ -503,7 +506,8 @@ namespace Dash
                 return false;
             }
 
-            var workspace = (MainDocView.DataContext as DocumentViewModel).DocumentController;
+            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
+            var workspace = (SplitFrame.ActiveFrame.DataContext as DocumentViewModel).DocumentController;
             var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
             var workspaceView = workspace.GetViewCopy();
             workspaceView.SetWidth(double.NaN);
@@ -520,7 +524,8 @@ namespace Dash
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var center = new Point(MainDocView.ActualWidth / 2, MainDocView.ActualHeight / 2);
+                    //TODO Splitting this should be more sophisticated logic 
+                    var center = new Point(SplitFrame.ActiveFrame.ActualWidth / 2, SplitFrame.ActiveFrame.ActualHeight / 2);
                     //get center point of doc where you want to go
                     var shift = new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
@@ -558,14 +563,15 @@ namespace Dash
 
         public Point GetDistanceFromMainDocCenter(DocumentController dc)
         {
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+            //TODO Splitting this should be more sophisticated logic 
+            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-            var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+            var center = new Point((SplitFrame.ActiveFrame.ActualWidth - xMainTreeView.ActualWidth) / 2, SplitFrame.ActiveFrame.ActualHeight / 2);
             var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
             var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
-            var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+            var shift = canvas.TransformToVisual(SplitFrame.ActiveFrame).TransformPoint(new Point(
                 dcPoint.X + dcSize.X / 2,
                 dcPoint.Y + dcSize.Y / 2
             ));
@@ -633,7 +639,7 @@ namespace Dash
                 }
             }
 
-            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
@@ -806,13 +812,13 @@ namespace Dash
             var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
 
-            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+            var mainFreeform = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>();
             var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
+            var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2  / mainFreeformXf.M22);
             var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+                new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth , Y = -mapPt.Y  + SplitFrame.ActiveFrame.ActualWidth  },
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
          }
 
@@ -1011,7 +1017,7 @@ namespace Dash
                 NavigateToDocumentOrRegion(region, linkDoc);
                 return LinkHandledResult.HandledClose;
             }
-            var onScreenView = GetTargetDocumentView(xDockFrame, target);
+            var onScreenView = GetTargetDocumentView(target);
 
             if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
             {
@@ -1028,74 +1034,76 @@ namespace Dash
                 SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
 
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
-                {
-                    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
+                //TODO Splitting
+                //if (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true) // if the target is a document or a visible region ...
+                //{
+                //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                         target.ToggleHidden();
-                    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
-                }
-                else // otherwise, it's a hidden region that we have to show
-                {
-                    target.SetHidden(false);
-                }
+                //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                //}
+                //else // otherwise, it's a hidden region that we have to show
+                //{
+                //    target.SetHidden(false);
+                //}
             }
             else
             {
-                DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
-                if (docked != null)
-                {
-                    DockManager.Undock(docked);
-                }
-                else  // otherwise, we have to show the document in a docked view
-                {
-                    var tree = DocumentTree.MainPageTree;
-                    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
-                    var collection = node?.Parent.ViewDocument;
+                //TODO Splitting
+                //DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
+                //if (docked != null)
+                //{
+                //    DockManager.Undock(docked);
+                //}
+                //else  // otherwise, we have to show the document in a docked view
+                //{
+                //    var tree = DocumentTree.MainPageTree;
+                //    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
+                //    var collection = node?.Parent.ViewDocument;
 
-                    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
-                    {
-                        var docview = DockManager.Dock(target, DockDirection.Right);
-                    }
-                    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
-                    {
+                //    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
+                //    {
+                //        var docview = DockManager.Dock(target, DockDirection.Right);
+                //    }
+                //    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
+                //    {
 
-                        DockedView dockedCollection = DockManager.GetDockedView(collection);
-                        if (dockedCollection != null)
-                        {
-                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
-                                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
-                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                            else DockManager.Undock(dockedCollection);
-                        }
-                        else
-                        {
+                //        DockedView dockedCollection = DockManager.GetDockedView(collection);
+                //        if (dockedCollection != null)
+                //        {
+                //            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
+                //                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+                //            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+                //                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                //            else DockManager.Undock(dockedCollection);
+                //        }
+                //        else
+                //        {
 
-                            target.SetHidden(false);
-                            var docView = DockManager.Dock(collection, DockDirection.Right);
-                            var cview = docView.ViewModel.Content;
-                            cview.Tag = target;
-                            cview.Loaded += Docview_Loaded;
-                            var col = docView.ViewModel.DocumentController;
+                //            target.SetHidden(false);
+                //            var docView = DockManager.Dock(collection, DockDirection.Right);
+                //            var cview = docView.ViewModel.Content;
+                //            cview.Tag = target;
+                //            cview.Loaded += Docview_Loaded;
+                //            var col = docView.ViewModel.DocumentController;
 
-                            var pos = node.ViewDocument.GetPosition() ?? new Point();
-                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                            double YZoom = MainDocView.ActualHeight /
-                                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                            //col.SetField<PointController>(KeyStore.PanPositionKey,
-                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
-                            col.SetField<PointController>(KeyStore.PanPositionKey,
-                                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+                //            var pos = node.ViewDocument.GetPosition() ?? new Point();
+                //            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                //            double YZoom = MainDocView.ActualHeight /
+                //                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                //            var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                //            //col.SetField<PointController>(KeyStore.PanPositionKey,
+                //            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                //            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                //            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                //            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                //            col.SetField<PointController>(KeyStore.PanPositionKey,
+                //                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
 
-                            col.SetField<PointController>(KeyStore.PanZoomKey,
-                                new Point(zoom, zoom), true);
-                        }
-                    }
-                }
+                //            col.SetField<PointController>(KeyStore.PanZoomKey,
+                //                new Point(zoom, zoom), true);
+                //        }
+                //    }
+                //}
             }
 
             target.GotoRegion(region, linkDoc);
@@ -1129,10 +1137,10 @@ namespace Dash
             cview.Loaded -= Docview_Loaded;
         }
 
-        public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
+        public DocumentView GetTargetDocumentView(DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
+            var docViews = MainSplitter.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
             if (!docViews.Any())
             {
                 return null;
