@@ -296,8 +296,6 @@ namespace Dash
 
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
             return true;
         }
 
