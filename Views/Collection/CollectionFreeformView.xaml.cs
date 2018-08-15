@@ -14,23 +14,22 @@ namespace Dash
         {
             InitializeComponent();
 
-            //DataContextChanged += OnDataContextChanged;
-            //Loaded += OnLoad;
-            //Unloaded += (sender, args) => xBackgroundCanvas = null;
+            DataContextChanged += OnDataContextChanged;
+            Loaded += OnLoad;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
             xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
-            //ViewManipulationControls = new ViewManipulationControls(this);
-            //ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            ViewManipulationControls = new ViewManipulationControls(this);
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
         ~CollectionFreeformView()
         {
             Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
-        protected void OnLoad(object sender, RoutedEventArgs e)
+        private void OnLoad(object sender, RoutedEventArgs e)
         {
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;

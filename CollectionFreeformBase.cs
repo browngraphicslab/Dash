@@ -94,7 +94,7 @@ namespace Dash
             _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
             GetBackgroundContentPresenter().Content = _backgroundCanvas;
-            return;
+
             MakePreviewTextbox();
 
             //make and add selectioncanvas 
@@ -106,7 +106,7 @@ namespace Dash
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-            MakeInkCanvas();
+            //MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;
@@ -130,7 +130,6 @@ namespace Dash
             _backgroundCanvas.RemoveFromVisualTree();
             GetBackgroundContentPresenter().Content = null;
             _backgroundCanvas = null;
-            return;
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;

@@ -42,7 +42,6 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Loaded += OnLoad;
-            Unloaded += OnBaseUnload;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
