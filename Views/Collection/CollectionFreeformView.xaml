@@ -23,7 +23,7 @@
 
         <!--<InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
         <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->
-        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:FieldModifier="public"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" 
                    Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
