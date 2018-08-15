@@ -24,24 +24,24 @@
         <!--<InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
         <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->
         <ContentPresenter x:Name="xBackgroundContentPresenter"/>
-        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent"  IsHitTestVisible="False"></Rectangle>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}"
+                    Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
-                ></Canvas>
+                      RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" ></Canvas>
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
-                      >
+                      ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Top"
-                           Width="0"
-                           Height="0"
-                            
-                            >
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Width="0"
+                            Height="0"
+                            RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
                     </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
