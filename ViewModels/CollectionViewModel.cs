@@ -289,6 +289,8 @@ namespace Dash
             return false;
         }
 
+        public bool CreatesCycle(List<DocumentController> docs) => docs.Where(CreatesCycle).Any();
+
         /// <summary>
         /// Adds a document to the given collectionview.
         /// </summary>

@@ -1460,7 +1460,7 @@ namespace Dash
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
 		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
+		    if (dragModel?.DraggedDocuments != null)
 		    {
 		        e.AcceptedOperation |= DataPackageOperation.Copy;
 		    }
