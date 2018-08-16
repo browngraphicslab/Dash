@@ -1600,7 +1600,7 @@ namespace Dash
 					else
 					{
 						var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>()
-							.Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
+							.Select((cv) => cv.ParentDocumentView?.ViewModel?.DataDocument);
 						var filteredDocs = dragData.DraggedItems.Where((d) =>
 							!parentDocs.Contains(d.GetDataDocument()) &&
 							d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);

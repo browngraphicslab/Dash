@@ -689,15 +689,12 @@ namespace Dash
 
         private void OpenIcon()
         {
-            xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
             xIcon.Visibility = Visibility.Visible;
             xContentPresenter.Visibility = Visibility.Collapsed;
         }
 
         private void OpenFreeform()
         {
-            if (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
-                xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             xContentPresenter.Visibility = Visibility.Visible;
             xIcon.Visibility = Visibility.Collapsed;
         }
@@ -879,21 +876,20 @@ namespace Dash
 		/// </summary>
 		public void StyleCollection(CollectionView view)
 		{
-			//xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-			//alter opacity to be visible (overrides default transparent)
 			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
 			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
 
-            if (this != MainPage.Instance.MainDocView) return;
-            view.xOuterGrid.BorderThickness = new Thickness(0);
-            foreach (var handle in new Rectangle[]
+            if (this == MainPage.Instance.MainDocView)
             {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
-            })
-            {
-                handle.Visibility = Visibility.Collapsed;
+                view.SetBorderThickness(0);
+                foreach (var handle in new Rectangle[] {
+                    xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                    xLeftResizeControl, xRightResizeControl,
+                    xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+                    })
+                {
+                    handle.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
