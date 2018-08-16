@@ -142,14 +142,14 @@
         <Border x:Name="xTargetBorder" x:FieldModifier="public" Grid.Row="1">
             <Grid x:Name="LayoutRoot" BorderThickness="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="xLeftColumn" Width="0" />
+                    <ColumnDefinition x:Name="xLeftColumn" x:FieldModifier="public" Width="0" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition x:Name="xRightColumn" Width="0" />
+                    <ColumnDefinition x:Name="xRightColumn" x:FieldModifier="public" Width="0" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition x:Name="xTopRow" Height="0" />
+                    <RowDefinition x:Name="xTopRow" x:FieldModifier="public" Height="0" />
                     <RowDefinition Height="*" />
-                    <RowDefinition x:Name="xBottomRow" Height="0" />
+                    <RowDefinition x:Name="xBottomRow" x:FieldModifier="public" Height="0" />
                 </Grid.RowDefinitions>
 
                 <!--Main document view 
@@ -225,38 +225,36 @@
                                Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
                                PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
 
-                <Grid Grid.Row="1" Grid.Column="1" x:Name="xContentGrid" x:FieldModifier="public">
-                    <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                    <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
-                    <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-                    <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
+                <Canvas x:Name="xShadowHost" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <Rectangle x:Name="xDocumentBackground" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
+                <ContentPresenter x:Name="xContentPresenter" Grid.Row="1" Grid.Column="1" x:FieldModifier="public" Content="{Binding Content}" />
+                <Grid x:Name="xIcon" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"  HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
 
-                        <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
-                            <Grid>
-                                <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
+                    <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
+                        <Grid>
+                            <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
                                                Source="ms-appx:///Assets/Icons/doc-icon.png">
-                                    <ToolTipService.ToolTip>
-                                        <Image x:Name="xToolTipPreview" Height="200"
+                                <ToolTipService.ToolTip>
+                                    <Image x:Name="xToolTipPreview" Height="200"
                                                        Source="ms-appx:///Assets/Icons/Unavailable.png">
-                                        </Image>
-                                    </ToolTipService.ToolTip>
-                                </Image>
-                                <Image x:Name="xSmallIconImage" Height="35" Width="35"
+                                    </Image>
+                                </ToolTipService.ToolTip>
+                            </Image>
+                            <Image x:Name="xSmallIconImage" Height="35" Width="35"
                                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
                                                Source="ms-appx:///Assets/Icons/doc-icon.png" />
-                            </Grid>
-                        </Border>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                            <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"
+                        </Grid>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+                        <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"
                                              Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center"
                                              TextAlignment="Center" Background="Transparent"
                                              Text="{Binding DocumentController.Title}" BorderThickness="0" />
-                        </StackPanel>
-                    </Grid>
+                    </StackPanel>
                 </Grid>
             </Grid>
         </Border>

@@ -64,13 +64,7 @@ namespace Dash
 	        xContentGrid.Children.Clear();
             view.Loaded += View_Loaded;
             xContentGrid.Children.Add(view);
-
-			//change column/row span so it fills the entire available space
-			Grid.SetColumn(view.xContentGrid, 0);
-	        Grid.SetRow(view.xContentGrid, 0);
-			Grid.SetColumnSpan(view.xContentGrid, 3);
-			Grid.SetRowSpan(view.xContentGrid, 3);
-
+            view.RemoveResizeHandlers();
 			//re-add close button
 			xMainDockedView.Children.Add(xCloseButton);
 

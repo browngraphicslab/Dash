@@ -64,7 +64,7 @@ namespace Dash
         public DocumentController DataDocument => DocumentController.GetDataDocument();
         public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
-        public bool ResizersVisible = false;
+        public bool ResizersVisible = true;
         public bool ShowLocalContext
         {
             get => _showLocalContext;
