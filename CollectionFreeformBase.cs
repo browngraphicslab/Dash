@@ -108,6 +108,8 @@ namespace Dash
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
             //MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            setBackground -= ChangeBackground;
+            setBackgroundOpacity -= ChangeOpacity;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;
 

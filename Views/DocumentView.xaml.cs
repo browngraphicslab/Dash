@@ -196,8 +196,6 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 ViewModel?.UnLoad();
-                DataContext = null;
-                GC.Collect();
             };
 
             PointerPressed += (sender, e) =>

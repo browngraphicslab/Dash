@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -185,15 +186,24 @@ namespace Dash
         private void WrapFrameInManager(SplitFrame frame)
         {
             frame.SplitCompleted -= WrapFrameInManager;
+            frame.Unloaded += Unloaded;
             XContentGrid.Children.Remove(frame);
-            var row = Grid.GetRow(frame);
-            var col = Grid.GetColumn(frame);
-            var nested = new SplitManager();
-            nested.SetContent(frame);
-            nested._allowedSplits = CurSplitMode == SplitMode.Horizontal ? SplitMode.Vertical : SplitMode.Horizontal;
-            Grid.SetRow(nested, row);
-            Grid.SetColumn(nested, col);
-            XContentGrid.Children.Add(nested);
+
+            async void Unloaded(object sender, RoutedEventArgs args)
+            {
+                frame.Unloaded -= Unloaded;
+                UpdateLayout();
+                await Task.Delay(5);
+                var row = Grid.GetRow(frame);
+                var col = Grid.GetColumn(frame);
+                var nested = new SplitManager();
+                nested.SetContent(frame);
+                nested._allowedSplits =
+                    CurSplitMode == SplitMode.Horizontal ? SplitMode.Vertical : SplitMode.Horizontal;
+                Grid.SetRow(nested, row);
+                Grid.SetColumn(nested, col);
+                XContentGrid.Children.Add(nested);
+            }
         }
 
         private void UpdateCols(int offset, int min)
