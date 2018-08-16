@@ -64,7 +64,7 @@ namespace Dash
             // initializes the stackpanel with white rectangles
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
-                _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10) });
+                _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
                 _visibleElementsTargetedWidth.Add(-1);
                 _visibleElementsRenderedWidth.Add(-1);
             }
@@ -77,7 +77,7 @@ namespace Dash
                 _scrollViewer.ChangeView(null, scrollRatio.Data * _scrollViewer.ExtentHeight, null, true);
             }
             
-            RenderIndices(scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0);
+              RenderIndices(scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0);
             
             _scrollViewer.ViewChanging += ScrollViewer_ViewChanging;
             _view.SizeChanged += (s, e) => RenderIndices(_verticalOffset);
@@ -92,7 +92,7 @@ namespace Dash
         {
             _verticalOffset = scrollOffset;
             var startIndex = GetIndex(scrollOffset);
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + scrollOffset) + 1;
+            var endIndex = GetIndex(_view.ActualHeight + scrollOffset) + 1;
             var pageBuffer = endIndex - startIndex;
             startIndex = Math.Max(startIndex - pageBuffer, 0);
             endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
@@ -102,16 +102,12 @@ namespace Dash
                 if (_visibleElementsRenderedWidth[i] < 0 &&
                     targetWidth != _visibleElementsTargetedWidth[i])
                 {
-                    if (i == 5)
-                        Debug.WriteLine("Page #" + i + " width = " + _visibleElementsRenderedWidth[i] + " -> " + targetWidth);
                     _visibleElementsRenderedWidth[i] = Math.Abs(_visibleElementsRenderedWidth[i]); // means rendering is in progress
                     _visibleElementsTargetedWidth[i] = targetWidth; // set the target render width
                     RenderPage(i);
                 }
                 else
                 {
-                    if (i == 5)
-                        Debug.WriteLine("Erasing page #" + i + " width = " + _visibleElementsRenderedWidth[i] + " -> " + targetWidth);
                     _visibleElementsTargetedWidth[i] = targetWidth;
                 }
             }
@@ -125,8 +121,6 @@ namespace Dash
                     while (Math.Abs(_visibleElementsRenderedWidth[pageNum]) != _visibleElementsTargetedWidth[pageNum] &&
                         (_visibleElementsRenderedWidth[pageNum] != -1 || _visibleElementsTargetedWidth[pageNum] != 0))
                     {
-                        if (pageNum == 5)
-                        Debug.WriteLine("Startomg Page #" + pageNum +  " width = " + _visibleElementsRenderedWidth[pageNum] + " -> "  + _visibleElementsTargetedWidth[pageNum]);
                         var targetWidth = _visibleElementsTargetedWidth[pageNum];
                         if (targetWidth != 0)
                         {
@@ -146,8 +140,6 @@ namespace Dash
                         {
                             _visibleElements[pageNum].Source = null;
                         }
-                        if (pageNum == 5)
-                            Debug.WriteLine("Rendered Page #" + pageNum + " width = " +  targetWidth);
                         _visibleElementsRenderedWidth[pageNum] = targetWidth;
                     }
                     _visibleElementsRenderedWidth[pageNum] = _visibleElementsRenderedWidth[pageNum] == 0 ? -1: - _visibleElementsRenderedWidth[pageNum]; // marks the rendering as complete
