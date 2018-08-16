@@ -1656,10 +1656,8 @@ namespace Dash
 								?.TypedData;
 							if (regions != null)
 							{
-								var links = regions.SelectMany((r) =>
-									r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-								var targets = links.SelectMany((l) =>
-									l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+								var links = regions.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+								var targets = links.SelectMany((l) => l.GetDataDocument().GetLinks(KeyStore.LinkToKey));
 								var aliases = targets.Select((t) =>
 								{
 									var vc = t.GetViewCopy();
@@ -1677,17 +1675,12 @@ namespace Dash
 							var regions = dragModel.DraggedDocument.GetDataDocument()
 								.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
 								?.TypedData;
-							var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
-								.GetLinks(KeyStore.LinkToKey)?.TypedData;
-							var regionLinkedTo = regions?.SelectMany((r) =>
-								r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
-							if (regionLinkedTo != null || directlyLinkedTo != null)
+							var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+							var regionLinkedTo   = regions?.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+							if (regionLinkedTo.Any() || directlyLinkedTo.Any())
 							{
-								var links = regionLinkedTo != null
-									? regionLinkedTo.ToList()
-									: new List<DocumentController>();
-								if (directlyLinkedTo != null)
-									links.AddRange(directlyLinkedTo);
+								var links = regionLinkedTo.ToList();
+								links.AddRange(directlyLinkedTo);
 								var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
 									links.ToList());
 								DocumentControllers.Add(cnote.Document.GetViewCopy(new Point(0, 0)));

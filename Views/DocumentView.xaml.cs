@@ -287,7 +287,6 @@ namespace Dash
                 xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
                 (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
                 ResizeHandles_restorePointerTracking();
-                this.GetDescendantsOfType<CustomPdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
 
                 UndoManager.EndBatch();
