@@ -64,13 +64,6 @@ namespace Dash
 			}
         }
 
-        public void AddLink(DocumentController link)
-        {
-            //get the list of current tags for this link
-            var tags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-            AddLink(link, tags);
-        }
-
         //temporary method for telling all links associated with this tag that an additional tag has been added
         public void UpdateOtherTags()
         {
@@ -79,8 +72,9 @@ namespace Dash
 
         }
 
-        private void AddLink(DocumentController link, ListController<TextController> currtags)
+        public void AddLink(DocumentController link)
         {
+            var currtags = link.GetDataDocument().GetLinkTags();
             var uniqueTag = true;
 
             if (currtags != null)
@@ -102,10 +96,8 @@ namespace Dash
                 currtags = new ListController<TextController>();
                 currtags.Add(new TextController(this.Text));
             }
-
-
-            link.GetDataDocument()
-                .SetField(KeyStore.LinkTagKey, currtags, true);
+            
+            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
         }
 
         private void RemoveLink(DocumentController link, ListController<TextController> currtags)
@@ -123,9 +115,7 @@ namespace Dash
                 currtags.RemoveAt(index);
             }
 
-            link.GetDataDocument()
-                .SetField(KeyStore.LinkTagKey, currtags, true);
-            
+            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
         }
 
         public int Compare(Tag x, Tag y)
@@ -147,56 +137,25 @@ namespace Dash
 	    {
 		    Selected = false;
 		    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
 			if (_docdecs.SelectedDocs.Count == 1)
 			{
-				ListController<DocumentController> linksFrom = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+				    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+				    {
+                        var currtags = link.GetDataDocument().GetLinkTags();
+					    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+					    {
+						    RemoveLink(link, currtags);
+						    break;
+					    }
 
-				if (linksFrom != null)
-				{
-					foreach (var link in linksFrom)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
-						{
-
-
-							RemoveLink(link, currtags);
-							break;
-						}
-
-						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-						{
-							RemoveLink(link, currtags);
-							break;
-						}
-					}
-				}
-
-
-
-				ListController<DocumentController> linksTo = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-
-				if (linksTo != null)
-				{
-					foreach (var link in linksTo)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
-						{
-
-							RemoveLink(link, currtags);
-							break;
-						}
-
-						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-						{
-							RemoveLink(link, currtags);
-							break;
-						}
-					}
-				}
-
-
+					    if ((link.GetLinkTags()?.Count ?? 0) == 0)
+					    {
+						    RemoveLink(link, currtags);
+						    break;
+					    }
+				    }
 			}
 		}
 
@@ -239,57 +198,25 @@ namespace Dash
 				}
 			}
 
-			if (_docdecs.SelectedDocs.Count == 1)
-			{
-				ListController<DocumentController> linksFrom = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+            if (_docdecs.SelectedDocs.Count == 1)
+            {
+                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+                    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+                    {
+                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+                        {
+                            AddLink(link);
+                            break;
+                        }
 
-				if (linksFrom != null)
-				{
-					foreach (var link in linksFrom)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToSource))))
-						{
-							AddLink(link, currtags);
-							break;
-						}
-
-						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-						{
-
-							AddLink(link, currtags);
-							break;
-						}
-					}
-				}
-
-
-
-				ListController<DocumentController> linksTo = _docdecs.SelectedDocs.First().ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-
-				if (linksTo != null)
-				{
-					foreach (var link in linksTo)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey);
-						if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(LinkDirection.ToDestination))))
-						{
-
-							AddLink(link, currtags);
-							break;
-						}
-
-						if ((link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Count ?? 0) == 0)
-						{
-
-							AddLink(link, currtags);
-							break;
-						}
-					}
-				}
-			
-
-			}
+                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
+                        {
+                            AddLink(link);
+                            break;
+                        }
+                    }
+            }
 			
 		}
 

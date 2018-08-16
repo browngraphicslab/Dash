@@ -41,7 +41,7 @@ namespace Dash
         public Tag CurrEditTag;
         private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
-        private Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
+        public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
         public Visibility VisibilityState
         {
@@ -596,54 +596,26 @@ namespace Dash
                 return;
             //ADDED: cleared linknames
             //linknames.Clear();
-            var linkedTo = doc.GetLinks(KeyStore.LinkToKey)?.TypedData;
-            if (linkedTo != null)
-                //for each link
-                foreach (var l in linkedTo)
+            //for each link
+            foreach (var l in doc.GetLinks(null))
+            {
+                //for each tag name of this link
+                foreach (var name in l.GetDataDocument().GetLinkTags()?.TypedData ?? new List<TextController>())
                 {
-                    var tagNames = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
-                    //for each tag name of this link
-                    foreach (TextController name in tagNames)
+                    var str = name.Data;
+                    //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
+                    if (map.ContainsKey(str))
                     {
-                        var str = name.Data;
-                        //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
-                        if (map.ContainsKey(str))
-                        {
-                            if (!map[str].Contains(l.GetDataDocument())) map[str].Add(l.GetDataDocument());
-                        }
-                        else //create new list containing link doc
-                        {
-                            map.Add(str, new List<DocumentController> { l.GetDataDocument() });
-                        }
-                    }
-                    //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
-
-                }
-
-            var linkedFrom = doc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
-            if (linkedFrom != null)
-                foreach (var l in linkedFrom)
-                {
-                    var tagNames = l.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
-
-                    //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
-
-                    //for each tag name of this link
-                    foreach (TextController name in tagNames)
-                    {
-                        var str = name.Data;
-                        //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
-                        if (map.ContainsKey(str))
-                        {
+                        if (!map[str].Contains(l.GetDataDocument()))
                             map[str].Add(l.GetDataDocument());
-                        }
-                        else //create new list containing link doc
-                        {
-                            map.Add(str, new List<DocumentController> { l.GetDataDocument() });
-                        }
                     }
-
+                    else //create new list containing link doc
+                    {
+                        map.Add(str, new List<DocumentController> { l.GetDataDocument() });
+                    }
                 }
+                //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
+            }
 
             var regions = doc.GetDataDocument().GetRegions();
             if (regions != null)

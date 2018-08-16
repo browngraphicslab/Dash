@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -21,7 +20,6 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Office.Interop.Word;
 using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -31,7 +29,6 @@ using DashShared;
 using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
-using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -60,26 +57,45 @@ namespace Dash
 		public delegate void SetBackgroundOpacity(float opacity);
 		private static event SetBackgroundOpacity setBackgroundOpacity;
 
-		// TODO: get canvas in derived class
-		public abstract Panel GetCanvas();
-		// TODO: get itemscontrol of derived class
-		public abstract ItemsControl GetItemsControl();
-		// TODO: get win2d canvascontrol of derived class
-		public abstract CanvasControl GetBackgroundCanvas();
-		// TODO: get outergrid of derived class
-		public abstract Grid GetOuterGrid();
-		// TODO: get tagbox of derived class
-		public abstract AutoSuggestBox GetTagBox();
-		// TODO: get selectioncanvas of derived class
-		public abstract Canvas GetSelectionCanvas();
-		// TODO: get dropindicationrect of derived class
-		public abstract Rectangle GetDropIndicationRectangle();
-		// TODO: get inkcanvas of derived class
-		public abstract Canvas GetInkHostCanvas();
+        public abstract Panel GetCanvas();
 
-		protected virtual void OnLoad(object sender, RoutedEventArgs e)
-		{
-			MakePreviewTextbox();
+        public abstract ItemsControl GetItemsControl();
+
+        // This uses a content presenter mainly because of this http://microsoft.github.io/Win2D/html/RefCycles.htm
+        // If that link dies, google win2d canvascontrol refcycle
+        // If nothing comes up, maybe the issue is fixed.
+        // Currently, the issue is that CanvasControls make it extremely easy to create memory leaks and need to be dealt with carefully
+        // As the link states, adding handlers to events on a CanvasControl creates reference cycles that the GC can't detect, so the events need to be handled manually
+        // What the link doesn't say is that apparently having events on any siblings of the CanvasControl without having events on the CanvasControl still somehow prevents it from
+        // being GC-ed, so it is easier to just create and destroy it on load and unload rather than try to manage all of the events and references... 
+        // Because we create it in this class, we need a content presenter to put it in, otherwise the subclass can't decide where to put it
+        public abstract ContentPresenter GetBackgroundContentPresenter();
+        private CanvasControl _backgroundCanvas;
+
+        public abstract Grid GetOuterGrid();
+
+        public abstract AutoSuggestBox GetTagBox();
+
+        public abstract Canvas GetSelectionCanvas();
+
+        public abstract Rectangle GetDropIndicationRectangle();
+
+        public abstract Canvas GetInkHostCanvas();
+
+        protected CollectionFreeformBase()
+        {
+            Loaded += OnBaseLoaded;
+            Unloaded += OnBaseUnload;
+        }
+
+        private void OnBaseLoaded(object sender, RoutedEventArgs e)
+        {
+            _backgroundCanvas = new CanvasControl();
+            _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
+            _backgroundCanvas.Draw += CanvasControl_OnDraw;
+            GetBackgroundContentPresenter().Content = _backgroundCanvas;
+
+            MakePreviewTextbox();
 
 			//make and add selectioncanvas 
 			SelectionCanvas = new Canvas();
@@ -88,12 +104,12 @@ namespace Dash
 			//Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
 			GetInkHostCanvas().Children.Add(SelectionCanvas);
 
-			if (ViewModel.InkController == null)
-				ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-			MakeInkCanvas();
-			ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-			setBackground += ChangeBackground;
-			setBackgroundOpacity += ChangeOpacity;
+            if (ViewModel.InkController == null)
+                ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
+            //MakeInkCanvas();
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            setBackground += ChangeBackground;
+            setBackgroundOpacity += ChangeOpacity;
 
 			var settingsView = MainPage.Instance.GetSettingsView;
 			if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
@@ -109,27 +125,30 @@ namespace Dash
 			BackgroundOpacity = settingsView.BackgroundImageOpacity;
 		}
 
-		protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
-		{
-			_lastViewModel = ViewModel;
-		}
-
-		protected void OnUnload(object sender, RoutedEventArgs e)
-		{
-			if (_lastViewModel != null)
-			{
-				_lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-			}
+        private void OnBaseUnload(object sender, RoutedEventArgs e)
+        {
+            _backgroundCanvas.RemoveFromVisualTree();
+            GetBackgroundContentPresenter().Content = null;
+            _backgroundCanvas = null;
+            if (_lastViewModel != null)
+            {
+                _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
 
 			_lastViewModel = null;
 			setBackground -= ChangeBackground;
 			setBackgroundOpacity -= ChangeOpacity;
 		}
 
-		protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
-		{
-			Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
-		}
+        protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
+        {
+            _lastViewModel = ViewModel;
+        }
+
+        protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+        }
 
 		protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
@@ -145,17 +164,16 @@ namespace Dash
 			}
 		}
 
-
-		public DocumentController Snapshot(bool copyData = false)
-		{
-			var controllers = new List<DocumentController>();
-			foreach (var dvm in ViewModel.DocumentViewModels)
-				controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
-			var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
-			snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-			snap.SetFitToParent(true);
-			return snap;
-		}
+        public DocumentController Snapshot(bool copyData = false)
+        {
+            var controllers = new List<DocumentController>();
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
+            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
+            snap.SetFitToParent(true);
+            return snap;
+        }
 
 
 		#region Manipulation
@@ -373,16 +391,16 @@ namespace Dash
 		/// </summary>
 		public static object BackgroundImage { set => setBackground?.Invoke(value); }
 
-		/// <summary>
-		/// Called when background opacity is set and the background tiling must be redrawn to reflect the change
-		/// </summary>
-		/// <param name="opacity"></param>
-		private void ChangeOpacity(float opacity)
-		{
-			_bgOpacity = opacity;
-			GetBackgroundCanvas().Invalidate();
-		}
-		#endregion
+        /// <summary>
+        /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
+        /// </summary>
+        /// <param name="opacity"></param>
+        private void ChangeOpacity(float opacity)
+        {
+            _bgOpacity = opacity;
+            _backgroundCanvas.Invalidate();
+        }
+        #endregion
 
 		/// <summary>
 		/// All of the following background image updating logic was sourced from this article --> https://microsoft.github.io/Win2D/html/LoadingResourcesOutsideCreateResources.htm
@@ -424,17 +442,17 @@ namespace Dash
 			// Null-checking. WARNING - if null, Dash throws an Unhandled Exception
 			if (backgroundImagePath == null) return;
 
-			// Now, backgroundImagePath is either <string> or <IRandomAccessStream> - while local ms-appx (assets folder) paths <string> don't need conversion, 
-			// external file system paths <string> need to be converted into <IRandomAccessStream>
-			if (backgroundImagePath is string path && !path.Contains("ms-appx:"))
-			{
-				backgroundImagePath = await FileRandomAccessStream.OpenAsync(path, FileAccessMode.Read);
-			}
-			// Update the path/stream instance var to be used next in LoadBackgroundAsync
-			_background = backgroundImagePath;
-			// Now, register and perform the new loading
-			_backgroundTask = LoadBackgroundAsync(GetBackgroundCanvas());
-		}
+            // Now, backgroundImagePath is either <string> or <IRandomAccessStream> - while local ms-appx (assets folder) paths <string> don't need conversion, 
+            // external file system paths <string> need to be converted into <IRandomAccessStream>
+            if (backgroundImagePath is string path && !path.Contains("ms-appx:"))
+            {
+                backgroundImagePath = await FileRandomAccessStream.OpenAsync(path, FileAccessMode.Read);
+            }
+            // Update the path/stream instance var to be used next in LoadBackgroundAsync
+            _background = backgroundImagePath;
+            // Now, register and perform the new loading
+            _backgroundTask = LoadBackgroundAsync(_backgroundCanvas);
+        }
 
 		// 4
 		protected async Task LoadBackgroundAsync(CanvasControl canvas)
@@ -548,18 +566,18 @@ namespace Dash
 
 					var matrix = composite.Value;
 
-					var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
-					_bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-						(float)matrix.M12,
-						(float)matrix.M21,
-						(float)aliasSafeScale,
-						(float)matrix.OffsetX,
-						(float)matrix.OffsetY);
-					GetBackgroundCanvas().Invalidate();
-				}
-			}
-		}
-		#endregion
+                    var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                        (float)matrix.M12,
+                        (float)matrix.M21,
+                        (float)aliasSafeScale,
+                        (float)matrix.OffsetX,
+                        (float)matrix.OffsetY);
+                    _backgroundCanvas.Invalidate();
+                }
+            }
+        }
+        #endregion
 
 		#region Tagging
 
@@ -757,15 +775,25 @@ namespace Dash
 			}
 		}
 
-		void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
-		{
-			if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
-			{
-				TriggerActionFromSelection(e.Key, true);
-				MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-				e.Handled = true;
-			}
-		}
+        private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
+        {
+            VirtualKey.A,
+            VirtualKey.Back,
+            VirtualKey.C,
+            VirtualKey.Delete,
+            VirtualKey.G,
+            VirtualKey.R,
+            VirtualKey.T
+        };
+
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (_marquee == null || !MarqueeKeys.Contains(e.Key)) return;
+
+            TriggerActionFromSelection(e.Key, true);
+            MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+            e.Handled = true;
+        }
 
 		public bool IsMarqueeActive => _isMarqueeActive;
 
@@ -907,18 +935,43 @@ namespace Dash
 							}
 						});
 
-						deselect = true;
-						break;
-					case VirtualKey.G:
-						DoAction((views, where, size) =>
-						{
-							ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-								where, size.Width, size.Height));
-						});
-						deselect = true;
-						break;
-				}
-			}
+                        deselect = true;
+                        break;
+                    case VirtualKey.G:
+                        DoAction((views, where, size) =>
+                        {
+                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height));
+                        });
+                        deselect = true;
+                        break;
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
+                        });
+                        deselect = true;
+                        break;
+                }
+            }
+            else if (this.IsShiftPressed())
+            {
+                switch (modifier)
+                {
+                    case VirtualKey.R:
+                        DoAction((views, where, size) =>
+                        {
+                            if (size.Width >= 215 && size.Height >= 200)
+                            {
+                                ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
+                            }
+                        });
+                        deselect = true;
+                        break;
+                }
+            }
 
 			if (deselect)
 				SelectionManager.DeselectAll();
@@ -1079,9 +1132,9 @@ namespace Dash
 							if (_linkDoc != null)
 							{
 
-								postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
-								_linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
-							}
+                            postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
+                            _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
+							 }
 
 							//check if a doc is currently in link activation mode
 							if (LinkActivationManager.ActivatedDocs.Count >= 1)
@@ -1094,12 +1147,11 @@ namespace Dash
 										var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
 											postitNote.GetPosition());
 
-										//link region to this text 
-										region.Link(postitNote, LinkContexts.PushPin);
-										region.Tag = PinAnnotationVisibility.VisibleOnScroll;
-									}
-								}
-							}
+                                    //link region to this text 
+                                    region.Link(postitNote, LinkTargetPlacement.Overlay);
+                                }
+                            }
+                        }
 
 							previewTextbox.Visibility = Visibility.Collapsed;
 						}
@@ -1142,8 +1194,9 @@ namespace Dash
 						Actions.DisplayDocument(ViewModel, postitNote, where);
 						if (_linkDoc != null)
 						{
-							postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
-							_linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
+							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
+
 						}
 					}
 					else
@@ -1152,23 +1205,28 @@ namespace Dash
 						Actions.DisplayDocument(ViewModel, postitNote, where);
 						if (_linkDoc != null)
 						{
-							postitNote.SetField<BoolController>(KeyStore.AnnotationVisibilityKey, true, true);
-							_linkDoc.Link(postitNote, LinkContexts.None, _linkTypeString);
+							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
+							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
 						}
+
+						//move link activation stuff here
 						//check if a doc is currently in link activation mode
 						if (LinkActivationManager.ActivatedDocs.Count >= 1)
 						{
 							foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
 							{
 								//make this rich text an annotation for activated  doc
-								if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+								if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
+									.DocumentType))
 								{
-									var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-										Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
+									var region =
+										KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](
+											activated,
+											Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(),
+												this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
 
 									//link region to this text 
-									region.Link(postitNote, LinkContexts.PushPin);
-									region.Tag = PinAnnotationVisibility.VisibleOnScroll;
+									region.Link(postitNote, LinkTargetPlacement.Overlay);
 								}
 							}
 						}
@@ -1176,23 +1234,24 @@ namespace Dash
 				}
 			}
 		}
+
 		public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
-		{
-			if (!loadingPermanentTextbox)
-			{
-				if (resetBuffer)
-					previewTextBuffer = "";
-				loadingPermanentTextbox = true;
-				var containerData = ViewModel.ContainerDocument.GetDataDocument();
-				var keycontroller = new KeyController(keyname);
-				if (containerData.GetField(keycontroller, true) == null)
-					containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-				var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
-				dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
-				dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-				Actions.DisplayDocument(ViewModel, dbox, where);
-			}
-		}
+        {
+            if (!loadingPermanentTextbox)
+            {
+                if (resetBuffer)
+                    previewTextBuffer = "";
+                loadingPermanentTextbox = true;
+                var containerData = ViewModel.ContainerDocument.GetDataDocument();
+                var keycontroller = new KeyController(keyname);
+                if (containerData.GetField(keycontroller, true) == null)
+                    containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
+                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
+                dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
+                dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                Actions.DisplayDocument(ViewModel, dbox, where);
+            }
+        }
 
 		string KeyCodeToUnicode(VirtualKey key)
 		{
