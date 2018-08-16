@@ -47,13 +47,13 @@ namespace Dash
         {
             var index = 0;
             var scale = _scrollViewer.ActualWidth / _view.PdfMaxWidth;
-            var height = PageSizes[index].Height * scale;
-            var currOffset = verticalOffset;
-            while (currOffset - height > 0)
+            var currOffset = verticalOffset - PageSizes[index].Height * scale;
+            while (currOffset > 0)
             {
-                currOffset -= height;
-                index++;
-                height = index < PageSizes.Count ? PageSizes[index].Height * scale : 10000000000;
+                if (index < PageSizes.Count-1)
+                    currOffset -= PageSizes[++index].Height * scale;
+                else
+                    break;
             }
 
             return index;
@@ -61,54 +61,50 @@ namespace Dash
 
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
-            // initializes the stackpanel with white rectangles
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
                 _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
                 _visibleElementsTargetedWidth.Add(-1);
                 _visibleElementsRenderedWidth.Add(-1);
             }
+            
+            _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
+            _scrollViewer.SizeChanged   += (s,e) => RenderIndices(_verticalOffset);
 
-            // updates the scrollviewer to scroll to the previous scroll position if existent
-            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
-            if (scrollRatio != null)
+            _scrollViewer.UpdateLayout(); // bcz: Ugh!  _scrollViewer's ExtentHeight and ActualHeight aren't set when this gets loaded, so we're forced to update it here
+            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
+            if (scrollRatio != 0)
             {
-                _scrollViewer.UpdateLayout();
-                _scrollViewer.ChangeView(null, scrollRatio.Data * _scrollViewer.ExtentHeight, null, true);
+                _scrollViewer.ChangeView(null, scrollRatio * _scrollViewer.ExtentHeight, null, true);
             }
-            
-              RenderIndices(scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0);
-            
-            _scrollViewer.ViewChanging += ScrollViewer_ViewChanging;
-            _view.SizeChanged += (s, e) => RenderIndices(_verticalOffset);
-        }
-
-        private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-        {
-            RenderIndices(e.FinalView.VerticalOffset);
+            else
+                RenderIndices(0);
         }
 
         private void RenderIndices(double scrollOffset)
         {
             _verticalOffset = scrollOffset;
-            var startIndex = GetIndex(scrollOffset);
-            var endIndex = GetIndex(_view.ActualHeight + scrollOffset) + 1;
-            var pageBuffer = endIndex - startIndex;
-            startIndex = Math.Max(startIndex - pageBuffer, 0);
-            endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
-            for (var i = 0; i < _visibleElements.Count; i++)
+            if (_scrollViewer.ActualHeight != 0)
             {
-                var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
-                if (_visibleElementsRenderedWidth[i] < 0 &&
-                    targetWidth != _visibleElementsTargetedWidth[i])
+                var endIndex   = GetIndex(_scrollViewer.ActualHeight + scrollOffset) + 1;
+                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight));
+                var pageBuffer = (endIndex - startIndex) / 2;
+                startIndex = Math.Max(startIndex - pageBuffer, 0);
+                endIndex   = Math.Min(endIndex   + pageBuffer, _visibleElements.Count - 1);
+                for (var i = 0; i < _visibleElements.Count; i++)
                 {
-                    _visibleElementsRenderedWidth[i] = Math.Abs(_visibleElementsRenderedWidth[i]); // means rendering is in progress
-                    _visibleElementsTargetedWidth[i] = targetWidth; // set the target render width
-                    RenderPage(i);
-                }
-                else
-                {
-                    _visibleElementsTargetedWidth[i] = targetWidth;
+                    var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
+                    if (_visibleElementsRenderedWidth[i] < 0 && // negative width means rendering is complete
+                        targetWidth != _visibleElementsTargetedWidth[i])
+                    {
+                        _visibleElementsRenderedWidth[i] = Math.Abs(_visibleElementsRenderedWidth[i]); // positive sign marks page as being rendered
+                        _visibleElementsTargetedWidth[i] = targetWidth;
+                        RenderPage(i);
+                    }
+                    else
+                    {
+                        _visibleElementsTargetedWidth[i] = targetWidth;
+                    }
                 }
             }
         }
@@ -142,7 +138,7 @@ namespace Dash
                         }
                         _visibleElementsRenderedWidth[pageNum] = targetWidth;
                     }
-                    _visibleElementsRenderedWidth[pageNum] = _visibleElementsRenderedWidth[pageNum] == 0 ? -1: - _visibleElementsRenderedWidth[pageNum]; // marks the rendering as complete
+                    _visibleElementsRenderedWidth[pageNum] = _visibleElementsRenderedWidth[pageNum] == 0 ? -1: - _visibleElementsRenderedWidth[pageNum]; // negating with marks page as completed
                 }
             }
         }
