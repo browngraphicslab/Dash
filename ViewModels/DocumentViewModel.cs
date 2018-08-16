@@ -47,14 +47,12 @@ namespace Dash
         public void Load()
         {
             //UnLoad();
-            Debug.WriteLine("Load" + DocumentController.Tag);
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
         public void UnLoad()
         {
-            Debug.WriteLine("UnLoad" + DocumentController.Tag);
             DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }

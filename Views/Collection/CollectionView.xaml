@@ -30,7 +30,7 @@
                         Margin="0"
                         VerticalAlignment="Stretch"
                         ManipulationMode="All">
-                    <ContentControl x:Name="xContentControl" x:FieldModifier="public"
+                    <ContentPresenter x:Name="xContentControl" x:FieldModifier="public"
                                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
 
