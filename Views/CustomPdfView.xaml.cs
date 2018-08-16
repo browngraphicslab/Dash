@@ -1307,20 +1307,21 @@ namespace Dash
 
 		private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			PopForwardStack(_topForwardStack, TopScrollViewer);
+			PopForwardStack(_topForwardStack, _topBackStack, TopScrollViewer);
 		}
 
 		private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			PopForwardStack(_bottomForwardStack, BottomScrollViewer);
+			PopForwardStack(_bottomForwardStack, _bottomBackStack, BottomScrollViewer);
 		}
 
-		private void PopForwardStack(Stack<double> forwardstack, ScrollViewer viewer)
+		private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
 		{
-			if (forwardstack.Any())
+			if (forwardstack.Any() && forwardstack.Peek() != double.NaN)
 			{
 				var pop = forwardstack.Pop();
-				viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() * viewer.ExtentHeight : 0, 1);
+				viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
+				backstack.Push(pop);
 			}
 		}
 
