@@ -789,40 +789,19 @@ namespace Dash
                 tip.IsOpen = true;
                 //update tag content based on current tags of region
                 var tags = new ObservableCollection<string>();
-				ListController<DocumentController> linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
-
-				if (linksFrom != null)
+                
+				foreach (var link in region.GetDataDocument().GetLinks(null))
 				{
-					foreach (var link in linksFrom)
+                    var currTags = link.GetDataDocument().GetLinkTags()?.TypedData ?? new List<TextController>();
+                    foreach (var text in currTags)
 					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
-						foreach (TextController text in currtags)
-						{
-							tags.Add(text.Data);
-						}
-					}
-				}
-
-				ListController<DocumentController> linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
-
-				if (linksTo != null)
-				{
-					foreach (var link in linksTo)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
-						if (currtags != null)
-						{
-							foreach (TextController text in currtags)
-							{
-								tags.Add(text.Data);
-							}
-						}
-						
+						tags.Add(text.Data);
 					}
 				}
 
 		        var content = tags.Count == 0 ? "" : tags[0];
-		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        if (tags.Count > 0)
+                    tags.Remove(tags[0]);
 		        foreach (var str in tags)
 		        {
 			        content = content + ", " + str;
@@ -900,14 +879,8 @@ namespace Dash
 
 	        void VisOnScrollOnOnClick(object o, RoutedEventArgs routedEventArgs)
 	        {
-	            var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-	            var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-	            var allLinks = new List<DocumentController>();
-	            if (toLinks != null) allLinks.AddRange(toLinks);
-	            if (fromLinks != null) allLinks.AddRange(fromLinks);
-
-	            bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
+	            var allLinks   = region.GetDataDocument().GetLinks(null);
+	            var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
 	            foreach (DocumentController link in allLinks)
 	            {
@@ -919,16 +892,10 @@ namespace Dash
             regionGraphic.ContextFlyout = flyout;
 		    regionGraphic.RightTapped += (s, e) =>
 		    {
-		        var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-		        var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-		        var allLinks = new List<DocumentController>();
-		        if (toLinks != null) allLinks.AddRange(toLinks);
-		        if (fromLinks != null) allLinks.AddRange(fromLinks);
-
+		        var  allLinks   = region.GetDataDocument().GetLinks(null);
 		        bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
-                MenuFlyoutItem item = allVisible ? visOnScrollON : visOnScrollOFF;
+                var item = allVisible ? visOnScrollON : visOnScrollOFF;
 			    flyout.Items?.Clear();
 			    flyout.Items?.Add(item);
 			    flyout.ShowAt(regionGraphic as FrameworkElement);
@@ -1190,7 +1157,7 @@ namespace Dash
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
 
-            if (TextSelectableElements != null)
+            if (TextSelectableElements != null && indexList.Any())
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -1252,12 +1219,7 @@ namespace Dash
             {
                 tip.IsOpen = true;
                 var regionDoc = vm.RegionDocument.GetDataDocument();
-                var allLinkSets = new List<IEnumerable<DocumentController>>() {
-                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
-                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
-                };
-                var allTagSets = allLinkSets.SelectMany((lset) => lset.Select((l) => l.GetLinkTags()));
-                var allTags = allTagSets.SelectMany((tagSet) => tagSet?.Select((text) => text.Data));
+                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);

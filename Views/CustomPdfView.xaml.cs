@@ -67,33 +67,11 @@ namespace Dash
 			}
 		}
 
-
-
 		public event EventHandler DocumentLoaded;
+        
+		public DataVirtualizationSource<ImageSource> TopPages { get; set; }
 
-		private DataVirtualizationSource<ImageSource> _topPages;
-
-		public DataVirtualizationSource<ImageSource> TopPages
-		{
-			get => _topPages;
-			set
-			{
-				_topPages = value;
-				OnPropertyChanged();
-			}
-		}
-
-		private DataVirtualizationSource<ImageSource> _bottomPages;
-
-		public DataVirtualizationSource<ImageSource> BottomPages
-		{
-			get => _bottomPages;
-			set
-			{
-				_bottomPages = value;
-				OnPropertyChanged();
-			}
-		}
+		public DataVirtualizationSource<ImageSource> BottomPages { get; set; }
 
 		private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
@@ -116,21 +94,8 @@ namespace Dash
 				OnPropertyChanged();
 			}
 		}
-        
 
-		private List<DocumentController> _docControllers = new List<DocumentController>();
-
-		public List<DocumentController> DocControllers
-		{
-			get => _docControllers;
-			set
-			{
-				_docControllers = value;
-				OnPropertyChanged();
-			}
-		}
-
-		private List<Size> Tops;
+		public List<DocumentController> DocControllers { get; set; }
 
 		public DocumentController LayoutDocument { get; }
 		public DocumentController DataDocument { get; }
@@ -138,9 +103,7 @@ namespace Dash
 		//This makes the assumption that both pdf views are always in the same annotation mode
 		public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
-		private WPdf.PdfDocument _wPdfDocument;
-
-		private Stack<double> _topBackStack;
+        private Stack<double> _topBackStack;
 		private Stack<double> _bottomBackStack;
 
 		private Stack<double> _topForwardStack;
@@ -152,10 +115,9 @@ namespace Dash
 		public Grid TopAnnotationBox => xTopAnnotationBox;
 		public Grid BottomAnnotationBox => xBottomAnnotationBox;
 
+        public WPdf.PdfDocument PDFdoc { get; private set; }
 
-		public WPdf.PdfDocument PDFdoc => _wPdfDocument;
-
-		private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
+        private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
 		{
 			LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             this.KeyDown += CustomPdfView_KeyDown;
@@ -294,21 +256,12 @@ namespace Dash
 
 			xPdfContainer.SizeChanged += (ss, ee) =>
 			{
-
-				if (xFirstPanelRow.ActualHeight > xPdfContainer.ActualHeight - 5)
-				{
-					if (xPdfContainer.ActualHeight - 5 > 0)
-					{
-						xFirstPanelRow.Height = new GridLength(xPdfContainer.ActualHeight - 4, GridUnitType.Pixel);
-					}
-
-					xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
-
-				}
-				else
-				{
-					xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
-				}
+                if (xFirstPanelRow.ActualHeight > xPdfContainer.ActualHeight - 5 &&
+                    xPdfContainer.ActualHeight - 5 > 0)
+                {
+                    xFirstPanelRow.Height = new GridLength(xPdfContainer.ActualHeight - 4, GridUnitType.Pixel);
+                }
+				xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
 			};
 
 			_topBackStack = new Stack<double>();
@@ -324,16 +277,10 @@ namespace Dash
 			Canvas.SetZIndex(xBottomButtonPanel, 999);
 			Canvas.SetZIndex(xTopButtonPanel, 999);
 
-			_topTimer = new DispatcherTimer()
-			{
-				Interval = new TimeSpan(0, 0, 0, 0, 500)
-			};
+			_topTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
 			_topTimer.Tick += TimerTick;
 
-			_bottomTimer = new DispatcherTimer()
-			{
-				Interval = new TimeSpan(0, 0, 0, 0, 500)
-			};
+			_bottomTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
 			_bottomTimer.Tick += TimerTick;
 
 			_topTimer.Start();
@@ -363,7 +310,6 @@ namespace Dash
 
 		private void TimerTick(object sender, object o)
 		{
-
 			if (sender.Equals(_topTimer))
 			{
 				_topTimer.Stop();
@@ -371,7 +317,6 @@ namespace Dash
 				//_topTimer.Start();
 
 			}
-
 			else if (sender.Equals(_bottomTimer))
 			{
 				_bottomTimer.Stop();
@@ -384,13 +329,11 @@ namespace Dash
 		{
 			if (sender.Equals(TopScrollViewer))
 			{
-
 				if (TopScrollViewer.ExtentHeight != 0)
 				{
 					_topTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
 					_topTimer.Start();
 				}
-
 			}
 
 			else if (sender.Equals(BottomScrollViewer))
@@ -402,25 +345,20 @@ namespace Dash
 				}
 
 				//check if annotations have left the screen
-				foreach (UIElement uiElement in _bottomAnnotationOverlay.XAnnotationCanvas.Children)
+				foreach (var child in _bottomAnnotationOverlay.XAnnotationCanvas.Children.OfType<FrameworkElement>())
 				{
-				    var child = (FrameworkElement) uiElement;
 				    //get linked annotations
-					DocumentController regionDoc = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
+					var regionDoc = (child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument;
 
-				    if (regionDoc == null) continue;
+				    if (regionDoc == null)
+                        continue;
 
-				    var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-				    var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-				    var allLinks = new List<DocumentController>();
-				    if (toLinks != null) allLinks.AddRange(toLinks);
-				    if (fromLinks != null) allLinks.AddRange(fromLinks);
+				    var allLinks = regionDoc.GetDataDocument().GetLinks(null);
 
 				    //bool for checking whether child is currently in view of scrollviewer
-				    bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+				    var inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-					foreach (DocumentController link in allLinks)
+					foreach (var link in allLinks)
 					{
 						bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
@@ -555,11 +493,11 @@ namespace Dash
 
 			PdfMaxWidth = maxWidth;
 
-			_wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
-			bool add = _wPdfDocument.PageCount != _currentPageCount;
+			PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
+			bool add = PDFdoc.PageCount != _currentPageCount;
 			if (add)
 			{
-				_currentPageCount = (int) _wPdfDocument.PageCount;
+				_currentPageCount = (int) PDFdoc.PageCount;
 			}
 
             await Task.Run(() => {
@@ -1298,30 +1236,12 @@ namespace Dash
 			xFadeAnimation2.Begin();
 		}
 
-		private ToolTip _controlsTop;
-		private ToolTip _controlsBottom;
-
-		private ToolTip _nextTop;
-		private ToolTip _nextBottom;
-
-		private ToolTip _prevTop;
-		private ToolTip _prevBottom;
-
-		private ToolTip _upTop;
-		private ToolTip _upBottom;
-
-		private ToolTip _backTop;
-		private ToolTip _backBottom;
-
-		private ToolTip _forwardTop;
-		private ToolTip _forwardBottom;
-
 		private void SetUpToolTips()
 		{
 			var placementMode = PlacementMode.Bottom;
 			const int offset = 0;
 
-			_controlsTop = new ToolTip()
+			var _controlsTop = new ToolTip()
 			{
 				Content = "Toggle controls",
 				Placement = placementMode,
@@ -1329,7 +1249,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopAnnotationsToggleButton, _controlsTop);
 
-			_controlsBottom = new ToolTip()
+			var _controlsBottom = new ToolTip()
 			{
 				Content = "Toggle controls",
 				Placement = placementMode,
@@ -1337,7 +1257,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xBottomAnnotationsToggleButton, _controlsBottom);
 
-			_nextTop = new ToolTip()
+			var _nextTop = new ToolTip()
 			{
 				Content = "Next page",
 				Placement = placementMode,
@@ -1345,7 +1265,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopNextPageButton, _nextTop);
 
-			_nextBottom = new ToolTip()
+			var _nextBottom = new ToolTip()
 			{
 				Content = "Next page",
 				Placement = placementMode,
@@ -1353,7 +1273,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xBottomNextPageButton, _nextBottom);
 
-			_prevTop = new ToolTip()
+			var _prevTop = new ToolTip()
 			{
 				Content = "Previous page",
 				Placement = placementMode,
@@ -1361,7 +1281,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopPreviousPageButton, _prevTop);
 
-			_prevBottom = new ToolTip()
+			var _prevBottom = new ToolTip()
 			{
 				Content = "Previous page",
 				Placement = placementMode,
@@ -1369,7 +1289,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xBottomPreviousPageButton, _prevBottom);
 
-			_upTop = new ToolTip()
+			var _upTop = new ToolTip()
 			{
 				Content = "Scroll to top",
 				Placement = placementMode,
@@ -1377,7 +1297,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopScrollToTop, _upTop);
 
-			_upBottom = new ToolTip()
+			var _upBottom = new ToolTip()
 			{
 				Content = "Scroll to top",
 				Placement = placementMode,
@@ -1385,7 +1305,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xBottomScrollToTop, _upBottom);
 
-			_backTop = new ToolTip()
+			var _backTop = new ToolTip()
 			{
 				Content = "Scroll backward",
 				Placement = placementMode,
@@ -1393,7 +1313,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopScrollBack, _backTop);
 
-			_backBottom = new ToolTip()
+			var _backBottom = new ToolTip()
 			{
 				Content = "Scroll backward",
 				Placement = placementMode,
@@ -1401,7 +1321,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xBottomScrollBack, _backBottom);
 
-			_forwardTop = new ToolTip()
+			var _forwardTop = new ToolTip()
 			{
 				Content = "Scroll forward",
 				Placement = placementMode,
@@ -1409,7 +1329,7 @@ namespace Dash
 			};
 			ToolTipService.SetToolTip(xTopScrollForward, _forwardTop);
 
-			_forwardBottom = new ToolTip()
+			var _forwardBottom = new ToolTip()
 			{
 				Content = "Scroll forward",
 				Placement = placementMode,
@@ -1441,20 +1361,15 @@ namespace Dash
             allChildren.AddRange(_bottomAnnotationOverlay.XAnnotationCanvas.Children);
 		    //allChildren.AddRange(_topAnnotationOverlay.XAnnotationCanvas.Children);
 
-            foreach (UIElement uiElement in allChildren)
+            foreach (var child in allChildren.OfType<FrameworkElement>())
 			{
 			    //get linked annotations
-			    if ((((FrameworkElement)uiElement).DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
+			    if ((child.DataContext as NewAnnotationOverlay.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
 			    {
-			        var toLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-			        var fromLinks = regionDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-			        var allLinks = new List<DocumentController>();
-			        if (toLinks != null) allLinks.AddRange(toLinks);
-			        if (fromLinks != null) allLinks.AddRange(fromLinks);
+			        var allLinks = regionDoc.GetDataDocument().GetLinks(null);
 
 			        //bool for checking whether child is currently in view of scrollviewer
-			        bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(uiElement.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
+			        bool inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point()));
 
                     foreach (DocumentController link in allLinks)
 			        {
