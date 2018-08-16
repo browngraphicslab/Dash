@@ -2,28 +2,25 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage.Streams;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 
 namespace Dash
 {
     public class DataVirtualizationSource<T>
     {
-        public List<Size> PageSizes;
+        private const double MaxPageWidth = 1500; // maximum width to render a page.  avoids generating oversized (memory-wise) Bitmaps
         private readonly ObservableCollection<Image> _visibleElements = new ObservableCollection<Image>();
         private readonly List<double> _visibleElementsRenderedWidth = new List<double>();
         private readonly List<double> _visibleElementsTargetedWidth = new List<double>();
+        private readonly List<bool>   _visibleElementsIsRendering = new List<bool>();
         private readonly ScrollViewer _scrollViewer;
         private readonly CustomPdfView _view;
         private double  _verticalOffset;
+        public List<Size> PageSizes;
 
         public DataVirtualizationSource(CustomPdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
@@ -33,15 +30,13 @@ namespace Dash
             pageItemsControl.ItemsSource = _visibleElements;
             view.DocumentLoaded += View_Loaded;
         }
-
         ~DataVirtualizationSource()
         {
             Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
 
         /// <summary>
-        ///     Given a vertical offset, returns an integer that represents in 0-index the page that
-        ///     that offset correlates with.
+        /// Given a vertical offset, return the corresponding 0-index page
         /// </summary>
         public int GetIndex(double verticalOffset)
         {
@@ -58,7 +53,6 @@ namespace Dash
 
             return index;
         }
-
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
@@ -66,6 +60,7 @@ namespace Dash
                 _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
                 _visibleElementsTargetedWidth.Add(-1);
                 _visibleElementsRenderedWidth.Add(-1);
+                _visibleElementsIsRendering.Add(false);
             }
             
             _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
@@ -80,7 +75,6 @@ namespace Dash
             else
                 RenderIndices(0);
         }
-
         private void RenderIndices(double scrollOffset)
         {
             _verticalOffset = scrollOffset;
@@ -94,12 +88,12 @@ namespace Dash
                 for (var i = 0; i < _visibleElements.Count; i++)
                 {
                     var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
-                    if (_visibleElementsRenderedWidth[i] < 0 && // negative width means rendering is complete
-                        targetWidth != _visibleElementsTargetedWidth[i])
+                    if (!_visibleElementsIsRendering[i] && targetWidth != _visibleElementsRenderedWidth[i])
                     {
-                        _visibleElementsRenderedWidth[i] = Math.Abs(_visibleElementsRenderedWidth[i]); // positive sign marks page as being rendered
+                        _visibleElementsIsRendering[i] = true;
                         _visibleElementsTargetedWidth[i] = targetWidth;
-                        RenderPage(i);
+                        if (_view.PdfUri != null)
+                            RenderPage(i);
                     }
                     else
                     {
@@ -110,36 +104,29 @@ namespace Dash
         }
         private async void RenderPage(int pageNum)
         {
-            if (_view.PdfUri != null)
+            using (var page = _view.PDFdoc.GetPage((uint)pageNum))
             {
-                using (var page = _view.PDFdoc.GetPage((uint)pageNum))
+                while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
                 {
-                    while (Math.Abs(_visibleElementsRenderedWidth[pageNum]) != _visibleElementsTargetedWidth[pageNum] &&
-                        (_visibleElementsRenderedWidth[pageNum] != -1 || _visibleElementsTargetedWidth[pageNum] != 0))
+                    BitmapSource source = null;
+                    var targetWidth = _visibleElementsTargetedWidth[pageNum];
+                    if (targetWidth != 0)
                     {
-                        var targetWidth = _visibleElementsTargetedWidth[pageNum];
-                        if (targetWidth != 0)
-                        {
-                            var options = new Windows.Data.Pdf.PdfPageRenderOptions();
-                            var stream = new InMemoryRandomAccessStream();
-                            var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
-                            var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
-                            var box = page.Dimensions.MediaBox;
-                            options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, 1500);
-                            options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, 1500 * box.Height / box.Width);
-                            await page.RenderToStreamAsync(stream, options);
-                            var source = new BitmapImage();
-                            await source.SetSourceAsync(stream);
-                            _visibleElements[pageNum].Source = source;
-                        }
-                        else
-                        {
-                            _visibleElements[pageNum].Source = null;
-                        }
-                        _visibleElementsRenderedWidth[pageNum] = targetWidth;
+                        var options = new Windows.Data.Pdf.PdfPageRenderOptions();
+                        var stream = new InMemoryRandomAccessStream();
+                        var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
+                        var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
+                        var box = page.Dimensions.MediaBox;
+                        options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, MaxPageWidth);
+                        options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width);
+                        await page.RenderToStreamAsync(stream, options);
+                        source = new BitmapImage();
+                        await source.SetSourceAsync(stream);
                     }
-                    _visibleElementsRenderedWidth[pageNum] = _visibleElementsRenderedWidth[pageNum] == 0 ? -1: - _visibleElementsRenderedWidth[pageNum]; // negating with marks page as completed
+                    _visibleElements[pageNum].Source = source;
+                    _visibleElementsRenderedWidth[pageNum] = targetWidth;
                 }
+                _visibleElementsIsRendering[pageNum] = false;
             }
         }
     }
