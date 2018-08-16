@@ -936,8 +936,7 @@ namespace Dash
                     case VirtualKey.G:
                         DoAction((views, where, size) =>
                         {
-                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-                                where, size.Width, size.Height));
+                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height));
                         });
                         deselect = true;
                         break;

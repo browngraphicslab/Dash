@@ -215,8 +215,7 @@ namespace Dash
 				ManipulationMode = ManipulationModes.All;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode =
-					right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+                ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
 						? ManipulationModes.All
 						: ManipulationModes.None;
 				MainPage.Instance.Focus(FocusState.Programmatic);
