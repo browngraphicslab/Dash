@@ -335,11 +335,6 @@ namespace Dash
 
         private void AddLinkTypeButton(string linkName)
         {
-            //check if link type button already exists 
-            if (tagMap[linkName] == null)
-            {
-
-            }
             var tb = new TextBlock()
             {
                 Text = linkName.Substring(0, 1),
@@ -870,6 +865,16 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+			//activation mode only relevant for images & pdfs now
+	        var shouldActivate = true;
+	        foreach (DocumentView doc in SelectedDocs)
+	        {
+		        var docType = doc.ViewModel.DocumentController.DocumentType;
+		        if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
+	        }
+
+	        if (shouldActivate == false) return;
+
             if (!MainPage.Instance.IsShiftPressed())
             {
                 MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
