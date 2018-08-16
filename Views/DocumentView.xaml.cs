@@ -207,11 +207,18 @@ namespace Dash
                 ManipulationMode = ManipulationModes.All;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+<<<<<<< HEAD
                 ManipulationMode =
                     right && (this.IsShiftPressed() || !ViewModel.Undecorated)
                         ? ManipulationModes.All
                         : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
+=======
+                ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
+						? ManipulationModes.All
+						: ManipulationModes.None;
+				MainPage.Instance.Focus(FocusState.Programmatic);
+>>>>>>> 9596446bb63e3373c6ba5bdd3a6c3c96d7dea92f
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
 

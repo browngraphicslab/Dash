@@ -34,7 +34,7 @@ namespace Dash
         public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300, List<DocumentController> collectedDocuments = null) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new ListController<DocumentController>());
+            DocumentController dataDocument = makeDataDelegate(new ListController<DocumentController>());
             Document = initSharedLayout(CreateLayout(dataDocument, viewtype, where, new Size(width, height)), dataDocument);
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;

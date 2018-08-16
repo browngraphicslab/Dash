@@ -1224,9 +1224,7 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
-
-
-
+        
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
@@ -1235,8 +1233,7 @@ namespace Dash
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
@@ -1270,13 +1267,12 @@ namespace Dash
         private ToolTip _search;
         private ToolTip _back;
         private ToolTip _forward;
-        private ToolTip _snapshot;
         private ToolTip _presentation;
         private ToolTip _export;
 
         private void SetUpToolTips()
         {
-            var placementMode = PlacementMode.Bottom;
+            const PlacementMode placementMode = PlacementMode.Bottom;
             const int offset = 5;
 
             _search = new ToolTip()
@@ -1302,16 +1298,6 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xForwardButton, _forward);
-
-            _snapshot = new ToolTip()
-            {
-                Content = "Snapshot workspace",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
-
-
         }
 
         private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
