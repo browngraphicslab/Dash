@@ -1,5 +1,4 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -17,15 +18,11 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Microsoft.Toolkit.Uwp.UI;
-using Dash.Models.DragModels;
-using Color = Windows.UI.Color;
-using Size = Windows.Foundation.Size;
-using Windows.Foundation.Collections;
-using Windows.System;
 using Windows.UI.Xaml.Media.Animation;
-using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
+using Dash.Models.DragModels;
+using DashShared;
+using Microsoft.Toolkit.Uwp.UI;
 
 namespace Dash
 {
@@ -34,7 +31,7 @@ namespace Dash
         static ICollectionView _previousDragEntered;
         bool    _canDragItems = true;
         bool    _isLoaded;
-        DocumentController _lastContainerDocument = null; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
+        DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode         WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController>      CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
         public InkController                           InkController        => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
@@ -73,7 +70,7 @@ namespace Dash
             set { SetProperty(ref _canDragItems, value); }
         }
 
-        public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null) : base()
+        public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null)
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
@@ -172,7 +169,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents(this.DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
+                FitContents(DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
         void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
@@ -387,7 +384,7 @@ namespace Dash
             var dictionary = new Dictionary<object, Dictionary<KeyController, List<object>>>();
             var pivotDictionary = new Dictionary<object, DocumentController>();
 
-            foreach (var d in docs.Select((dd) => dd.GetDataDocument()))
+            foreach (var d in docs.Select(dd => dd.GetDataDocument()))
             {
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
                 if (fieldDict == null)
@@ -459,9 +456,7 @@ namespace Dash
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
                 if (d.GetDataDocument().GetAllPrototypes().Contains(pivotDoc) || pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
-                    pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
-                    {
-                    }, DocumentType.DefaultType);
+                    pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                     if (obj is string)
                     {
                         pivotDoc.SetField(pivotKey, new TextController(obj as string), true);
@@ -543,11 +538,13 @@ namespace Dash
                     AddDocument(droppedDoc);
                     return droppedDoc;
                 }
-                else if (dvp.Contains(StandardDataFormats.Bitmap))
+
+                if (dvp.Contains(StandardDataFormats.Bitmap))
                 {
                     return await PasteBitmap(dvp, where);
                 }
-                else if (dvp.Contains(StandardDataFormats.Rtf))
+
+                if (dvp.Contains(StandardDataFormats.Rtf))
                 {
                     var text = await dvp.GetRtfAsync();
                     if (text != "")
@@ -606,7 +603,7 @@ namespace Dash
                             if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
                             {
                                 var html = await Clipboard.GetContent().GetHtmlFormatAsync();
-                                foreach (var str in html.Split(new char[] {'\r'}))
+                                foreach (var str in html.Split(new[] {'\r'}))
                                 {
                                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                                     if (matches.Count != 0)
@@ -638,7 +635,7 @@ namespace Dash
                             }
                             else
                             {
-                               postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
+                                postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             }
 
                             
@@ -661,9 +658,9 @@ namespace Dash
                 WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
                 await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
 
-                Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
                 StorageFile savefile = await storageFolder.CreateFileAsync("paste.jpg",
-                    Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                    CreationCollisionOption.ReplaceExisting);
                 IRandomAccessStream stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
                 BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
                 // Get pixels of the WriteableBitmap object 
@@ -735,188 +732,57 @@ namespace Dash
             {
                 e.Handled = true;
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
-                    e.AcceptedOperation = DataPackageOperation.Move;
-                else e.AcceptedOperation = e.DataView.RequestedOperation;
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) ? DataPackageOperation.Move : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
 
-                var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
+                var senderView = (sender as CollectionView)?.CurrentView;
                 var where = new Point();
                 if (senderView is CollectionFreeformBase freeformBase)
                     where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xCanvas));
                 else if (DocumentViewModels.Count > 0)
                 {
-                    var lastPos = DocumentViewModels.Last().Position;
+                    Point lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
 
 				//adds all docs in the group, if applicable
 	            var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
-				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
-	            adornmentGroups.ForEach((dv) =>
+				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
+	            adornmentGroups.ForEach(dv =>
 	            {
 		           AddDocument(dv.ViewModel.DataDocument);
 	            });
 
-				// if we drag from the file system
-				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+                // EXTERNAL
+
+                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
-                    try
-                    {
-                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
-                        if (droppedDoc != null)
-                            AddDocument(droppedDoc);
-                        return;
-                    }
-                    catch (Exception exception)
-                    {
-                        Debug.WriteLine(exception);
-                    }
+                    HandleDropFromFileSystem(e, where);
+                    return;
                 }
 
                 if (e.DataView?.Contains(StandardDataFormats.Html) == true)
                 {
-                    var html = await e.DataView.GetHtmlFormatAsync();
-
-                    //get url of where this html is coming from
-                    var htmlStartIndex = html.ToLower().IndexOf("<html", StringComparison.Ordinal); // Edge uses "<HTML", chrome "<html"
-                    var beforeHtml = html.Substring(0, htmlStartIndex);
-                    var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-                    var uri = introParts.LastOrDefault()?.Substring(10);
-                    if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
-                        uri = introParts[introParts.Count - 2]?.Substring(10);
-                    var titlesUrl = GetTitlesUrl(uri);
-
-                    if (!string.IsNullOrEmpty(titlesUrl) || uri.StartsWith("HTML"))
-                    {
-                        //try to get website and article title
-                        var addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>"; 
-
-                        //update html length in intro - the way that word reads HTML is kinda funny
-                        //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
-                        //we must change these numbers
-                        var endingInfo = introParts.ElementAt(2);
-                        var endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length)
-                            .ToString().PadLeft(10, '0');
-                        introParts[2] = endingInfo.Substring(0, 8) + endingNum;
-                        var endingInfo2 = introParts.ElementAt(4);
-                        var endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length)
-                            .ToString().PadLeft(10, '0');
-                        introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
-                        var newHtmlStart = String.Join("\r\n", introParts) + "\r\n";
-
-
-                        //get parts so additon is before closing
-                        var endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
-                        var mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
-                        var htmlClose = html.Substring(endPoint);
-
-
-                        //combine all parts
-                        html =  newHtmlStart + mainHtml + addition + htmlClose;
-                    }
-
-                    //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
-                    html = String.Concat(html,
-                        @"<style>
-                      div
-                      {
-                        color: black !important;
-                      }
-                      html * {
-                        opacity: 1.0 !important
-                      }
-                    </style>"
-                    );
-
-                    var splits = new Regex("<").Split(html);
-                    var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-                    var text = e.DataView.Contains(StandardDataFormats.Text)
-                        ? (await e.DataView.GetTextAsync()).Trim()
-                        : "";
-                    if (string.IsNullOrEmpty(text) && imgs.Count == 1)
-                    {
-                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
-                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                        var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
-                        AddDocument(imgNote.Document);
-                        imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "bryson", true);
-                        return;
-                    }
-                     
-                    DocumentController htmlNote = null;
-                    var layoutMode = WebpageLayoutMode == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : WebpageLayoutMode;
-
-                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) || 
-                        (layoutMode == SettingsView.WebpageLayoutMode.RTF  &&  MainPage.Instance.IsCtrlPressed()))
-                    {
-                        htmlNote = new HtmlNote(html, titlesUrl, where: where).Document; // BrowserView.Current?.Title ?? ""
-                    }
-                    else
-                    {
-                        htmlNote = await createRTFnote(where, titlesUrl, html); // BrowserView.Current?.Title ?? ""
-                    }
-                    
-                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
-                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
-                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-
-                    // this should be put into an operator so that it can be invoked from the scripting language, not automatically from here.
-                    if (imgs.Count() > 0)
-                    {
-                        var related = new List<DocumentController>();
-                        foreach (var img in imgs)
-                        {
-                            var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                            if (srcMatch.Length > 6)
-                            {
-                                var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                                var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                                related.Add(i.Document);
-                            }
-                        }
-
-                        htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(
-                                new KeyController("Html Images", "Html Images"), related, true); 
-                    }
-                    
-                    AddDocument(htmlNote);
+                    HandleDropWithHtml(e, where);
+                    return;
                 }
 
-                else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
+                if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
                 {
-                    var text = await e.DataView.GetRtfAsync();
-                    var t = new RichTextNote(text, where, new Size(300, double.NaN));
-                    AddDocument(t.Document);
+                    HandleDropWithRtf(e, where);
+                    return;
                 }
 
-
-                else if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
+                if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
                 {
-                    var bmp = await e.DataView.GetBitmapAsync();
-                    IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
-                    byte[] buffer = new byte[streamWithContent.Size];
-                    using (DataReader reader = new DataReader(streamWithContent))
-                    {
-                        await reader.LoadAsync((uint)streamWithContent.Size);
-                        reader.ReadBytes(buffer);
-                    }
-
-                    var localFolder = ApplicationData.Current.LocalFolder;
-                    var uniqueFilePath =
-                        UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
-                    var localFile =
-                        await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
-                    localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
-
-                    var img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
-                    AddDocument(img);
-                    var t = new ImageNote(new Uri(localFile.FolderRelativeId));
-                    // var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
-                    AddDocument(t.Document);
+                    HandleDropWithBitmap(e, where);
+                    return;
                 }
-                else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
+
+                // FROM WITHIN DASH
+
+                if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
                 {
                     var dragData = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
                     var showField = dragData.FieldKey;
@@ -933,7 +799,7 @@ namespace Dash
                                 showField = expandCollection(dragData.FieldKey, dragData.DraggedItems, subDocs,
                                     showField);
                             else if (firstDocValue is DocumentController)
-                                subDocs = dragData.DraggedItems.Select((d) =>
+                                subDocs = dragData.DraggedItems.Select(d =>
                                         d.GetDataDocument().GetDereferencedField<DocumentController>(showField, null))
                                     .ToList();
                             else subDocs = pivot(dragData.DraggedItems, showField);
@@ -951,8 +817,8 @@ namespace Dash
                     else
                     {
                         var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>()
-                            .Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
-                        var filteredDocs = dragData.DraggedItems.Where((d) =>
+                            .Select(cv => cv.ParentDocument?.ViewModel?.DataDocument);
+                        var filteredDocs = dragData.DraggedItems.Where(d =>
                             !parentDocs.Contains(d.GetDataDocument()) &&
                             d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false).ToList();
                         
@@ -973,19 +839,21 @@ namespace Dash
                         AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
                     }
                 }
+                
                 // if the user drags a data document
                 else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
                 {
                     var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
-                    foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                    foreach (var d in dragModel.Where(dm => dm.CanDrop(sender as FrameworkElement)))
                     {
                         var start = dragModel.First().DraggedDocument.GetPositionField().Data;
-                        AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).Select(
-                            (dm) => dm.GetDropDocument(
+                        AddDocuments(dragModel.Where(dm => dm.CanDrop(sender as FrameworkElement)).Select(
+                            dm => dm.GetDropDocument(
                                 new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
                                     dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList());
                     }
                 }
+
                 // if the user drags a data document
                 else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
                 {
@@ -1000,11 +868,11 @@ namespace Dash
                                 ?.TypedData;
                             if (regions != null)
                             {
-                                var links = regions.SelectMany((r) =>
+                                var links = regions.SelectMany(r =>
                                     r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-                                var targets = links.SelectMany((l) =>
+                                var targets = links.SelectMany(l =>
                                     l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-                                var aliases = targets.Select((t) =>
+                                var aliases = targets.Select(t =>
                                 {
                                     var vc = t.GetViewCopy();
                                     vc.SetHidden(false);
@@ -1022,7 +890,7 @@ namespace Dash
                                 ?.TypedData;
                             var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
                                 .GetLinks(KeyStore.LinkToKey)?.TypedData;
-                            var regionLinkedTo = regions?.SelectMany((r) =>
+                            var regionLinkedTo = regions?.SelectMany(r =>
                                 r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
                             if (regionLinkedTo != null || directlyLinkedTo != null)
                             {
@@ -1173,6 +1041,163 @@ namespace Dash
                         AddDocument(dragModel.GetDropDocument(where));
                     }
                 }
+            }
+        }
+
+        private async void HandleDropWithRtf(DragEventArgs e, Point where)
+        {
+            string text = await e.DataView.GetRtfAsync();
+            var t = new RichTextNote(text, where, new Size(300, double.NaN));
+            AddDocument(t.Document);
+        }
+
+        private async void HandleDropWithBitmap(DragEventArgs e, Point where)
+        {
+            RandomAccessStreamReference bmp = await e.DataView.GetBitmapAsync();
+            IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+            var buffer = new byte[streamWithContent.Size];
+
+            using (var reader = new DataReader(streamWithContent))
+            {
+                await reader.LoadAsync((uint)streamWithContent.Size);
+                reader.ReadBytes(buffer);
+            }
+
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            string uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
+
+            StorageFile localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+            localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
+
+            DocumentController img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
+            AddDocument(img);
+
+            var t = new ImageNote(new Uri(localFile.FolderRelativeId));
+            // var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
+            AddDocument(t.Document);
+        }
+
+        private async void HandleDropWithHtml(DragEventArgs e, Point where)
+        {
+            string html = await e.DataView.GetHtmlFormatAsync();
+
+            //get url of where this html is coming from
+            int htmlStartIndex = html.ToLower().IndexOf("<html", StringComparison.Ordinal); // Edge uses "<HTML", chrome "<html"
+            string beforeHtml = html.Substring(0, htmlStartIndex);
+
+            var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
+            string uri = introParts.LastOrDefault()?.Substring(10);
+
+            if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
+                uri = introParts[introParts.Count - 2]?.Substring(10);
+            string titlesUrl = GetTitlesUrl(uri);
+
+            if (!string.IsNullOrEmpty(titlesUrl) || uri?.StartsWith("HTML") == true)
+            {
+                //try to get website and article title
+                string addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
+
+                //update html length in intro - the way that word reads HTML is kinda funny
+                //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
+                //we must change these numbers
+                string endingInfo = introParts.ElementAt(2);
+                string endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length).ToString().PadLeft(10, '0');
+                introParts[2] = endingInfo.Substring(0, 8) + endingNum;
+
+                string endingInfo2 = introParts.ElementAt(4);
+                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length).ToString().PadLeft(10, '0');
+                introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
+
+                string newHtmlStart = string.Join("\r\n", introParts) + "\r\n";
+
+                //get parts so additon is before closing
+                int endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
+                string mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
+                string htmlClose = html.Substring(endPoint);
+
+
+                //combine all parts
+                html = newHtmlStart + mainHtml + addition + htmlClose;
+            }
+
+            //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
+            html = string.Concat(html,
+                @"<style>
+                      div
+                      {
+                        color: black !important;
+                      }
+                      html * {
+                        opacity: 1.0 !important
+                      }
+                    </style>"
+            );
+
+            var splits = new Regex("<").Split(html);
+            var imgs = splits.Where(s => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
+
+            string text = e.DataView.Contains(StandardDataFormats.Text)
+                ? (await e.DataView.GetTextAsync()).Trim()
+                : "";
+
+            if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+            {
+                string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
+                string src = srcMatch.Substring(6, srcMatch.Length - 6);
+                var imgNote = new ImageNote(new Uri(src), where, new Size(), src);
+                AddDocument(imgNote.Document);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "HTML", true);
+                return;
+            }
+
+            DocumentController htmlNote = null;
+            SettingsView.WebpageLayoutMode layoutMode = WebpageLayoutMode == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : WebpageLayoutMode;
+
+            if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
+                (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
+            {
+                htmlNote = new HtmlNote(html, titlesUrl, where: where).Document; // BrowserView.Current?.Title ?? ""
+            }
+            else
+            {
+                htmlNote = await createRTFnote(where, titlesUrl, html); // BrowserView.Current?.Title ?? ""
+            }
+
+            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
+            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
+            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
+
+            // this should be put into an operator so that it can be invoked from the scripting language, not automatically from here.
+            if (imgs.Any())
+            {
+                var related = new List<DocumentController>();
+                foreach (string img in imgs)
+                {
+                    string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img).Value;
+
+                    if (srcMatch.Length <= 6) continue;
+
+                    string src = srcMatch.Substring(6, srcMatch.Length - 6);
+                    var i = new ImageNote(new Uri(src), new Point(), new Size(), src);
+                    related.Add(i.Document);
+                }
+
+                htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(new KeyController("Html Images", "Html Images"), related, true);
+            }
+
+            AddDocument(htmlNote);
+        }
+
+        private async void HandleDropFromFileSystem(DragEventArgs e, Point where)
+        {
+            try
+            {
+                DocumentController droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
+                if (droppedDoc != null) AddDocument(droppedDoc);
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine("CVM ON DROP - FILE SYSTEM" + exception);
             }
         }
 
