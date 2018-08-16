@@ -700,17 +700,20 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
 
-            if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
-            {
-                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
-            }
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+		        {
+			        if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+		        }
 
-            var region = GetRegionDocument();
-            region.Link(theDoc, LinkContexts.None);
+		        var region = GetRegionDocument();
+		        region.Link(theDoc, LinkContexts.None);
 
-            convertTextFromXamlRTF();
+		        convertTextFromXamlRTF();
 
-            xRichEditBox.Document.Selection.SetRange(s1, s2);
+		        xRichEditBox.Document.Selection.SetRange(s1, s2);
+			}
         }
 
         DocumentController createRTFHyperlink()

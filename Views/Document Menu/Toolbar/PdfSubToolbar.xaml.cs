@@ -167,30 +167,28 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                var desiredPage = xToPageBox.Text;
+	            var desiredPage = xToPageBox.Text;
 
-                if (!double.TryParse(desiredPage, out double pageNum))
-                {
-                    xToPageBox.PlaceholderText = "Error: invalid page #";
-                    xToPageBox.Text = "";
-                    //xFadeAnimationIn.Begin();
-                    //xFadeAnimationOut.Begin();
-                    return;
-                }
-                if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
-                {
-                    xToPageBox.PlaceholderText = "Error: invalid page #";
-                    xToPageBox.Text = "";
-                    //xFadeAnimationIn.Begin();
-                    //xFadeAnimationOut.Begin();
-                    return;
-                }
+		            if (!double.TryParse(desiredPage, out double pageNum))
+		            {
+			            xToPageBox.PlaceholderText = "Error: invalid page #";
+			            xToPageBox.Text = "";
+			            //xFadeAnimationIn.Begin();
+			            //xFadeAnimationOut.Begin();
+			            return;
+		            }
+		            if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+		            {
+			            xToPageBox.PlaceholderText = "Error: invalid page #";
+			            xToPageBox.Text = "";
+			            //xFadeAnimationIn.Begin();
+			            //xFadeAnimationOut.Begin();
+			            return;
+		            }
 
-                _currentPdfView.GoToPage(pageNum);
-                xToPageBox.PlaceholderText = "Go to page...";
-            }
-            
-
+		            _currentPdfView.GoToPage(pageNum);
+		            xToPageBox.PlaceholderText = "Go to page...";
+				}
         }
 
         private ToolTip _toggle;

@@ -644,8 +644,11 @@ namespace Dash
 		{
 			if (CurrentAnnotationType == AnnotationType.Region)
 			{
-				var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                overlay.StartAnnotation(e.GetPosition(overlay), true);
+				using (UndoManager.GetBatchHandle())
+				{
+					var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+					overlay.StartAnnotation(e.GetPosition(overlay), true);
+				}
 			}
 
 		}
@@ -948,6 +951,8 @@ namespace Dash
 
 		private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
+			using (UndoManager.GetBatchHandle())
+			{
 
 			var region = (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay)
 				.GetRegionDoc();
@@ -1010,6 +1015,8 @@ namespace Dash
 			}
 
 			SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
+
+			}
 		}
 
 		private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)

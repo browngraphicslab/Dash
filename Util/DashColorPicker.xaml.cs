@@ -156,5 +156,15 @@ namespace Dash
         {
             xApplyColorEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 48, 97, 153));
         }
+
+	    private void XColorPicker_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+	    {
+		    
+	    }
+
+	    private void XColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+	    {
+		    
+	    }
     }
 }

@@ -300,7 +300,7 @@ namespace Dash
             // update menu items to point to the currently selected document
             foreach (var item in xButtonsPanel.Children.OfType<Button>())
             {
-                var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
+                //var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
                 //tagMap.Clear();
                 //GetLinkTypes(target, tagMap);
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
@@ -875,15 +875,19 @@ namespace Dash
 
 	        if (shouldActivate == false) return;
 
-            if (!MainPage.Instance.IsShiftPressed())
-            {
-                MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
-            }
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        if (!MainPage.Instance.IsShiftPressed())
+		        {
+			        MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+		        }
 
-            foreach (var doc in SelectedDocs)
-            {
-                MainPage.Instance.ActivationManager.ToggleActivation(doc);
-            }
+		        foreach (var doc in SelectedDocs)
+		        {
+			        MainPage.Instance.ActivationManager.ToggleActivation(doc);
+		        }
+			}
+            
 
         }
 
