@@ -94,12 +94,14 @@ namespace Dash
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("CollectionView unloaded");
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
+            Debug.WriteLine("CollectionView loaded");
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
 

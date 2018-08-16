@@ -262,5 +262,11 @@ namespace Dash
         {
             ActiveFrame = this;
         }
+
+        private void XTopRightResizer_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Grid.Children.Remove(XDocView);
+            Grid.Children.Add(XDocView);
+        }
     }
 }

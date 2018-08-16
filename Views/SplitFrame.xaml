@@ -9,14 +9,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid x:Name="Grid">
         <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>
         <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                 Canvas.ZIndex="1"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopRightOnManipulationStarted"
                  ManipulationDelta="TopRightOnManipulationDelta"
-                 ManipulationCompleted="OnManipulationCompleted"/>
+                 ManipulationCompleted="OnManipulationCompleted"
+                 Tapped="XTopRightResizer_OnTapped"/>
         <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                 Canvas.ZIndex="1"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="BottomLeftOnManipulationStarted"
                  ManipulationDelta="BottomLeftOnManipulationDelta"

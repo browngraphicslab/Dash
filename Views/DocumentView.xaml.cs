@@ -164,16 +164,20 @@ namespace Dash
             {
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
             }
+
+            void ContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+            {
+                _oldViewModel?.UnLoad();
+                updateBindings();
+                _oldViewModel = ViewModel;
+            }
+
             Loaded += (sender, e) =>
             {
+                Debug.WriteLine("Document View loaded");
                 FadeIn.Begin();
                 updateBindings();
-                DataContextChanged += (s, a) =>
-                {
-                    _oldViewModel?.UnLoad();
-                    updateBindings();
-                    _oldViewModel = ViewModel;
-                };
+                DataContextChanged += ContextChanged;
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
@@ -193,8 +197,10 @@ namespace Dash
             };
             Unloaded += (sender, args) =>
             {
+                Debug.WriteLine("Document View unloaded");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
+                DataContextChanged -= ContextChanged;
                 ViewModel?.UnLoad();
             };
 
@@ -207,18 +213,10 @@ namespace Dash
                 ManipulationMode = ManipulationModes.All;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-<<<<<<< HEAD
-                ManipulationMode =
-                    right && (this.IsShiftPressed() || !ViewModel.Undecorated)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
-                MainPage.Instance.Focus(FocusState.Programmatic);
-=======
                 ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
 						? ManipulationModes.All
 						: ManipulationModes.None;
 				MainPage.Instance.Focus(FocusState.Programmatic);
->>>>>>> 9596446bb63e3373c6ba5bdd3a6c3c96d7dea92f
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
 
@@ -1993,7 +1991,7 @@ namespace Dash
         }
         ~DocumentView()
         {
-            Debug.Write("dispose DocumentView");
+            //Debug.Write("dispose DocumentView");
         }
     }
 }

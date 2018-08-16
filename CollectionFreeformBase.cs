@@ -94,7 +94,7 @@ namespace Dash
             _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
             GetBackgroundContentPresenter().Content = _backgroundCanvas;
-
+            GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
 
             //make and add selectioncanvas 
