@@ -850,18 +850,18 @@ namespace Dash
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
-            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
 
             var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
-            var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
+            var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
             var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
+            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
             var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
             mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
+                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-         }
+        }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -1230,9 +1230,7 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
-
-
-
+        
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
@@ -1241,8 +1239,7 @@ namespace Dash
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
@@ -1276,13 +1273,12 @@ namespace Dash
         private ToolTip _search;
         private ToolTip _back;
         private ToolTip _forward;
-        private ToolTip _snapshot;
         private ToolTip _presentation;
         private ToolTip _export;
 
         private void SetUpToolTips()
         {
-            var placementMode = PlacementMode.Bottom;
+            const PlacementMode placementMode = PlacementMode.Bottom;
             const int offset = 5;
 
             _search = new ToolTip()
@@ -1308,16 +1304,6 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xForwardButton, _forward);
-
-            _snapshot = new ToolTip()
-            {
-                Content = "Snapshot workspace",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
-
-
         }
 
         private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)

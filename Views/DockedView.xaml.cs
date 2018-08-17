@@ -55,11 +55,6 @@ namespace Dash
 
             if (toDock.DocumentType.Equals(RichTextBox.DocumentType)) toDock.SetField<NumberController>(KeyStore.TextWrappingKey, (int)TextWrapping.Wrap, true);
 
-            if (toDock.DocumentType.Equals(PdfBox.DocumentType))
-            {
-                view.Loaded += PDFView_Loaded;
-                view.Unloaded -= PDFView_Loaded;
-            }
             Grid.SetColumn(view, 0);
             Grid.SetColumnSpan(view, 1);
             Grid.SetRow(view, 0);
@@ -69,32 +64,10 @@ namespace Dash
 	        xContentGrid.Children.Clear();
             view.Loaded += View_Loaded;
             xContentGrid.Children.Add(view);
-
-			//change column/row span so it fills the entire available space
-			Grid.SetColumn(view.xContentGrid, 0);
-	        Grid.SetRow(view.xContentGrid, 0);
-			Grid.SetColumnSpan(view.xContentGrid, 3);
-			Grid.SetRowSpan(view.xContentGrid, 3);
-
+            view.RemoveResizeHandlers();
 			//re-add close button
 			xMainDockedView.Children.Add(xCloseButton);
 
-        }
-        private void PDFView_Loaded(object sender, RoutedEventArgs e)
-        {
-            var docView = sender as DocumentView;
-            docView.ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.DockedLength, DockedLength_OnChanged);
-
-            void DockedLength_OnChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
-            {
-                docView.GetFirstDescendantOfType<CustomPdfView>().UnFreeze();
-            }
-
-            docView.Unloaded += delegate
-            {
-                docView.ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.DockedLength,
-                    DockedLength_OnChanged);
-            };
         }
 
         private void View_Loaded(object sender, RoutedEventArgs e)

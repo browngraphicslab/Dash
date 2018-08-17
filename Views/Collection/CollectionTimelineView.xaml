@@ -32,12 +32,7 @@
                       IsHitTestVisible="{Binding IsSelected}" Canvas.Top="-620" Canvas.Left="-50">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas x:Name="xCollectionCanvas"
-                                    x:FieldModifier="public"
-                                    Background="Transparent"
-                                    VerticalAlignment="Stretch"
-                                    HorizontalAlignment="Stretch">
-                                </Canvas>
+                                <Canvas   Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

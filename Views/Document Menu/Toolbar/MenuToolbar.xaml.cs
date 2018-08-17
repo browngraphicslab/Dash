@@ -24,15 +24,15 @@ namespace Dash
     /// <summary>
     /// The top level toolbar in Dash, which will always be present on screen. Subtoolbars are added below the main toolbar according to the type of data that was selected. 
     /// </summary>
-    public sealed partial class MenuToolbar : UserControl
+    public sealed partial class MenuToolbar
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
             "Orientation", typeof(Orientation), typeof(MenuToolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
-            get { return (Orientation)GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => (Orientation)GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         public static readonly DependencyProperty ExpandColorProperty = DependencyProperty.Register(
@@ -40,8 +40,8 @@ namespace Dash
 
         public SolidColorBrush ExpandColor
         {
-            get { return (SolidColorBrush)GetValue(ExpandColorProperty); }
-            set { SetValue(ExpandColorProperty, value); }
+            get => (SolidColorBrush)GetValue(ExpandColorProperty);
+            set => SetValue(ExpandColorProperty, value);
         }
 
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
@@ -63,35 +63,21 @@ namespace Dash
 
         public SolidColorBrush CollapseColor
         {
-            get { return (SolidColorBrush)GetValue(CollapseColorProperty); }
-            set { SetValue(CollapseColorProperty, value); }
+            get => (SolidColorBrush)GetValue(CollapseColorProperty);
+            set => SetValue(CollapseColorProperty, value);
         }
 
 
         public void SetUndoEnabled(bool enabled)
         {
             xUndo.IsEnabled = enabled;
-            if (enabled)
-            {
-                xUndo.Opacity = 1.0;
-            }
-            else
-            {
-                xUndo.Opacity = 0.5;
-            }
+            xUndo.Opacity = enabled ? 1.0 : 0.5;
         }
 
         public void SetRedoEnabled(bool enabled)
         {
             xRedo.IsEnabled = enabled;
-            if (enabled)
-            {
-                xRedo.Opacity = 1.0;
-            }
-            else
-            {
-                xRedo.Opacity = 0.5;
-            }
+            xRedo.Opacity = enabled ? 1.0 : 0.5;
         }
 
         // == STATIC ==
@@ -117,8 +103,6 @@ namespace Dash
             Pinned,
             Unpinned
         }
-
-	   
 
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
@@ -151,7 +135,7 @@ namespace Dash
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             pinned = Pinned.Unpinned;
-            checkedButton = xTouch;
+            _checkedButton = xTouch;
 
             pinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/pinned.png"));
             unpinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/unpinned.png"));
@@ -263,28 +247,22 @@ namespace Dash
         /// Gets the current MouseMode set by the toolbar.
         /// </summary>
         /// <returns></returns>
-        public MouseMode GetMouseMode()
-        {
-            return mode;
-        }
+        public MouseMode GetMouseMode() => mode;
 
         /// <summary>
         /// Gets the current State of the toolbar.
         /// </summary>
-        public State GetState()
-        {
-            return state;
-        }
+        public State GetState() => state;
 
         /// <summary>
         /// Disables or enables toolbar level document specific icons.
         /// </summary>
         /// <param name="hasDocuments"></param>
-        private void ToggleSelectOptions(Boolean hasDocuments)
+        private void ToggleSelectOptions(bool hasDocuments)
         {
             var o = .5;
             if (hasDocuments) o = 1;
-            foreach (var b in docSpecificButtons)
+            foreach (AppBarButton b in docSpecificButtons)
             {
                 b.IsEnabled = hasDocuments;
                 b.Opacity = o;
@@ -302,13 +280,13 @@ namespace Dash
             {
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-                ToggleSelectOptions(docs.Count() > 0);
-
+                docs = docs.ToList();
+                ToggleSelectOptions(docs.Any());
 
                 // just single select
                 if (docs.Count() == 1 )
                 {
-                    var selection = docs.First();
+                    DocumentView selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
 
 					//Find the type of the selected node and update the subtoolbar binding appropriately.
@@ -353,7 +331,7 @@ namespace Dash
                     // Data box controls
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(DataBox.DocumentType))
                     {
-                        var documentController = selection.ViewModel.DocumentController;
+                        DocumentController documentController = selection.ViewModel.DocumentController;
                         var context = new Context(documentController);
                         var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
                         //switch statement for type of data
@@ -371,7 +349,7 @@ namespace Dash
                             {
                                 if (!containsInternalContent)
                                 {
-                                    var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                    var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
                                     xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                     subtoolbarElement = xCollectionToolbar;
                                 }
@@ -382,7 +360,7 @@ namespace Dash
                             }
                             else
                             {
-                                var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
                                 xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
@@ -392,7 +370,7 @@ namespace Dash
                         {
                             containsInternalContent = true;
                             baseLevelContentToolbar = xRichTextToolbar;
-                            xRichTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                            xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
                             xRichTextToolbar.SetDocs(selection);
@@ -403,7 +381,7 @@ namespace Dash
                         {
                             containsInternalContent = true;
                             baseLevelContentToolbar = xPlainTextToolbar;
-                            xPlainTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<TextBox>(selection));
+                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<TextBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
                             xPlainTextToolbar.SetDocs(selection);
@@ -411,8 +389,7 @@ namespace Dash
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
                     }
-
-
+                    
                     // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
                     {
@@ -422,8 +399,7 @@ namespace Dash
                         subtoolbarElement = xPdfToolbar;
                         xGroupToolbar.TryMakeGroupEditable(true);
                     }
-
-
+                    
 					// <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
 					// TODO Revisit this when selection is refactored
@@ -434,7 +410,7 @@ namespace Dash
                         {
                             if (!containsInternalContent)
                             {
-                                var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
                                 xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
@@ -445,7 +421,7 @@ namespace Dash
                         }
                         else
                         {
-                            var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                            var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
                             xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                             subtoolbarElement = xCollectionToolbar;
                         }
@@ -469,7 +445,7 @@ namespace Dash
                         xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                           //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
-                            var margin = xSubtoolbarStackPanel.Margin;
+                            Thickness margin = xSubtoolbarStackPanel.Margin;
                             margin.Top = 7;
                           xSubtoolbarStackPanel.Margin = margin;
                          //xPadding.Visibility = Visibility.Collapsed;
@@ -480,7 +456,7 @@ namespace Dash
                         //If nothing is selected, open/label the main menu toolbar
                         xToolbar.IsOpen = false;
                         //update margin
-                        var margin = xSubtoolbarStackPanel.Margin;
+                        Thickness margin = xSubtoolbarStackPanel.Margin;
 	                    margin.Top = 7;
 	                    xSubtoolbarStackPanel.Margin = margin;
                     }
@@ -541,29 +517,28 @@ namespace Dash
         private void Delete(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
-                {
-                    d.DeleteDocument();
-                }
+            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
+            {
+                d.DeleteDocument();
+            }
         }
-
-
+        
         // controls which MouseMode is currently activated
-        AppBarToggleButton checkedButton = null;
+        private AppBarToggleButton _checkedButton;
 
         private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
         {
 	        //bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
 	        //                       !_selectedType.Equals(WebBox.DocumentType));
 			//xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
-            if (checkedButton != sender as AppBarToggleButton)
+            if (_checkedButton != sender as AppBarToggleButton)
             {
-                AppBarToggleButton temp = checkedButton;
-                checkedButton = sender as AppBarToggleButton;
+                AppBarToggleButton temp = _checkedButton;
+                _checkedButton = sender as AppBarToggleButton;
                 temp.IsChecked = false;
-                if (checkedButton == xTouch) mode = MouseMode.TakeNote;
-                else if (checkedButton == xInk) mode = MouseMode.Ink;
-                else if (checkedButton == xGroup) mode = MouseMode.PanFast;
+                if (_checkedButton == xTouch) mode = MouseMode.TakeNote;
+                else if (_checkedButton == xInk) mode = MouseMode.Ink;
+                else if (_checkedButton == xGroup) mode = MouseMode.PanFast;
             }
 
 	        xToolbar.IsOpen = true;
@@ -576,10 +551,10 @@ namespace Dash
 	       // xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
 		
 			AppBarToggleButton toggle = sender as AppBarToggleButton;
-            if (toggle == checkedButton)
+            if (toggle == _checkedButton)
             {
-                checkedButton = xTouch;
-                checkedButton.IsChecked = true;
+                _checkedButton = xTouch;
+                _checkedButton.IsChecked = true;
                 mode = MouseMode.TakeNote;
             }
 
