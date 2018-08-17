@@ -19,12 +19,10 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
-using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236

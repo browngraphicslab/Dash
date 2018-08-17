@@ -100,6 +100,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
@@ -306,7 +307,6 @@
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
-    <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
@@ -988,7 +988,6 @@
     <Content Include="Assets\Store\StoreLogo.scale-200.png" />
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
-    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\unlocked.png" />
     <Content Include="Assets\pinned.png" />

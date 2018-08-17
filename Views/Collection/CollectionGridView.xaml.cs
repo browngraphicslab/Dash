@@ -1,8 +1,5 @@
-﻿using Dash.Models.DragModels;
-using System.Linq;
+﻿using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;

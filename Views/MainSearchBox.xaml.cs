@@ -6,7 +6,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
@@ -152,7 +151,7 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs, null, null, CollectionView.CollectionViewType.Page);
+            args.Data.AddDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;

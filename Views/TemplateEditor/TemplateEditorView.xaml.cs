@@ -1,8 +1,4 @@
-﻿
-using Dash.Controllers;
-using Dash.Converters;
-using Dash.FontIcons;
-using Dash.Models.DragModels;
+﻿using Dash.Converters;
 using Dash.Views.TemplateEditor;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Animations;
@@ -12,15 +8,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,9 +22,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-using Syncfusion.Pdf.Xfa;
 using Line = Windows.UI.Xaml.Shapes.Line;
-using Path = System.IO.Path;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236

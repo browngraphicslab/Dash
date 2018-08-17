@@ -1,29 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Windows.Foundation;
 using System.Threading.Tasks;
 using System.Web;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
-using Dash.Models.DragModels;
 using MyToolkit.Multimedia;
-using System.Collections.ObjectModel;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Point = Windows.Foundation.Point;
-using Syncfusion.Windows.PdfViewer;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -110,7 +107,7 @@ namespace Dash
             var deselect = _selectedRegion?.Selected == true;
             var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                 {
                     nvo._selectedRegion?.Deselect();
                     nvo._selectedRegion = deselect ? null : r;
@@ -136,7 +133,7 @@ namespace Dash
             if (_selectedRegion != selectable)
             {
                 foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                    foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                     {
                         nvo._selectedRegion?.Deselect();
                         nvo._selectedRegion = r;
@@ -150,7 +147,7 @@ namespace Dash
             var selectedRegion = _selectedRegion;
             if (selectedRegion != null)
                 foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
+                    foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
                         nvo._selectedRegion?.Deselect();
                         nvo._selectedRegion = null;
@@ -159,7 +156,7 @@ namespace Dash
 
         public NewAnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter regionGetter)
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _mainDocument = viewDocument;
             _regionGetter = regionGetter;
@@ -248,7 +245,7 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
-            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
+            xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
         public void LoadPinAnnotations(CustomPdfView pdfView)
@@ -292,7 +289,7 @@ namespace Dash
             }
         }
 
-        private bool _maskInkUpdates = false;
+        private bool _maskInkUpdates;
         private void _inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (!_maskInkUpdates)
@@ -441,7 +438,7 @@ namespace Dash
             }
             DocumentController ExistingRegionAtIndices(DocumentController doc, double startIndex, double endIndex)
             {
-                return doc.GetDataDocument().GetRegions().FirstOrDefault((reg) =>
+                return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
                     var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
                     if (selectionIndices.Count == 1)
@@ -512,7 +509,7 @@ namespace Dash
             _maskInkUpdates = false;
         }
 
-        private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
+        private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
             _maskInkUpdates = true;
             _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
@@ -528,7 +525,7 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Collapsed;
         }
 
-        private bool _annotatingRegion = false;
+        private bool _annotatingRegion;
         private Point _previewStartPoint;
         private readonly List<Rect> _regionRectangles = new List<Rect>();
         public void StartRegion(Point p)
@@ -774,9 +771,9 @@ namespace Dash
             var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
             pin.DataContext = vm;
 
-			var tip = new ToolTip()
+			var tip = new ToolTip
 			{
-				Placement = PlacementMode.Bottom,
+				Placement = PlacementMode.Bottom
 			};
 			ToolTipService.SetToolTip(pin, tip);
 
@@ -1061,7 +1058,7 @@ namespace Dash
                 _selectionColor = UnselectedBrush;
             }
 
-            public bool Selected { get; private set; } = false;
+            public bool Selected { get; private set; }
 
             public DocumentController RegionDocument { get; }
 
@@ -1203,14 +1200,14 @@ namespace Dash
                         if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
                             lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, rect.X + rect.Width - lastRect.Rect.X, rect.Y + rect.Height - lastRect.Rect.Y);
                         else
-                            geometryGroup.Children.Add( lastRect = new RectangleGeometry() { Rect = rect });
+                            geometryGroup.Children.Add( lastRect = new RectangleGeometry { Rect = rect });
                     }
                 }
                 foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
                 {
                     rect.Rect = new Rect(new Point(rect.Rect.X - topLeft.X, rect.Rect.Y -topLeft.Y), new Size(rect.Rect.Width, rect.Rect.Height));
                 }
-                var path = new Path()
+                var path = new Path
                 {
                     Data = geometryGroup,
                     DataContext = vm,
@@ -1242,19 +1239,20 @@ namespace Dash
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip() { Placement = mode };
+            var tip = new ToolTip { Placement = mode };
 	        ToolTipService.SetToolTip(r, tip);
             r.PointerExited += (s, e) => tip.IsOpen = false;
             r.PointerEntered += (s, e) =>
             {
                 tip.IsOpen = true;
                 var regionDoc = vm.RegionDocument.GetDataDocument();
-                var allLinkSets = new List<IEnumerable<DocumentController>>() {
-                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
-                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
+                var allLinkSets = new List<IEnumerable<DocumentController>>
+                {
+                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
+                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
                 };
-                var allTagSets = allLinkSets.SelectMany((lset) => lset.Select((l) => l.GetLinkTags()));
-                var allTags = allTagSets.SelectMany((tagSet) => tagSet?.Select((text) => text.Data));
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
+                var allTags = allTagSets.SelectMany(tagSet => tagSet?.Select(text => text.Data));
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
@@ -1459,16 +1457,10 @@ namespace Dash
 
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
-		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-		    if (dragModel?.DraggedDocuments != null)
-		    {
+		    if (e.DataView.HasDragModels())
 		        e.AcceptedOperation |= DataPackageOperation.Copy;
-		    }
 		    else
-		    {
 			    e.AcceptedOperation = DataPackageOperation.None;
-		    }
-		    //e.Handled = true;
 	    }
 
         public async void OnDrop(object sender, DragEventArgs e)
@@ -1509,7 +1501,6 @@ namespace Dash
                         var ratio = target.GetHeight() / target.GetWidth();
                         target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
                     }
-                    return;
                 }
                 catch (Exception exception)
                 {
