@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,9 @@ namespace OfficeInterop
 
         private static readonly MessageHandler Handler = new MessageHandler();
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
+
         public static void Main(string[] args)
         {
             // connect to app service and wait until the connection gets closed
@@ -37,6 +41,14 @@ namespace OfficeInterop
             InitializeAppServiceConnection();
             _appServiceExit.WaitOne();
             Handler.Close();
+
+            Process[] processes = Process.GetProcessesByName("notepad");
+            foreach (Process p in processes)
+            {
+                IntPtr handle = p.MainWindowHandle;
+                var res = MoveWindow(handle, 50, 50, 10000, 10000, true);
+                Debug.WriteLine(res);
+            }
         }
 
         private static async void InitializeAppServiceConnection()
