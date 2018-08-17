@@ -24,10 +24,22 @@
                  ManipulationStarted="BottomLeftOnManipulationStarted"
                  ManipulationDelta="BottomLeftOnManipulationDelta"
                  ManipulationCompleted="OnManipulationCompleted"/>
-        <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="Yellow" HorizontalAlignment="Right"/>
-        <Rectangle x:Name="XLeftDropTarget" Width="15" Canvas.ZIndex="1" Fill="Yellow" HorizontalAlignment="Left"/>
-        <Rectangle x:Name="XTopDropTarget" Height="15" Canvas.ZIndex="1" Fill="Yellow" VerticalAlignment="Top"/>
-        <Rectangle x:Name="XBottomDropTarget" Height="15" Canvas.ZIndex="1" Fill="Yellow" VerticalAlignment="Bottom"/>
+        <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" HorizontalAlignment="Right"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XRightDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XLeftDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" HorizontalAlignment="Left"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XLeftDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XTopDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Top"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XTopDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XBottomDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Bottom"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XBottomDropTarget_OnDrop" AllowDrop="True"/>
     </Grid>
 
 </UserControl>

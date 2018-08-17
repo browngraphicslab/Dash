@@ -87,7 +87,7 @@ namespace Dash
         public SplitFrame()
         {
             this.InitializeComponent();
-            XDocView.RemoveResizeHandlers();
+            //XDocView.RemoveResizeHandlers();
             XTopRightResizer.Tapped += (sender, args) => SplitCompleted?.Invoke(this);
         }
 

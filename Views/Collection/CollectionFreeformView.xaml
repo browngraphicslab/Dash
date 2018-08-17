@@ -16,27 +16,21 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     x:Name="Control"
     >
-    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Background="Transparent" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
 
-        <!--<InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
-        <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->
         <ContentPresenter x:Name="xBackgroundContentPresenter"/>
-        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}"
-                    Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" IsHitTestVisible="False"
+                    Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" />
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
-                      RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" ></Canvas>
+                      RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
 
-        <ItemsControl x:Name="xItemsControl"
-                      x:FieldModifier="public"
-                      ItemsSource="{Binding DocumentViewModels}">
+        <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="xCollectionCanvas"
-                            x:FieldModifier="public"
-                            Background="Transparent"
+                    <Canvas Background="Transparent"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             Width="0"
@@ -47,18 +41,14 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <dash:DocumentView
-                        BindRenderTransform="True"
-                        BindVisibility="True"
-                        Loaded="DocumentViewOnLoaded"
-                        />
+                    <dash:DocumentView BindRenderTransform="True" BindVisibility="True" Loaded="DocumentViewOnLoaded" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
         <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top"
                         TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen"
-                        QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"></AutoSuggestBox>
+                        QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"/>
 
     </Grid>
 </local:CollectionFreeformBase>

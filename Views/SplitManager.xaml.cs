@@ -47,7 +47,6 @@ namespace Dash
             {
                 DataContext = new DocumentViewModel(viewCopy) { Undecorated = true }
             };
-            frame.SplitCompleted += WrapFrameInManager;
             SetContent(frame);
         }
 
@@ -193,7 +192,6 @@ namespace Dash
             //async void Unloaded(object sender, RoutedEventArgs args)
             {
                 //frame.Unloaded -= Unloaded;
-                UpdateLayout();
                 //await Task.Delay(5);
                 var row = Grid.GetRow(frame);
                 var col = Grid.GetColumn(frame);

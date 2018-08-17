@@ -612,9 +612,9 @@ namespace Dash
             xRightColumn.Width = new GridLength(0);
             xTopRow.Height = new GridLength(0);
             xBottomRow.Height = new GridLength(0);
-            if (ViewModel != null)
-                ViewModel.DecorationState = false;
-        }
+            ViewModel.DecorationState = false;
+            ViewModel.ResizersVisible = false;
+		}
 
         public void ToggleTemplateEditor()
         {
@@ -689,17 +689,14 @@ namespace Dash
 
         private void OpenIcon()
         {
-            //xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
-            //xIcon.Visibility = Visibility.Visible;
-            //xContentPresenter.Visibility = Visibility.Collapsed;
+            xIcon.Visibility = Visibility.Visible;
+            xContentPresenter.Visibility = Visibility.Collapsed;
         }
 
         private void OpenFreeform()
         {
-            if (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
-                xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
-            //xContentPresenter.Visibility = Visibility.Visible;
-            //xIcon.Visibility = Visibility.Collapsed;
+            xContentPresenter.Visibility = Visibility.Visible;
+            xIcon.Visibility = Visibility.Collapsed;
         }
 
         BitmapImage GetTypeIcon()
@@ -860,40 +857,39 @@ namespace Dash
 
         #region Xaml Styling Methods (used by operator/collection view)
 
-        /// <summary>
-        /// Applies custom override styles to the operator view. 
-        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-        /// </summary>
-        public void StyleOperator(double width, string title)
-        {
-            //xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
-            if (ParentCollection != null)
-            {
-                ViewModel.DocumentController.GetDataDocument().SetTitle(title);
-            }
-        }
+		/// <summary>
+		/// Applies custom override styles to the operator view. 
+		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+		/// </summary>
+		public void StyleOperator(double width, string title)
+		{
+			//xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+			if (ParentCollection != null)
+			{
+				ViewModel.DocumentController.GetDataDocument().SetTitle(title);
+			}
+		}
 
-        /// <summary>
-        /// Applies custom override styles to the collection view. 
-        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-        /// </summary>
-        public void StyleCollection(CollectionView view)
-        {
-            //xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            //alter opacity to be visible (overrides default transparent)
-            var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
-            if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
+		/// <summary>
+		/// Applies custom override styles to the collection view. 
+		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+		/// </summary>
+		public void StyleCollection(CollectionView view)
+		{
+			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
+			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
 
-            if (!IsTopLevel()) return;
-            view.xOuterGrid.BorderThickness = new Thickness(0);
-            foreach (var handle in new Rectangle[]
+            if (IsTopLevel())
             {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
-            })
-            {
-                handle.Visibility = Visibility.Collapsed;
+                view.SetBorderThickness(0);
+                foreach (var handle in new Rectangle[] {
+                    xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                    xLeftResizeControl, xRightResizeControl,
+                    xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
+                    })
+                {
+                    handle.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
@@ -1776,10 +1772,10 @@ namespace Dash
             if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
                 newpoint = new Point();
 
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false || ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)
