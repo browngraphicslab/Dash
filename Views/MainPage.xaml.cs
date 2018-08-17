@@ -1052,6 +1052,20 @@ namespace Dash
             }
         }
 
+        public void AddFloatingDoc(DocumentController doc)
+        {
+            //make doc view out of doc controller
+            var docCopy = double.IsNaN(doc.GetWidthField()?.Data ?? 0) ? doc.GetActiveLayout() ?? doc : doc.GetViewCopy();
+            docCopy.SetWidth(double.NaN);
+            docCopy.SetHeight(double.NaN);
+            var docView = new DocumentView();
+            docView.DataContext = new DocumentViewModel(docCopy);
+
+
+            //add to xCanvas
+            xCanvas.Children.Add(docView);
+        }
+
         #region Annotation logic
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)

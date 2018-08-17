@@ -33,9 +33,11 @@ namespace Dash
     public sealed partial class DocumentView
     {
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
+        public delegate void DocumentViewDeselectedHandler(DocumentView sender);
         public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
 
         public event DocumentViewSelectedHandler DocumentSelected;
+        public event DocumentViewSelectedHandler DocumentDeselected;
         public event DocumentDeletedHandler      DocumentDeleted;
         
         private DocumentController _templateEditor;
