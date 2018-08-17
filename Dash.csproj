@@ -216,7 +216,7 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
-    <Compile Include="Models\DragModels\DataPackageExtensionMethods.cs" />
+    <Compile Include="Models\DragModels\DataPackageViewExtensions.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
     <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
@@ -419,6 +419,7 @@
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\HtmlToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />

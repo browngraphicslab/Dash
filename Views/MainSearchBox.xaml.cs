@@ -92,27 +92,12 @@ namespace Dash
             }
         }
 
-        //// Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
+        // Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.DraggedDocument;
-                xAutoSuggestBox.Text = xAutoSuggestBox.Text + doc.Id;
-                /*
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                if (listKeys.Count == 1)
-                {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
-                    if (!string.IsNullOrWhiteSpace(currText))
-                    {
-                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
-                    }
-                }
-                */
+                xAutoSuggestBox.Text = xAutoSuggestBox.Text + dragDoc.Id;
             }
 
             e.Handled = true;

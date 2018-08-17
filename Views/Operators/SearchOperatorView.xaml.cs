@@ -108,16 +108,13 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = dragData.DraggedDocument;
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                var listKeys = dragDoc.EnumDisplayableFields().Where(kv => dragDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)
                 {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    string currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + dragDoc.Title.Split()[0];
                     if (!string.IsNullOrWhiteSpace(currText))
                     {
                         xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;

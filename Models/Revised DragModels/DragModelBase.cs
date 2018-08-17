@@ -9,10 +9,8 @@ namespace Dash
         /*
          * These are the documents being dragged. Use GetDropDocuments() to get the documents to drop.
          */
-        public List<DocumentController> DraggedDocuments;
-
-        protected DragModelBase(List<DocumentController> draggedDocuments) => DraggedDocuments = draggedDocuments;
 
         public abstract List<DocumentController> GetDropDocuments(Point where, bool forceShowViewCopy = false);
+        
     }
 }

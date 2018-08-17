@@ -307,7 +307,7 @@ namespace Dash
             foreach (var m in args.Items)
             {
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
-                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
+                args.Data.AddDragModel(docField != null ? (DragModelBase)new DragDocumentModel(docField, true) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -323,7 +323,7 @@ namespace Dash
         {
             foreach (var m in args.Items)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
+                args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;

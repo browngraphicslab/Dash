@@ -425,12 +425,9 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var dragDoc = dragModel.DraggedDocument;
-
-                if (dragModel.LinkSourceView != null && !MainPage.Instance.IsShiftPressed())
+                if (view != null && !MainPage.Instance.IsShiftPressed())
                 {
                     e.Handled = false;
                     return;
@@ -441,7 +438,7 @@ namespace Dash
                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 //}
 
-                linkDocumentToSelection(dragModel.DraggedDocument, true);
+                linkDocumentToSelection(dragDoc, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
@@ -616,7 +613,7 @@ namespace Dash
                     var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
                     //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? CollectionViewModel.GetTitlesUrl(url);
+                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
 
                     this.xRichEditBox.Document.Selection.CharacterFormat.Size = 9;
                     this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);

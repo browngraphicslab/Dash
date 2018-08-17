@@ -1477,18 +1477,22 @@ namespace Dash
             if (this.IsShiftPressed() && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var target = dragModel?.GetDropDocument(where);
-                target.SetBackgroundColor(Colors.White);
-                if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                var targets = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Internal, sender as FrameworkElement, where);
+
+                foreach (DocumentController doc in targets)
                 {
-                    if (target.GetActualSize()?.X > 200)
+                    doc.SetBackgroundColor(Colors.White);
+                    if (!doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
                     {
-                        var ratio = target.GetHeight() / target.GetWidth();
-                        target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
-                        target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                        if (doc.GetActualSize()?.X > 200)
+                        {
+                            double ratio = doc.GetHeight() / doc.GetWidth();
+                            doc.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+                            doc.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                        }
                     }
+                    CreatePin(where, doc);
                 }
-                CreatePin(where, target);
                 e.Handled = true;
             }
             // if we drag from the file system

@@ -33,7 +33,7 @@ namespace Dash
         {
             if (!String.IsNullOrEmpty(url))
             {
-                var headline = CollectionViewModel.GetTitlesUrl(url);
+                var headline = HtmlToDashUtil.GetTitlesUrl(url);
                 Run run = new Run() { Text = " " +  headline };
 
                 Hyperlink hyperlink = new Hyperlink()

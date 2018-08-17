@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Models.DragModels;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -74,12 +75,13 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void CollectionTreeView_Drop(object sender, DragEventArgs e)
+        private async void CollectionTreeView_Drop(object sender, DragEventArgs e)
         {
             Debug.Assert(ViewModel != null, "ViewModel != null");
-            var dvm = e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) ? e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel : null;
-            if (dvm != null)
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.DraggedDocument);
+
+            var droppableDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement);
+            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.AddRange(droppableDocs);
+
             e.Handled = true;
         }
 

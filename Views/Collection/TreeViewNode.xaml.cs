@@ -498,13 +498,13 @@ namespace Dash
         private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
         {
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            foreach (var d in snapshots)
+            foreach (DocumentController d in snapshots)
             {
                 d.SetWidth(200);
                 d.SetHeight(200);
             }
-            var dvm = ViewModel;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
+            DocumentViewModel dvm = ViewModel;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey));
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 

@@ -166,11 +166,11 @@ namespace Dash
         /// <summary>
         /// Convert a local file which stores an image into an ImageBox, if the title is null the ImageBox doesn't have a Title
         /// </summary>
-        public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, Point where, string title)
+        public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, string title, Point where = new Point())
         {
-            var size = await GetImageSize(localFile);
-            var imgWidth = size.X;
-            var imgHeight = size.Y;
+            Point size = await GetImageSize(localFile);
+            double imgWidth = size.X;
+            double imgHeight = size.Y;
 
             return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }

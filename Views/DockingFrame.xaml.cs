@@ -363,11 +363,11 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Move;
                 else e.AcceptedOperation = e.DataView.RequestedOperation;
 
-                if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-                {
-                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                    Dock(dragModel.GetDropDocument(new Point()), dir);
-                }
+                //if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                //{
+                //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                //    Dock(dragModel.GetDropDocument(new Point()), dir);
+                //}
                 // if we drag from the file system
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {

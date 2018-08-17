@@ -99,12 +99,12 @@ namespace Dash
 
         void UserControl_Drop(object sender, DragEventArgs e)
         {
-            if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var dropDocument = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
-                e.Handled = true;
-            }
+            //if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            //{
+            //    var dropDocument = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
+            //    ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
+            //    e.Handled = true;
+            //}
         }
 
         private string GetRootExpression()
