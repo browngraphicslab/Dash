@@ -1497,7 +1497,7 @@ namespace Dash
                 e.Handled = true;
                 try
                 {
-                    var target = await FileDropHelper.HandleDrop(where, e.DataView);
+                    var target = await FileDropHelper.HandleDrop(e.DataView, where);
                     if (target != null)
                         CreatePin(where, target);
                     if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))

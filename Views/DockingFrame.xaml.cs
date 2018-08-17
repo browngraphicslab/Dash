@@ -373,7 +373,7 @@ namespace Dash
                 {
                     try
                     {
-                        var droppedDoc = await FileDropHelper.HandleDrop(new Point(), e.DataView);
+                        var droppedDoc = await FileDropHelper.HandleDrop(e.DataView, new Point());
                         Dock(droppedDoc, dir);
                         return;
                     }

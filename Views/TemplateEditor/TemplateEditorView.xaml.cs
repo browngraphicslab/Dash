@@ -1395,7 +1395,7 @@ namespace Dash
 				{
 					try
 					{
-						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
+						var droppedDoc = await FileDropHelper.HandleDrop(e.DataView, where);
 						if (droppedDoc != null)
 							DocumentControllers.Add(droppedDoc.GetViewCopy(new Point(0, 0)));
 						return;
@@ -1559,7 +1559,7 @@ namespace Dash
 						await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
 					localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
 
-					var img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
+					var img = await ImageToDashUtil.CreateImageNoteFromLocalFile(localFile, "dropped image");
 					DocumentControllers.Add(img.GetViewCopy(new Point(0, 0)));
 					var t = new ImageNote(new Uri(localFile.FolderRelativeId));
 					// var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");

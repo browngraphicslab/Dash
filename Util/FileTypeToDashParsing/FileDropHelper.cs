@@ -73,8 +73,8 @@ namespace Dash
         ///     to have StorageItems, and the DragEventArgs should have been handled
         /// </summary>
         /// <param name="where"></param>
-        /// <param name="e"></param>
-        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView)
+        /// <param name="dataView"></param>
+        public static async Task<DocumentController> HandleDrop(DataPackageView dataView, Point where)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -107,10 +107,9 @@ namespace Dash
                 // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
-                    FileData fileType;
                     try
                     {
-                        fileType = await GetFileData(file, dataView);
+                        FileData fileType = await GetFileData(file, dataView);
                         var documentController = await ParseFileAsync(fileType, where, dataView);
                         if (documentController != null)
                         {

@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models.DragModels;
 using DashShared;
+using Dash;
 using Microsoft.Toolkit.Uwp.UI;
 
 namespace Dash
@@ -536,7 +537,7 @@ namespace Dash
             {
                 if (dvp.Contains(StandardDataFormats.StorageItems))
                 {
-                    var droppedDoc = await FileDropHelper.HandleDrop(where, dvp);
+                    var droppedDoc = await FileDropHelper.HandleDrop(dvp, where);
                     AddDocument(droppedDoc);
                     return droppedDoc;
                 }
@@ -675,52 +676,10 @@ namespace Dash
                 await encoder.FlushAsync();
                 var dp = new DataPackage();
                 dp.SetStorageItems(new IStorageItem[] { savefile });
-                var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView());
+                var droppedDoc = await FileDropHelper.HandleDrop(dp.GetView(), where);
                 AddDocument(droppedDoc);
                 return droppedDoc;
             }
-        }
-
-        public static string GetTitlesUrl(string uri)
-        {
-            //try to get website title
-            var uriParts = uri?.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-            if (uriParts == null || uriParts.Count < 2)
-                return "";
-            var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-            var webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
-            webName = new CultureInfo("en-US").TextInfo.ToTitleCase(
-                webName.Replace('_', ' ').Replace('-', ' '));
-
-            var pageTitle = uriParts[uriParts.Count - 1];
-            //convert symbols back to correct chars
-            pageTitle = Uri.UnescapeDataString(pageTitle);
-            //handle complicated google search url
-            var googleSearchRes = pageTitle.Split("q=");
-            pageTitle = googleSearchRes.Length > 1 ?
-                googleSearchRes[1].Substring(0, googleSearchRes[1].Length - 2).Replace('+', ' ') : pageTitle;
-            //check if pageTitle is some id
-            pageTitle = (uriParts.Count > 1 &&
-                         (pageTitle.Count(x => Char.IsDigit(x) || x == '=' || x == '#' ) > pageTitle.Length / 3
-                                                || pageTitle == "index.html")) ?
-                uriParts[uriParts.Count - 2] : pageTitle;
-            pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
-            pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
-            //dashes are used in urls as spaces
-            pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
-            //if first word is basically all numbers, its id, so delete
-            var firstTitleWord = pageTitle.Split(' ').First();
-            pageTitle = (firstTitleWord.Count(Char.IsDigit) > firstTitleWord.Length / 2 &&
-                         pageTitle.Length > firstTitleWord.Length) ?
-                pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
-            //if last word is basically all numbers, its id, so delete
-            var lastTitleWord = pageTitle.Split(' ').Last();
-            pageTitle = (lastTitleWord.Count(Char.IsDigit) > lastTitleWord.Length / 2 &&
-                            pageTitle.Length > lastTitleWord.Length) ?
-                pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
-            pageTitle = Char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
-
-            return webName + " (" + pageTitle + ")";
         }
 
         /// <summary>
@@ -758,31 +717,8 @@ namespace Dash
 
                 // EXTERNAL
                 DataPackageView packageView = e.DataView;
-                DataPackage packageData = e.Data;
 
-                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
-                {
-                    HandleDropFromFileSystem(e, where);
-                    return;
-                }
-
-                if (e.DataView?.Contains(StandardDataFormats.Html) == true)
-                {
-                    HandleDropWithHtml(e, where);
-                    return;
-                }
-
-                if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
-                {
-                    HandleDropWithRtf(e, where);
-                    return;
-                }
-
-                if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
-                {
-                    HandleDropWithBitmap(e, where);
-                    return;
-                }
+                AddDocuments(await packageView.GetDropDocumentsOfType(DragDataTypeInfo.External, where));
 
                 // FROM WITHIN DASH
 
@@ -857,7 +793,7 @@ namespace Dash
                                     dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList());
                     }
                 }
-
+                
                 // if the user drags a data document
                 else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
                 {
@@ -1046,187 +982,6 @@ namespace Dash
                     }
                 }
             }
-        }
-
-        private async void HandleDropWithRtf(DragEventArgs e, Point where)
-        {
-            string text = await e.DataView.GetRtfAsync();
-            var t = new RichTextNote(text, where, new Size(300, double.NaN));
-            AddDocument(t.Document);
-        }
-
-        private async void HandleDropWithBitmap(DragEventArgs e, Point where)
-        {
-            RandomAccessStreamReference bmp = await e.DataView.GetBitmapAsync();
-            IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
-            var buffer = new byte[streamWithContent.Size];
-
-            using (var reader = new DataReader(streamWithContent))
-            {
-                await reader.LoadAsync((uint)streamWithContent.Size);
-                reader.ReadBytes(buffer);
-            }
-
-            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-            string uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
-
-            StorageFile localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
-            localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
-
-            DocumentController img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
-            AddDocument(img);
-
-            var t = new ImageNote(new Uri(localFile.FolderRelativeId));
-            // var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
-            AddDocument(t.Document);
-        }
-
-        private async void HandleDropWithHtml(DragEventArgs e, Point where)
-        {
-            string html = await e.DataView.GetHtmlFormatAsync();
-
-            //get url of where this html is coming from
-            int htmlStartIndex = html.ToLower().IndexOf("<html", StringComparison.Ordinal); // Edge uses "<HTML", chrome "<html"
-            string beforeHtml = html.Substring(0, htmlStartIndex);
-
-            var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-            string uri = introParts.LastOrDefault()?.Substring(10);
-
-            if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
-                uri = introParts[introParts.Count - 2]?.Substring(10);
-            string titlesUrl = GetTitlesUrl(uri);
-
-            if (!string.IsNullOrEmpty(titlesUrl) || uri?.StartsWith("HTML") == true)
-            {
-                //try to get website and article title
-                string addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
-
-                //update html length in intro - the way that word reads HTML is kinda funny
-                //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
-                //we must change these numbers
-                string endingInfo = introParts.ElementAt(2);
-                string endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length).ToString().PadLeft(10, '0');
-                introParts[2] = endingInfo.Substring(0, 8) + endingNum;
-
-                string endingInfo2 = introParts.ElementAt(4);
-                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length).ToString().PadLeft(10, '0');
-                introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
-
-                string newHtmlStart = string.Join("\r\n", introParts) + "\r\n";
-
-                //get parts so additon is before closing
-                int endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
-                string mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
-                string htmlClose = html.Substring(endPoint);
-
-
-                //combine all parts
-                html = newHtmlStart + mainHtml + addition + htmlClose;
-            }
-
-            //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
-            html = string.Concat(html,
-                @"<style>
-                      div
-                      {
-                        color: black !important;
-                      }
-                      html * {
-                        opacity: 1.0 !important
-                      }
-                    </style>"
-            );
-
-            var splits = new Regex("<").Split(html);
-            var imgs = splits.Where(s => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-
-            string text = e.DataView.Contains(StandardDataFormats.Text)
-                ? (await e.DataView.GetTextAsync()).Trim()
-                : "";
-
-            if (string.IsNullOrEmpty(text) && imgs.Count == 1)
-            {
-                string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
-                string src = srcMatch.Substring(6, srcMatch.Length - 6);
-                var imgNote = new ImageNote(new Uri(src), where, new Size(), src);
-                AddDocument(imgNote.Document);
-                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "HTML", true);
-                return;
-            }
-
-            DocumentController htmlNote = null;
-            SettingsView.WebpageLayoutMode layoutMode = WebpageLayoutMode == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : WebpageLayoutMode;
-
-            if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
-                (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
-            {
-                htmlNote = new HtmlNote(html, titlesUrl, where: where).Document; // BrowserView.Current?.Title ?? ""
-            }
-            else
-            {
-                htmlNote = await createRTFnote(where, titlesUrl, html); // BrowserView.Current?.Title ?? ""
-            }
-
-            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
-            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
-            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-
-            // this should be put into an operator so that it can be invoked from the scripting language, not automatically from here.
-            if (imgs.Any())
-            {
-                var related = new List<DocumentController>();
-                foreach (string img in imgs)
-                {
-                    string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img).Value;
-
-                    if (srcMatch.Length <= 6) continue;
-
-                    string src = srcMatch.Substring(6, srcMatch.Length - 6);
-                    var i = new ImageNote(new Uri(src), new Point(), new Size(), src);
-                    related.Add(i.Document);
-                }
-
-                htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(new KeyController("Html Images", "Html Images"), related, true);
-            }
-
-            AddDocument(htmlNote);
-        }
-
-        private async void HandleDropFromFileSystem(DragEventArgs e, Point where)
-        {
-            try
-            {
-                DocumentController droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView);
-                if (droppedDoc != null) AddDocument(droppedDoc);
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine("CVM ON DROP - FILE SYSTEM" + exception);
-            }
-        }
-
-        static async Task<DocumentController> createRTFnote(Point where, string title, string html)
-        {
-            //copy html to clipboard
-            var dataPackage = new DataPackage();
-            dataPackage.RequestedOperation = DataPackageOperation.Copy;
-            dataPackage.SetHtmlFormat(html);
-            Clipboard.SetContent(dataPackage);
-
-            //to import RTF from html, create a ValueSet and call Word app to do the conversion on the clipboard
-            var rpcRequest = new ValueSet { { "REQUEST", "HTML to RTF" } };
-            await DotNetRPC.CallRPCAsync(rpcRequest);
-
-            var dataPackageView = Clipboard.GetContent();
-            if (dataPackageView.Contains(StandardDataFormats.Rtf))
-            {
-                var richtext = await dataPackageView.GetRtfAsync();
-                var rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
-                if (!string.IsNullOrEmpty(title))
-                    rtfNote.GetDataDocument().SetTitle(title);
-                return rtfNote;
-            }
-            return new HtmlNote(html, title, where: where).Document;
         }
 
         /// <summary>

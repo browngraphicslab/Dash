@@ -27,7 +27,7 @@ namespace Dash
 
             var title = file.DisplayName;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
 
@@ -41,7 +41,7 @@ namespace Dash
 
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         public static async Task<Uri> GetLocalURI(StorageFile file)
@@ -56,7 +56,7 @@ namespace Dash
         {
             var localFile = await CopyBitmapToLocal(bitmap, title);
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         /// <summary>
@@ -166,13 +166,13 @@ namespace Dash
         /// <summary>
         /// Convert a local file which stores an image into an ImageBox, if the title is null the ImageBox doesn't have a Title
         /// </summary>
-        public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
+        public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, Point where, string title)
         {
             var size = await GetImageSize(localFile);
             var imgWidth = size.X;
             var imgHeight = size.Y;
 
-            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgWidth, imgHeight), title).Document;
+            return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }
 
         /// <summary>
