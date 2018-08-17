@@ -34,21 +34,55 @@ namespace OfficeInterop
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum flags);
+
+        private enum ShowWindowEnum
+        {
+            Hide = 0,
+            ShowNormal = 1, ShowMinimized = 2, ShowMaximized = 3,
+            Maximize = 3, ShowNormalNoActivate = 4, Show = 5,
+            Minimize = 6, ShowMinNoActivate = 7, ShowNoActivate = 8,
+            Restore = 9, ShowDefault = 10, ForceMinimized = 11
+        };
+
+        [DllImport("user32.dll")]
+        private static extern int SetForegroundWindow(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const UInt32 SWP_NOSIZE = 0x0001;
+        private const UInt32 SWP_NOMOVE = 0x0002;
+        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+
         public static void Main(string[] args)
         {
             // connect to app service and wait until the connection gets closed
             _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
-            _appServiceExit.WaitOne();
-            Handler.Close();
 
             Process[] processes = Process.GetProcessesByName("notepad");
             foreach (Process p in processes)
             {
                 IntPtr handle = p.MainWindowHandle;
-                var res = MoveWindow(handle, 50, 50, 10000, 10000, true);
-                Debug.WriteLine(res);
+
+                //move window to give position / size
+                MoveWindow(handle, 0, 0, 200, 200, true);
+
+
+                //make window not minused and on front
+                ShowWindow(handle, ShowWindowEnum.Restore);
+                SetForegroundWindow(handle);
+
+                //pin window to top
+                SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
             }
+
+            _appServiceExit.WaitOne();
+            Handler.Close();
         }
 
         private static async void InitializeAppServiceConnection()
