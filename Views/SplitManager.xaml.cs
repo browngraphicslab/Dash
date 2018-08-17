@@ -47,6 +47,7 @@ namespace Dash
             {
                 DataContext = new DocumentViewModel(viewCopy) { Undecorated = true }
             };
+            frame.SplitCompleted += WrapFrameInManager;
             SetContent(frame);
         }
 
@@ -186,23 +187,26 @@ namespace Dash
         private void WrapFrameInManager(SplitFrame frame)
         {
             frame.SplitCompleted -= WrapFrameInManager;
-            frame.Unloaded += Unloaded;
+            //frame.Unloaded += Unloaded;
             XContentGrid.Children.Remove(frame);
 
-            async void Unloaded(object sender, RoutedEventArgs args)
+            //async void Unloaded(object sender, RoutedEventArgs args)
             {
-                frame.Unloaded -= Unloaded;
-                //UpdateLayout();
+                //frame.Unloaded -= Unloaded;
+                UpdateLayout();
                 //await Task.Delay(5);
                 var row = Grid.GetRow(frame);
                 var col = Grid.GetColumn(frame);
                 var nested = new SplitManager();
+                XContentGrid.Children.Add(nested);
+                nested.SetContent(frame);
+                nested.SetContent(frame);
+                nested.SetContent(frame);
                 nested.SetContent(frame);
                 nested._allowedSplits =
                     CurSplitMode == SplitMode.Horizontal ? SplitMode.Vertical : SplitMode.Horizontal;
                 Grid.SetRow(nested, row);
                 Grid.SetColumn(nested, col);
-                XContentGrid.Children.Add(nested);
             }
         }
 

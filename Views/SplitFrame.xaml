@@ -12,18 +12,22 @@
     <Grid x:Name="Grid">
         <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>
         <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
-                 Canvas.ZIndex="1"
+                 Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopRightOnManipulationStarted"
                  ManipulationDelta="TopRightOnManipulationDelta"
                  ManipulationCompleted="OnManipulationCompleted"
                  Tapped="XTopRightResizer_OnTapped"/>
         <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                 Canvas.ZIndex="1"
+                 Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="BottomLeftOnManipulationStarted"
                  ManipulationDelta="BottomLeftOnManipulationDelta"
                  ManipulationCompleted="OnManipulationCompleted"/>
+        <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="Yellow" HorizontalAlignment="Right"/>
+        <Rectangle x:Name="XLeftDropTarget" Width="15" Canvas.ZIndex="1" Fill="Yellow" HorizontalAlignment="Left"/>
+        <Rectangle x:Name="XTopDropTarget" Height="15" Canvas.ZIndex="1" Fill="Yellow" VerticalAlignment="Top"/>
+        <Rectangle x:Name="XBottomDropTarget" Height="15" Canvas.ZIndex="1" Fill="Yellow" VerticalAlignment="Bottom"/>
     </Grid>
 
 </UserControl>

@@ -58,7 +58,7 @@ namespace Dash
             set
             {
                 _docPreview = value;
-                xToolTipPreview.Source = value;
+                //xToolTipPreview.Source = value;
                 // To document previews from being resized
                 //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
             }
@@ -172,9 +172,10 @@ namespace Dash
                 _oldViewModel = ViewModel;
             }
 
+            int count = 0;
             Loaded += (sender, e) =>
             {
-                Debug.WriteLine("Document View loaded");
+                Debug.WriteLine($"Document View loaded {++count}");
                 FadeIn.Begin();
                 updateBindings();
                 DataContextChanged += ContextChanged;
@@ -197,7 +198,7 @@ namespace Dash
             };
             Unloaded += (sender, args) =>
             {
-                Debug.WriteLine("Document View unloaded");
+                Debug.WriteLine($"Document View unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 DataContextChanged -= ContextChanged;
@@ -417,60 +418,60 @@ namespace Dash
                 }
             };
 
-            KeyDown += (sender, args) =>
-            {
-                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
-                {
-                    if (!_isQuickEntryOpen)
-                    {
-                        _clearByClose = true;
-                        ClearQuickEntryBoxes();
-                        xKeyBox.Focus(FocusState.Keyboard);
-                    }
+            //KeyDown += (sender, args) =>
+            //{
+            //    if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+            //    {
+            //        if (!_isQuickEntryOpen)
+            //        {
+            //            _clearByClose = true;
+            //            ClearQuickEntryBoxes();
+            //            xKeyBox.Focus(FocusState.Keyboard);
+            //        }
 
-                    ToggleQuickEntry();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
-                {
-                    if (xKeyBox.FocusState != FocusState.Unfocused)
-                    {
-                        _articialChange = true;
-                        int pos = xKeyBox.SelectionStart;
-                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
-                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
-                        xKeyBox.SelectionStart = pos;
-                    }
-                    args.Handled = true;
-                }
-            };
+            //        ToggleQuickEntry();
+            //        args.Handled = true;
+            //    }
+            //    else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+            //    {
+            //        if (xKeyBox.FocusState != FocusState.Unfocused)
+            //        {
+            //            _articialChange = true;
+            //            int pos = xKeyBox.SelectionStart;
+            //            if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+            //            else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+            //            xKeyBox.SelectionStart = pos;
+            //        }
+            //        args.Handled = true;
+            //    }
+            //};
 
-            xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
-            xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
+            //xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
+            //xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
 
-            _lastValueInput = "";
+            //_lastValueInput = "";
 
-            xQuickEntryIn.Completed += (sender, o) =>
-            {
-                xKeyBox.Text = "d.";
-                xKeyBox.SelectionStart = 2;
-            };
+            //xQuickEntryIn.Completed += (sender, o) =>
+            //{
+            //    xKeyBox.Text = "d.";
+            //    xKeyBox.SelectionStart = 2;
+            //};
 
-            xKeyEditSuccess.Completed += SetFocusToKeyBox;
-            xValueErrorFailure.Completed += SetFocusToKeyBox;
+            //xKeyEditSuccess.Completed += SetFocusToKeyBox;
+            //xValueErrorFailure.Completed += SetFocusToKeyBox;
 
-            xKeyBox.TextChanged += XKeyBoxOnTextChanged;
-            xKeyBox.BeforeTextChanging += XKeyBoxOnBeforeTextChanging;
-            xValueBox.TextChanged += XValueBoxOnTextChanged;
+            //xKeyBox.TextChanged += XKeyBoxOnTextChanged;
+            //xKeyBox.BeforeTextChanging += XKeyBoxOnBeforeTextChanging;
+            //xValueBox.TextChanged += XValueBoxOnTextChanged;
 
-            xValueBox.GotFocus += XValueBoxOnGotFocus;
+            //xValueBox.GotFocus += XValueBoxOnGotFocus;
 
-            LostFocus += (sender, args) =>
-            {
-                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+            //LostFocus += (sender, args) =>
+            //{
+            //    if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
 
-                MainPage.Instance.xPresentationView.ClearHighlightedMatch();
-            };
+            //    MainPage.Instance.xPresentationView.ClearHighlightedMatch();
+            //};
 
             MenuFlyout = xMenuFlyout;
 
@@ -508,37 +509,37 @@ namespace Dash
             xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
 
-        private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
-        {
-            if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
-            {
-                if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
-                {
-                    e.Cancel = true;
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(e.NewText))
-                    {
-                        xKeyBox.Text = xKeyBox.Text.Substring(0, 2);
-                        xKeyBox.SelectionStart = 2;
-                        xKeyBox.Focus(FocusState.Keyboard);
-                    }
-                }
-            }
-            else
-            {
-                if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
-            }
-            _clearByClose = false;
-        }
+        //private void XKeyBoxOnBeforeTextChanging(TextBox textBox, TextBoxBeforeTextChangingEventArgs e)
+        //{
+        //    if (!_clearByClose && e.NewText.Length <= xKeyBox.Text.Length)
+        //    {
+        //        if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
+        //        {
+        //            e.Cancel = true;
+        //        }
+        //        else
+        //        {
+        //            if (string.IsNullOrEmpty(e.NewText))
+        //            {
+        //                xKeyBox.Text = xKeyBox.Text.Substring(0, 2);
+        //                xKeyBox.SelectionStart = 2;
+        //                xKeyBox.Focus(FocusState.Keyboard);
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
+        //    }
+        //    _clearByClose = false;
+        //}
 
-        private void ClearQuickEntryBoxes()
-        {
-            _lastValueInput = "";
-            xKeyBox.Text = "";
-            xValueBox.Text = "";
-        }
+        //private void ClearQuickEntryBoxes()
+        //{
+        //    _lastValueInput = "";
+        //    xKeyBox.Text = "";
+        //    xValueBox.Text = "";
+        //}
 
         public uint PointerId;
         public async void SetupDragDropDragging(PointerRoutedEventArgs e)
@@ -649,35 +650,35 @@ namespace Dash
 
         private async void GetDocPreview()
         {
-            xIconBorder.BorderThickness = new Thickness(1);
-            xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
-            {
-                Opacity = 0.5
-            };
-            var type = ViewModel.DocumentController.DocumentType;
-            xSmallIconImage.Visibility = Visibility.Visible;
-            xSmallIconImage.Source = GetTypeIcon();
-            if (DocPreview == null)
-                DocPreview = await GetPreview();
-            xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
-            OpenIcon();
+            //xIconBorder.BorderThickness = new Thickness(1);
+            //xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
+            //{
+            //    Opacity = 0.5
+            //};
+            //var type = ViewModel.DocumentController.DocumentType;
+            //xSmallIconImage.Visibility = Visibility.Visible;
+            //xSmallIconImage.Source = GetTypeIcon();
+            //if (DocPreview == null)
+            //    DocPreview = await GetPreview();
+            //xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
+            //OpenIcon();
         }
 
-        public async Task<RenderTargetBitmap> GetPreview()
-        {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement, 1000, 1000);
-            xContentPresenter.Visibility = Visibility.Collapsed;
-            return bitmap;
-        }
+        //public async Task<RenderTargetBitmap> GetPreview()
+        //{
+            //RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            //xContentPresenter.Visibility = Visibility.Visible;
+            //await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement, 1000, 1000);
+            //xContentPresenter.Visibility = Visibility.Collapsed;
+            //return bitmap;
+        //}
 
         private void CloseDocPreview()
         {
-            xIconImage.Visibility = Visibility.Visible;
-            xSmallIconImage.Visibility = Visibility.Collapsed;
-            xIconBorder.BorderThickness = new Thickness(0);
-            xIconBorder.Background = new SolidColorBrush(Colors.Transparent);
+            //xIconImage.Visibility = Visibility.Visible;
+            //xSmallIconImage.Visibility = Visibility.Collapsed;
+            //xIconBorder.BorderThickness = new Thickness(0);
+            //xIconBorder.Background = new SolidColorBrush(Colors.Transparent);
         }
 
         private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
@@ -688,17 +689,17 @@ namespace Dash
 
         private void OpenIcon()
         {
-            xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
-            xIcon.Visibility = Visibility.Visible;
-            xContentPresenter.Visibility = Visibility.Collapsed;
+            //xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
+            //xIcon.Visibility = Visibility.Visible;
+            //xContentPresenter.Visibility = Visibility.Collapsed;
         }
 
         private void OpenFreeform()
         {
             if (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
                 xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
-            xContentPresenter.Visibility = Visibility.Visible;
-            xIcon.Visibility = Visibility.Collapsed;
+            //xContentPresenter.Visibility = Visibility.Visible;
+            //xIcon.Visibility = Visibility.Collapsed;
         }
 
         BitmapImage GetTypeIcon()
@@ -752,21 +753,21 @@ namespace Dash
             if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
             switch (StandardViewLevel)
             {
-                case CollectionViewModel.StandardViewLevel.Detail:
-                    DocPreview = await GetPreview();
-                    CloseDocPreview();
-                    OpenFreeform();
-                    break;
-                case CollectionViewModel.StandardViewLevel.Region:
-                    xIconLabel.FontSize = 11;
-                    GetDocPreview();
-                    break;
-                case CollectionViewModel.StandardViewLevel.Overview:
-                    xIconLabel.FontSize = 25;
-                    CloseDocPreview();
-                    OpenIcon();
-                    xIconImage.Source = GetTypeIcon();
-                    break;
+                //case CollectionViewModel.StandardViewLevel.Detail:
+                //    DocPreview = await GetPreview();
+                //    CloseDocPreview();
+                //    OpenFreeform();
+                //    break;
+                //case CollectionViewModel.StandardViewLevel.Region:
+                //    xIconLabel.FontSize = 11;
+                //    GetDocPreview();
+                //    break;
+                //case CollectionViewModel.StandardViewLevel.Overview:
+                //    xIconLabel.FontSize = 25;
+                //    CloseDocPreview();
+                //    OpenIcon();
+                //    xIconImage.Source = GetTypeIcon();
+                //    break;
             }
         }
 
@@ -1819,160 +1820,160 @@ namespace Dash
             }
         }
 
-        private void ToggleQuickEntry()
-        {
-            if (_animationBusy || IsTopLevel() || Equals(MainPage.Instance.xMapDocumentView)) return;
+        //private void ToggleQuickEntry()
+        //{
+        //    if (_animationBusy || IsTopLevel() || Equals(MainPage.Instance.xMapDocumentView)) return;
 
-            _isQuickEntryOpen = !_isQuickEntryOpen;
-            Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
+        //    _isQuickEntryOpen = !_isQuickEntryOpen;
+        //    Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
 
-            if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
+        //    if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
 
-            _animationBusy = true;
-            animation.Begin();
-            animation.Completed += AnimationCompleted;
+        //    _animationBusy = true;
+        //    animation.Begin();
+        //    animation.Completed += AnimationCompleted;
 
-            void AnimationCompleted(object sender, object e)
-            {
-                animation.Completed -= AnimationCompleted;
-                if (animation == xQuickEntryOut)
-                {
-                    xKeyValueBorder.Width = 0;
-                    Focus(FocusState.Programmatic);
-                }
-                else
-                {
-                    xKeyBox.Focus(FocusState.Programmatic);
-                }
-                _animationBusy = false;
-            }
-        }
+        //    void AnimationCompleted(object sender, object e)
+        //    {
+        //        animation.Completed -= AnimationCompleted;
+        //        if (animation == xQuickEntryOut)
+        //        {
+        //            xKeyValueBorder.Width = 0;
+        //            Focus(FocusState.Programmatic);
+        //        }
+        //        else
+        //        {
+        //            xKeyBox.Focus(FocusState.Programmatic);
+        //        }
+        //        _animationBusy = false;
+        //    }
+        //}
 
-        private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
-        {
-            obj.Handled = true;
-            ProcessInput();
-        }
+        //private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
+        //{
+        //    obj.Handled = true;
+        //    ProcessInput();
+        //}
 
-        private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
-        {
-            obj.Handled = true;
-            ProcessInput();
-        }
+        //private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
+        //{
+        //    obj.Handled = true;
+        //    ProcessInput();
+        //}
 
-        private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
-        {
-            if (_articialChange)
-            {
-                _articialChange = false;
-                return;
-            }
-            _lastValueInput = xValueBox.Text.Trim();
-        }
+        //private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
+        //{
+        //    if (_articialChange)
+        //    {
+        //        _articialChange = false;
+        //        return;
+        //    }
+        //    _lastValueInput = xValueBox.Text.Trim();
+        //}
 
-        private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
-        {
-            var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
-            if (split == null || split.Length != 2) return;
+        //private void XKeyBoxOnTextChanged(object sender1, TextChangedEventArgs textChangedEventArgs)
+        //{
+        //    var split = xKeyBox.Text.Split(".", StringSplitOptions.RemoveEmptyEntries);
+        //    if (split == null || split.Length != 2) return;
 
-            string docSpec = split[0];
+        //    string docSpec = split[0];
 
-            if (!(docSpec.Equals("d") || docSpec.Equals("v"))) return;
+        //    if (!(docSpec.Equals("d") || docSpec.Equals("v"))) return;
 
-            DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
-            string keyInput = split[1].Replace("_", " ");
+        //    DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
+        //    string keyInput = split[1].Replace("_", " ");
 
-            var val = target.GetDereferencedField(new KeyController(keyInput), null);
-            if (val == null)
-            {
-                xValueBox.SelectionLength = 0;
-                xValueBox.Text = "";
-                return;
-            }
+        //    var val = target.GetDereferencedField(new KeyController(keyInput), null);
+        //    if (val == null)
+        //    {
+        //        xValueBox.SelectionLength = 0;
+        //        xValueBox.Text = "";
+        //        return;
+        //    }
 
-            _articialChange = true;
-            xValueBox.Text = val.GetValue(null).ToString();
+        //    _articialChange = true;
+        //    xValueBox.Text = val.GetValue(null).ToString();
 
-            if (double.TryParse(xValueBox.Text.Trim(), out double res))
-            {
-                xValueBox.Text = "=" + xValueBox.Text;
-                xValueBox.SelectionStart = 1;
-                xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            }
-            else
-            {
-                xValueBox.SelectAll();
-            }
-        }
+        //    if (double.TryParse(xValueBox.Text.Trim(), out double res))
+        //    {
+        //        xValueBox.Text = "=" + xValueBox.Text;
+        //        xValueBox.SelectionStart = 1;
+        //        xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+        //    }
+        //    else
+        //    {
+        //        xValueBox.SelectAll();
+        //    }
+        //}
 
-        private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
-        {
-            if (xValueBox.Text.StartsWith("="))
-            {
-                xValueBox.SelectionStart = 1;
-                xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            }
-            else
-            {
-                xValueBox.SelectAll();
-            }
-        }
+        //private void XValueBoxOnGotFocus(object sender1, RoutedEventArgs routedEventArgs)
+        //{
+        //    if (xValueBox.Text.StartsWith("="))
+        //    {
+        //        xValueBox.SelectionStart = 1;
+        //        xValueBox.SelectionLength = xValueBox.Text.Length - 1;
+        //    }
+        //    else
+        //    {
+        //        xValueBox.SelectAll();
+        //    }
+        //}
 
-        private void ProcessInput()
-        {
-            string rawKeyText = xKeyBox.Text;
-            string rawValueText = xValueBox.Text;
+        //private void ProcessInput()
+        //{
+        //    string rawKeyText = xKeyBox.Text;
+        //    string rawValueText = xValueBox.Text;
 
-            var emptyKeyFailure = false;
-            var emptyValueFailure = false;
+        //    var emptyKeyFailure = false;
+        //    var emptyValueFailure = false;
 
-            if (string.IsNullOrEmpty(rawKeyText))
-            {
-                xKeyEditFailure.Begin();
-                emptyKeyFailure = true;
-            }
-            if (string.IsNullOrEmpty(rawValueText))
-            {
-                xValueEditFailure.Begin();
-                emptyValueFailure = true;
-            }
+        //    if (string.IsNullOrEmpty(rawKeyText))
+        //    {
+        //        xKeyEditFailure.Begin();
+        //        emptyKeyFailure = true;
+        //    }
+        //    if (string.IsNullOrEmpty(rawValueText))
+        //    {
+        //        xValueEditFailure.Begin();
+        //        emptyValueFailure = true;
+        //    }
 
-            if (emptyKeyFailure || emptyValueFailure) return;
+        //    if (emptyKeyFailure || emptyValueFailure) return;
 
-            var components = rawKeyText.Split(".", StringSplitOptions.RemoveEmptyEntries);
-            string docSpec = components[0].ToLower();
+        //    var components = rawKeyText.Split(".", StringSplitOptions.RemoveEmptyEntries);
+        //    string docSpec = components[0].ToLower();
 
-            if (components.Length != 2 || !(docSpec.Equals("v") || docSpec.Equals("d")))
-            {
-                xKeyEditFailure.Begin();
-                return;
-            }
+        //    if (components.Length != 2 || !(docSpec.Equals("v") || docSpec.Equals("d")))
+        //    {
+        //        xKeyEditFailure.Begin();
+        //        return;
+        //    }
 
-            FieldControllerBase computedValue = DSL.InterpretUserInput(rawValueText, true);
-            DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
-            if (computedValue is DocumentController doc && doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType))
-            {
-                computedValue = new TextController(xValueBox.Text.Trim());
-                xValueErrorFailure.Begin();
-            }
+        //    FieldControllerBase computedValue = DSL.InterpretUserInput(rawValueText, true);
+        //    DocumentController target = docSpec.Equals("d") ? ViewModel.DataDocument : ViewModel.LayoutDocument;
+        //    if (computedValue is DocumentController doc && doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType))
+        //    {
+        //        computedValue = new TextController(xValueBox.Text.Trim());
+        //        xValueErrorFailure.Begin();
+        //    }
 
-            string key = components[1].Replace("_", " ");
+        //    string key = components[1].Replace("_", " ");
 
-            target.SetField(new KeyController(key), computedValue, true);
+        //    target.SetField(new KeyController(key), computedValue, true);
 
-            _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
-            xKeyEditSuccess.Begin();
-            xValueEditSuccess.Begin();
+        //    _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);
+        //    xKeyEditSuccess.Begin();
+        //    xValueEditSuccess.Begin();
 
-            ClearQuickEntryBoxes();
-        }
+        //    ClearQuickEntryBoxes();
+        //}
 
-        private void SetFocusToKeyBox(object sender1, object o2)
-        {
-            xKeyBox.Text = _mostRecentPrefix;
-            xKeyBox.SelectionStart = 2;
-            xKeyBox.Focus(FocusState.Keyboard);
-        }
+        //private void SetFocusToKeyBox(object sender1, object o2)
+        //{
+        //    xKeyBox.Text = _mostRecentPrefix;
+        //    xKeyBox.SelectionStart = 2;
+        //    xKeyBox.Focus(FocusState.Keyboard);
+        //}
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {

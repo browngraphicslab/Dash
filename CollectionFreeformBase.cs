@@ -129,7 +129,7 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.RemoveFromVisualTree();
+            _backgroundCanvas?.RemoveFromVisualTree();
             GetBackgroundContentPresenter().Content = null;
             _backgroundCanvas = null;
             if (_lastViewModel != null)

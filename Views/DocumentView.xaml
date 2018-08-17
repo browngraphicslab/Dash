@@ -128,7 +128,7 @@
                         <ColumnDefinition Width="1"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <local:ActionTextBox
+                    <!--<local:ActionTextBox
                         x:Name="xKeyBox"
                         Margin="7, 0, 3, 0"
                         Padding="7, 3, 0, 0"
@@ -145,7 +145,7 @@
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         PlaceholderText="Value..."
-                        Height="25"/>
+                        Height="25"/>-->
                 </Grid>
             </Grid>
 
@@ -254,7 +254,7 @@
                      Container for document fields view-->
 
                     <Grid x:Name="MainContent">
-                        <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public"
+                        <!--<ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public"
                                               Content="{Binding Content}" />
                         <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center"
                                   VerticalAlignment="Center">
@@ -284,7 +284,7 @@
                                              TextAlignment="Center" Background="Transparent"
                                              Text="{Binding DocumentController.Title}" BorderThickness="0" />
                             </StackPanel>
-                        </Grid>
+                        </Grid>-->
                     </Grid>
                 </Grid>
             </Grid>

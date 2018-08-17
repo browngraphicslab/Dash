@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -13,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -67,12 +70,14 @@ namespace Dash
 
         public class SplitEventArgs
         {
+            public DocumentController SplitDocument { get; }
             public SplitDirection Direction { get; }
             public bool Handled { get; set; }
 
-            public SplitEventArgs(SplitDirection dir)
+            public SplitEventArgs(SplitDirection dir, DocumentController splitDocument)
             {
                 Direction = dir;
+                SplitDocument = splitDocument;
             }
 
         }
@@ -83,19 +88,20 @@ namespace Dash
         {
             this.InitializeComponent();
             XDocView.RemoveResizeHandlers();
+            XTopRightResizer.Tapped += (sender, args) => SplitCompleted?.Invoke(this);
         }
 
-        private void TrySplit(SplitDirection direction, SplitMode splitMode)
+        private void TrySplit(SplitDirection direction, DocumentController splitDoc)
         {
             foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
             {
-                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction)))
+                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc)))
                 {
                     break;
                 }
             }
 
-            CurrentSplitMode = splitMode;
+            CurrentSplitMode = (direction == SplitDirection.Left || direction == SplitDirection.Right) ? SplitMode.HorizontalSplit : SplitMode.VerticalSplit;
         }
 
         private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -106,11 +112,11 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle > 135 || angle < -150)
             {
-                TrySplit(SplitDirection.Left, SplitMode.HorizontalSplit);
+                TrySplit(SplitDirection.Left, DocumentController);
             }
             else if (angle <= 135 && angle > 60)
             {
-                TrySplit(SplitDirection.Down, SplitMode.VerticalSplit);
+                TrySplit(SplitDirection.Down, DocumentController);
             }
             else if (angle <= 60 && angle > -45)
             {
@@ -130,11 +136,11 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle < 30 && angle > -45)
             {
-                TrySplit(SplitDirection.Right, SplitMode.HorizontalSplit);
+                TrySplit(SplitDirection.Right, DocumentController);
             }
             else if (angle <= -45 && angle > -120)
             {
-                TrySplit(SplitDirection.Up, SplitMode.VerticalSplit);
+                TrySplit(SplitDirection.Up, DocumentController);
             }
             else if (angle <= -120 || angle > 135)
             {
@@ -267,6 +273,39 @@ namespace Dash
         {
             Grid.Children.Remove(XDocView);
             Grid.Children.Add(XDocView);
+        }
+
+        private SolidColorBrush Yellow = new SolidColorBrush(Color.FromArgb(127, 255, 215, 0));
+        private SolidColorBrush Transparent = new SolidColorBrush(Colors.Transparent);
+
+        private void DropTarget_OnDragEnter(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Yellow;
+        }
+
+        private void DropTarget_OnDragLeave(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
+        }
+
+        private void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
+        }
+
+        private void XLeftDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
+        }
+
+        private void XBottomDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
+        }
+
+        private void XTopDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
         }
     }
 }

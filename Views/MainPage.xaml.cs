@@ -339,7 +339,7 @@ namespace Dash
             handler =
                 delegate (object sender, RoutedEventArgs args)
                 {
-                    docView.xContentPresenter.Loaded -= handler;
+                    //docView.xContentPresenter.Loaded -= handler;
 
 
                     var dvm = docView.DataContext as DocumentViewModel;
@@ -397,11 +397,11 @@ namespace Dash
 
                     }
                 };
-            docView.xContentPresenter.Loaded += handler;
-            if (!SetCurrentWorkspace(workspace))
-            {
-                docView.xContentPresenter.Loaded -= handler;
-            }
+            //docView.xContentPresenter.Loaded += handler;
+            //if (!SetCurrentWorkspace(workspace))
+            //{
+            //    docView.xContentPresenter.Loaded -= handler;
+            //}
         }
 
         /// <summary>
