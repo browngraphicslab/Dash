@@ -434,10 +434,10 @@ namespace Dash
             var dvm = MainDocView.ViewModel;
             highlightDoc(dvm, document, flag, search, animate);
 
-            foreach (DockedView dockedView in this.GetDescendantsOfType<DockedView>())
-            {
-                highlightDoc(dockedView.ContainedDocumentView.ViewModel, document, flag, search, animate);
-            }
+            //foreach (DockedView dockedView in this.GetDescendantsOfType<DockedView>())
+            //{
+            //    highlightDoc(dockedView.ContainedDocumentView.ViewModel, document, flag, search, animate);
+            //}
         }
 
         private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
@@ -689,14 +689,19 @@ namespace Dash
             e.Handled = true;
         }
 
+        public void CollapseSearch()
+        {
+            xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+        }
+
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
             {
                 if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
                 {
-                    xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                    xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
+                    CollapseSearch();
                 }
                 return;
             }

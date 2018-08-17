@@ -11,6 +11,7 @@ using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using System.Threading.Tasks;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -19,6 +20,7 @@ namespace Dash
     public sealed partial class MainSearchBox
     {
         private int _selectedIndex = -1;
+        private bool _arrowBlock = false;
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -32,7 +34,7 @@ namespace Dash
         #endregion
 
         #region AutoSuggestBox Events
-        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
@@ -42,7 +44,13 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+                int length = sender.Text.Length;
+                // Delay so that the user won't be slowed down by unnecessary searches unless they've been idle
+                await Task.Delay(300);
+                if (length == sender.Text.Length)
+                {
+                    ExecuteDishSearch(sender);
+                }
 
             }
         }
@@ -82,6 +90,11 @@ namespace Dash
             //xAutoSuggestBox.Text = "";
             UnHighlightAllDocs();
             _selectedIndex = -1;
+            if (!_arrowBlock)
+            {
+                MainPage.Instance.CollapseSearch();
+                _arrowBlock = false;
+            }
         }
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
@@ -210,6 +223,7 @@ namespace Dash
 
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            _arrowBlock = true;
             if (xSearchCodeBox.Visibility == Visibility.Visible)
             {
                 var centX = (float)xArrow.ActualWidth / 2;

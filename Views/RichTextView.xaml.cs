@@ -30,6 +30,9 @@ namespace Dash
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
             "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
 
+        private bool noCollapse = false;
+        private bool replace = false;
+
         int _prevQueryLength;// The length of the previous search query
         int _nextMatch;// Index of the next highlighted search result
 
@@ -120,9 +123,16 @@ namespace Dash
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
-                    ClearSearchHighlights();
-                    //SetSelected("");
-                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    
+                    //if (!noCollapse)
+                    //{
+                        ClearSearchHighlights();
+                        //SetSelected("");
+                        xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+                        
+                    //}
+                    //noCollapse = false;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
                     //CursorToEnd();
                 }
@@ -140,9 +150,14 @@ namespace Dash
 
             xSearchBox.LostFocus += (s, e) =>
             {
-                ClearSearchHighlights();
-                //SetSelected("");
-                xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                //if (!noCollapse)
+                //{
+                    ClearSearchHighlights();
+                    //SetSelected("");
+                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+                //    noCollapse = false;
+                //}
             };
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
@@ -551,6 +566,10 @@ namespace Dash
                             e.Handled = true;
                         }
                         break;
+                    //case VirtualKey.R:
+                    //    xReplaceBox.Visibility = Visibility.Visible;
+                    //    xReplaceBoxPanel.Visibility = Visibility.Visible;
+                    //    break;
                 }
             }
             else
@@ -578,7 +597,7 @@ namespace Dash
         {
             _searchHighlight = true;
             MatchQuery(getSelected());
-           // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
         }
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
@@ -1176,6 +1195,7 @@ namespace Dash
         /// <param name="e"></param>
         private void XReplaceBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            noCollapse = true;
             if (e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
@@ -1310,6 +1330,22 @@ namespace Dash
         public void CompletedManipulation()
         {
             OnManipulatorHelperCompleted?.Invoke();
+        }
+
+        private void XReplaceModeButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            //    noCollapse = true;
+            //    replace = xReplaceBoxPanel.Visibility == Visibility.Collapsed;
+            //    if (replace)
+            //    {
+            //        xReplaceBoxPanel.Visibility = Visibility.Visible;
+            //        xReplaceModeButton.Content = "▲";
+
+            //    } else
+            //    {
+            //        xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+            //        xReplaceModeButton.Content = "▼";
+            //    }
         }
     }
 }
