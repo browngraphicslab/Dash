@@ -1052,16 +1052,24 @@ namespace Dash
             }
         }
 
-        public void AddFloatingDoc(DocumentController doc)
+        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
             //make doc view out of doc controller
             var docCopy = double.IsNaN(doc.GetWidthField()?.Data ?? 0) ? doc.GetActiveLayout() ?? doc : doc.GetViewCopy();
-            docCopy.SetWidth(double.NaN);
-            docCopy.SetHeight(double.NaN);
+            docCopy.SetWidth(size?.X ?? 200);
+            docCopy.SetHeight(size?.Y ?? 200);
+            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 100, xCanvas.RenderSize.Height / 2 - 100);
+            docCopy.SetPosition(position ?? defaultPt);
+            
             var docView = new DocumentView
             {
-                DataContext = new DocumentViewModel(docCopy)
+                DataContext = new DocumentViewModel(docCopy),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                BindRenderTransform = true
             };
+
+            SelectionManager.Select(docView, false);
 
             docView.DocumentDeselected += DocView_DocumentDeselected;
 
@@ -1182,8 +1190,6 @@ namespace Dash
                 onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
-
-            AddFloatingDoc(linkDoc);
 
             return LinkHandledResult.HandledRemainOpen;
         }
