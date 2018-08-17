@@ -1058,12 +1058,20 @@ namespace Dash
             var docCopy = double.IsNaN(doc.GetWidthField()?.Data ?? 0) ? doc.GetActiveLayout() ?? doc : doc.GetViewCopy();
             docCopy.SetWidth(double.NaN);
             docCopy.SetHeight(double.NaN);
-            var docView = new DocumentView();
-            docView.DataContext = new DocumentViewModel(docCopy);
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(docCopy)
+            };
 
+            docView.DocumentDeselected += DocView_DocumentDeselected;
 
             //add to xCanvas
             xCanvas.Children.Add(docView);
+        }
+
+        private void DocView_DocumentDeselected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+        {
+            sender.Visibility = Visibility.Collapsed;
         }
 
         #region Annotation logic
@@ -1174,6 +1182,8 @@ namespace Dash
                 onScreenView?.ViewModel?.RetractBorder();
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
             }
+
+            AddFloatingDoc(linkDoc);
 
             return LinkHandledResult.HandledRemainOpen;
         }

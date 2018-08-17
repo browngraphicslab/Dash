@@ -33,11 +33,11 @@ namespace Dash
     public sealed partial class DocumentView
     {
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentViewDeselectedHandler(DocumentView sender);
+        public delegate void DocumentViewDeselectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
         public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
 
         public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentViewSelectedHandler DocumentDeselected;
+        public event DocumentViewDeselectedHandler DocumentDeselected;
         public event DocumentDeletedHandler      DocumentDeleted;
         
         private DocumentController _templateEditor;
@@ -1329,6 +1329,11 @@ namespace Dash
             public DocumentViewDeletedEventArgs()
             {
             }
+        }
+
+        public void InvokeDocDeselected()
+        {
+            DocumentDeselected?.Invoke(this, new DocumentViewSelectedEventArgs());
         }
 
         #region UtilityFuncions
