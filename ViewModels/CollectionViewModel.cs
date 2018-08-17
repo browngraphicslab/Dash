@@ -757,6 +757,8 @@ namespace Dash
 	            });
 
                 // EXTERNAL
+                DataPackageView packageView = e.DataView;
+                DataPackage packageData = e.Data;
 
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
