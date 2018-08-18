@@ -31,7 +31,7 @@ namespace Dash
         {
             DraggedDocuments = new List<DocumentController> { draggedDocument };
             ShowViewCopy = showView;
-            LinkSourceViews = new List<DocumentView>() { sourceView };
+            if (sourceView != null) LinkSourceViews = new List<DocumentView>() { sourceView };
             MakeCollection = false;
         }
 
@@ -39,7 +39,7 @@ namespace Dash
         {
             DraggedDocuments = draggedDocuments;
             ShowViewCopy = showView;
-            LinkSourceViews = sourceViews;
+            if (sourceViews != null) LinkSourceViews = sourceViews;
             MakeCollection = false;
 
             Debug.Assert(LinkSourceViews == null || DraggedDocuments.Count == LinkSourceViews.Count);

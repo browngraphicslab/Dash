@@ -129,7 +129,7 @@ namespace Dash
         public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point where, FrameworkElement sender)
         {
             var dragModels = packageView.GetDragModels();
-            var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender));
+            var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
             return dropSafe.SelectMany(dm => dm.GetDropDocuments(where)).ToList();
         }
 
