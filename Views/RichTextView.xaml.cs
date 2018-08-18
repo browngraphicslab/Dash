@@ -559,7 +559,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }

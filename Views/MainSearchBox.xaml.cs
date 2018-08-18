@@ -10,6 +10,7 @@ using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -85,7 +86,7 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
@@ -166,11 +167,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dragModel =
-                new DragDocumentModel(
-                    ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
             // get the sender's view docs and set the key for the drag to a static const
-            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
+            args.Data.AddDragModel(dragModel);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -260,14 +259,14 @@ namespace Dash
 
         private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
+            string text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
-            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+            string script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
             var note = new DishScriptBox(0, 0, 300, 400, script);
 
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(note.Document, true);
+            args.Data.AddDragModel(new DragDocumentModel(note.Document, true));
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -275,10 +274,10 @@ namespace Dash
 
         private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
+            string text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
-            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+            string script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
 
             var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);

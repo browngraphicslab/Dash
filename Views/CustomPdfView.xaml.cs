@@ -232,7 +232,7 @@ namespace Dash
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
-                    dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+                    dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
                     Clipboard.SetContent(dataPackage);
                     args.Handled = true;
                 }

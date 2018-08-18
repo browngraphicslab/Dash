@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
+using static Dash.DataTransferTypeInfo;
 
 //The User Control item template is documented at https:
 //using Dash;
@@ -393,10 +394,11 @@ namespace Dash
 
         private void xDockLeft_DragOver(object sender, DragEventArgs e)
         {
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
             }
+
             if (e.DataView?.Properties.ToList().Count == 0)
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;

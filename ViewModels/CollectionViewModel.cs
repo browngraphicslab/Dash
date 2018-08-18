@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -747,16 +745,10 @@ namespace Dash
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-            {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            if (e.DataView.HasDataOfType(Internal) && !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
+                e.AcceptedOperation = DataPackageOperation.None;
 
-                if (!dragModel.CanDrop(sender as FrameworkElement))
-                    e.AcceptedOperation = DataPackageOperation.None;
-
-            }
-
-            e.DragUIOverride.IsContentVisible = true;
+            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
         }

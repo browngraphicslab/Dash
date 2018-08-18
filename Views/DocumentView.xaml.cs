@@ -582,18 +582,14 @@ namespace Dash
 
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
-            if (SelectionManager.GetSelectedDocs().Count > 1)
-            {
-                cdo.Data.Properties[nameof(List<DragDocumentModel>)] = SelectionManager.GetSelectedDocs().Select((dv) => new DragDocumentModel(dv.ViewModel.DocumentController, true)).ToList();
-            }
-            else
-            {
-                var dragDocModel = new DragDocumentModel(ViewModel.DocumentController, true);
-                cdo.Data.Properties[nameof(DragDocumentModel)] = dragDocModel;
-            }
+
+            cdo.Data.AddDragModel(SelectionManager.GetSelectedDocs().Count > 1
+                ? new DragDocumentModel(SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
+                : new DragDocumentModel(ViewModel.DocumentController, true));
+
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
-            cdo.StartAsync();
+            await cdo.StartAsync();
         }
 
         public void RemoveResizeHandlers()
@@ -1598,17 +1594,15 @@ namespace Dash
             }
         }
 
-        void This_DragOver(object sender, DragEventArgs e)
+        private void This_DragOver(object sender, DragEventArgs e)
         {
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Copy
                 : e.DataView.RequestedOperation;
 
-            e.DragUIOverride.IsContentVisible = true;
+            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
         }

@@ -217,7 +217,7 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
-    <Compile Include="Models\DragModels\DataPackageExtensionMethods.cs" />
+    <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
     <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
@@ -413,6 +413,7 @@
     <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
+    <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />

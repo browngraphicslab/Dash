@@ -362,25 +362,24 @@ namespace Dash
                 CanDrag = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
+
             button.DragStarting += (s, args) =>
             {
-                var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-                if (doq != null)
-                {
-                    args.Data.Properties[nameof(DragDocumentModel)] =
-                        new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName };
-                    args.AllowedOperations =
-                        DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                    args.Data.RequestedOperation =
-                        DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                    doq.ViewModel.DecorationState = false;
-                }
+                DocumentView doq = ((s as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
+                if (doq == null) return;
+
+                args.Data.AddDragModel(new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName });
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                doq.ViewModel.DecorationState = false;
             };
 
-            ToolTip toolTip = new ToolTip();
-            toolTip.Content = linkName;
-            toolTip.HorizontalOffset = 5;
-            toolTip.Placement = PlacementMode.Right;
+            ToolTip toolTip = new ToolTip
+            {
+                Content = linkName,
+                HorizontalOffset = 5,
+                Placement = PlacementMode.Right
+            };
             ToolTipService.SetToolTip(button, toolTip);
             xButtonsPanel.Children.Add(button);
             button.PointerEntered += (s, e) => toolTip.IsOpen = true;
@@ -706,10 +705,9 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (var doc in SelectedDocs)
+            foreach (DocumentView doc in SelectedDocs)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false, doc);
+                args.Data.AddDragModel(new DragDocumentModel(doc.ViewModel.DocumentController, false, doc));
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =

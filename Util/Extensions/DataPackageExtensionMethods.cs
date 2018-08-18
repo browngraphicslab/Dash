@@ -168,6 +168,10 @@ namespace Dash
 
         public static bool HasDragModels(this DataPackageView packageView) => packageView.Properties.ContainsKey(nameof(List<DragModelBase>));
 
+        public static bool HasDroppableDragModels(this DataPackageView packageView, FrameworkElement target) => packageView.GetDragModels().Any(d => IsDroppable(d, target));
+
+        private static bool IsDroppable(DragModelBase dragModel, FrameworkElement target) => dragModel is DragFieldModel || dragModel is DragDocumentModel ddm && ddm.CanDrop(target);
+
         public static bool HasDragModels(this DataPackage package) => package.Properties.ContainsKey(nameof(List<DragModelBase>));
 
         public static List<DragModelBase> GetDragModels(this DataPackageView packageView)
@@ -182,6 +186,14 @@ namespace Dash
             else ((List<DragModelBase>) package.Properties[nameof(List<DragModelBase>)]).Add(model);
 
             return (List<DragModelBase>) package.Properties[nameof(List<DragModelBase>)];
+        }
+
+        public static List<DragModelBase> AddDragModels(this DataPackage package, List<DragModelBase> models)
+        {
+            if (!package.HasDragModels()) package.Properties[nameof(List<DragModelBase>)] = models;
+            else ((List<DragModelBase>)package.Properties[nameof(List<DragModelBase>)]).AddRange(models);
+
+            return (List<DragModelBase>)package.Properties[nameof(List<DragModelBase>)];
         }
 
         public static bool TryGetLoneDocument(this DataPackageView packageView, out DocumentController doc)
@@ -211,5 +223,26 @@ namespace Dash
             linkView = null;
             return false;
         }
+
+        public static bool TryGetLoneDragModel(this DataPackageView packageView, out DragModelBase dragModel)
+        {
+            if (!packageView.HasDragModels())
+            {
+                dragModel = null;
+                return false;
+            }
+
+            var dragModels = packageView.GetDragModels();
+            if (dragModels.Count == 1)
+            {
+                dragModel = dragModels.First();
+                return true;
+            }
+
+            dragModel = null;
+            return false;
+        }
+
+        public static bool HasAnyPropertiesSet(this DataPackageView packageView) => packageView.Properties.ToList().Any(); 
     }
 }
