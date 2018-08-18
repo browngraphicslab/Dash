@@ -2,28 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
-using Dash.Models.DragModels;
-using System.Diagnostics;
 using Windows.System;
-using Windows.UI;
-using Windows.UI.Xaml.Media.Animation;
-using DashShared;
 using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -718,8 +708,7 @@ namespace Dash
         {
             foreach (var doc in SelectedDocs)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false, doc);
+                args.Data.AddDragModel(new DragDocumentModel(doc.ViewModel.DocumentController, false, doc));
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =

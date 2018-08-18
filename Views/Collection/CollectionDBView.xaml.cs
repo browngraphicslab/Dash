@@ -6,7 +6,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,27 +26,26 @@ namespace Dash
         }
 
 
-        void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
+        private void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
             var pattern = ParentDocument.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
-            if (dbDocs != null && pattern != null && !string.IsNullOrEmpty(pattern.Name))
+
+            if (dbDocs == null || pattern == null || string.IsNullOrEmpty(pattern.Name)) return;
+
+            var collection = dbDocs.Select((d) =>
             {
-                var collection = dbDocs.Select((d) =>
-                {
-                    var key =  testPatternMatch(d.GetDataDocument(), pattern, term);
-                    if (key != null)
-                    {
-                        var derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
-                        var rnote = new RichTextNote(derefField ?? "<empty>").Document;
-                        rnote.GetDataDocument().SetField(CollectionDBView.SelectedKey, new TextController(term), true);
-                        return rnote;
-                    }
-                    return null;
-                });
-                args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(
-                    collection.Where((c) => c != null).ToList(), null, null, CollectionView.CollectionViewType.Schema);
-            }
+                KeyController key =  testPatternMatch(d.GetDataDocument(), pattern, term);
+
+                if (key == null) return null;
+
+                string derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
+                DocumentController rnote = new RichTextNote(derefField ?? "<empty>").Document;
+                rnote.GetDataDocument().SetField(SelectedKey, new TextController(term), true);
+                return rnote;
+            });
+
+            args.Data.AddDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionView.CollectionViewType.Schema));
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)

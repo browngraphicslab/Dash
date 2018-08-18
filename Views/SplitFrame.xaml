@@ -32,11 +32,11 @@
                    DragEnter="DropTarget_OnDragEnter"
                    DragLeave="DropTarget_OnDragLeave"
                    Drop="XLeftDropTarget_OnDrop" AllowDrop="True"/>
-        <Rectangle x:Name="XTopDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Top"
+        <Rectangle x:Name="XTopDropTarget" Height="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Top"
                    DragEnter="DropTarget_OnDragEnter"
                    DragLeave="DropTarget_OnDragLeave"
                    Drop="XTopDropTarget_OnDrop" AllowDrop="True"/>
-        <Rectangle x:Name="XBottomDropTarget" Width="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Bottom"
+        <Rectangle x:Name="XBottomDropTarget" Height="15" Canvas.ZIndex="1" Fill="Transparent" VerticalAlignment="Bottom"
                    DragEnter="DropTarget_OnDragEnter"
                    DragLeave="DropTarget_OnDragLeave"
                    Drop="XBottomDropTarget_OnDrop" AllowDrop="True"/>

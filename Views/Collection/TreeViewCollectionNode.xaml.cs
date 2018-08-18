@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Toolkit.Uwp.UI;
-using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.Xaml.Media;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -125,31 +122,19 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void TreeViewNode_Drop(object sender, DragEventArgs e)
+        private async void TreeViewNode_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.HasDataOfType(Any))
             {
-                var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && !doc.Equals(data.DraggedDocument))
-                {
-                    coll.Add(data.GetDropDocument(new Point(), true));
-                }
+                var droppableDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement);
+
+                var viewModel = (sender as TreeViewNode)?.DataContext as DocumentViewModel;
+                var coll = viewModel?.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+
+                if (coll != null && !droppableDocs.Any(d => d.Equals(viewModel.DocumentController)))
+                    coll.AddRange(droppableDocs);
             }
-            if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
-            {
-                var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && data.Count > 0)
-                {
-                    var start = data.First().DraggedDocument.GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
-                }
-            }
+
             e.Handled = true;
         }
 

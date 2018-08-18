@@ -91,15 +91,31 @@ namespace Dash
                         };
                         var newPane = new SplitFrame()
                         {
-                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy()) { Undecorated = true }
+                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);
                         newManager._allowedSplits = SplitMode.Horizontal;
+                            var height = 0.0;
+                            if (args.AutoSize)
+                            {
+                                var count = 0;
+                                foreach (var child in XContentGrid.Children)
+                                {
+                                    if (child is SplitManager || child is SplitFrame)
+                                    {
+                                        height += XContentGrid.RowDefinitions[Grid.GetRow(child as FrameworkElement)]
+                                            .Height.Value;
+                                        count++;
+                                    }
+                                }
+
+                                height /= count;
+                            }
                         if (up)
                         {
                             XContentGrid.RowDefinitions.Insert(row + 1,
-                                new RowDefinition { Height = new GridLength(0, GridUnitType.Star) }); //Content row
+                                new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
                             XContentGrid.RowDefinitions.Insert(row + 1,
                                 new RowDefinition { Height = new GridLength(10) }); //Splitter row
                             Grid.SetRow(splitter, row + 1);
@@ -113,7 +129,7 @@ namespace Dash
                             XContentGrid.RowDefinitions.Insert(row,
                                 new RowDefinition() { Height = new GridLength(10) }); //Splitter row
                             XContentGrid.RowDefinitions.Insert(row,
-                                new RowDefinition { Height = new GridLength(0, GridUnitType.Star) }); //Content row
+                                new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
                             Grid.SetRow(newManager, row);
                             Grid.SetRow(splitter, row + 1);
                             UpdateRows(2, row);
@@ -146,15 +162,31 @@ namespace Dash
                         };
                         var newPane = new SplitFrame()
                         {
-                            DataContext = new DocumentViewModel(sender.DocumentController.GetViewCopy()) { Undecorated = true }
+                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);
                         newManager._allowedSplits = SplitMode.Vertical;
+                        var width = 0.0;
+                            if (args.AutoSize)
+                            {
+                                var count = 0;
+                                foreach (var child in XContentGrid.Children)
+                                {
+                                    if (child is SplitManager || child is SplitFrame)
+                                    {
+                                        width += XContentGrid.ColumnDefinitions[Grid.GetColumn(child as FrameworkElement)]
+                                            .Width.Value;
+                                        count++;
+                                    }
+                                }
+
+                                width /= count;
+                            }
                         if (left)
                         {
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition { Width = new GridLength(0, GridUnitType.Star) }); //Content col
+                                new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
                                 new ColumnDefinition { Width = new GridLength(10) }); //Splitter col
                             Grid.SetColumn(splitter, col + 1);
@@ -168,7 +200,7 @@ namespace Dash
                             XContentGrid.ColumnDefinitions.Insert(col,
                                 new ColumnDefinition() { Width = new GridLength(10) }); //Splitter col
                             XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition { Width = new GridLength(0, GridUnitType.Star) }); //Content col
+                                new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
                             Grid.SetColumn(newManager, col);
                             Grid.SetColumn(splitter, col + 1);
                             UpdateCols(2, col);

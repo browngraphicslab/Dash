@@ -116,7 +116,7 @@
                         <ColumnDefinition Width="1"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <!--<local:ActionTextBox
+                    <local:ActionTextBox
                         x:Name="xKeyBox"
                         Margin="7, 0, 3, 0"
                         Padding="7, 3, 0, 0"
@@ -133,7 +133,7 @@
                         AcceptsReturn="False"
                         IsSpellCheckEnabled="False"
                         PlaceholderText="Value..."
-                        Height="25"/>-->
+                        Height="25"/>
                 </Grid>
             </Grid>
 

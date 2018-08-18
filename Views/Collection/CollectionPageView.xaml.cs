@@ -1,9 +1,7 @@
-﻿using Dash.Models.DragModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -524,28 +522,28 @@ namespace Dash
 
         private void XTextBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-            {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var showField = dragModel.DraggedKey;
+            //if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            //{
+            //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            //    var showField = dragModel.DraggedKey;
 
-                if (xTextBox.Text.Length == 0)
-                {
-                    xTextBox.Text = "=this";
-                }
+            //    if (xTextBox.Text.Length == 0)
+            //    {
+            //        xTextBox.Text = "=this";
+            //    }
 
-                var fieldName = "";
-                foreach (var letter in showField.Name)
-                {
-                    if (!char.IsWhiteSpace(letter))
-                    {
-                        fieldName += letter;
-                    }
-                }
-                xTextBox.Text += "." + fieldName;
+            //    var fieldName = "";
+            //    foreach (var letter in showField.Name)
+            //    {
+            //        if (!char.IsWhiteSpace(letter))
+            //        {
+            //            fieldName += letter;
+            //        }
+            //    }
+            //    xTextBox.Text += "." + fieldName;
 
-                e.Handled = true;
-            }
+            //    e.Handled = true;
+            //}
         }
 
         private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)

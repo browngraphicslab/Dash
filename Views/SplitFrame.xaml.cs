@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -71,13 +73,15 @@ namespace Dash
         public class SplitEventArgs
         {
             public DocumentController SplitDocument { get; }
+            public bool AutoSize { get; }
             public SplitDirection Direction { get; }
             public bool Handled { get; set; }
 
-            public SplitEventArgs(SplitDirection dir, DocumentController splitDocument)
+            public SplitEventArgs(SplitDirection dir, DocumentController splitDocument, bool autoSize)
             {
                 Direction = dir;
                 SplitDocument = splitDocument;
+                AutoSize = autoSize;
             }
 
         }
@@ -91,11 +95,13 @@ namespace Dash
             XTopRightResizer.Tapped += (sender, args) => SplitCompleted?.Invoke(this);
         }
 
-        private void TrySplit(SplitDirection direction, DocumentController splitDoc)
+        private void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
+            splitDoc.SetWidth(double.NaN);
+            splitDoc.SetHeight(double.NaN);
             foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
             {
-                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc)))
+                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)))
                 {
                     break;
                 }
@@ -281,31 +287,72 @@ namespace Dash
         private void DropTarget_OnDragEnter(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Yellow;
+            if (e.DataView.HasDataOfType(DataTransferTypeInfo.Any))
+            {
+                e.AcceptedOperation = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            }
+            else
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+            }
+
+            e.Handled = true;
         }
 
         private void DropTarget_OnDragLeave(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
+            e.Handled = true;
         }
 
-        private void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
+        private async Task DropHandler(DragEventArgs e, SplitDirection dir)
         {
-            (sender as Rectangle).Fill = Transparent;
+            var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, XDocView);
+            if (docs.Count == 0)
+            {
+                return;
+            }
+
+            DocumentController doc;
+            if (docs.Count == 1)
+            {
+                doc = docs[0];
+            }
+            else
+            {
+                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,
+                    collectedDocuments: docs).Document;
+            }
+            TrySplit(dir, doc, true);
+            SplitCompleted?.Invoke(this);
         }
 
-        private void XLeftDropTarget_OnDrop(object sender, DragEventArgs e)
+        private async void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
+            e.Handled = true;
+            await DropHandler(e, SplitDirection.Left);
         }
 
-        private void XBottomDropTarget_OnDrop(object sender, DragEventArgs e)
+        private async void XLeftDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
+            e.Handled = true;
+            await DropHandler(e, SplitDirection.Right);
         }
 
-        private void XTopDropTarget_OnDrop(object sender, DragEventArgs e)
+        private async void XBottomDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
+            e.Handled = true;
+            await DropHandler(e, SplitDirection.Up);
+        }
+
+        private async void XTopDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Rectangle).Fill = Transparent;
+            e.Handled = true;
+            await DropHandler(e, SplitDirection.Down);
         }
     }
 }

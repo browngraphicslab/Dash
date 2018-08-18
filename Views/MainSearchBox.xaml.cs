@@ -6,7 +6,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
@@ -92,27 +91,12 @@ namespace Dash
             }
         }
 
-        //// Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
+        // Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.DraggedDocument;
-                xAutoSuggestBox.Text = xAutoSuggestBox.Text + doc.Id;
-                /*
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                if (listKeys.Count == 1)
-                {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
-                    if (!string.IsNullOrWhiteSpace(currText))
-                    {
-                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
-                    }
-                }
-                */
+                xAutoSuggestBox.Text = xAutoSuggestBox.Text + dragDoc.Id;
             }
 
             e.Handled = true;
@@ -167,7 +151,7 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs, null, null, CollectionView.CollectionViewType.Page);
+            args.Data.AddDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
