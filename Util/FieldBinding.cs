@@ -181,13 +181,26 @@ namespace Dash
         {
         }
     }
+    public class BindingMap : DependencyObject
+    {
+        public static readonly DependencyProperty BindingMapProperty =
+        DependencyProperty.RegisterAttached( "BindingMap",
+          typeof(Dictionary<DependencyProperty, Action>),
+          typeof(BindingMap),
+          new PropertyMetadata(null)
+        );
+        public static void SetBindingMap(UIElement element, Dictionary<DependencyProperty, Action> value)
+        {
+            element.SetValue(BindingMapProperty, value);
+        }
+        public static Dictionary<DependencyProperty, Action> GetBindingMap(UIElement element)
+        {
+            return (Dictionary<DependencyProperty, Action>)element.GetValue(BindingMapProperty);
+        }
+    }
 
     public static class BindingExtension
     {
-        private static Dictionary<UIElement, Dictionary<DependencyProperty,
-            Action>> _bindingMap =
-            new Dictionary<UIElement, Dictionary<DependencyProperty, Action>>();
-
         public static void AddFieldBinding<T>(this T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
         {
             TryRemoveOldBinding(element, property);
@@ -208,11 +221,11 @@ namespace Dash
 
         private static bool TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
         {
-            if (!_bindingMap.ContainsKey(element))
+            if (BindingMap.GetBindingMap(element) == null)
             {
                 return false;
             }
-            var dict = _bindingMap[element];
+            var dict = BindingMap.GetBindingMap(element);
             if (!dict.ContainsKey(property))
             {
                 return false;
@@ -225,13 +238,12 @@ namespace Dash
 
         private static void AddRemoveBindingAction(FrameworkElement element, DependencyProperty property, Action removeBinding)
         {
-            if (!_bindingMap.ContainsKey(element))
+            if (BindingMap.GetBindingMap(element) == null)
             {
-                _bindingMap[element] = new Dictionary<DependencyProperty, Action>();
+                BindingMap.SetBindingMap(element, new Dictionary<DependencyProperty, Action>());
             }
 
-            Debug.Assert(!_bindingMap[element].ContainsKey(property));
-            _bindingMap[element][property] = removeBinding;
+            BindingMap.GetBindingMap(element)[property] = removeBinding;
         }
 
         private static void AddOneTimeBinding<T>(T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement

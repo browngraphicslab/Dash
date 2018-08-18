@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -8,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -73,6 +76,11 @@ namespace Dash
 
             SetCollectionRef(containerDocument, fieldKey);
 
+        }
+
+        ~CollectionViewModel()
+        {
+            Debug.WriteLine("FINALIZING CollectionViewModel");
         }
 
         /// <summary>
@@ -691,7 +699,9 @@ namespace Dash
             {
                 e.Handled = true;
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) ? DataPackageOperation.Move : e.DataView.RequestedOperation;
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
+                    ? DataPackageOperation.Move
+                    : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
 
@@ -705,13 +715,10 @@ namespace Dash
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
 
-				//adds all docs in the group, if applicable
-	            var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
-				var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-	            adornmentGroups.ForEach(dv =>
-	            {
-		           AddDocument(dv.ViewModel.DataDocument);
-	            });
+                //adds all docs in the group, if applicable
+                var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
+                var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
+                adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
                 AddDocuments(await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where));
             }

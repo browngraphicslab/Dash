@@ -57,25 +57,44 @@ namespace Dash
         public delegate void SetBackgroundOpacity(float opacity);
         private static event SetBackgroundOpacity setBackgroundOpacity;
 
-        // TODO: get canvas in derived class
         public abstract Panel GetCanvas();
-        // TODO: get itemscontrol of derived class
+
         public abstract ItemsControl GetItemsControl();
-        // TODO: get win2d canvascontrol of derived class
-        public abstract CanvasControl GetBackgroundCanvas();
-        // TODO: get outergrid of derived class
+
+        // This uses a content presenter mainly because of this http://microsoft.github.io/Win2D/html/RefCycles.htm
+        // If that link dies, google win2d canvascontrol refcycle
+        // If nothing comes up, maybe the issue is fixed.
+        // Currently, the issue is that CanvasControls make it extremely easy to create memory leaks and need to be dealt with carefully
+        // As the link states, adding handlers to events on a CanvasControl creates reference cycles that the GC can't detect, so the events need to be handled manually
+        // What the link doesn't say is that apparently having events on any siblings of the CanvasControl without having events on the CanvasControl still somehow prevents it from
+        // being GC-ed, so it is easier to just create and destroy it on load and unload rather than try to manage all of the events and references... 
+        // Because we create it in this class, we need a content presenter to put it in, otherwise the subclass can't decide where to put it
+        public abstract ContentPresenter GetBackgroundContentPresenter();
+        private CanvasControl _backgroundCanvas;
+
         public abstract Grid GetOuterGrid();
-        // TODO: get tagbox of derived class
+
         public abstract AutoSuggestBox GetTagBox();
-        // TODO: get selectioncanvas of derived class
+
         public abstract Canvas GetSelectionCanvas();
-        // TODO: get dropindicationrect of derived class
+
         public abstract Rectangle GetDropIndicationRectangle();
-        // TODO: get inkcanvas of derived class
+
         public abstract Canvas GetInkHostCanvas();
 
-        protected virtual void OnLoad(object sender, RoutedEventArgs e)
+        protected CollectionFreeformBase()
         {
+            Loaded += OnBaseLoaded;
+            Unloaded += OnBaseUnload;
+        }
+
+        private void OnBaseLoaded(object sender, RoutedEventArgs e)
+        {
+            _backgroundCanvas = new CanvasControl();
+            _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
+            _backgroundCanvas.Draw += CanvasControl_OnDraw;
+            GetBackgroundContentPresenter().Content = _backgroundCanvas;
+
             MakePreviewTextbox();
 
             //make and add selectioncanvas 
@@ -87,7 +106,7 @@ namespace Dash
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-            MakeInkCanvas();
+            //MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground += ChangeBackground;
             setBackgroundOpacity += ChangeOpacity;
@@ -106,13 +125,11 @@ namespace Dash
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
 
-        protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
+        private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _lastViewModel = ViewModel;
-        }
-
-        protected void OnUnload(object sender, RoutedEventArgs e)
-        {
+            _backgroundCanvas.RemoveFromVisualTree();
+            GetBackgroundContentPresenter().Content = null;
+            _backgroundCanvas = null;
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -121,6 +138,11 @@ namespace Dash
             _lastViewModel = null;
             setBackground -= ChangeBackground;
             setBackgroundOpacity -= ChangeOpacity;
+        }
+
+        protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
+        {
+            _lastViewModel = ViewModel;
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -372,7 +394,7 @@ namespace Dash
         private void ChangeOpacity(float opacity)
         {
             _bgOpacity = opacity;
-            GetBackgroundCanvas().Invalidate();
+            _backgroundCanvas.Invalidate();
         }
         #endregion
 
@@ -425,7 +447,7 @@ namespace Dash
             // Update the path/stream instance var to be used next in LoadBackgroundAsync
             _background = backgroundImagePath;
             // Now, register and perform the new loading
-            _backgroundTask = LoadBackgroundAsync(GetBackgroundCanvas());
+            _backgroundTask = LoadBackgroundAsync(_backgroundCanvas);
         }
 
         // 4
@@ -547,7 +569,7 @@ namespace Dash
                         (float)aliasSafeScale,
                         (float)matrix.OffsetX,
                         (float)matrix.OffsetY);
-                    GetBackgroundCanvas().Invalidate();
+                    _backgroundCanvas.Invalidate();
                 }
             }
         }
