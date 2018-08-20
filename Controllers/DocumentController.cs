@@ -387,7 +387,7 @@ namespace Dash
 	        if (specTitle == null)
 	        {
 				//create unique, default tag 
-		        var newTitle =  "Annotation " + (MainPage.Instance.XDocumentDecorations.Tags.Count + 1);
+	            var newTitle = "Annotation";
 		        specTitle = newTitle;
 	        }
 

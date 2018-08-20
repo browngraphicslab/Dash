@@ -217,7 +217,7 @@ namespace Dash
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
 
-	            if (!this.IsShiftPressed())
+	            if (parentParentFreeform != null && !this.IsShiftPressed())
 	            {
 		            e.Handled = false;
 	            }

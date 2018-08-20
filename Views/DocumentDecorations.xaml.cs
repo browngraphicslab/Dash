@@ -41,8 +41,6 @@ namespace Dash
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         public Tag CurrEditTag;
         private DocumentController currEditLink;
-        private Button _activeBtn;
-        private bool _flyoutOpen;
         private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
         public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
@@ -52,7 +50,7 @@ namespace Dash
             get => _visibilityState;
             set
             {
-                if (value != _visibilityState && !_visibilityLock && !_flyoutOpen)
+                if (value != _visibilityState && !_visibilityLock)
                 {
                     _visibilityState = value;
                     SuggestGrid.Visibility = CurrEditTag != null ? Visibility.Visible : Visibility.Collapsed;
@@ -284,7 +282,7 @@ namespace Dash
 
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.MainDocView)
+                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
                     .TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
@@ -405,9 +403,8 @@ namespace Dash
             //allow users to change default tag titles by right click
             button.RightTapped += (s, e) =>
             {
-                _activeBtn = (s as Button);
                 e.Handled = true;
-                ToggleTagEditor(_tagNameDict[linkName]);
+                ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
 
             };
             button.PointerPressed += (s, e) =>
@@ -848,13 +845,13 @@ namespace Dash
             }
         }
 
-        private void ToggleTagEditor(Tag tagPressed = null)
+        private void ToggleTagEditor(Tag tagPressed, FrameworkElement button)
         {
             if (tagPressed == CurrEditTag)
             {
                 if (SuggestGrid.Visibility == Visibility.Collapsed)
                 {
-                    OpenTagEditor(tagPressed);
+                    OpenTagEditor(tagPressed, button);
                 }
                 else
                 {
@@ -865,7 +862,7 @@ namespace Dash
             }
             else
             {
-                OpenTagEditor(tagPressed);
+                OpenTagEditor(tagPressed, button);
             }
 
         }
@@ -874,7 +871,7 @@ namespace Dash
         /// Opens the editor beneath the document to edit the tags of the selected links. This is called when the user right clicks a link bubble.
         /// </summary>
         /// <param name="currTag"></param>
-        private void OpenTagEditor(Tag currTag, DocumentController chosenLink = null)
+        private void OpenTagEditor(Tag currTag, FrameworkElement button, DocumentController chosenLink = null)
         {
             //TODO: DO I NEED THIS?
             CurrEditTag = currTag;
@@ -883,7 +880,6 @@ namespace Dash
             //if one link has this tag, open tag editor for that link
             if (tagMap[currTag.Text].Count == 1)
             {
-                _flyoutOpen = false;
                 //update selected recent tag
                 foreach (var tag in _recentTags)
                 {
@@ -896,7 +892,6 @@ namespace Dash
             }
             else if (chosenLink != null)
             {
-                _flyoutOpen = false;
                 currEditLink = chosenLink;
                 //update selected recent tag
                 foreach (var tag in _recentTags)
@@ -909,7 +904,6 @@ namespace Dash
             }
             else //open context menu to let user decide which link to edit
             {
-                _flyoutOpen = true;
                 var flyout = new MenuFlyout();
 
                 foreach (DocumentController link in tagMap[currTag.Text])
@@ -928,7 +922,7 @@ namespace Dash
                         };
                         //clicking menu item should open the editor with the chosen, affected doc as the chosen item
                         var itemHdlr = new RoutedEventHandler((s, e) =>
-                            OpenTagEditor(currTag, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+                            OpenTagEditor(currTag, button, (s as MenuFlyoutItem)?.DataContext as DocumentController));
 
                         item.Click += itemHdlr;
                         flyout.Items?.Add(item);
@@ -936,10 +930,7 @@ namespace Dash
                     }
                 }
                 //show flyout @ correct point
-                if (_activeBtn != null)
-                {
-                    flyout.ShowAt(_activeBtn);
-                }
+                flyout.ShowAt(button);
             }
 
 
