@@ -4,7 +4,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-using Dash.Models.DragModels;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -100,7 +100,7 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
@@ -108,16 +108,13 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = dragData.DraggedDocument;
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                var listKeys = dragDoc.EnumDisplayableFields().Where(kv => dragDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)
                 {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    string currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + dragDoc.Title.Split()[0];
                     if (!string.IsNullOrWhiteSpace(currText))
                     {
                         xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;

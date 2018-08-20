@@ -103,6 +103,7 @@ namespace Dash
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
+
         private Stack<double> _topBackStack;
         private Stack<double> _bottomBackStack;
 
@@ -116,7 +117,6 @@ namespace Dash
         public Grid BottomAnnotationBox => xBottomAnnotationBox;
 
         public WPdf.PdfDocument PDFdoc { get; private set; }
-
         private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
@@ -142,8 +142,10 @@ namespace Dash
             {
                 var selections = new List<List<SelRange>>
                 {
-                    _bottomAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
-                    _topAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects, (map, clip) => new SelRange() { Range = map, ClipRect = clip }).ToList(),
+                    _bottomAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects,
+                        (map, clip) => new SelRange() {Range = map, ClipRect = clip}).ToList(),
+                    _topAnnotationOverlay.CurrentSelections.Zip(_bottomAnnotationOverlay.CurrentSelectionClipRects,
+                        (map, clip) => new SelRange() {Range = map, ClipRect = clip}).ToList(),
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
                 if (args.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
@@ -162,7 +164,9 @@ namespace Dash
                             if (!indices.Contains(i))
                             {
                                 var eleBounds = _bottomAnnotationOverlay.TextSelectableElements[i].Bounds;
-                                if (selection.ClipRect == null || selection.ClipRect == Rect.Empty || selection.ClipRect.Contains(new Point(eleBounds.X + eleBounds.Width / 2, eleBounds.Y + eleBounds.Height / 2)))
+                                if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||
+                                    selection.ClipRect.Contains(new Point(eleBounds.X + eleBounds.Width / 2,
+                                        eleBounds.Y + eleBounds.Height / 2)))
                                     indices.Add(i);
                             }
                         }
@@ -176,9 +180,15 @@ namespace Dash
                         {
                             sb.Append("\r\n\r\n");
                         }
+
                         var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
                         var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 && (nchar > 128 || char.IsUpper(nchar) || (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) && !char.IsLower(sb[sb.Length - 1]))) && _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom < _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
+                        if (prevIndex > 0 && sb.Length > 0 &&
+                            (nchar > 128 || char.IsUpper(nchar) ||
+                             (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
+                              !char.IsLower(sb[sb.Length - 1]))) &&
+                            _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
+                            _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
                             sb.Append("\r\n\r\n");
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
@@ -190,13 +200,12 @@ namespace Dash
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetText(sb.ToString());
-                    dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+                    dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
                     Clipboard.SetContent(dataPackage);
                     args.Handled = true;
                 }
             }
         }
-
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
             Context context)
         {
@@ -581,6 +590,7 @@ namespace Dash
             {
                 SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
             }
+
             this.Focus(FocusState.Pointer);
         }
 
@@ -616,7 +626,6 @@ namespace Dash
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }
         }
-
 
         #endregion
 
@@ -694,7 +703,8 @@ namespace Dash
                     }
                 }
 
-                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data * BottomScrollViewer.ExtentHeight;
+                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data *
+                          BottomScrollViewer.ExtentHeight;
                 splits.Insert(1, off);
                 offsets.Insert(1, off);
             }
@@ -747,11 +757,8 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null,
-                    offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-                BottomScrollViewer.ChangeView(null,
-                    offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4,
-                    null, true);
+                TopScrollViewer.ChangeView(null, offsets.First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null, offsets.Skip(1).First() - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
             }
             else
             {
@@ -772,8 +779,7 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null,
-                    offsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
+                BottomScrollViewer.ChangeView(null, offsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
             }
         }
 
@@ -844,7 +850,6 @@ namespace Dash
         {
             linkFlyout.ShowAt(this);
         }
-
 
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -1189,11 +1194,13 @@ namespace Dash
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
+                .GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
                 ScrollToRegion(src);
             }
+
             var target = linkDoc.GetLinkedDocument(direction);
             if (_bottomAnnotationOverlay.RegionDocsList.Contains(target))
             {
@@ -1395,6 +1402,6 @@ namespace Dash
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
     }
-
 }
+
 

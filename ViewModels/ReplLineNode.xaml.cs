@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
-using Dash.Models.DragModels;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -195,9 +194,9 @@ namespace Dash
 
         private void XNode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
-            var outputData = output.Value;
-            if (outputData.GetType().BaseType.FullName == "Dash.BaseListController")
+            var output = (sender as FrameworkElement)?.DataContext as ReplLineViewModel;
+            FieldControllerBase outputData = output?.Value;
+            if (outputData?.GetType().BaseType.FullName == "Dash.BaseListController")
             {
                 //make list output readable
                 outputData = new TextController(outputData.ToString());
@@ -205,7 +204,7 @@ namespace Dash
             }
             DocumentController dataBox = new DataBox(outputData).Document;
             dataBox.SetWidth(80.0);
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
+            args.Data.AddDragModel(new DragDocumentModel(dataBox, true));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

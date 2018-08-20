@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,20 +35,19 @@ namespace Dash
                 _downPt = null;
         }
 
-        private void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private async void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_downPt != null)
-            {
-                e.Complete();
-                StartDragAsync(_downPt);
-                e.Handled = true;
-            }
+            if (_downPt == null) return;
+
+            e.Complete();
+            await StartDragAsync(_downPt);
+            e.Handled = true;
         }
 
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
+            DocumentController dataDoc = (DataContext as CollectionDBSchemaRecordViewModel)?.Document;
+            args.Data.AddDragModel(new DragDocumentModel(dataDoc, true));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

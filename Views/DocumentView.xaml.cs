@@ -19,12 +19,10 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
-using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -56,7 +54,7 @@ namespace Dash
         public bool PreventManipulation { get; set; }
         private ImageSource DocPreview
         {
-            get { return _docPreview; }
+            get => _docPreview;
             set
             {
                 _docPreview = value;
@@ -88,8 +86,8 @@ namespace Dash
 
         public bool BindVisibility
         {
-            get { return (bool)GetValue(BindVisibilityProperty); }
-            set { SetValue(BindVisibilityProperty, value); }
+            get => (bool)GetValue(BindVisibilityProperty);
+            set => SetValue(BindVisibilityProperty, value);
         }
 
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
@@ -193,6 +191,7 @@ namespace Dash
                 SetZLayer();
                 UpdateResizers();
             };
+
             Unloaded += (sender, args) =>
             {
                 SizeChanged -= sizeChangedHandler;
@@ -579,18 +578,13 @@ namespace Dash
 
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
-            if (SelectionManager.GetSelectedDocs().Count > 1)
-            {
-                cdo.Data.Properties[nameof(List<DragDocumentModel>)] = SelectionManager.GetSelectedDocs().Select((dv) => new DragDocumentModel(dv.ViewModel.DocumentController, true)).ToList();
-            }
-            else
-            {
-                var dragDocModel = new DragDocumentModel(ViewModel.DocumentController, true);
-                cdo.Data.Properties[nameof(DragDocumentModel)] = dragDocModel;
-            }
+
+            cdo.Data.AddDragModel(new DragDocumentModel(
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
+
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
-            cdo.StartAsync();
+            await cdo.StartAsync();
         }
 
         public void RemoveResizeHandlers()
@@ -1502,149 +1496,35 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            using (UndoManager.GetBatchHandle())
+            var dropDoc = ViewModel.DocumentController;
+            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+
+            var dragModels = e.DataView.GetDragModels();
+            foreach (DragModelBase dragModel in dragModels)
             {
-                //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                if (dragModel?.LinkSourceView != null)
+                if (!(dragModel is DragDocumentModel dm) || dm.LinkSourceViews == null) continue;
+
+                var dragDocs = dm.DraggedDocuments;
+                for (var index = 0; index < dragDocs.Count; index++)
                 {
-                    var dragDoc = dragModel.DraggedDocument;
-                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
-
-
-                    //ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                    //Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                    //Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
-
-                    Point where = e.GetPosition(MainPage.Instance.xCanvas);
-
-                    if (dragModel.LinkType != null)
-                    {
-                        var dropDoc = ViewModel.DocumentController;
-                        if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                            dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-
-                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
-
-                        //get pos and avg them
-                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-                            ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-                            ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
-
-                        var x = (doc1.GetPosition().Value.X +
-                                 doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
-                        var y = (doc1.GetPosition().Value.Y +
-                                 doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
-
-                        var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
-                        //dock if drag and drop docs are in the same collection
-                        if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-                        {
-                            MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-                        }
-                        else
-                        {
-                            (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-                            ParentCollection?.ViewModel.AddDocument(annotNote);
-                        }
-                        //TODO: ensure LinkType is what the user plugged in
-                        dragDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
-                        dropDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
-                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-                        //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
-                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                    }
-                    else
-                    {
-
-
-                        //string entry = inputBox.Text.Trim();
-                        //if (string.IsNullOrEmpty(entry)) return;
-                        var dropDoc = ViewModel.DocumentController;
-                        if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                            dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                        //dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                        //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
-
-                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
-
-                        //get pos and avg them
-                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-                            ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-                            ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
-
-                        var x = (doc1.GetPosition().Value.X +
-                                 doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
-                        var y = (doc1.GetPosition().Value.Y +
-                                 doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
-
-                        var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
-                        //dock if drag and drop docs are in the same collection
-                        if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-                        {
-                            MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-                        }
-                        else
-                        {
-                            (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-                            ParentCollection?.ViewModel.AddDocument(annotNote);
-                        }
-                        //TODO: ensure LinkType is what the user plugged in
-                        dragDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-                        dropDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-                        dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                        annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
-                    }
-                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                        ? DataPackageOperation.Link
-                        : e.DataView.RequestedOperation;
-
-                    e.Handled = true;
+                    DocumentController dragDoc = dragDocs[index];
+                    if (KeyStore.RegionCreator.ContainsKey(dragDoc.DocumentType))
+                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dm.LinkSourceViews[index]);
+                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+                    //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
+                    dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+                    dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
             }
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                ? DataPackageOperation.Link
+                : e.DataView.RequestedOperation;
+
+            e.Handled = true;
         }
-        //void FooterDrop(object sender, DragEventArgs e)
-        //{
-        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-        //    if (dragModel?.LinkSourceView != null)
-        //    {
-        //        var note = new RichTextNote("<annotation>").Document;
-        //        dragModel.DraggedDocument.Link(note);
-        //        drop(true, note);
-        //    }
-        //    else
-        //        drop(true, dragModel.GetDropDocument(new Point()));
-        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-
-        //    e.Handled = true;
-        //}
-        //void HeaderDrop(object sender, DragEventArgs e)
-        //{
-        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-        //    if (dragModel?.LinkSourceView != null)
-        //    {
-        //        var note = new RichTextNote("<annotation>").Document;
-        //        dragModel.DraggedDocument.Link(note);
-        //        drop(false, note);
-        //    }
-        //    else
-        //        drop(false, dragModel.GetDropDocument(new Point()));
-
-        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-
-        //    e.Handled = true;
-        //}
 
         void drop(bool footer, DocumentController newFieldDoc)
         {
@@ -1715,17 +1595,15 @@ namespace Dash
             }
         }
 
-        void This_DragOver(object sender, DragEventArgs e)
+        private void This_DragOver(object sender, DragEventArgs e)
         {
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Copy
                 : e.DataView.RequestedOperation;
 
-            e.DragUIOverride.IsContentVisible = true;
+            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
         }
