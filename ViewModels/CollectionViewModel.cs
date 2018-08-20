@@ -81,6 +81,11 @@ namespace Dash
 
         }
 
+        ~CollectionViewModel()
+        {
+            Debug.WriteLine("FINALIZING CollectionViewModel");
+        }
+
         /// <summary>
         /// Sets the reference to the field that contains the documents to display.
         /// </summary>
@@ -633,7 +638,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkContexts.None);
+                                region.Link(sourceDoc, LinkTargetPlacement.Default);
 
                             }
                             else
@@ -862,6 +867,7 @@ namespace Dash
                     htmlNote.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
                     htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
+                    // this should be put into an operator so that it can be invoked from the scripting language, not automatically from here.
                     if (imgs.Count() > 0)
                     {
                         var related = new List<DocumentController>();
@@ -950,7 +956,7 @@ namespace Dash
                     else
                     {
                         var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>()
-                            .Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
+                            .Select((cv) => cv.ParentDocumentView?.ViewModel?.DataDocument);
                         var filteredDocs = dragData.DraggedItems.Where((d) =>
                             !parentDocs.Contains(d.GetDataDocument()) &&
                             d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false).ToList();
@@ -999,10 +1005,8 @@ namespace Dash
                                 ?.TypedData;
                             if (regions != null)
                             {
-                                var links = regions.SelectMany((r) =>
-                                    r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-                                var targets = links.SelectMany((l) =>
-                                    l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                                var links = regions.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+                                var targets = links.SelectMany((l) => l.GetDataDocument().GetLinks(KeyStore.LinkToKey));
                                 var aliases = targets.Select((t) =>
                                 {
                                     var vc = t.GetViewCopy();
@@ -1019,17 +1023,12 @@ namespace Dash
                             var regions = dragModel.DraggedDocument.GetDataDocument()
                                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
                                 ?.TypedData;
-                            var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
-                                .GetLinks(KeyStore.LinkToKey)?.TypedData;
-                            var regionLinkedTo = regions?.SelectMany((r) =>
-                                r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
-                            if (regionLinkedTo != null || directlyLinkedTo != null)
+                            var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+                            var regionLinkedTo = regions?.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+                            if (regionLinkedTo.Any() || directlyLinkedTo.Any())
                             {
-                                var links = regionLinkedTo != null
-                                    ? regionLinkedTo.ToList()
-                                    : new List<DocumentController>();
-                                if (directlyLinkedTo != null)
-                                    links.AddRange(directlyLinkedTo);
+                                var links = regionLinkedTo.ToList();
+                                links.AddRange(directlyLinkedTo);
                                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
                                     links.ToList());
                                 AddDocument(cnote.Document);

@@ -86,8 +86,7 @@ namespace Dash
 			Actions.HideDocument(docView?.ParentCollection.ViewModel, LayoutDocument);
 		}
 
-		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
-			DocumentView.DocumentViewDeletedEventArgs args)
+		private void TemplateEditorView_DocumentDeleted(DocumentView sender)
 		{
 			//Clear();
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
@@ -1250,14 +1249,14 @@ namespace Dash
 			}
 		}
 
-		private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+		private void DocView_DocumentDeleted(DocumentView sender)
 		{
 			DocumentControllers.Remove(sender.ViewModel.DocumentController);
 			DocumentViewModels.Remove(sender.ViewModel);
 			DocumentViews.Remove(sender);
 		}
 
-		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+		private void DocView_DocumentSelected(DocumentView sender)
 		{
 			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
 
@@ -1600,7 +1599,7 @@ namespace Dash
 					else
 					{
 						var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>()
-							.Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
+							.Select((cv) => cv.ParentDocumentView?.ViewModel?.DataDocument);
 						var filteredDocs = dragData.DraggedItems.Where((d) =>
 							!parentDocs.Contains(d.GetDataDocument()) &&
 							d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
@@ -1657,10 +1656,8 @@ namespace Dash
 								?.TypedData;
 							if (regions != null)
 							{
-								var links = regions.SelectMany((r) =>
-									r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-								var targets = links.SelectMany((l) =>
-									l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+								var links = regions.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+								var targets = links.SelectMany((l) => l.GetDataDocument().GetLinks(KeyStore.LinkToKey));
 								var aliases = targets.Select((t) =>
 								{
 									var vc = t.GetViewCopy();
@@ -1678,17 +1675,12 @@ namespace Dash
 							var regions = dragModel.DraggedDocument.GetDataDocument()
 								.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
 								?.TypedData;
-							var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
-								.GetLinks(KeyStore.LinkToKey)?.TypedData;
-							var regionLinkedTo = regions?.SelectMany((r) =>
-								r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
-							if (regionLinkedTo != null || directlyLinkedTo != null)
+							var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+							var regionLinkedTo   = regions?.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey));
+							if (regionLinkedTo.Any() || directlyLinkedTo.Any())
 							{
-								var links = regionLinkedTo != null
-									? regionLinkedTo.ToList()
-									: new List<DocumentController>();
-								if (directlyLinkedTo != null)
-									links.AddRange(directlyLinkedTo);
+								var links = regionLinkedTo.ToList();
+								links.AddRange(directlyLinkedTo);
 								var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
 									links.ToList());
 								DocumentControllers.Add(cnote.Document.GetViewCopy(new Point(0, 0)));
@@ -1701,7 +1693,7 @@ namespace Dash
 								KeyStore.RegionCreator[dragDoc.DocumentType] != null)
 								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 							var note = new RichTextNote("<annotation>", where).Document;
-							dragDoc.Link(note, LinkContexts.None);
+							dragDoc.Link(note, LinkTargetPlacement.Default);
 							DocumentControllers.Add(note.GetViewCopy(new Point(0, 0)));
 						}
 					}

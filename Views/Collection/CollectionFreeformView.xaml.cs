@@ -1,4 +1,5 @@
 ﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
@@ -9,24 +10,27 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView
     {
-        public CollectionFreeformView(): base()
+        public CollectionFreeformView()
         {
             InitializeComponent();
+
             DataContextChanged += OnDataContextChanged;
             Loaded += OnLoad;
-            Unloaded += OnUnload;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
-            xOuterGrid.PointerPressed  += OnPointerPressed;
+            xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
-
-        protected override void OnLoad(object sender, RoutedEventArgs e)
+        ~CollectionFreeformView()
         {
-            base.OnLoad(sender, e);
+            Debug.WriteLine("FINALIZING CollectionFreeFormView");
+        }
+
+        private void OnLoad(object sender, RoutedEventArgs e)
+        {
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
@@ -54,9 +58,9 @@ namespace Dash
             return xItemsControl;
         }
 
-        public override CanvasControl GetBackgroundCanvas()
+        public override ContentPresenter GetBackgroundContentPresenter()
         {
-            return xBackgroundCanvas;
+            return xBackgroundContentPresenter;
         }
 
         public override Grid GetOuterGrid()

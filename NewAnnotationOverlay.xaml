@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DataContext="{d:DesignInstance local:NewAnnotationOverlayViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -23,7 +24,6 @@
                            VerticalAlignment="Top"
                            Width="0"
                            Height="0"
-                            RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                             >
                         </Canvas>
                     </ItemsPanelTemplate>
