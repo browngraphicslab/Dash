@@ -165,14 +165,12 @@ namespace Dash
 
         private static void SelectHelper(DocumentView view)
         {
-            view.SetSelectionBorder(true);
+            view.OnSelected();
         }
 
         private static void DeselectHelper(DocumentView view)
         {
-            view.SetSelectionBorder(false);
-
-            view.InvokeDocDeselected();
+            view.OnDeselected();
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)

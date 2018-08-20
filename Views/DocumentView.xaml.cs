@@ -32,12 +32,8 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentViewDeselectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
         public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
 
-        public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentViewDeselectedHandler DocumentDeselected;
         public event DocumentDeletedHandler      DocumentDeleted;
         
         private DocumentController _templateEditor;
@@ -210,7 +206,6 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 PointerId = e.Pointer.PointerId;
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
@@ -1215,7 +1210,22 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public event Action<DocumentView> DocumentSelected;
+        public event Action<DocumentView> DocumentDeselected;
+
+        public void OnSelected()
+        {
+            SetSelectionBorder(true);
+            DocumentSelected?.Invoke(this);
+        }
+
+        public void OnDeselected()
+        {
+            SetSelectionBorder(false);
+            DocumentDeselected?.Invoke(this);
+        }
+
+        private void SetSelectionBorder(bool selected)
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
@@ -1272,7 +1282,6 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
-            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -1329,11 +1338,6 @@ namespace Dash
             public DocumentViewDeletedEventArgs()
             {
             }
-        }
-
-        public void InvokeDocDeselected()
-        {
-            DocumentDeselected?.Invoke(this, new DocumentViewSelectedEventArgs());
         }
 
         #region UtilityFuncions

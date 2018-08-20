@@ -1257,7 +1257,7 @@ namespace Dash
 			DocumentViews.Remove(sender);
 		}
 
-		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+		private void DocView_DocumentSelected(DocumentView sender)
 		{
 			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
 

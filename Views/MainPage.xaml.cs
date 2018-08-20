@@ -1077,9 +1077,10 @@ namespace Dash
             xCanvas.Children.Add(docView);
         }
 
-        private void DocView_DocumentDeselected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+        private void DocView_DocumentDeselected(DocumentView sender)
         {
-            sender.Visibility = Visibility.Collapsed;
+            sender.DocumentDeselected -= DocView_DocumentDeselected;
+            xCanvas.Children.Remove(sender);
         }
 
         #region Annotation logic
