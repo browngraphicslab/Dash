@@ -32,11 +32,7 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
-
-        public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentDeletedHandler      DocumentDeleted;
+        public event Action<DocumentView>      DocumentDeleted;
         
         private DocumentController _templateEditor;
         private bool               _isQuickEntryOpen;
@@ -208,7 +204,6 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 PointerId = e.Pointer.PointerId;
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
@@ -1205,7 +1200,7 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
+            DocumentDeleted?.Invoke(this);
             UndoManager.EndBatch();
         }
 
@@ -1213,7 +1208,22 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public event Action<DocumentView> DocumentSelected;
+        public event Action<DocumentView> DocumentDeselected;
+
+        public void OnSelected()
+        {
+            SetSelectionBorder(true);
+            DocumentSelected?.Invoke(this);
+        }
+
+        public void OnDeselected()
+        {
+            SetSelectionBorder(false);
+            DocumentDeselected?.Invoke(this);
+        }
+
+        private void SetSelectionBorder(bool selected)
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
@@ -1270,7 +1280,6 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
-            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -1315,16 +1324,6 @@ namespace Dash
         public class DocumentViewSelectedEventArgs
         {
             public DocumentViewSelectedEventArgs()
-            {
-            }
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewDeletedEventArgs
-        {
-            public DocumentViewDeletedEventArgs()
             {
             }
         }

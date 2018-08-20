@@ -86,8 +86,7 @@ namespace Dash
 			Actions.HideDocument(docView?.ParentCollection.ViewModel, LayoutDocument);
 		}
 
-		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
-			DocumentView.DocumentViewDeletedEventArgs args)
+		private void TemplateEditorView_DocumentDeleted(DocumentView sender)
 		{
 			//Clear();
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
@@ -1250,14 +1249,14 @@ namespace Dash
 			}
 		}
 
-		private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+		private void DocView_DocumentDeleted(DocumentView sender)
 		{
 			DocumentControllers.Remove(sender.ViewModel.DocumentController);
 			DocumentViewModels.Remove(sender.ViewModel);
 			DocumentViews.Remove(sender);
 		}
 
-		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+		private void DocView_DocumentSelected(DocumentView sender)
 		{
 			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
 
