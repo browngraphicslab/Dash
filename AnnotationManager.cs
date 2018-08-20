@@ -77,7 +77,6 @@ namespace Dash
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
-				ObservableCollection<string> addedNames = new ObservableCollection<string>();
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
@@ -95,17 +94,6 @@ namespace Dash
 		                    item.Click += itemHdlr;
 		                    defaultHdlr = itemHdlr;
 		                    _linkFlyout.Items?.Add(item);
-
-							/*
-		                    foreach (string name in linkNames)
-		                    {
-			                    if (!addedNames.Contains(name))
-			                    {
-				                    addedNames.Add(name);
-				                    
-								}
-		                    }
-                        */
 						}
                 }
 
@@ -129,15 +117,12 @@ namespace Dash
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
                     }
-
-					
                 }
-
 
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
                 else _linkFlyout.ShowAt(_element, flyoutPosition);
-            }
+			}
 	    }
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
