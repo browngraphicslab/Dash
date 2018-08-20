@@ -62,12 +62,6 @@ namespace Dash
             }
         }
 
-        public bool IsFlyoutOpen
-        {
-            get => _flyoutOpen;
-            set => _flyoutOpen = value;
-        }
-
         public double DocWidth
         {
             get => _docWidth;

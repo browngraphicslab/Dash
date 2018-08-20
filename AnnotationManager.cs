@@ -112,12 +112,7 @@ namespace Dash
 		                    Text = targetTitle,
 		                    DataContext = linkFrom
 	                    };
-	                    var itemHdlr = new RoutedEventHandler((s, e) =>
-	                    {
-		                    FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
-							_linkFlyout.Hide();
-							MainPage.Instance.XDocumentDecorations.IsFlyoutOpen = false;
-	                    });
+	                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));
 	                    item.Click += itemHdlr;
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
@@ -127,7 +122,6 @@ namespace Dash
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
                 else _linkFlyout.ShowAt(_element, flyoutPosition);
-		        MainPage.Instance.XDocumentDecorations.IsFlyoutOpen = true;
 			}
 	    }
 
