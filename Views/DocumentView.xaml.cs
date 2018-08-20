@@ -1511,7 +1511,10 @@ namespace Dash
                     DocumentController dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.ContainsKey(dragDoc.DocumentType))
                         dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dm.LinkSourceViews[index]);
-                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+
+                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var linkDoc = dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);

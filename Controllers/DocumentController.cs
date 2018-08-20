@@ -379,7 +379,7 @@ namespace Dash
         }
 
 		//links this => target
-        public void Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null)
+        public DocumentController Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null)
         {
 			//document that represents the actual link
             DocumentController linkDocument = new RichTextNote("link").Document;
@@ -396,6 +396,7 @@ namespace Dash
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
             target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
+            return linkDocument;
         }
 		
 
