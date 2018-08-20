@@ -27,7 +27,7 @@
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
                       RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
 
-        <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}" x:FieldModifier="public">
+        <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas Background="Transparent"
