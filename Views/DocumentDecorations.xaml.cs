@@ -305,7 +305,7 @@ namespace Dash
             {
                 return;
             }
-            
+
             if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
             {
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
@@ -313,12 +313,12 @@ namespace Dash
             }
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X-3,
+                X = topLeft.X - 3,
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
-            xRow.Height = new GridLength(Math.Max(0,botRight.Y - topLeft.Y));
+            ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
+            xRow.Height = new GridLength(Math.Max(0, botRight.Y - topLeft.Y));
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }

@@ -37,10 +37,10 @@ namespace Dash
         public event DocumentDeletedHandler DocumentDeleted;
 
         private DocumentController _templateEditor;
-        private bool               _isQuickEntryOpen;
-        private Flyout             _flyout;
-        private ImageSource        _docPreview = null;
-        private DocumentViewModel  _oldViewModel= null;
+        private bool _isQuickEntryOpen;
+        private Flyout _flyout;
+        private ImageSource _docPreview = null;
+        private DocumentViewModel _oldViewModel = null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
@@ -148,7 +148,7 @@ namespace Dash
                         Key = KeyStore.HiddenKey,
                         Mode = BindingMode.OneWay,
                         Tag = "Visibility binding in DocumentView",
-                        FallbackValue=false
+                        FallbackValue = false
                     };
                 this.AddFieldBinding(VisibilityProperty, binding);
             }
@@ -196,7 +196,8 @@ namespace Dash
                 UpdateResizers();
             };
 
-            Unloaded += (sender, args) => {
+            Unloaded += (sender, args) =>
+            {
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 ViewModel?.UnLoad();
@@ -610,7 +611,7 @@ namespace Dash
             xBottomRow.Height = new GridLength(0);
             ViewModel.DecorationState = false;
             ViewModel.ResizersVisible = false;
-		}
+        }
 
         public void ToggleTemplateEditor()
         {
@@ -853,27 +854,27 @@ namespace Dash
 
         #region Xaml Styling Methods (used by operator/collection view)
 
-		/// <summary>
-		/// Applies custom override styles to the operator view. 
-		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-		/// </summary>
-		public void StyleOperator(double width, string title)
-		{
-			//xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
-			if (ParentCollection != null)
-			{
-				ViewModel.DocumentController.GetDataDocument().SetTitle(title);
-			}
-		}
+        /// <summary>
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
+        public void StyleOperator(double width, string title)
+        {
+            //xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+            if (ParentCollection != null)
+            {
+                ViewModel.DocumentController.GetDataDocument().SetTitle(title);
+            }
+        }
 
-		/// <summary>
-		/// Applies custom override styles to the collection view. 
-		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-		/// </summary>
-		public void StyleCollection(CollectionView view)
-		{
-			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
-			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
+        /// <summary>
+        /// Applies custom override styles to the collection view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
+        public void StyleCollection(CollectionView view)
+        {
+            var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
+            if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
 
             if (this == MainPage.Instance.MainDocView)
             {
@@ -1663,9 +1664,9 @@ namespace Dash
             if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
                 newpoint = new Point();
 
-            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
+            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
             xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
         }
 
@@ -1871,10 +1872,10 @@ namespace Dash
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
         }
-	    public void RemoveLinkBorderColor()
-	    {
-		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
-		    xToYellow.Begin();
+        public void RemoveLinkBorderColor()
+        {
+            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
+            xToYellow.Begin();
         }
         ~DocumentView()
         {
