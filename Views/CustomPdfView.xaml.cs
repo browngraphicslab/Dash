@@ -30,12 +30,12 @@ using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
-    public sealed partial class CustomPdfView : INotifyPropertyChanged, ILinkHandler
+    public sealed partial class CustomPdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(CustomPdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
 
-        public List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
+        private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
 
         public Uri PdfUri
         {
@@ -69,29 +69,9 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        private DataVirtualizationSource<ImageSource> _topPages;
+        public DataVirtualizationSource<ImageSource> TopPages { get; set; }
 
-        public DataVirtualizationSource<ImageSource> TopPages
-        {
-            get => _topPages;
-            set
-            {
-                _topPages = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private DataVirtualizationSource<ImageSource> _bottomPages;
-
-        public DataVirtualizationSource<ImageSource> BottomPages
-        {
-            get => _bottomPages;
-            set
-            {
-                _bottomPages = value;
-                OnPropertyChanged();
-            }
-        }
+        public DataVirtualizationSource<ImageSource> BottomPages { get; set; }
 
         private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
@@ -115,19 +95,7 @@ namespace Dash
             }
         }
 
-        private List<DocumentController> _docControllers = new List<DocumentController>();
-
-        public List<DocumentController> DocControllers
-        {
-            get => _docControllers;
-            set
-            {
-                _docControllers = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private List<Size> Tops;
+        public List<DocumentController> DocControllers { get; set; }
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -592,8 +560,11 @@ namespace Dash
         {
             if (CurrentAnnotationType == AnnotationType.Region)
             {
-                var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                overlay.StartAnnotation(e.GetPosition(overlay), true);
+                using (UndoManager.GetBatchHandle())
+                {
+                    var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
+                    overlay.StartAnnotation(e.GetPosition(overlay), true);
+                }
             }
 
         }
@@ -882,68 +853,72 @@ namespace Dash
 
         private void XAnnotationBox_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-
-            var region = (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay)
-                .GetRegionDoc();
-            if (region == null)
+            using (UndoManager.GetBatchHandle())
             {
-                var yPos = e.GetPosition(sender as UIElement).Y;
-                region = RegionGetter(AnnotationType.Region);
-                region.SetPosition(new Point(0, yPos));
-                region.SetWidth(50);
-                region.SetHeight(20);
-                (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay)
-                    .RenderNewRegion(region);
 
-                // note is the new annotation textbox that is created
-                var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0),
-                    new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
-
-                region.Link(note, LinkTargetPlacement.Default);
-                var docview = new DocumentView
+                var region = (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay)
+                    .GetRegionDoc();
+                if (region == null)
                 {
-                    DataContext = new DocumentViewModel(note) { Undecorated = true },
-                    Width = xTopAnnotationBox.ActualWidth,
-                    BindRenderTransform = false,
-                    RenderTransform = new TranslateTransform
+                    var yPos = e.GetPosition(sender as UIElement).Y;
+                    region = RegionGetter(AnnotationType.Region);
+                    region.SetPosition(new Point(0, yPos));
+                    region.SetWidth(50);
+                    region.SetHeight(20);
+                    (sender == xTopAnnotationBox ? _topAnnotationOverlay : _bottomAnnotationOverlay)
+                        .RenderNewRegion(region);
+
+                    // note is the new annotation textbox that is created
+                    var note = new RichTextNote("<annotation>", new Point(0, region.GetPosition()?.Y ?? 0),
+                        new Size(xTopAnnotationBox.Width / 2, double.NaN)).Document;
+
+                    region.Link(note, LinkTargetPlacement.Default);
+                    var docview = new DocumentView
                     {
-                        Y = yPos
-                    }
-                };
-                docview.hideResizers();
+                        DataContext = new DocumentViewModel(note) { Undecorated = true },
+                        Width = xTopAnnotationBox.ActualWidth,
+                        BindRenderTransform = false,
+                        RenderTransform = new TranslateTransform
+                        {
+                            Y = yPos
+                        }
+                    };
+                    docview.hideResizers();
 
-                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
-                BottomAnnotations.Add(docview);
-                DocControllers.Add(docview.ViewModel
-                    .LayoutDocument); //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
-                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers),
-                    true);
-            }
-            else
-            {
-                // note is the new annotation textbox that is created
-                var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN))
-                    .Document;
-
-                region.Link(note, LinkTargetPlacement.Default);
-                var docview = new DocumentView
+                    //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                    BottomAnnotations.Add(docview);
+                    DocControllers.Add(docview.ViewModel
+                        .LayoutDocument); //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                    DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers),
+                        true);
+                }
+                else
                 {
-                    DataContext = new DocumentViewModel(note) { DecorationState = false },
-                    Width = xTopAnnotationBox.ActualWidth,
-                    BindRenderTransform = false
-                };
-                docview.hideResizers();
+                    // note is the new annotation textbox that is created
+                    var note = new RichTextNote("<annotation>", new Point(), new Size(xTopAnnotationBox.Width, double.NaN))
+                        .Document;
 
-                Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
-                //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
-                BottomAnnotations.Add(docview);
-                DocControllers.Add(docview.ViewModel
-                    .LayoutDocument); //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
-                DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers),
-                    true);
+                    region.Link(note, LinkTargetPlacement.Default);
+                    var docview = new DocumentView
+                    {
+                        DataContext = new DocumentViewModel(note) { DecorationState = false },
+                        Width = xTopAnnotationBox.ActualWidth,
+                        BindRenderTransform = false
+                    };
+                    docview.hideResizers();
+
+                    Canvas.SetTop(docview, region.GetDataDocument().GetPosition()?.Y ?? 0);
+                    //SetAnnotationPosition(ScrollViewer.VerticalOffset, docview);
+                    BottomAnnotations.Add(docview);
+                    DocControllers.Add(docview.ViewModel
+                        .LayoutDocument); //if(AnnotationManager.CurrentAnnotationType.Equals(AnnotationManager.AnnotationType.RegionBox))
+                    DataDocument.SetField(KeyStore.AnnotationsKey, new ListController<DocumentController>(DocControllers),
+                        true);
+                }
+
+                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
+
             }
-
-            SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), false);
         }
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1238,20 +1213,21 @@ namespace Dash
 
         private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopForwardStack(_topForwardStack, TopScrollViewer);
+            PopForwardStack(_topForwardStack, _topBackStack, TopScrollViewer);
         }
 
         private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            PopForwardStack(_bottomForwardStack, BottomScrollViewer);
+            PopForwardStack(_bottomForwardStack, _bottomBackStack, BottomScrollViewer);
         }
 
-        private void PopForwardStack(Stack<double> forwardstack, ScrollViewer viewer)
+        private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
         {
-            if (forwardstack.Any())
+            if (forwardstack.Any() && forwardstack.Peek() != double.NaN)
             {
                 var pop = forwardstack.Pop();
-                viewer.ChangeView(null, forwardstack.Any() ? forwardstack.Peek() * viewer.ExtentHeight : 0, 1);
+                viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
+                backstack.Push(pop);
             }
         }
 

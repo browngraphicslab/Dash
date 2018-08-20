@@ -30,11 +30,7 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
-
-        public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentDeletedHandler DocumentDeleted;
+        public event Action<DocumentView> DocumentDeleted;
 
         private DocumentController _templateEditor;
         private bool _isQuickEntryOpen;
@@ -208,7 +204,6 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 PointerId = e.Pointer.PointerId;
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
@@ -584,9 +579,8 @@ namespace Dash
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
 
-            cdo.Data.AddDragModel(SelectionManager.GetSelectedDocs().Count > 1
-                ? new DragDocumentModel(SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
-                : new DragDocumentModel(ViewModel.DocumentController, true));
+            cdo.Data.AddDragModel(new DragDocumentModel(
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
 
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
@@ -1201,7 +1195,7 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
+            DocumentDeleted?.Invoke(this);
             UndoManager.EndBatch();
         }
 
@@ -1209,7 +1203,22 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public event Action<DocumentView> DocumentSelected;
+        public event Action<DocumentView> DocumentDeselected;
+
+        public void OnSelected()
+        {
+            SetSelectionBorder(true);
+            DocumentSelected?.Invoke(this);
+        }
+
+        public void OnDeselected()
+        {
+            SetSelectionBorder(false);
+            DocumentDeselected?.Invoke(this);
+        }
+
+        private void SetSelectionBorder(bool selected)
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
@@ -1266,7 +1275,6 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
-            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -1311,16 +1319,6 @@ namespace Dash
         public class DocumentViewSelectedEventArgs
         {
             public DocumentViewSelectedEventArgs()
-            {
-            }
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewDeletedEventArgs
-        {
-            public DocumentViewDeletedEventArgs()
             {
             }
         }
@@ -1398,8 +1396,10 @@ namespace Dash
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                     doc.CopyDocument();
+            }
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
@@ -1618,10 +1618,13 @@ namespace Dash
         {
             if (Equals(MainPage.Instance.MainDocView)) return;
 
-            MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
-            if (ViewModel.LayoutDocument == null)
+            using (UndoManager.GetBatchHandle())
             {
-                Debug.WriteLine("uh oh");
+                MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+                if (ViewModel.LayoutDocument == null)
+                {
+                    Debug.WriteLine("uh oh");
+                }
             }
         }
 
@@ -1746,7 +1749,11 @@ namespace Dash
         private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
         {
             obj.Handled = true;
-            ProcessInput();
+            using (UndoManager.GetBatchHandle())
+            {
+                ProcessInput();
+            }
+
         }
 
         private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
@@ -1865,13 +1872,17 @@ namespace Dash
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.LayoutDocument.SetHidden(true);
+            using (UndoManager.GetBatchHandle())
+            {
+                ViewModel.LayoutDocument.SetHidden(true);
+            }
         }
 
         public void SetLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
         }
+
         public void RemoveLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);

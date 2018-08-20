@@ -98,12 +98,14 @@ namespace Dash
         {
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
+			RemoveViewTypeHandler();
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
+			AddViewTypeHandler();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocumentView == null)
@@ -243,7 +245,22 @@ namespace Dash
 
         #endregion
 
-        #region Menu
+	    private void AddViewTypeHandler()
+	    {
+			ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+	    }
+
+	    private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+	    {
+		    SetView(ViewModel.ViewType);
+	    }
+
+	    private void RemoveViewTypeHandler()
+	    {
+		    ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+		}
+
+	    #region Menu
         public void SetView(CollectionViewType viewType)
         {
             if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))

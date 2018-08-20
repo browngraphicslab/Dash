@@ -260,13 +260,16 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                // check key field is filled in
-                if (xNewKeyText.Text != "")
-                {
-                    AddKeyValuePair();
-                    xNewKeyText.Focus(FocusState.Programmatic);
-                }
-                xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
+	            using (UndoManager.GetBatchHandle())
+	            {
+		            // check key field is filled in
+		            if (xNewKeyText.Text != "")
+		            {
+			            AddKeyValuePair();
+			            xNewKeyText.Focus(FocusState.Programmatic);
+		            }
+		            xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
+				}
             }
         }
 

@@ -4,6 +4,8 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.AppService;
 using Windows.ApplicationModel.Background;
+using Windows.Foundation;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -124,6 +126,9 @@ namespace Dash
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                     ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
                 }
+
+                ApplicationView.PreferredLaunchViewSize = new Size(900, 500);
+                ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
                 // Ensure the current window is active
                 Window.Current.Activate();

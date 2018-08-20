@@ -840,9 +840,10 @@ namespace Dash
 	        };
 	        pin.ManipulationDelta += (s, e) =>
 	        {
-		        var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
+		        region.SetPosition(new Point(Canvas.GetLeft(pin) + e.Delta.Translation.X, Canvas.GetTop(pin) + e.Delta.Translation.Y));
+				var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
 		        Canvas.SetLeft(pin, Canvas.GetLeft(pin) + p.X);
-		        Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
+		       Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
 		        e.Handled = true;
 	        };
 

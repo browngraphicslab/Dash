@@ -15,6 +15,10 @@ using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Xaml.Media.Animation;
+using DashShared;
+using Windows.UI;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -29,6 +33,7 @@ namespace Dash
         private bool _isMoving;
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         public Tag CurrEditTag;
+        private DocumentController currEditLink;
         private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
         public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
@@ -41,7 +46,7 @@ namespace Dash
                 if (value != _visibilityState && !_visibilityLock)
                 {
                     _visibilityState = value;
-                    //if (value == Visibility.Collapsed) SuggestGrid.Visibility = Visibility.Collapsed;
+                    SuggestGrid.Visibility = CurrEditTag != null ? Visibility.Visible : Visibility.Collapsed;
                     SetPositionAndSize();
                     OnPropertyChanged(nameof(VisibilityState));
                 }
@@ -153,6 +158,7 @@ namespace Dash
         private void DocView_OnDeleted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
         private void ManipulatorCompleted()
@@ -164,7 +170,9 @@ namespace Dash
         private void ManipulatorStarted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = VisibilityState;
             _isMoving = true;
+
         }
 
         private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -234,6 +242,7 @@ namespace Dash
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
+            CurrEditTag = null;
 
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
@@ -288,15 +297,9 @@ namespace Dash
 
             //TODO: DO WE NEED THIS STILL?
             // update menu items to point to the currently selected document
-            foreach (var item in xButtonsPanel.Children.OfType<Button>())
+            foreach (var item in xButtonsPanel.Children.OfType<Grid>())
             {
-                var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
-                //tagMap.Clear();
-                //GetLinkTypes(target, tagMap);
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
-                //item.Background = map.ContainsKey(menuLinkName)
-                //	? new SolidColorBrush(new Windows.UI.Color() {A = 0x10, R = 0, G = 0xff, B = 0})
-                //	: null;
                 item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
             }
 
@@ -307,29 +310,22 @@ namespace Dash
             }
 
             if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-            {
                 botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
-                topLeft = new Point(topLeft.X, topLeft.Y + 30);
-            }
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X - 3,
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
-            xRow.Height = new GridLength(Math.Max(0, botRight.Y - topLeft.Y));
+            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
+            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
 
         private void AddLinkTypeButton(string linkName)
         {
-            //check if link type button already exists 
-            if (tagMap[linkName] == null)
-            {
-
-            }
+            //button formatting
             var tb = new TextBlock()
             {
                 Text = linkName.Substring(0, 1),
@@ -337,32 +333,28 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = new SolidColorBrush(Colors.White)
             };
-            var g = new Grid()
+            var button = new Grid()
             {
-                Background = new SolidColorBrush(Colors.Transparent)
+                Background = new SolidColorBrush(Colors.Transparent),
+                CanDrag = true,
+                Width = 22,
+                Height = 22,
             };
             //set button color to tag color
             var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
             var btnColorFinal = btnColorOrig != null
                 ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                 : Color.FromArgb(255, 64, 123, 177);
-            g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse()
+            var ellipse = new Ellipse()
             {
                 Width = 22,
                 Height = 22,
-                Fill = new SolidColorBrush(btnColorFinal)
-            });
-            g.Children.Add(tb);
-            var button = new Button()
-            {
-                Content = g,
-                Width = 22,
-                Height = 22,
-                Background = new SolidColorBrush(Colors.Transparent),
+                Fill = new SolidColorBrush(btnColorFinal),
                 CanDrag = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
-
+            button.Children.Add(ellipse);
+            button.Children.Add(tb);
             button.DragStarting += (s, args) =>
             {
                 DocumentView doq = ((s as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
@@ -384,7 +376,6 @@ namespace Dash
             xButtonsPanel.Children.Add(button);
             button.PointerEntered += (s, e) => toolTip.IsOpen = true;
             button.PointerExited += (s, e) => toolTip.IsOpen = false;
-            button.DragStarting += XAnnotateEllipseBorder_OnDragStarting;
 
             button.Tapped += (s, e) =>
             {
@@ -402,7 +393,16 @@ namespace Dash
             //allow users to change default tag titles by right click
             button.RightTapped += (s, e) =>
             {
-                ToggleTagEditor(_tagNameDict[linkName]);
+                e.Handled = true;
+                ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
+
+            };
+            button.PointerPressed += (s, e) =>
+            {
+                foreach (var doc in SelectedDocs)
+                {
+                    doc.ManipulationMode = ManipulationModes.None;
+                }
             };
         }
 
@@ -476,39 +476,7 @@ namespace Dash
             //REMOVE OLD TAG
             if (_tagNameDict.ContainsKey(linkName))
             {
-                /*
-				var oldTag = _tagNameDict[linkName];
-				hexColor = oldTag.Color;
-				Tags.Remove(oldTag);
-				DocumentController oldTagDoc = null;
-				foreach (var docC in TagsSave)
-				{
-					if (docC.GetField<TextController>(KeyStore.DataKey, true).Data.Equals(linkName))
-					{
-						oldTagDoc = docC;
-						break;
-					}
-				}
-
-				if (oldTagDoc != null)
-				{
-					if (RecentTagsSave.Contains(oldTagDoc))
-					{
-						RecentTagsSave.Remove(oldTagDoc);
-						//check if this tag is in recent tags & replace
-						int index;
-						Queue<Tag> catchQueue = new Queue<Tag>();
-						foreach (var recent in _recentTags)
-						{
-
-						}
-					}
-					TagsSave.Remove(oldTagDoc);
-					hexColor = oldTagDoc.GetField<ColorController>(KeyStore.BackgroundColorKey, true).Data;
-				}
-				*/
                 tag = _tagNameDict[linkName];
-                //hexColor = tag.Color;
             }
             else
             {
@@ -567,7 +535,6 @@ namespace Dash
         {
             if (SuggestGrid.Visibility == Visibility.Visible) return;
             xButtonsPanel.Children.Clear();
-            //_tagNameDict.Clear();
             //check each relevant tag name & create the tag graphic & button for it!
             foreach (var name in tagMap.Keys)
             {
@@ -661,7 +628,7 @@ namespace Dash
                      !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
                     VisibilityState = Visibility.Collapsed;
                 //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
-                //SuggestGrid.Visibility = Visibility.Collapsed;
+                SuggestGrid.Visibility = Visibility.Collapsed;
             }
 
             MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
@@ -751,21 +718,17 @@ namespace Dash
         [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            //ShowTags();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void DocumentDecorations_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Visible;
-            // ShowTags();
         }
 
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Collapsed;
-            //SuggestGrid.Visibility = Visibility.Collapsed;
-            //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -830,15 +793,29 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (!MainPage.Instance.IsShiftPressed())
+            //activation mode only relevant for images & pdfs now
+            var shouldActivate = true;
+            foreach (DocumentView doc in SelectedDocs)
             {
-                MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+                var docType = doc.ViewModel.DocumentController.DocumentType;
+                if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
             }
 
-            foreach (var doc in SelectedDocs)
+            if (shouldActivate == false) return;
+
+            using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.ActivationManager.ToggleActivation(doc);
+                if (!MainPage.Instance.IsShiftPressed())
+                {
+                    MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+                }
+
+                foreach (var doc in SelectedDocs)
+                {
+                    MainPage.Instance.ActivationManager.ToggleActivation(doc);
+                }
             }
+
 
         }
 
@@ -857,13 +834,13 @@ namespace Dash
             }
         }
 
-        private void ToggleTagEditor(Tag tagPressed = null)
+        private void ToggleTagEditor(Tag tagPressed, FrameworkElement button)
         {
             if (tagPressed == CurrEditTag)
             {
                 if (SuggestGrid.Visibility == Visibility.Collapsed)
                 {
-                    OpenTagEditor(tagPressed);
+                    OpenTagEditor(tagPressed, button);
                 }
                 else
                 {
@@ -874,23 +851,78 @@ namespace Dash
             }
             else
             {
-                OpenTagEditor(tagPressed);
+                OpenTagEditor(tagPressed, button);
             }
 
         }
 
-        private void OpenTagEditor(Tag currTag)
+        /// <summary>
+        /// Opens the editor beneath the document to edit the tags of the selected links. This is called when the user right clicks a link bubble.
+        /// </summary>
+        /// <param name="currTag"></param>
+        private void OpenTagEditor(Tag currTag, FrameworkElement button, DocumentController chosenLink = null)
         {
+            //TODO: DO I NEED THIS?
             CurrEditTag = currTag;
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
-            foreach (var tag in _recentTags)
+
+            //if one link has this tag, open tag editor for that link
+            if (tagMap[currTag.Text].Count == 1)
             {
-                tag.RidSelectionBorder();
-                if (tag == currTag) tag.AddSelectionBorder();
+                //update selected recent tag
+                foreach (var tag in _recentTags)
+                {
+                    tag.RidSelectionBorder();
+                    if (tag.Text.Equals(currTag.Text)) tag.AddSelectionBorder();
+                }
+                currEditLink = tagMap[currTag.Text].First();
+                SuggestGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
+            }
+            else if (chosenLink != null)
+            {
+                currEditLink = chosenLink;
+                //update selected recent tag
+                foreach (var tag in _recentTags)
+                {
+                    tag.RidSelectionBorder();
+                    if (chosenLink.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(tag.Text) ?? false) tag.AddSelectionBorder();
+                }
+                SuggestGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
+            }
+            else //open context menu to let user decide which link to edit
+            {
+                var flyout = new MenuFlyout();
+
+                foreach (DocumentController link in tagMap[currTag.Text])
+                {
+                    if (link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(currTag.Text) ?? false)
+                    {
+                        //get title of target
+                        var targetTitle = link.GetLinkedDocument(LinkDirection.ToDestination)?
+                            .Title ?? link.GetLinkedDocument(LinkDirection.ToSource)
+                                              .Title;
+
+                        var item = new MenuFlyoutItem
+                        {
+                            Text = targetTitle,
+                            DataContext = link
+                        };
+                        //clicking menu item should open the editor with the chosen, affected doc as the chosen item
+                        var itemHdlr = new RoutedEventHandler((s, e) =>
+                            OpenTagEditor(currTag, button, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+
+                        item.Click += itemHdlr;
+                        flyout.Items?.Add(item);
+
+                    }
+                }
+                //show flyout @ correct point
+                flyout.ShowAt(button);
             }
 
-            SuggestGrid.Visibility = Visibility.Visible;
-            xFadeAnimationIn.Begin();
+
         }
 
         //temporary method for telling all links associated with this tag that an additional tag has been added
