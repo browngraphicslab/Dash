@@ -382,7 +382,7 @@ namespace Dash
         public DocumentController Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null)
         {
 			//document that represents the actual link
-            DocumentController linkDocument = new RichTextNote("link").Document;
+            DocumentController linkDocument = new RichTextNote("New link description...").Document;
 
 	        if (specTitle == null)
 	        {
