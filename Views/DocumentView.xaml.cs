@@ -32,9 +32,7 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
-
-        public event DocumentDeletedHandler      DocumentDeleted;
+        public event Action<DocumentView>      DocumentDeleted;
         
         private DocumentController _templateEditor;
         private bool               _isQuickEntryOpen;
@@ -1202,7 +1200,7 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
+            DocumentDeleted?.Invoke(this);
             UndoManager.EndBatch();
         }
 
@@ -1326,16 +1324,6 @@ namespace Dash
         public class DocumentViewSelectedEventArgs
         {
             public DocumentViewSelectedEventArgs()
-            {
-            }
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewDeletedEventArgs
-        {
-            public DocumentViewDeletedEventArgs()
             {
             }
         }
