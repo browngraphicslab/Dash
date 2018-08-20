@@ -53,10 +53,7 @@ namespace OfficeInterop
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        private const UInt32 SWP_NOSIZE = 0x0001;
-        private const UInt32 SWP_NOMOVE = 0x0002;
-        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+        private const UInt32 TOPMOST_FLAGS = 0x0002 | 0x0001;
 
         public static void Main(string[] args)
         {
@@ -64,22 +61,23 @@ namespace OfficeInterop
             _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
 
-            Process[] processes = Process.GetProcessesByName("notepad");
-            foreach (Process p in processes)
-            {
-                IntPtr handle = p.MainWindowHandle;
+            //CODE TO CHANGE STUFF WITH NOTEPAD'S WINDOW
+            //Process[] processes = Process.GetProcessesByName("notepad");
+            //foreach (Process p in processes)
+            //{
+            //    IntPtr handle = p.MainWindowHandle;
 
-                //move window to give position / size
-                MoveWindow(handle, 0, 0, 200, 200, true);
+            //    //move window to give position / size
+            //    MoveWindow(handle, 0, 0, 200, 200, true);
 
 
-                //make window not minused and on front
-                ShowWindow(handle, ShowWindowEnum.Restore);
-                SetForegroundWindow(handle);
+            //    //make window not minused and on front
+            //    ShowWindow(handle, ShowWindowEnum.Restore);
+            //    SetForegroundWindow(handle);
 
-                //pin window to top
-                SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
-            }
+            //    //pin window to top
+            //    SetWindowPos(handle, new IntPtr(-1), 0, 0, 0, 0, TOPMOST_FLAGS);
+            //}
 
             _appServiceExit.WaitOne();
             Handler.Close();
