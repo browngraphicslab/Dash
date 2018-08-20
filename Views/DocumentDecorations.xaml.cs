@@ -300,7 +300,7 @@ namespace Dash
             // update menu items to point to the currently selected document
             foreach (var item in xButtonsPanel.Children.OfType<Button>())
             {
-                var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
+                //var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
                 //tagMap.Clear();
                 //GetLinkTypes(target, tagMap);
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
@@ -335,11 +335,6 @@ namespace Dash
 
         private void AddLinkTypeButton(string linkName)
         {
-            //check if link type button already exists 
-            if (tagMap[linkName] == null)
-            {
-
-            }
             var tb = new TextBlock()
             {
                 Text = linkName.Substring(0, 1),
@@ -842,15 +837,29 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (!MainPage.Instance.IsShiftPressed())
-            {
-                MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
-            }
+			//activation mode only relevant for images & pdfs now
+	        var shouldActivate = true;
+	        foreach (DocumentView doc in SelectedDocs)
+	        {
+		        var docType = doc.ViewModel.DocumentController.DocumentType;
+		        if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
+	        }
 
-            foreach (var doc in SelectedDocs)
-            {
-                MainPage.Instance.ActivationManager.ToggleActivation(doc);
-            }
+	        if (shouldActivate == false) return;
+
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        if (!MainPage.Instance.IsShiftPressed())
+		        {
+			        MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+		        }
+
+		        foreach (var doc in SelectedDocs)
+		        {
+			        MainPage.Instance.ActivationManager.ToggleActivation(doc);
+		        }
+			}
+            
 
         }
 

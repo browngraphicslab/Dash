@@ -1400,9 +1400,11 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            using (UndoManager.GetBatchHandle())
-                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                    doc.CopyDocument();
+			using (UndoManager.GetBatchHandle())
+			{
+				foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+					doc.CopyDocument();
+			} 
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
@@ -1499,118 +1501,115 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
-            if (dragModel?.LinkSourceView != null)
-            {
-                var dragDoc = dragModel.DraggedDocument;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+	        using (UndoManager.GetBatchHandle())
+	        {
+				//xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+				var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+				if (dragModel?.LinkSourceView != null)
+				{
+					var dragDoc = dragModel.DraggedDocument;
+					if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+						dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
 
 
-                //ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                //Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                //Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
+					//ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
+					//Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
+					//Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
 
-                Point where = e.GetPosition(MainPage.Instance.xCanvas);
+					Point where = e.GetPosition(MainPage.Instance.xCanvas);
 
-                if (dragModel.LinkType != null)
-                {
-                    var dropDoc = ViewModel.DocumentController;
-                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+					if (dragModel.LinkType != null)
+					{
+						var dropDoc = ViewModel.DocumentController;
+						if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+							dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
-	                var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-	                var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
+						var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+						var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
 
-	                //get pos and avg them
-	                var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-		                ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-	                var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-		                ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
+						//get pos and avg them
+						var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+							? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+						var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+							? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
 
-	                var x = (doc1.GetPosition().Value.X +
-	                         doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
-	                var y = (doc1.GetPosition().Value.Y +
-	                         doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
+						var x = (doc1.GetPosition().Value.X +
+								 doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
+						var y = (doc1.GetPosition().Value.Y +
+								 doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
 
-					var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
-	                //dock if drag and drop docs are in the same collection
-	                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-	                {
-		                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-	                }
-	                else
-	                {
-		                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-		                ParentCollection?.ViewModel.AddDocument(annotNote);
-					}
-					//TODO: ensure LinkType is what the user plugged in
-					dragDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
-					dropDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
-                    //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-					//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
-                    dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-				}
-                else
-                {
-
-                   
-                        //string entry = inputBox.Text.Trim();
-                        //if (string.IsNullOrEmpty(entry)) return;
-
-                       
-                            var dropDoc = ViewModel.DocumentController;
-                            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                            //dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                            //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
-
-	                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-	                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
-
-							//get pos and avg them
-	                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-		                        ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-	                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-		                        ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
-
-							var x = (doc1.GetPosition().Value.X +
-	                                 doc2.GetPosition().Value.X + offsetWidth/2) / 2;
-	                        var y = (doc1.GetPosition().Value.Y  +
-	                                 doc2.GetPosition().Value.Y + offsetHeight/2) / 2;
-
-							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
-							//dock if drag and drop docs are in the same collection
-			                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-			                {
-				                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-			                }
-			                else
-			                {
-				                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-				                ParentCollection?.ViewModel.AddDocument(annotNote);
-			                }
-							//TODO: ensure LinkType is what the user plugged in
-							dragDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-	                        dropDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-	                        dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                        dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                        annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+						var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
+						//dock if drag and drop docs are in the same collection
+						if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
+						{
+							MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
 						}
+						else
+						{
+							(ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+							ParentCollection?.ViewModel.AddDocument(annotNote);
+						}
+						//TODO: ensure LinkType is what the user plugged in
+						dragDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
+						dropDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
+						//dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+						//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
+						dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+					}
+					else
+					{
 
-                       
-                
 
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                    ? DataPackageOperation.Link
-                    : e.DataView.RequestedOperation;
+						//string entry = inputBox.Text.Trim();
+						//if (string.IsNullOrEmpty(entry)) return;
+						var dropDoc = ViewModel.DocumentController;
+						if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+							dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+						//dragDoc.Link(dropDoc, LinkContexts.None, entry);
+						//dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
 
-                e.Handled = true;
-            }
+						var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
+						var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
+
+						//get pos and avg them
+						var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
+							? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
+						var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
+							? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
+
+						var x = (doc1.GetPosition().Value.X +
+								 doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
+						var y = (doc1.GetPosition().Value.Y +
+								 doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
+
+						var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
+						//dock if drag and drop docs are in the same collection
+						if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
+						{
+							MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
+						}
+						else
+						{
+							(ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
+							ParentCollection?.ViewModel.AddDocument(annotNote);
+						}
+						//TODO: ensure LinkType is what the user plugged in
+						dragDoc.Link(annotNote, LinkTargetPlacement.Default, null);
+						dropDoc.Link(annotNote, LinkTargetPlacement.Default, null);
+						//dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
+						dropDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						dragDoc?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+						annotNote?.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+					}
+					e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+						? DataPackageOperation.Link
+						: e.DataView.RequestedOperation;
+
+					e.Handled = true;
+				}
+			}
         }
         //void FooterDrop(object sender, DragEventArgs e)
         //{
@@ -1739,12 +1738,15 @@ namespace Dash
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             if (Equals(MainPage.Instance.MainDocView)) return;
-            
-            MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
-            if (ViewModel.LayoutDocument == null)
-            {
-                Debug.WriteLine("uh oh");
-            }
+
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+		        if (ViewModel.LayoutDocument == null)
+		        {
+			        Debug.WriteLine("uh oh");
+		        }
+			}
         }
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
@@ -1868,7 +1870,11 @@ namespace Dash
         private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
         {
             obj.Handled = true;
-            ProcessInput();
+			using (UndoManager.GetBatchHandle())
+			{
+				ProcessInput();
+			}
+            
         }
 
         private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
@@ -1987,7 +1993,10 @@ namespace Dash
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.LayoutDocument.SetHidden(true);
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        ViewModel.LayoutDocument.SetHidden(true);
+			}
         }
 
 	    public void SetLinkBorderColor()
