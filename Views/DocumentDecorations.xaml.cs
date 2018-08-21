@@ -213,7 +213,6 @@ namespace Dash
 
         public void LoadTags(DocumentController settingsdoc)
         {
-
             RecentTagsSave =
                 settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
             TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
@@ -237,6 +236,12 @@ namespace Dash
             {
                 xTest.Children.Add(tag);
             }
+
+            //add four link behavior tags
+            xLinkTypeTags.Children.Add(new Tag(this, "Zoom", Colors.CornflowerBlue));
+            xLinkTypeTags.Children.Add(new Tag(this, "Annotation", Colors.OrangeRed));
+            xLinkTypeTags.Children.Add(new Tag(this, "Dock", Colors.MediumPurple));
+            xLinkTypeTags.Children.Add(new Tag(this, "Float", Colors.PaleVioletRed));
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -870,6 +875,8 @@ namespace Dash
             //TODO: DO I NEED THIS?
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
+            //TODO: make sure right thing in xLinkTypeBox is selected
+
             //if one link has this tag, open tag editor for that link
             if (tagMap[currTag.Text].Count == 1)
             {
@@ -954,7 +961,6 @@ namespace Dash
 
         private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //TODO: change link's annotation type
             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
             switch (selected)
@@ -974,14 +980,6 @@ namespace Dash
                 default:
                     break;
             }
-
-            //var link = currEditLink.GetAnnotationType();
-
-
-            //var doc = SelectedDocs?.FirstOrDefault();
-            //var allLinks = doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-            //allLinks?.AddRange(doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey));
-
         }
 
         private void XFadeAnimationOut_OnCompleted(object sender, object e)
