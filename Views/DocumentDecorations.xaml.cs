@@ -845,7 +845,6 @@ namespace Dash
                 else
                 {
                     xFadeAnimationOut.Begin();
-                    xFadeAnimationOut.Completed += (s, en) => { SuggestGrid.Visibility = Visibility.Collapsed; };
                     CurrEditTag = null;
                 }
             }
@@ -863,12 +862,12 @@ namespace Dash
         private void OpenTagEditor(Tag currTag, FrameworkElement button, DocumentController chosenLink = null)
         {
             //TODO: DO I NEED THIS?
-            CurrEditTag = currTag;
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
             //if one link has this tag, open tag editor for that link
             if (tagMap[currTag.Text].Count == 1)
             {
+                CurrEditTag = currTag;
                 //update selected recent tag
                 foreach (var tag in _recentTags)
                 {
@@ -881,6 +880,7 @@ namespace Dash
             }
             else if (chosenLink != null)
             {
+                CurrEditTag = currTag;
                 currEditLink = chosenLink;
                 //update selected recent tag
                 foreach (var tag in _recentTags)
@@ -918,6 +918,9 @@ namespace Dash
 
                     }
                 }
+
+                _visibilityLock = true;
+                flyout.Closed += (sender, o) => _visibilityLock = false;
                 //show flyout @ correct point
                 flyout.ShowAt(button);
             }
@@ -948,6 +951,16 @@ namespace Dash
             //TODO: change link's annotation type
              var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
+            var doc = SelectedDocs?.FirstOrDefault();
+                
+            var allLinks = doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+            allLinks?.AddRange(doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey));
+
+        }
+
+        private void XFadeAnimationOut_OnCompleted(object sender, object e)
+        {
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
     }
 }

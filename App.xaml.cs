@@ -127,7 +127,7 @@ namespace Dash
                     ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
                 }
 
-                ApplicationView.PreferredLaunchViewSize = new Size(900, 500);
+                ApplicationView.PreferredLaunchViewSize = new Size(1800, 1000);
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
                 // Ensure the current window is active
