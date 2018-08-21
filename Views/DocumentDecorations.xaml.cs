@@ -951,10 +951,23 @@ namespace Dash
             //TODO: change link's annotation type
              var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
-            var doc = SelectedDocs?.FirstOrDefault();
-                
-            var allLinks = doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-            allLinks?.AddRange(doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey));
+            currEditLink.SetAnnotationType(AnnotationType.Selection);
+
+            //switch (selected)
+            //{
+            //    case "Default":
+            //        currEditLink.SetAnnotationType(AnnotationType.None);
+            //        break;
+            //    default:
+            //        break;
+            //}
+
+            //var link = currEditLink.GetAnnotationType();
+
+
+            //var doc = SelectedDocs?.FirstOrDefault();
+            //var allLinks = doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+            //allLinks?.AddRange(doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey));
 
         }
 
