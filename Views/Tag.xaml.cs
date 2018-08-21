@@ -40,6 +40,12 @@ namespace Dash
 	    public bool Selected = false;
 	    public SolidColorBrush selectedBrush = new SolidColorBrush(Color.FromArgb(240, 64, 123, 177));
 
+        public Grid XTagContainer
+        {
+            get => xTagContainer;
+            set { xTagContainer = value; }
+        }
+
 		public Tag(DocumentDecorations docdecs, String text, Color color)
         {
             this.InitializeComponent();
@@ -75,37 +81,22 @@ namespace Dash
         public void AddLink(DocumentController link)
         {
             var currtags = link.GetDataDocument().GetLinkTags();
-            var uniqueTag = true;
 
-            if (currtags != null)
-            {
-                currtags.RemoveAt(0);
-                currtags.Add(new TextController(this.Text));
+           
             
-            }
-            else
-            {
-                currtags = new ListController<TextController>();
-                currtags.Add(new TextController(this.Text));
-            }
+            currtags = new ListController<TextController>();
+            currtags.Add(new TextController(this.Text));
             
+            _docdecs.Tags.Add(this);
             link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
         }
 
         private void RemoveLink(DocumentController link, ListController<TextController> currtags)
         {
-            var index = 0;
-            if (currtags != null)
-            {
-                foreach (var tag in currtags)
-                {
-                    if (tag.Data == this.Text)
-                    {
-                        index = currtags.IndexOf(tag);
-                    }
-                }
-                currtags.RemoveAt(index);
-            }
+            
+            currtags.Clear();
+
+            _docdecs.Tags.Remove(this);
 
             link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
         }
@@ -128,7 +119,7 @@ namespace Dash
 	    public void Deselect()
 	    {
 		    Selected = false;
-		    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+		    XTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
             var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
 			if (_docdecs.SelectedDocs.Count == 1)
 			{
@@ -142,12 +133,12 @@ namespace Dash
 						    break;
 					    }
 
-					    if ((link.GetLinkTags()?.Count ?? 0) == 0)
-					    {
-						    RemoveLink(link, currtags);
-						    break;
-					    }
-				    }
+                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
+                        {
+                            RemoveLink(link, currtags);
+                            break;
+                        }
+                    }
 			}
 		}
 
@@ -155,28 +146,33 @@ namespace Dash
 	    {
 		    Selected = true;
 
-		    xTagContainer.BorderBrush = selectedBrush;
-			//xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+	        foreach (var tag in _docdecs.RecentTags)
+	        {
+	            tag.Deselect();
+	        }
 
-			//tell doc decs to change currently activated buttons 
+            xTagContainer.BorderBrush = selectedBrush;
+            //xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
 
-			
-			bool unique = true;
-			foreach (var recent in _docdecs.RecentTags)
-			{
-				if (recent.Text == _text)
-				{
-					unique = false;
-				}
-			}
+            //tell doc decs to change currently activated buttons 
+	        
 
-			var doc = new DocumentController();
+            bool unique = true;
+            foreach (var recent in _docdecs.RecentTags)
+            {
+                if (recent.Text == _text)
+                {
+                    unique = false;
+                }
+            }
+
+            var doc = new DocumentController();
 			doc.SetField<TextController>(KeyStore.DataKey, _text, true);
 			doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
 
-			if (unique)
-			{
-				if (_docdecs.RecentTags.Count < 5)
+            if (unique)
+            {
+                if (_docdecs.RecentTags.Count < 5)
 				{
 					_docdecs.RecentTags.Enqueue(this);
 					_docdecs.RecentTagsSave.Add(doc);
