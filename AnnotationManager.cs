@@ -128,17 +128,11 @@ namespace Dash
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
             //show link description floating doc if operator output is true
-	        var linkOperator = link.GetDataDocument().GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
-
-	        var lastLink = linkOperator.Last();
-
-	        var inputs = lastLink.Outputs.Values;
-	        MainPage.Instance.AddFloatingDoc(link);
-
-
-
-
-	        
+	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
+	        if (linkOperator.Data)
+	        {
+	            MainPage.Instance.AddFloatingDoc(link);
+            }
 
 	        foreach (ILinkHandler linkHandler in linkHandlers)
 	        {
