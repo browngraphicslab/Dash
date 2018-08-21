@@ -125,11 +125,11 @@
                     <controls:WrapPanel x:Name="xTest" HorizontalAlignment="Center" Margin="5 0 0 0" Padding="0"></controls:WrapPanel>
                 </Grid>
 
-                <ComboBox x:Name="xLinkTypeBox" Header="Link type?" SelectionChanged="XLinkTypeBox_OnSelectionChanged">
-                    <ComboBoxItem IsSelected="True">Default</ComboBoxItem>
+                <ComboBox x:Name="xLinkTypeBox" Header="Link behavior?" SelectionChanged="XLinkTypeBox_OnSelectionChanged">
+                    <ComboBoxItem IsSelected="True">Zoom</ComboBoxItem>
+                    <ComboBoxItem>Annotation</ComboBoxItem>
                     <ComboBoxItem>Dock</ComboBoxItem>
                     <ComboBoxItem>Float</ComboBoxItem>
-                    <ComboBoxItem>Inline</ComboBoxItem>
                 </ComboBox>
 
                 <ToggleSwitch x:Name="xInContext" Toggled="XInContext_OnToggled">In Context</ToggleSwitch>

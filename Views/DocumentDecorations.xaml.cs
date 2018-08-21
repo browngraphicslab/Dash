@@ -949,18 +949,23 @@ namespace Dash
         private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //TODO: change link's annotation type
-             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
+            var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
-            currEditLink.SetAnnotationType(AnnotationType.Selection);
-
-            //switch (selected)
-            //{
-            //    case "Default":
-            //        currEditLink.SetAnnotationType(AnnotationType.None);
-            //        break;
-            //    default:
-            //        break;
-            //}
+            switch (selected)
+            {
+                case "Zoom":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "Z", true);
+                    break;
+                case "Annotation":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "A", true);
+                    break;
+                case "Dock":
+                    break;
+                case "Float":
+                    break;
+                default:
+                    break;
+            }
 
             //var link = currEditLink.GetAnnotationType();
 

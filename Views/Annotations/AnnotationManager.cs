@@ -134,23 +134,45 @@ namespace Dash
 	            MainPage.Instance.AddFloatingDoc(link);
             }
 
-	        foreach (ILinkHandler linkHandler in linkHandlers)
+            //TODO: change how link is followed based on choice (below is default annotation way)
+            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null).Data;
+
+	        switch (linkBehav)
 	        {
-	            LinkHandledResult status = linkHandler.HandleLink(link, direction);
+                case "Z":
+                    //navigate to link
+                    var document = link.GetLinkedDocument(direction);
+                    MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false);
+                    break;
+                case "A":
+                    //default behavior of highlighting and toggling link visibility and docking when off screen
+                    foreach (ILinkHandler linkHandler in linkHandlers)
+                    {
+                        LinkHandledResult status = linkHandler.HandleLink(link, direction);
 
-	            if (status == LinkHandledResult.HandledClose) break;
-	            if (status == LinkHandledResult.HandledRemainOpen)
-	            {
-	                void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
-	                {
-	                    args.Cancel = true;
-                        _linkFlyout.Closing -= LinkFlyoutOnClosing;
-	                }
+                        if (status == LinkHandledResult.HandledClose) break;
+                        if (status == LinkHandledResult.HandledRemainOpen)
+                        {
+                            void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
+                            {
+                                args.Cancel = true;
+                                _linkFlyout.Closing -= LinkFlyoutOnClosing;
+                            }
 
-                    _linkFlyout.Closing += LinkFlyoutOnClosing; 
-	            }
+                            _linkFlyout.Closing += LinkFlyoutOnClosing;
+                        }
+                    }
+                    break;
+                case "D":
+                    break;
+                case "F":
+                    break;
+                default:
+                    break;
+
 	        }
-	    }
+
+        }
 
 	    #region Old annotation stuff
 

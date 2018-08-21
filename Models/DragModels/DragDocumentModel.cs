@@ -130,7 +130,7 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
                 }
 
-                dragDoc.Link(anno, LinkTargetPlacement.Default);
+                dragDoc.Link(anno, LinkTargetPlacement.Default, annotation: true);
             }
             return new List<DocumentController>{ anno };
         }
