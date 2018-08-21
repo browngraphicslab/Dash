@@ -937,5 +937,17 @@ namespace Dash
 
         }
 
+        private void XInContext_OnToggled(object sender, RoutedEventArgs e)
+        {
+            //TODO: change if links shows collection or just document
+        }
+
+
+        private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //TODO: change link's annotation type
+             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
+
+        }
     }
 }
