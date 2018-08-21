@@ -137,11 +137,12 @@ namespace Dash
             //TODO: change how link is followed based on choice (below is default annotation way)
             var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null).Data;
 
-	        switch (linkBehav)
+	        var document = link.GetLinkedDocument(direction);
+
+            switch (linkBehav)
 	        {
                 case "Z":
                     //navigate to link
-                    var document = link.GetLinkedDocument(direction);
                     MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false);
                     break;
                 case "A":
@@ -164,8 +165,10 @@ namespace Dash
                     }
                     break;
                 case "D":
+                    MainPage.Instance.Dock_Link(link, direction);
                     break;
                 case "F":
+                    MainPage.Instance.AddFloatingDoc(document);
                     break;
                 default:
                     break;

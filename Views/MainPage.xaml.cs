@@ -1127,7 +1127,7 @@ namespace Dash
             }
             else
             {
-                Dock_Link(target, onScreenView);
+                Dock_Link(linkDoc, direction);
             }
 
             target.GotoRegion(region, linkDoc);
@@ -1141,8 +1141,12 @@ namespace Dash
             return LinkHandledResult.HandledRemainOpen;
         }
 
-        public void Dock_Link(DocumentController target, DocumentView onScreenView)
+        public void Dock_Link(DocumentController linkDoc, LinkDirection direction)
         {
+            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            var target = region.GetRegionDefinition() ?? region;
+            var onScreenView = GetTargetDocumentView(xDockFrame, target);
+
             DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
             if (docked != null)
             {

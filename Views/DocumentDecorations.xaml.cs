@@ -966,8 +966,10 @@ namespace Dash
                     currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "A", true);
                     break;
                 case "Dock":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "D", true);
                     break;
                 case "Float":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "F", true);
                     break;
                 default:
                     break;
