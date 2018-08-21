@@ -21,28 +21,25 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class RegionAnnotation : UserControl, IAnchorable
+    public sealed partial class RegionAnnotation
     {
         public DocumentController DocumentController { get; set; }
-        private NewAnnotationOverlay _parentOverlay;
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent)
+        public RegionAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
-            
-            _parentOverlay = parent;
         }
 
-        public  void Render()
+        public override void Render()
         {
             var posList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             var sizeList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            var indexList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+            var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new NewAnnotationOverlay.SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
 
             for (var i = 0; i < posList.Count; ++i)
             {
@@ -57,7 +54,7 @@ namespace Dash
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
 
-            if (_parentOverlay.TextSelectableElements != null && indexList.Any())
+            if (ParentOverlay.TextSelectableElements != null && indexList.Any())
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -67,7 +64,7 @@ namespace Dash
                     var range = t.Data;
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var rect = _parentOverlay.TextSelectableElements[ind].Bounds;
+                        var rect = ParentOverlay.TextSelectableElements[ind].Bounds;
                         topLeft.X = Math.Min(topLeft.X, rect.Left);
                         topLeft.Y = Math.Min(topLeft.Y, rect.Y);
                         if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
@@ -78,7 +75,8 @@ namespace Dash
                 }
                 foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
                 {
-                    rect.Rect = new Rect(new Point(rect.Rect.X - topLeft.X, rect.Rect.Y - topLeft.Y), new Size(rect.Rect.Width, rect.Rect.Height));
+                    rect.Rect = new Rect(new Point(rect.Rect.X - topLeft.X, rect.Rect.Y - topLeft.Y),
+                        new Size(rect.Rect.Width, rect.Rect.Height));
                 }
                 var path = new Path
                 {
@@ -90,25 +88,28 @@ namespace Dash
                 RenderSubRegion(topLeft, PlacementMode.Mouse, path, vm);
             }
 
-            _parentOverlay.Regions.Add(vm);
+            ParentOverlay.Regions.Add(vm);
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, NewAnnotationOverlay.SelectionViewModel vm)
+        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
         {
             r.SetBinding(Shape.FillProperty, new Binding
             {
                 Path = new PropertyPath(nameof(vm.SelectionColor)),
                 Mode = BindingMode.OneWay
             });
+            r.Stroke = new SolidColorBrush(Colors.Black);
+            r.StrokeThickness = 2;
+            r.StrokeDashArray = new DoubleCollection {2};
             Canvas.SetLeft(r, pos.X);
             Canvas.SetTop(r, pos.Y);
             r.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    _parentOverlay.XAnnotationCanvas.Children.Remove(r);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(r);
                 }
-                _parentOverlay.SelectRegion(vm, args.GetPosition(this));
+                SelectRegionFromParent(vm, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
@@ -138,93 +139,82 @@ namespace Dash
                 Converter = new BoolToVisibilityConverter()
             });
 
-            _parentOverlay.FormatRegionOptionsFlyout(vm.RegionDocument, r);
-            _parentOverlay.XAnnotationCanvas.Children.Add(r);
+            FormatRegionOptionsFlyout(vm.RegionDocument, r);
+            ParentOverlay.XAnnotationCanvas.Children.Add(r);
         }
 
-        public  void StartAnnotation(Point p)
+        public override void StartAnnotation(Point p)
         {
             if (!this.IsCtrlPressed())
             {
-                if (_parentOverlay.RegionRectangles.Any() || _parentOverlay.CurrentSelections.Any())
+                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
                 {
-                    _parentOverlay.ClearSelection();
+                    ParentOverlay.ClearSelection();
                 }
             }
             _previewStartPoint = p;
-            Canvas.SetLeft(_parentOverlay.XPreviewRect, p.X);
-            Canvas.SetTop(_parentOverlay.XPreviewRect, p.Y);
-            Canvas.SetLeft(this, p.X);
-            Canvas.SetTop(this, p.Y);
-            _parentOverlay.XPreviewRect.Width = 0;
-            _parentOverlay.XPreviewRect.Height = 0;
-            _parentOverlay.XPreviewRect.Visibility = Visibility.Visible;
-            if (!_parentOverlay.XAnnotationCanvas.Children.Contains(_parentOverlay.XPreviewRect))
+            Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
+            Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+            XPos = p.X;
+            YPos = p.Y;
+            ParentOverlay.XPreviewRect.Width = 0;
+            ParentOverlay.XPreviewRect.Height = 0;
+            ParentOverlay.XPreviewRect.Visibility = Visibility.Visible;
+            if (!ParentOverlay.XAnnotationCanvas.Children.Contains(ParentOverlay.XPreviewRect))
             {
-                _parentOverlay.XAnnotationCanvas.Children.Insert(0, _parentOverlay.XPreviewRect);
+                ParentOverlay.XAnnotationCanvas.Children.Insert(0, ParentOverlay.XPreviewRect);
             }
-            _parentOverlay.RegionRectangles.Add(new Rect(p.X, p.Y, 0, 0));
         }
 
-        public  void UpdateAnnotation(Point p)
+        public override void UpdateAnnotation(Point p)
         {
             if (p.X < _previewStartPoint.X)
             {
-                _parentOverlay.XPreviewRect.Width = _previewStartPoint.X - p.X;
-                Canvas.SetLeft(_parentOverlay.XPreviewRect, p.X);
+                ParentOverlay.XPreviewRect.Width = _previewStartPoint.X - p.X;
+                Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
             }
             else
             {
-                _parentOverlay.XPreviewRect.Width = p.X - _previewStartPoint.X;
+                ParentOverlay.XPreviewRect.Width = p.X - _previewStartPoint.X;
             }
 
             if (p.Y < _previewStartPoint.Y)
             {
-                _parentOverlay.XPreviewRect.Height = _previewStartPoint.Y - p.Y;
-                Canvas.SetTop(_parentOverlay.XPreviewRect, p.Y);
+                ParentOverlay.XPreviewRect.Height = _previewStartPoint.Y - p.Y;
+                Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
             }
             else
             {
-                _parentOverlay.XPreviewRect.Height = p.Y - _previewStartPoint.Y;
+                ParentOverlay.XPreviewRect.Height = p.Y - _previewStartPoint.Y;
             }
-            _parentOverlay.XPreviewRect.Visibility = Visibility.Visible;
+            ParentOverlay.XPreviewRect.Visibility = Visibility.Visible;
         }
 
-        public  void EndAnnotation(Point p)
+        public override void EndAnnotation(Point p)
         {
-            if (_parentOverlay.RegionRectangles.Count > 0)
-            {
-                _parentOverlay.RegionRectangles[_parentOverlay.RegionRectangles.Count - 1] =
-                    new Rect(Canvas.GetLeft(_parentOverlay.XPreviewRect), Canvas.GetTop(_parentOverlay.XPreviewRect), _parentOverlay.XPreviewRect.Width,
-                        _parentOverlay.XPreviewRect.Height);
-                Width = _parentOverlay.XPreviewRect.Width;
-                Height = _parentOverlay.XPreviewRect.Height;
+            Canvas.SetLeft(this, XPos);
+            Canvas.SetTop(this, YPos);
+            Width = ParentOverlay.XPreviewRect.Width;
+            Height = ParentOverlay.XPreviewRect.Height;
 
-                if (_parentOverlay.RegionRectangles.Last().Width < 4 || _parentOverlay.RegionRectangles.Last().Height < 4)
-                {
-                    _parentOverlay.RegionRectangles.RemoveAt(_parentOverlay.RegionRectangles.Count - 1);
-                    return;
-                }
+            if (Width < 4 || Height < 4)
+            {
+                return;
             }
 
-            XRegionRect.Width = _parentOverlay.XPreviewRect.Width;
-            XRegionRect.Height = _parentOverlay.XPreviewRect.Height;
-            _parentOverlay.XAnnotationCanvas.Children.Add(this);
-            Canvas.SetLeft(XRegionRect, Canvas.GetLeft(_parentOverlay.XPreviewRect));
-            Canvas.SetTop(XRegionRect, Canvas.GetTop(_parentOverlay.XPreviewRect));
-            _parentOverlay.AnchorableAnnotations.Add(this);
+            XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
+            XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
+            ParentOverlay.XAnnotationCanvas.Children.Add(this);
+            ParentOverlay.CurrentAnchorableAnnotations.Add(this);
         }
 
-        public double AddSubregionToRegion(DocumentController region)
+        public override double AddSubregionToRegion(DocumentController region)
         {
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
-            region.AddToListField(KeyStore.SelectionRegionSizeKey, new PointController(XRegionRect.Width, XRegionRect.Height));
-            var pdfView = this.GetFirstAncestorOfType<PdfView>();
-            var scale = pdfView?.ActualWidth / pdfView?.PdfMaxWidth ?? 1;
-            var vOffset = Canvas.GetTop(this) * scale;
-            var scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
-            Debug.Assert(!double.IsNaN(scrollRatio));
-            return scrollRatio;
+            region.AddToListField(KeyStore.SelectionRegionSizeKey,
+                new PointController(XRegionRect.Width, XRegionRect.Height));
+
+            return YPos;
         }
     }
 }

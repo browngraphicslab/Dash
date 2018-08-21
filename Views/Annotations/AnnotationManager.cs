@@ -155,7 +155,7 @@ namespace Dash
         //		// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
         //		// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
         //              FollowDocument(chosenDC, pos);
-        //           SelectionManager.SelectRegion(chosenDC);
+        //           SelectionManager.SelectRegionFromParent(chosenDC);
         //          }
         //          else
         //	{
@@ -170,7 +170,7 @@ namespace Dash
         //               if (toLinks?.Count + fromLinks?.Count == 1)
         //			{
         //				var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //				dc = dc.GetDataDocument()
         //	                .GetDereferencedField<ListController<DocumentController>>(
         //		                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
@@ -196,7 +196,7 @@ namespace Dash
         //			}
         //			else
         //			{
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //			}
         //		}
 
@@ -257,7 +257,7 @@ namespace Dash
         //    }
 
         //    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
-        //    va?.GetAnnotationManager().SelectRegion(target);
+        //    va?.GetAnnotationManager().SelectRegionFromParent(target);
         //    //if (va is PdfView pdf)
         //    //{
         //	   // pdf.ScrollToRegion(target);

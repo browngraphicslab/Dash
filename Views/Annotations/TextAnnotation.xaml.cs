@@ -19,24 +19,24 @@ using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
-    public sealed partial class TextAnnotation : UserControl, IAnchorable
+    public sealed partial class TextAnnotation
     {
         public DocumentController DocumentController { get; set; }
-        private int[] _index = new int[2];
+        public int StartIndex = -1;
+        public int EndIndex = -1;
+        public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
-        private NewAnnotationOverlay _parentOverlay;
 
-        public TextAnnotation(NewAnnotationOverlay parent)
+        public TextAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
-            _parentOverlay = parent;
         }
 
-        public void Render()
+        public override void Render()
         {
             if (DocumentController.GetField(KeyStore.PDFSubregionKey) == null)
             {
-                var currentSelections = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+                var currentSelections = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
                 var indices = new List<int>();
                 double minRegionY = double.PositiveInfinity;
@@ -52,42 +52,40 @@ namespace Dash
                 int prevIndex = -1;
                 foreach (int index in indices)
                 {
-                    SelectableElement elem = _parentOverlay.TextSelectableElements[index];
+                    SelectableElement elem = ParentOverlay.TextSelectableElements[index];
                     if (prevIndex + 1 != index)
                     {
-                        var pdfView = this.GetFirstAncestorOfType<PdfView>();
-                        double scale = pdfView.Width / pdfView.PdfMaxWidth;
-                        double vOffset = elem.Bounds.Y * scale;
-                        double scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
-                        subRegionsOffsets.Add(scrollRatio);
+                        subRegionsOffsets.Add(elem.Bounds.Y);
                     }
                     minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
                     prevIndex = index;
                 }
 
-                if ((this.GetFirstAncestorOfType<PdfView>()) != null)
+                if (this.GetFirstAncestorOfType<PdfView>() != null)
                 {
-                    DocumentController.SetField(KeyStore.PDFSubregionKey, new ListController<NumberController>(subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                    DocumentController.SetField(KeyStore.PDFSubregionKey,
+                        new ListController<NumberController>(
+                            subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
                 }
             }
 
             HelpRenderRegion();
         }
 
-        public  void StartAnnotation(Point p)
+        public override void StartAnnotation(Point p)
         {
             if (!this.IsCtrlPressed())
             {
-                if (_parentOverlay.CurrentSelections.Any() || _parentOverlay.RegionRectangles.Any())
+                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
                 {
-                    _parentOverlay.ClearSelection();
+                    ParentOverlay.ClearSelection();
                 }
             }
-            // _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+
             _selectionStartPoint = p;
         }
 
-        public void UpdateAnnotation(Point p)
+        public override void UpdateAnnotation(Point p)
         {
             if (_selectionStartPoint.HasValue)
             {
@@ -103,15 +101,16 @@ namespace Dash
                     return;
                 }
 
-                _index[0] = startEle.Index;
                 var currentEle = GetClosestElementInDirection(p, new Point(-dir.X, -dir.Y));
                 if (currentEle == null)
                 {
                     return;
                 }
 
-                _index[1] = currentEle.Index;
-                _parentOverlay.SelectElements(Math.Min(startEle.Index, currentEle.Index), Math.Max(startEle.Index, currentEle.Index), _selectionStartPoint ?? new Point(), p);
+                ParentOverlay.SelectElements(Math.Min(startEle.Index, currentEle.Index),
+                    Math.Max(startEle.Index, currentEle.Index), _selectionStartPoint ?? new Point(), p);
+                XPos = Math.Min(XPos, startEle.Bounds.X);
+                YPos = Math.Min(YPos, startEle.Bounds.Y);
             }
         }
 
@@ -119,7 +118,7 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in _parentOverlay.TextSelectableElements)
+            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
             {
                 var b = selectableElement.Bounds;
                 if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
@@ -151,22 +150,23 @@ namespace Dash
             return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
         }
 
-        public  void EndAnnotation(Point p)
+        public override void EndAnnotation(Point p)
         {
-            if (!_parentOverlay.CurrentSelections.Any() || _parentOverlay.CurrentSelections.Last().Key == -1) return;//Not currently selecting anything
+            if (StartIndex == -1 || EndIndex == -1) return;//Not currently selecting anything
             _selectionStartPoint = null;
-            _parentOverlay.AnchorableAnnotations.Add(this);
+            ParentOverlay.CurrentAnchorableAnnotations.Add(this);
         }
 
         private void HelpRenderRegion()
         {
-            var posList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            var indexList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+            var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new NewAnnotationOverlay.SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
+                new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
 
             for (var i = 0; i < posList.Count; ++i)
             {
@@ -181,7 +181,7 @@ namespace Dash
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
 
-            if (_parentOverlay.TextSelectableElements != null && indexList.Any())
+            if (ParentOverlay.TextSelectableElements != null && indexList.Any())
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -191,7 +191,7 @@ namespace Dash
                     var range = t.Data;
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var rect = _parentOverlay.TextSelectableElements[ind].Bounds;
+                        var rect = ParentOverlay.TextSelectableElements[ind].Bounds;
                         topLeft.X = Math.Min(topLeft.X, rect.Left);
                         topLeft.Y = Math.Min(topLeft.Y, rect.Y);
                         if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
@@ -214,10 +214,10 @@ namespace Dash
                 RenderSubRegion(topLeft, PlacementMode.Mouse, path, vm);
             }
 
-            _parentOverlay.Regions.Add(vm);
+            ParentOverlay.Regions.Add(vm);
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, NewAnnotationOverlay.SelectionViewModel vm)
+        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
         {
             r.SetBinding(Shape.FillProperty, new Binding
             {
@@ -230,9 +230,9 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    _parentOverlay.XAnnotationCanvas.Children.Remove(r);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(r);
                 }
-                _parentOverlay.SelectRegion(vm, args.GetPosition(this));
+                SelectRegionFromParent(vm, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
@@ -262,37 +262,42 @@ namespace Dash
                 Converter = new BoolToVisibilityConverter()
             });
 
-            _parentOverlay.FormatRegionOptionsFlyout(vm.RegionDocument, r);
-            _parentOverlay.XAnnotationCanvas.Children.Add(r);
+            FormatRegionOptionsFlyout(vm.RegionDocument, r);
+            ParentOverlay.XAnnotationCanvas.Children.Add(r);
         }
 
-        public double AddSubregionToRegion(DocumentController region)
+        public override double AddSubregionToRegion(DocumentController region)
         {
-            var selection =
-                _parentOverlay.CurrentSelections.Find(kvp => kvp.Key.Equals(_index[0]) && kvp.Value.Equals(_index[1]));
-            var ind = _parentOverlay.CurrentSelections.IndexOf(selection);
-            for (var i = selection.Key; i <= selection.Value; i++)
+            var prevUsedIndex = -1;
+            var prevStartIndex = StartIndex;
+            for (var i = StartIndex; i <= EndIndex; i++)
             {
-                var elem = _parentOverlay.TextSelectableElements[i];
-                if (_parentOverlay.CurrentSelectionClipRects[ind] == Rect.Empty || _parentOverlay.CurrentSelectionClipRects[ind]
-                        .Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2,
-                            elem.Bounds.Y + elem.Bounds.Height / 2)))
+                var elem = ParentOverlay.TextSelectableElements[i];
+                if (ClipRect.Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2,
+                    elem.Bounds.Y + elem.Bounds.Height / 2)))
                 {
-                    // this will avoid double selecting any items
-                    if (_parentOverlay.Indices.Contains(i))
+                    if (i != prevUsedIndex + 1)
                     {
-                        _parentOverlay.Indices.Add(i);
+                        region.AddToListField(KeyStore.SelectionIndicesListKey,
+                            new PointController(prevStartIndex, prevUsedIndex));
+                        prevStartIndex = i;
                     }
+
+                    prevUsedIndex = i;
+
+                    YPos = ClipRect.Y;
+                    XPos = ClipRect.X;
+                }
+                else if (ClipRect == Rect.Empty)
+                {
+                    break;
                 }
             }
 
-            region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(selection.Key, selection.Value));
+            if (ClipRect == Rect.Empty)
+                region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
 
-            var pdfView = this.GetFirstAncestorOfType<PdfView>();
-            var scale = pdfView?.ActualWidth / pdfView?.PdfMaxWidth ?? 1;
-            var vOffset = _parentOverlay.TextSelectableElements[selection.Key].Bounds.Y * scale;
-            var scrollRatio = vOffset / pdfView.TopScrollViewer.ExtentHeight;
-            return scrollRatio;
+            return YPos;
         }
     }
 }
