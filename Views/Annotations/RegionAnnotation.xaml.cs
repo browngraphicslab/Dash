@@ -101,46 +101,7 @@ namespace Dash
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
-            Canvas.SetLeft(r, pos.X);
-            Canvas.SetTop(r, pos.Y);
-            r.Tapped += (sender, args) =>
-            {
-                if (this.IsCtrlPressed() && this.IsAltPressed())
-                {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(r);
-                }
-                SelectRegionFromParent(vm, args.GetPosition(this));
-                args.Handled = true;
-            };
-            //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip { Placement = mode };
-            ToolTipService.SetToolTip(r, tip);
-            r.PointerExited += (s, e) => tip.IsOpen = false;
-            r.PointerEntered += (s, e) =>
-            {
-                tip.IsOpen = true;
-                var regionDoc = vm.RegionDocument.GetDataDocument();
-
-                var allLinkSets = new List<IEnumerable<DocumentController>>
-                {
-                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
-                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
-                };
-                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
-                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
-
-                //update tag content based on current tags of region
-                tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
-            };
-            r.SetBinding(VisibilityProperty, new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
-                Converter = new BoolToVisibilityConverter()
-            });
-
-            FormatRegionOptionsFlyout(vm.RegionDocument, r);
-            ParentOverlay.XAnnotationCanvas.Children.Add(r);
+            InitializeAnnotationObject(r, pos, mode, vm);
         }
 
         public override void StartAnnotation(Point p)

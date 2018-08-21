@@ -1,10 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 
 namespace Dash
@@ -98,6 +102,49 @@ namespace Dash
             }
         }
 
+        protected virtual void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
+        {
+            Canvas.SetLeft(shape, pos.X);
+            Canvas.SetTop(shape, pos.Y);
+            shape.Tapped += (sender, args) =>
+            {
+                if (this.IsCtrlPressed() && this.IsAltPressed())
+                {
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
+                }
+                SelectRegionFromParent(vm, args.GetPosition(this));
+                args.Handled = true;
+            };
+            //TOOLTIP TO SHOW TAGS
+            var tip = new ToolTip { Placement = mode };
+            ToolTipService.SetToolTip(shape, tip);
+            shape.PointerExited += (s, e) => tip.IsOpen = false;
+            shape.PointerEntered += (s, e) =>
+            {
+                tip.IsOpen = true;
+                var regionDoc = vm.RegionDocument.GetDataDocument();
+
+                var allLinkSets = new List<IEnumerable<DocumentController>>
+                {
+                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
+                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
+                };
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
+                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
+
+                //update tag content based on current tags of region
+                tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
+            };
+            shape.SetBinding(VisibilityProperty, new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
+                Converter = new BoolToVisibilityConverter()
+            });
+
+            FormatRegionOptionsFlyout(vm.RegionDocument, shape);
+            ParentOverlay.XAnnotationCanvas.Children.Add(shape);
+        }
 
         public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
         {

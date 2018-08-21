@@ -226,21 +226,26 @@ namespace Dash
                 Fill = new SolidColorBrush(Colors.OrangeRed),
                 IsDoubleTapEnabled = false
             };
-            Canvas.SetLeft(pin, point.X - pin.Width / 2);
-            Canvas.SetTop(pin, point.Y - pin.Height / 2);
-            ParentOverlay.XAnnotationCanvas.Children.Add(pin);
+            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)),
+                new SolidColorBrush(Colors.OrangeRed));
 
-            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
-            pin.DataContext = vm;
+            InitializeAnnotationObject(pin, point, PlacementMode.Bottom, vm);
+        }
 
+        protected override void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
+        {
+            shape.DataContext = vm;
+            Canvas.SetLeft(shape, pos.X - shape.Width / 2);
+            Canvas.SetTop(shape, pos.Y - shape.Height / 2);
+            ParentOverlay.XAnnotationCanvas.Children.Add(shape);
             var tip = new ToolTip
             {
-                Placement = PlacementMode.Bottom
+                Placement = mode
             };
-            ToolTipService.SetToolTip(pin, tip);
+            ToolTipService.SetToolTip(shape, tip);
 
-            pin.PointerExited += (s, e) => tip.IsOpen = false;
-            pin.PointerEntered += (s, e) =>
+            shape.PointerExited += (s, e) => tip.IsOpen = false;
+            shape.PointerEntered += (s, e) =>
             {
                 tip.IsOpen = true;
                 //update tag content based on current tags of region
@@ -264,44 +269,44 @@ namespace Dash
                 }
                 tip.Content = content;
             };
-            pin.Tapped += (sender, args) =>
+            shape.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(pin);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
                     ParentOverlay.RegionDocsList.Remove(DocumentController);
                 }
                 SelectRegionFromParent(vm, args.GetPosition(this));
                 args.Handled = true;
             };
 
-            pin.PointerPressed += (s, e) => e.Handled = true;
+            shape.PointerPressed += (s, e) => e.Handled = true;
 
             //handlers for moving pin
-            pin.ManipulationMode = ManipulationModes.All;
-            pin.ManipulationStarted += (s, e) =>
+            shape.ManipulationMode = ManipulationModes.All;
+            shape.ManipulationStarted += (s, e) =>
             {
-                pin.ManipulationMode = ManipulationModes.All;
+                shape.ManipulationMode = ManipulationModes.All;
                 e.Handled = true;
             };
-            pin.ManipulationDelta += (s, e) =>
+            shape.ManipulationDelta += (s, e) =>
             {
-                DocumentController.SetPosition(new Point(Canvas.GetLeft(pin) + e.Delta.Translation.X, Canvas.GetTop(pin) + e.Delta.Translation.Y));
+                DocumentController.SetPosition(new Point(Canvas.GetLeft(shape) + e.Delta.Translation.X, Canvas.GetTop(shape) + e.Delta.Translation.Y));
                 var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
-                Canvas.SetLeft(pin, Canvas.GetLeft(pin) + p.X);
-                Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
+                Canvas.SetLeft(shape, Canvas.GetLeft(shape) + p.X);
+                Canvas.SetTop(shape, Canvas.GetTop(shape) + p.Y);
                 e.Handled = true;
             };
 
-            FormatRegionOptionsFlyout(DocumentController, pin);
+            FormatRegionOptionsFlyout(DocumentController, shape);
 
             //formatting bindings
-            pin.SetBinding(Shape.FillProperty, new Binding
+            shape.SetBinding(Shape.FillProperty, new Binding
             {
                 Path = new PropertyPath(nameof(vm.SelectionColor)),
                 Mode = BindingMode.OneWay
             });
-            pin.SetBinding(VisibilityProperty, new Binding
+            shape.SetBinding(VisibilityProperty, new Binding
             {
                 Source = this,
                 Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
@@ -312,6 +317,7 @@ namespace Dash
             ParentOverlay.Regions.Add(vm);
         }
 
+        #region Unimplemented Methods
         public override void StartAnnotation(Point p)
         {
         }
@@ -328,5 +334,6 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+        #endregion
     }
 }
