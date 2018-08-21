@@ -1070,9 +1070,15 @@ namespace Dash
                 BindRenderTransform = true
             };
 
-            SelectionManager.Select(docView, false);
+            void Loaded(object sender, RoutedEventArgs args)
+            {
+                (sender as DocumentView).Loaded -= Loaded;
+                SelectionManager.Select(docView, false);
 
-            docView.DocumentDeselected += DocView_DocumentDeselected;
+                docView.DocumentDeselected += DocView_DocumentDeselected;
+            }
+
+            docView.Loaded += Loaded;
 
             //add to xCanvas
             xCanvas.Children.Add(docView);
