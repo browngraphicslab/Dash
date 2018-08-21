@@ -26,9 +26,9 @@ namespace Dash
             set => DataContext = value;
         }
 
-        private CustomPdfView _pdf;
+        private PdfView _pdf;
 
-        public PdfSideAnnotation(CustomPdfView pdf)
+        public PdfSideAnnotation(PdfView pdf)
         {
             this.InitializeComponent();
             _pdf = pdf;
