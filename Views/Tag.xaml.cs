@@ -79,17 +79,9 @@ namespace Dash
 
             if (currtags != null)
             {
-                foreach (var tag in currtags)
-                {
-                    if (tag.Data == this.Text)
-                    {
-                        uniqueTag = false;
-                    }
-                }
-                if (uniqueTag)
-                {
-                    currtags.Add(new TextController(this.Text));
-                }
+                currtags.RemoveAt(0);
+                currtags.Add(new TextController(this.Text));
+            
             }
             else
             {
