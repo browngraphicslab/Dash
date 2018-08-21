@@ -32,7 +32,7 @@
                 />
             </Storyboard>
 
-            <Storyboard x:Name="xFadeAnimationOut">
+            <Storyboard x:Name="xFadeAnimationOut" Completed="XFadeAnimationOut_OnCompleted">
                 <DoubleAnimation
                     Storyboard.TargetName="SuggestGrid"
                     Storyboard.TargetProperty="Opacity"

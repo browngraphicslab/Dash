@@ -448,7 +448,7 @@ namespace Dash
         /// <param name="value">the value being added to the list</param>
         public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
-            GetDereferencedField<ListController<T>>(key, null)?.Add(value);
+            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
 
             foreach (var d in GetDelegates().TypedData)
             {
