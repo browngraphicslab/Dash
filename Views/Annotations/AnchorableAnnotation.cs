@@ -32,6 +32,7 @@ namespace Dash
     public abstract class AnchorableAnnotation : UserControl
     {
         public DocumentController DocumentController;
+        public AnnotationType AnnotationType = AnnotationType.None;
         protected readonly NewAnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
@@ -41,7 +42,7 @@ namespace Dash
             ParentOverlay = parentOverlay;
         }
 
-        public abstract void Render();
+        public abstract void Render(SelectionViewModel vm);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
@@ -105,6 +106,11 @@ namespace Dash
 
         protected virtual void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
         {
+            shape.SetBinding(Shape.FillProperty, new Binding
+            {
+                Path = new PropertyPath(nameof(vm.SelectionColor)),
+                Mode = BindingMode.OneWay
+            });
             Canvas.SetLeft(shape, pos.X);
             Canvas.SetTop(shape, pos.Y);
             shape.Tapped += (sender, args) =>

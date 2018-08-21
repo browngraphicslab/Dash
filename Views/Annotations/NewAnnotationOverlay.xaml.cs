@@ -152,30 +152,32 @@ namespace Dash
 
         private void RenderAnnotation(DocumentController documentController)
         {
-            AnchorableAnnotation newAnnotation = null;
+            var newAnnotations = new List<AnchorableAnnotation>();
             switch (documentController.GetAnnotationType())
             {
                 // regions and selectons follow the same functionality
                 case AnnotationType.Region:
-                    newAnnotation = new RegionAnnotation(this);
-                    break;
                 case AnnotationType.Selection:
-                    newAnnotation = new TextAnnotation(this);
+                    newAnnotations.Add(new RegionAnnotation(this));
+                    newAnnotations.Add(new TextAnnotation(this));
+                    newAnnotations.ForEach(i => i.DocumentController = documentController);
+                    var rvm = new AnchorableAnnotation.SelectionViewModel(documentController,
+                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
+                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+                    newAnnotations.ForEach(i => i.Render(rvm));
                     break;
                 case AnnotationType.Ink:
                     break;
                 case AnnotationType.Pin:
-					//render pin will be called with specific doc controller if in process of making pin
-                    newAnnotation = new PinAnnotation(this);
+                    //render pin will be called with specific doc controller if in process of making pin
+                    newAnnotations.Add(new PinAnnotation(this));
+                    newAnnotations.ForEach(i => i.DocumentController = documentController);
+                    var pvm = new AnchorableAnnotation.SelectionViewModel(documentController,
+                        new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
+                    newAnnotations.ForEach(i => i.Render(pvm));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
-
-            if (newAnnotation != null)
-            {
-                newAnnotation.DocumentController = documentController;
-                newAnnotation.Render();
             }
         }
 

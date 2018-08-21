@@ -217,7 +217,7 @@ namespace Dash
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
             Context context)
         {
-            if (args.NewValue == null)
+            if (args.NewValue == null || (sender.GetField(KeyStore.GoToRegionKey) == null && sender.GetField(KeyStore.GoToRegionLinkKey) == null))
             {
                 return;
             }

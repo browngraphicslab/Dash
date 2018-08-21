@@ -28,17 +28,16 @@ namespace Dash
         public RegionAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
+
+            AnnotationType = AnnotationType.Region;
         }
 
-        public override void Render()
+        public override void Render(SelectionViewModel vm)
         {
             var posList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             var sizeList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             Debug.Assert(posList.Count == sizeList.Count);
-
-            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)), new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
 
             for (var i = 0; i < posList.Count; ++i)
             {
@@ -53,50 +52,11 @@ namespace Dash
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
 
-            if (ParentOverlay.TextSelectableElements != null && indexList.Any())
-            {
-                var geometryGroup = new GeometryGroup();
-                var topLeft = new Point(double.MaxValue, double.MaxValue);
-                RectangleGeometry lastRect = null;
-                foreach (var t in indexList)
-                {
-                    var range = t.Data;
-                    for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
-                    {
-                        var rect = ParentOverlay.TextSelectableElements[ind].Bounds;
-                        topLeft.X = Math.Min(topLeft.X, rect.Left);
-                        topLeft.Y = Math.Min(topLeft.Y, rect.Y);
-                        if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
-                            lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, rect.X + rect.Width - lastRect.Rect.X, rect.Y + rect.Height - lastRect.Rect.Y);
-                        else
-                            geometryGroup.Children.Add(lastRect = new RectangleGeometry { Rect = rect });
-                    }
-                }
-                foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
-                {
-                    rect.Rect = new Rect(new Point(rect.Rect.X - topLeft.X, rect.Rect.Y - topLeft.Y),
-                        new Size(rect.Rect.Width, rect.Rect.Height));
-                }
-                var path = new Path
-                {
-                    Data = geometryGroup,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false,
-                    Fill = vm.UnselectedBrush
-                };
-                RenderSubRegion(topLeft, PlacementMode.Mouse, path, vm);
-            }
-
             ParentOverlay.Regions.Add(vm);
         }
 
         private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
         {
-            r.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(vm.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
