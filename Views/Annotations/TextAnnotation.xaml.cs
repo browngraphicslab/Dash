@@ -21,7 +21,6 @@ namespace Dash
 {
     public sealed partial class TextAnnotation
     {
-        public DocumentController DocumentController { get; set; }
         public int StartIndex = -1;
         public int EndIndex = -1;
         public Rect ClipRect = Rect.Empty;

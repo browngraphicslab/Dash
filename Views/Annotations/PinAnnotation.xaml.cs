@@ -25,8 +25,6 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        public DocumentController DocumentController { get; set; }
-
         public PinAnnotation(NewAnnotationOverlay parent, Point point, DocumentController target = null) : base(parent)
         {
             this.InitializeComponent();
@@ -47,10 +45,9 @@ namespace Dash
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="target"></param>
-        public PinAnnotation(NewAnnotationOverlay parent, DocumentController target) : base(parent)
+        public PinAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
-            DocumentController = target;
         }
 
         public async void Initialize(Point point)

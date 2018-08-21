@@ -152,32 +152,30 @@ namespace Dash
 
         private void RenderAnnotation(DocumentController documentController)
         {
+            AnchorableAnnotation newAnnotation = null;
             switch (documentController.GetAnnotationType())
             {
                 // regions and selectons follow the same functionality
                 case AnnotationType.Region:
-                    var newRegion = new RegionAnnotation(this)
-                    {
-                        DocumentController = documentController
-                    };
-                    newRegion.Render();
+                    newAnnotation = new RegionAnnotation(this);
                     break;
                 case AnnotationType.Selection:
-                    var newSelection = new TextAnnotation(this)
-                    {
-                        DocumentController = documentController
-                    };
-                    newSelection.Render();
+                    newAnnotation = new TextAnnotation(this);
                     break;
                 case AnnotationType.Ink:
                     break;
                 case AnnotationType.Pin:
 					//render pin will be called with specific doc controller if in process of making pin
-                    var newPin = new PinAnnotation(this, documentController);
-                    newPin.Render();
+                    newAnnotation = new PinAnnotation(this);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+
+            if (newAnnotation != null)
+            {
+                newAnnotation.DocumentController = documentController;
+                newAnnotation.Render();
             }
         }
 

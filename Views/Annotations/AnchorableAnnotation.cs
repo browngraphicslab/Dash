@@ -31,6 +31,7 @@ namespace Dash
 
     public abstract class AnchorableAnnotation : UserControl
     {
+        public DocumentController DocumentController;
         protected readonly NewAnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;

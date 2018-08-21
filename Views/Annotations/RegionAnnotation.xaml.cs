@@ -23,7 +23,6 @@ namespace Dash
 {
     public sealed partial class RegionAnnotation
     {
-        public DocumentController DocumentController { get; set; }
         private Point _previewStartPoint;
 
         public RegionAnnotation(NewAnnotationOverlay parent) : base(parent)
