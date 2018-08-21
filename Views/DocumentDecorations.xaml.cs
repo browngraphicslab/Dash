@@ -828,7 +828,13 @@ namespace Dash
                 if (string.IsNullOrEmpty(entry)) return;
 
 
-                AddTagIfUnique(entry).Select();
+                var newtag = AddTagIfUnique(entry);
+                foreach (var tag in Tags)
+                {
+                    tag.Deselect();
+                }
+
+                newtag.Select();
 
                 box.Text = "";
             }
