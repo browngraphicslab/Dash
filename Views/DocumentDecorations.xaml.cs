@@ -748,6 +748,7 @@ namespace Dash
                 }
                 else
                 {
+
                     foreach (var tag in Tags)
                     {
                         if (tag.Text.StartsWith(search))
@@ -829,9 +830,9 @@ namespace Dash
 
 
                 var newtag = AddTagIfUnique(entry);
-                foreach (var tag in Tags)
+                foreach (var tag in xTest.Children)
                 {
-                    tag.Deselect();
+                    (tag as Tag).Deselect();
                 }
 
                 newtag.Select();
@@ -957,7 +958,7 @@ namespace Dash
             //TODO: change link's annotation type
              var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
-            currEditLink.SetAnnotationType(AnnotationType.Selection);
+            //currEditLink.SetAnnotationType(AnnotationType.Selection);
 
             //switch (selected)
             //{
