@@ -78,34 +78,6 @@ namespace Dash
             // If the enum is or falls within the requested enum data type and such data exists in the package, convert it to its corresponding document controller
             // and return the list of these collected documents
 
-            // HTML
-
-            if (transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
-            {
-                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
-            }
-
-            // RTF
-
-            if (transferType.HasFlag(Rtf) && packageView.Contains(StandardDataFormats.Rtf))
-            {
-                dropDocs.Add(await ConvertRtfData(packageView, where));
-            }
-
-            // Plain Text
-
-            if (transferType.HasFlag(PlainText) && packageView.Contains(StandardDataFormats.Text))
-            {
-                dropDocs.Add(await ConvertPlainTextData(packageView, where));
-            }
-
-            // Image (rarely hit, most images fall under Storage Items)
-
-            if (transferType.HasFlag(Image) && packageView.Contains(StandardDataFormats.Bitmap))
-            {
-                dropDocs.Add(await ConvertBitmapData(packageView, where));
-            }
-
             // Storage Items
 
             if (transferType.HasFlag(FileSystem) && packageView.Contains(StandardDataFormats.StorageItems))
@@ -114,9 +86,37 @@ namespace Dash
                 if (documentController != null) dropDocs.Add(documentController);
             }
 
+            // HTML
+
+            else if (transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
+            {
+                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+            } 
+
+            // RTF
+
+            else if (transferType.HasFlag(Rtf) && packageView.Contains(StandardDataFormats.Rtf))
+            {
+                dropDocs.Add(await ConvertRtfData(packageView, where));
+            }
+
+            // Plain Text
+
+            else if (transferType.HasFlag(PlainText) && packageView.Contains(StandardDataFormats.Text))
+            {
+                dropDocs.Add(await ConvertPlainTextData(packageView, where));
+            }
+
+            // Image (rarely hit, most images fall under Storage Items)
+
+            else if (transferType.HasFlag(Image) && packageView.Contains(StandardDataFormats.Bitmap))
+            {
+                dropDocs.Add(await ConvertBitmapData(packageView, where));
+            }
+
             // Internal Dash Document or Field
 
-            if (transferType.HasFlag(Internal))
+            else if (transferType.HasFlag(Internal))
             {
                 dropDocs.AddRange(packageView.GetAllInternalDroppableDocuments(where, targetElement));
             }
