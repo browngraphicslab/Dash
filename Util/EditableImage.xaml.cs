@@ -424,7 +424,7 @@ namespace Dash
                 }
                 else if(point.Properties.IsLeftButtonPressed)
                 {
-                    _annotationOverlay.UpdateRegion(point.Position);
+                    _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;
                 }
             }
