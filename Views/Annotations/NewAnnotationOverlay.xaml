@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-        <Grid Background="Transparent"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
+        <Grid DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
                 <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
 
             <ItemsControl x:Name="xItemsControl"
@@ -19,7 +19,6 @@
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas 
-                            Background="Transparent"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Top"
                            Width="0"
