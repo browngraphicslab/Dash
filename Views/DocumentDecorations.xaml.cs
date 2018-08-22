@@ -548,7 +548,7 @@ namespace Dash
         }
         
         //rebuilds the different link dots when the menu is refreshed or one is added
-        private void rebuildMenuIfNeeded()
+        public void rebuildMenuIfNeeded()
         {
             if (SuggestGrid.Visibility == Visibility.Visible) return;
             xButtonsPanel.Children.Clear();

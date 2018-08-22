@@ -37,9 +37,6 @@ namespace Dash
         private string _text;
         private Color _color;
         private DocumentDecorations _docdecs;
-	    public bool Selected = false;
-	    public SolidColorBrush selectedBrush = new SolidColorBrush(Color.FromArgb(240, 64, 123, 177));
-
         public Grid XTagContainer
         {
             get => xTagContainer;
@@ -57,18 +54,18 @@ namespace Dash
         }
 
 
-        //      private void XTagContainer_OnTapped(object sender, TappedRoutedEventArgs e)
-        //      {
-        //          if (xTagContainer.BorderBrush.Equals(selectedBrush))
-        //          {
-        //		Deselect();
-        //	}
-        //          else
-        //          {
-        //           Select();
+        private void XTagContainer_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xTagContainer.BorderThickness == new Thickness(2))
+            {
+                Deselect();
+            }
 
-        //	}
-        //      }
+            else
+            {
+                Select();
+            }
+        }
 
         //      //temporary method for telling all links associated with this tag that an additional tag has been added
         //      public void UpdateOtherTags()
@@ -120,108 +117,116 @@ namespace Dash
             return 0;
         }
 
-        //   public void Deselect()
-        //   {
-        //    Selected = false;
-        //    XTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
-        //          var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-        //	if (_docdecs.SelectedDocs.Count == 1)
-        //	{
-        //              foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-        //		    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-        //		    {
-        //                      var currtags = link.GetDataDocument().GetLinkTags();
-        //			    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-        //			    {
-        //				    RemoveLink(link, currtags);
-        //				    break;
-        //			    }
+        public void Deselect()
+        {
+            
+            xTagContainer.BorderThickness = new Thickness(0);
+            //var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+            //if (_docdecs.SelectedDocs.Count == 1)
+            //{
+            //    foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+            //        foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+            //        {
+            //            var currtags = link.GetDataDocument().GetLinkTags();
+            //            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+            //            {
+            //                RemoveLink(link, currtags);
+            //                break;
+            //            }
 
-        //                      if ((link.GetLinkTags()?.Count ?? 0) == 0)
-        //                      {
-        //                          RemoveLink(link, currtags);
-        //                          break;
-        //                      }
-        //                  }
-        //	}
-        //}
+            //            if ((link.GetLinkTags()?.Count ?? 0) == 0)
+            //            {
+            //                RemoveLink(link, currtags);
+            //                break;
+            //            }
+            //        }
+            //}
+        }
 
-        //   public void Select()
-        //   {
-        //    Selected = true;
+        public void Select()
+        {
 
-        //       foreach (var tag in _docdecs.RecentTags)
-        //       {
-        //           tag.Deselect();
-        //       }
+            foreach (var tag in _docdecs._tagNameDict)
+            {
+                tag.Value.Deselect();
+            }
 
-        //          xTagContainer.BorderBrush = selectedBrush;
-        //          //xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+            foreach (var tag in _docdecs.RecentTags)
+            {
+                tag.Deselect();
+            }
 
-        //          //tell doc decs to change currently activated buttons 
+            _docdecs.rebuildMenuIfNeeded();
 
 
-        //          bool unique = true;
-        //          foreach (var recent in _docdecs.RecentTags)
-        //          {
-        //              if (recent.Text == _text)
-        //              {
-        //                  unique = false;
-        //              }
-        //          }
+            xTagContainer.BorderThickness = new Thickness(2);
+            xTagContainer.Padding = new Thickness(6, -2, 6, 4);
 
-        //          var doc = new DocumentController();
-        //	doc.SetField<TextController>(KeyStore.DataKey, _text, true);
-        //	doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
 
-        //          if (unique)
-        //          {
-        //              if (_docdecs.RecentTags.Count < 5)
-        //		{
-        //			_docdecs.RecentTags.Enqueue(this);
-        //			_docdecs.RecentTagsSave.Add(doc);
-        //		}
-        //		else
-        //		{
-        //			_docdecs.RecentTags.Dequeue();
-        //			_docdecs.RecentTagsSave.RemoveAt(0);
-        //			_docdecs.RecentTags.Enqueue(this);
-        //			_docdecs.RecentTagsSave.Add(doc);
-        //		}
-        //	}
+            //tell doc decs to change currently activated buttons 
 
-        //          var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-        //          if (_docdecs.SelectedDocs.Count == 1)
-        //          {
-        //              foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-        //                  foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-        //                  {
-        //                      if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-        //                      {
-        //                          AddLink(link);
-        //                          break;
-        //                      }
 
-        //                      if ((link.GetLinkTags()?.Count ?? 0) == 0)
-        //                      {
-        //                          AddLink(link);
-        //                          break;
-        //                      }
-        //                  }
-        //          }
+            bool unique = true;
+            foreach (var recent in _docdecs.RecentTags)
+            {
+                if (recent.Text == _text)
+                {
+                    unique = false;
+                }
+            }
 
-        //}
+            var doc = new DocumentController();
+            doc.SetField<TextController>(KeyStore.DataKey, _text, true);
+            doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
 
-        //   public void RidSelectionBorder()
-        //   {
-        //    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            if (unique)
+            {
+                if (_docdecs.RecentTags.Count < 5)
+                {
+                    _docdecs.RecentTags.Enqueue(this);
+                    _docdecs.RecentTagsSave.Add(doc);
+                }
+                else
+                {
+                    _docdecs.RecentTags.Dequeue();
+                    _docdecs.RecentTagsSave.RemoveAt(0);
+                    _docdecs.RecentTags.Enqueue(this);
+                    _docdecs.RecentTagsSave.Add(doc);
+                }
+            }
 
-        //   }
+            //var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+            //if (_docdecs.SelectedDocs.Count == 1)
+            //{
+            //    foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+            //        foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+            //        {
+            //            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+            //            {
+            //                AddLink(link);
+            //                break;
+            //            }
 
-        //public void AddSelectionBorder()
-        //{
-        //	xTagContainer.BorderBrush = selectedBrush;
+            //            if ((link.GetLinkTags()?.Count ?? 0) == 0)
+            //            {
+            //                AddLink(link);
+            //                break;
+            //            }
+            //        }
+            //}
 
-        //}
+        }
+
+        public void RidSelectionBorder()
+        {
+            xTagContainer.BorderThickness = new Thickness(0);
+
+        }
+
+        public void AddSelectionBorder()
+        {
+            xTagContainer.BorderThickness = new Thickness(2);
+
+        }
     }
 }
