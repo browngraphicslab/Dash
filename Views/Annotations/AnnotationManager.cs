@@ -134,23 +134,68 @@ namespace Dash
 	            MainPage.Instance.AddFloatingDoc(link);
             }
 
-	        foreach (ILinkHandler linkHandler in linkHandlers)
+            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null).Data;
+            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null).Data;
+
+            var document = link.GetLinkedDocument(direction);
+
+            switch (linkBehav)
 	        {
-	            LinkHandledResult status = linkHandler.HandleLink(link, direction);
+                case "Z":
+                    //navigate to link
+                    if (linkContext)
+                    {
+                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        {
+                            var tree = DocumentTree.MainPageTree;
+                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            {
+                                var docNode = tree.Nodes[document];
+                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                            }
+                            else
+                            {
+                                MainPage.Instance.SetCurrentWorkspace(document);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MainPage.Instance.SetCurrentWorkspace(document);
+                    }
 
-	            if (status == LinkHandledResult.HandledClose) break;
-	            if (status == LinkHandledResult.HandledRemainOpen)
-	            {
-	                void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
-	                {
-	                    args.Cancel = true;
-                        _linkFlyout.Closing -= LinkFlyoutOnClosing;
-	                }
+                    break;
+                case "A":
+                    //default behavior of highlighting and toggling link visibility and docking when off screen
+                    foreach (ILinkHandler linkHandler in linkHandlers)
+                    {
+                        LinkHandledResult status = linkHandler.HandleLink(link, direction);
 
-                    _linkFlyout.Closing += LinkFlyoutOnClosing; 
-	            }
+                        if (status == LinkHandledResult.HandledClose) break;
+                        if (status == LinkHandledResult.HandledRemainOpen)
+                        {
+                            void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
+                            {
+                                args.Cancel = true;
+                                _linkFlyout.Closing -= LinkFlyoutOnClosing;
+                            }
+
+                            _linkFlyout.Closing += LinkFlyoutOnClosing;
+                        }
+                    }
+                    break;
+                case "D":
+                    MainPage.Instance.Dock_Link(link, direction, linkContext);
+                    break;
+                case "F":
+                    MainPage.Instance.AddFloatingDoc(document);
+                    break;
+                default:
+                    break;
+
 	        }
-	    }
+
+        }
 
 	    #region Old annotation stuff
 

@@ -213,7 +213,6 @@ namespace Dash
 
         public void LoadTags(DocumentController settingsdoc)
         {
-
             RecentTagsSave =
                 settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
             TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
@@ -237,6 +236,12 @@ namespace Dash
             {
                 xTest.Children.Add(tag);
             }
+
+            //add four link behavior tags
+            //xLinkTypeTags.Children.Add(new Tag(this, "Zoom", Colors.CornflowerBlue));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Annotation", Colors.OrangeRed));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Dock", Colors.MediumPurple));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Float", Colors.PaleVioletRed));
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -871,6 +876,8 @@ namespace Dash
             //TODO: DO I NEED THIS?
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
+       
+
             //if one link has this tag, open tag editor for that link
             if (tagMap[currTag.Text].Count == 1)
             {
@@ -932,6 +939,24 @@ namespace Dash
                 flyout.ShowAt(button);
             }
 
+            //select saved link options
+            xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+            var linkType = currEditLink?.GetDataDocument()?.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data ?? "";
+            switch (linkType)
+            {
+                case "Z":
+                    xTypeZoom.IsSelected = true;
+                    break;
+                case "A":
+                    xTypeAnnotation.IsSelected = true;
+                    break;
+                case "D":
+                    xTypeDock.IsSelected = true;
+                    break;
+                case "F":
+                    xTypeFloat.IsSelected = true;
+                    break;
+            }
 
         }
 
@@ -949,33 +974,51 @@ namespace Dash
 
         private void XInContext_OnToggled(object sender, RoutedEventArgs e)
         {
-            //TODO: change if links shows collection or just document
+            //save if in context toggle is on or off
+            var toggled = (sender as ToggleSwitch)?.IsOn;
+            currEditLink?.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
         }
 
 
         private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //TODO: change link's annotation type
-             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
-            //currEditLink.SetAnnotationType(AnnotationType.Selection);
+            //save field for what link behavior is selected
+            var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
-            //switch (selected)
-            //{
-            //    case "Default":
-            //        currEditLink.SetAnnotationType(AnnotationType.None);
-            //        break;
-            //    default:
-            //        break;
-            //}
-
-            //var link = currEditLink.GetAnnotationType();
-
-
-            //var doc = SelectedDocs?.FirstOrDefault();
-            //var allLinks = doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-            //allLinks?.AddRange(doc?.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey));
-
+            switch (selected)
+            {
+                case "Zoom":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "Z", true);
+                    //set in context toggle based on saved info before making area visible 
+                    if (xInContext != null && xInContextGrid != null)
+                    {
+                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                        xInContextGrid.Visibility = Visibility.Visible;
+                    }
+                    
+                    break;
+                case "Annotation":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "A", true);
+                    xInContextGrid.Visibility = Visibility.Collapsed;
+                    break;
+                case "Dock":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "D", true);
+                    //set in context toggle based on saved info before making area visible 
+                    if (xInContext != null && xInContextGrid != null)
+                    {
+                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                        xInContextGrid.Visibility = Visibility.Visible;
+                    }
+                    
+                    break;
+                case "Float":
+                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "F", true);
+                    xInContextGrid.Visibility = Visibility.Collapsed;
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void XFadeAnimationOut_OnCompleted(object sender, object e)
