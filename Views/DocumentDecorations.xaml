@@ -42,7 +42,7 @@
         </Grid.Resources>
 
         <Border Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
-                HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
+                HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" x:FieldModifier="public" />
 
         <Grid x:Name="xStackPanel" Grid.Column="1" Height="Auto" Background="#108bbbe5" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
             <Grid.RowDefinitions>
