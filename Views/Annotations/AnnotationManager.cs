@@ -129,7 +129,7 @@ namespace Dash
 	    {
             //show link description floating doc if operator output is true
 	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
-	        if (linkOperator.Data)
+	        if (linkOperator?.Data ?? false)
 	        {
 	            MainPage.Instance.AddFloatingDoc(link);
             }

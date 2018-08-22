@@ -136,6 +136,7 @@ namespace Dash
             }
         }
 
+
         private void ManipulationControls_OnManipulatorAborted()
         {
             VisibilityState = Visibility.Collapsed;
@@ -254,6 +255,7 @@ namespace Dash
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
             {
+                ViewManipulationControls.currentDocDec = this;
                 xMultiSelectBorder.BorderThickness = new Thickness(2);
             }
             else
