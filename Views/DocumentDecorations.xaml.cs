@@ -38,6 +38,8 @@ namespace Dash
 
         public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
+        private bool optionClick;
+
         public Visibility VisibilityState
         {
             get => _visibilityState;
@@ -322,8 +324,8 @@ namespace Dash
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            ContentColumn.Width = new Windows.UI.Xaml.GridLength(botRight.X - topLeft.X);
+            xRow.Height = new Windows.UI.Xaml.GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
@@ -735,6 +737,16 @@ namespace Dash
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Collapsed;
+
+            var doc = sender as DocumentDecorations;
+            if (e == null ||
+                (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
+                 !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && !optionClick)
+            {
+                SuggestGrid.Visibility = Visibility.Collapsed;
+            }
+
+            optionClick = false;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -1023,9 +1035,16 @@ namespace Dash
             }
         }
 
+        private void XLinkTypeBox_OnDropDownOpened(object sender, object e)
+        {
+            optionClick = true;
+        }
+
         private void XFadeAnimationOut_OnCompleted(object sender, object e)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
+
+  
     }
 }

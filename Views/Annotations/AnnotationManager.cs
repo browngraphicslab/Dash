@@ -134,8 +134,8 @@ namespace Dash
 	            MainPage.Instance.AddFloatingDoc(link);
             }
 
-            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null).Data;
-            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null).Data;
+            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null)?.Data;
+            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
 
             var document = link.GetLinkedDocument(direction);
 

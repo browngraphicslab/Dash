@@ -133,8 +133,8 @@
                     <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 10 0 0"/>
 
                 </Grid>
-                <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10">
-                    <ComboBoxItem x:Name="xTypeZoom" IsSelected="True">Zoom</ComboBoxItem>
+                <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkTypeBox_OnDropDownOpened">
+                    <ComboBoxItem x:Name="xTypeZoom">Zoom</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>
