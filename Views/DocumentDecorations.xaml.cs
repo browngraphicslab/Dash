@@ -38,6 +38,8 @@ namespace Dash
 
         public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
 
+        private bool optionClick;
+
         public Visibility VisibilityState
         {
             get => _visibilityState;
@@ -735,7 +737,15 @@ namespace Dash
         {
             VisibilityState = Visibility.Collapsed;
 
-            SuggestGrid.Visibility = Visibility.Collapsed;
+            var doc = sender as DocumentDecorations;
+            if (e == null ||
+                (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
+                 !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && !optionClick)
+            {
+                SuggestGrid.Visibility = Visibility.Collapsed;
+            }
+
+            optionClick = false;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -1023,9 +1033,16 @@ namespace Dash
             }
         }
 
+        private void XLinkTypeBox_OnDropDownOpened(object sender, object e)
+        {
+            optionClick = true;
+        }
+
         private void XFadeAnimationOut_OnCompleted(object sender, object e)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
+
+  
     }
 }
