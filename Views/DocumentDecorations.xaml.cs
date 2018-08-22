@@ -734,6 +734,8 @@ namespace Dash
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Collapsed;
+
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
