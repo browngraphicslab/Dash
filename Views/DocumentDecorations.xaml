@@ -155,7 +155,7 @@
                     <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 10 0 0"/>
 
                 </Grid>
-                <ToggleSwitch x:Name="xInContext" Toggled="XInContext_OnToggled" HorizontalAlignment="Center"></ToggleSwitch>
+                <ToggleSwitch x:Name="xInContext" Toggled="XInContext_OnToggled" HorizontalAlignment="Center" IsOn="True"></ToggleSwitch>
             </StackPanel>
         </Grid>
     </Grid>

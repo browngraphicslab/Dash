@@ -1141,7 +1141,7 @@ namespace Dash
             return LinkHandledResult.HandledRemainOpen;
         }
 
-        public void Dock_Link(DocumentController linkDoc, LinkDirection direction)
+        public void Dock_Link(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -1158,7 +1158,7 @@ namespace Dash
                 var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
                 var collection = node?.Parent.ViewDocument;
 
-                if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
+                if (collection == null || !inContext)       // if the document doesn't exist in any collection, then just dock it by itself
                 {
                     var docview = DockManager.Dock(target, DockDirection.Right);
                 }

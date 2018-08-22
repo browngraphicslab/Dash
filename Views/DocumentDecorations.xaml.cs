@@ -955,12 +955,15 @@ namespace Dash
 
         private void XInContext_OnToggled(object sender, RoutedEventArgs e)
         {
-            //TODO: change if links shows collection or just document
+            //save if in context toggle is on or off
+            var toggled = (sender as ToggleSwitch)?.IsOn;
+            currEditLink?.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
         }
 
 
         private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //save field for what link behavior is selected
             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
             switch (selected)

@@ -43,6 +43,7 @@ namespace Dash
 		public static KeyController LinkDestinationKey = new KeyController("LinkDestination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
 		public static KeyController LinkSourceKey = new KeyController("LinkSource", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
 	    public static KeyController LinkBehaviorKey = new KeyController("LinkBehavior", "1B87D286-826E-466D-A076-06C313CFD7DE");
+	    public static KeyController LinkContextKey = new KeyController("LinkContext", "A8FD93F3-0C39-44AE-9B69-B28F0787D32B");
         public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
 		public static KeyController ReferencesDictKey = new KeyController("_PDF Reference Mapping", "6B06B539-614C-486F-97C7-7CDAA729C421");
 		public static KeyController ReferenceNumKey = new KeyController("Reference #", "FD61D5F0-8C31-4132-A6B2-02C58067B5EA");

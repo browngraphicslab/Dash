@@ -134,16 +134,36 @@ namespace Dash
 	            MainPage.Instance.AddFloatingDoc(link);
             }
 
-            //TODO: change how link is followed based on choice (below is default annotation way)
             var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null).Data;
+            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null).Data;
 
-	        var document = link.GetLinkedDocument(direction);
+            var document = link.GetLinkedDocument(direction);
 
             switch (linkBehav)
 	        {
                 case "Z":
                     //navigate to link
-                    MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false);
+                    if (linkContext)
+                    {
+                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        {
+                            var tree = DocumentTree.MainPageTree;
+                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            {
+                                var docNode = tree.Nodes[document];
+                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                            }
+                            else
+                            {
+                                MainPage.Instance.SetCurrentWorkspace(document);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MainPage.Instance.SetCurrentWorkspace(document);
+                    }
+
                     break;
                 case "A":
                     //default behavior of highlighting and toggling link visibility and docking when off screen
@@ -165,7 +185,8 @@ namespace Dash
                     }
                     break;
                 case "D":
-                    MainPage.Instance.Dock_Link(link, direction);
+                    //TODO: if show in context is off, go straight here to showing doc
+                    MainPage.Instance.Dock_Link(link, direction, linkContext);
                     break;
                 case "F":
                     MainPage.Instance.AddFloatingDoc(document);
