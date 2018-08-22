@@ -75,32 +75,29 @@ namespace Dash
 
         //      }
 
-        //      public void AddLink(DocumentController link)
-        //      {
-        //          var currtags = link.GetDataDocument().GetLinkTags();
+        public void AddTag(DocumentController link)
+        {
+            var currtags = link.GetDataDocument().GetLinkTags();
+            
+            currtags = new ListController<TextController>();
+            currtags.Add(new TextController(this.Text));
+
+            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
+        }
+
+        private void RemoveTag(DocumentController link, ListController<TextController> currtags)
+        {
+
+            currtags.Clear();
 
 
+            if (_docdecs.Tags.Contains(this))
+            {
+                _docdecs.Tags.Remove(this);
+            }
 
-        //          currtags = new ListController<TextController>();
-        //          currtags.Add(new TextController(this.Text));
-
-        //          _docdecs.Tags.Add(this);
-        //          link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
-        //      }
-
-        //      private void RemoveLink(DocumentController link, ListController<TextController> currtags)
-        //      {
-
-        //          currtags.Clear();
-
-
-        //          if (_docdecs.Tags.Contains(this))
-        //          {
-        //              _docdecs.Tags.Remove(this);
-        //          }
-
-        //          link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
-        //      }
+            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
+        }
 
         public int Compare(Tag x, Tag y)
         {
@@ -121,26 +118,28 @@ namespace Dash
         {
             
             xTagContainer.BorderThickness = new Thickness(0);
-            //var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            //if (_docdecs.SelectedDocs.Count == 1)
-            //{
-            //    foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-            //        foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-            //        {
-            //            var currtags = link.GetDataDocument().GetLinkTags();
-            //            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-            //            {
-            //                RemoveLink(link, currtags);
-            //                break;
-            //            }
+            xTagContainer.Padding = new Thickness(4, 0, 4, 6);
 
-            //            if ((link.GetLinkTags()?.Count ?? 0) == 0)
-            //            {
-            //                RemoveLink(link, currtags);
-            //                break;
-            //            }
-            //        }
-            //}
+            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+            if (_docdecs.SelectedDocs.Count == 1)
+            {
+                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+                    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+                    {
+                        var currtags = link.GetDataDocument().GetLinkTags();
+                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+                        {
+                            RemoveTag(link, currtags);
+                            break;
+                        }
+
+                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
+                        {
+                            RemoveTag(link, currtags);
+                            break;
+                        }
+                    }
+            }
         }
 
         public void Select()
@@ -160,7 +159,7 @@ namespace Dash
 
 
             xTagContainer.BorderThickness = new Thickness(2);
-            xTagContainer.Padding = new Thickness(6, -2, 6, 4);
+            xTagContainer.Padding = new Thickness(4, -2, 4, 6);
 
 
             //tell doc decs to change currently activated buttons 
@@ -195,25 +194,25 @@ namespace Dash
                 }
             }
 
-            //var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            //if (_docdecs.SelectedDocs.Count == 1)
-            //{
-            //    foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-            //        foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-            //        {
-            //            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-            //            {
-            //                AddLink(link);
-            //                break;
-            //            }
+            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+            if (_docdecs.SelectedDocs.Count == 1)
+            {
+                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+                    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+                    {
+                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+                        {
+                            AddTag(link);
+                            break;
+                        }
 
-            //            if ((link.GetLinkTags()?.Count ?? 0) == 0)
-            //            {
-            //                AddLink(link);
-            //                break;
-            //            }
-            //        }
-            //}
+                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
+                        {
+                            AddTag(link);
+                            break;
+                        }
+                    }
+            }
 
         }
 
