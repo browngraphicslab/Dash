@@ -86,11 +86,7 @@ namespace Dash
             {
                 docs = DraggedDocuments.Select(d => d.GetKeyValueAlias(where)).ToList();
             }
-            else if (LinkSourceViews != null)
-            {
-                docs = GetLinkDocuments(where);
-            }
-            else
+            else if (MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
                 docs = DraggedDocuments.Select(d =>
@@ -109,6 +105,14 @@ namespace Dash
                     vcopy.SetFitToParent(true);
                     return vcopy;
                 }).ToList();
+            }
+            else if (LinkSourceViews != null)
+            {
+                docs = GetLinkDocuments(where);
+            }
+            else
+            {
+                docs = DraggedDocuments;
             }
 
             return MakeCollection ? new List<DocumentController>{ new CollectionNote(where, ViewType, collectedDocuments: docs).Document } : docs;
