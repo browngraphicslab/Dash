@@ -22,6 +22,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
+using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
 
 
@@ -96,6 +97,8 @@ namespace Dash
 
         public event EventHandler ResizeManipulationStarted;
         public event EventHandler ResizeManipulationCompleted;
+
+        private PointerRoutedEventArgs _pointerCapture;
 
         // == CONSTRUCTORs ==
 
@@ -221,6 +224,11 @@ namespace Dash
                 {
                     e.Handled = false;
                 }
+
+                if (e.IsRightPressed())
+                {
+                    _pointerCapture = e;
+                }
             };
 
             RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
@@ -320,127 +328,131 @@ namespace Dash
                 };
             }
 
+            ManipulationMode = ManipulationModes.All;
+            ManipulationStarted += DocumentView_ManipulationStarted;
+            DragStarting += DocumentView_DragStarting;
+
             // add manipulation code
-            ManipulationControls = new ManipulationControls(this);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) =>
-                SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
-            ManipulationControls.OnManipulatorAborted += () =>
-                SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
-                {
-                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
-                    d.RenderTransform =
-                        TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { d.ViewModel.InteractiveManipulationPosition, d.ViewModel.InteractiveManipulationScale });
-                });
-            ManipulationControls.OnManipulatorStarted += () =>
-            {
-                ToFront();
-                var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+            //ManipulationControls = new ManipulationControls(this);
+            //ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) =>
+            //    SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
+            //ManipulationControls.OnManipulatorAborted += () =>
+            //    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+            //    {
+            //        d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
+            //        d.RenderTransform =
+            //            TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { d.ViewModel.InteractiveManipulationPosition, d.ViewModel.InteractiveManipulationScale });
+            //    });
+            //ManipulationControls.OnManipulatorStarted += () =>
+            //{
+            //    ToFront();
+            //    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
-                // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = this.IsAltPressed()
-                    ? new List<DocumentView>()
-                    : SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
-                if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
-                {
-                    adornmentGroups.ForEach((dv) =>
-                    {
-                        SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
-                            new Size(dv.ActualWidth, dv.ActualHeight))), false);
-                    });
+            //    // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
+            //    var adornmentGroups = this.IsAltPressed()
+            //        ? new List<DocumentView>()
+            //        : SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+            //    if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
+            //    {
+            //        adornmentGroups.ForEach((dv) =>
+            //        {
+            //            SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position,
+            //                new Size(dv.ActualWidth, dv.ActualHeight))), false);
+            //        });
 
-                    SetSelectionBorder(false);
-                }
+            //        SetSelectionBorder(false);
+            //    }
 
-                // initialize the cached values of position and scale for each manipulated document  
-                SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
-                {
-                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
-                    d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
-                });
+            //    // initialize the cached values of position and scale for each manipulated document  
+            //    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+            //    {
+            //        d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
+            //        d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
+            //    });
 
-            };
-            ManipulationControls.OnManipulatorAborted += () =>
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
-                    {
-                        d.ViewModel.DecorationState = d.IsPointerOver() &&
-                                                      (d.ViewModel.ViewLevel.Equals(CollectionViewModel
-                                                           .StandardViewLevel.Detail) ||
-                                                       d.ViewModel.ViewLevel.Equals(CollectionViewModel
-                                                           .StandardViewLevel.None));
-                        d.ViewModel.Position =
-                            d.ViewModel
-                                .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
-                        d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-                    });
-                    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
-                    if (ViewModel.IsAdornmentGroup && !wasSelected)
-                    {
-                        if (ParentCollection.CurrentView is CollectionFreeformView ||
-                            ParentCollection.CurrentView is CollectionStandardView)
-                        {
-                            SelectionManager.DeselectAll();
-                        }
-                    }
-                }
-            };
-            ManipulationControls.OnManipulatorCompleted += () =>
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
-                    {
-                        d.ViewModel.DecorationState = d.IsPointerOver() &&
-                                                      (d.ViewModel.ViewLevel.Equals(CollectionViewModel
-                                                           .StandardViewLevel.Detail) ||
-                                                       d.ViewModel.ViewLevel.Equals(CollectionViewModel
-                                                           .StandardViewLevel.None));
-                        d.ViewModel.Position =
-                            d.ViewModel
-                                .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
-                        d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-                    });
-                    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
-                    if (ViewModel.IsAdornmentGroup && !wasSelected)
-                    {
-                        if (ParentCollection.CurrentView is CollectionFreeformView ||
-                            ParentCollection.CurrentView is CollectionStandardView)
-                        {
-                            SelectionManager.DeselectAll();
-                        }
-                    }
-                }
-            };
+            //};
+            //ManipulationControls.OnManipulatorAborted += () =>
+            //{
+            //    using (UndoManager.GetBatchHandle())
+            //    {
+            //        SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+            //        {
+            //            d.ViewModel.DecorationState = d.IsPointerOver() &&
+            //                                          (d.ViewModel.ViewLevel.Equals(CollectionViewModel
+            //                                               .StandardViewLevel.Detail) ||
+            //                                           d.ViewModel.ViewLevel.Equals(CollectionViewModel
+            //                                               .StandardViewLevel.None));
+            //            d.ViewModel.Position =
+            //                d.ViewModel
+            //                    .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+            //            d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+            //        });
+            //        var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+            //        if (ViewModel.IsAdornmentGroup && !wasSelected)
+            //        {
+            //            if (ParentCollection.CurrentView is CollectionFreeformView ||
+            //                ParentCollection.CurrentView is CollectionStandardView)
+            //            {
+            //                SelectionManager.DeselectAll();
+            //            }
+            //        }
+            //    }
+            //};
+            //ManipulationControls.OnManipulatorCompleted += () =>
+            //{
+            //    using (UndoManager.GetBatchHandle())
+            //    {
+            //        SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
+            //        {
+            //            d.ViewModel.DecorationState = d.IsPointerOver() &&
+            //                                          (d.ViewModel.ViewLevel.Equals(CollectionViewModel
+            //                                               .StandardViewLevel.Detail) ||
+            //                                           d.ViewModel.ViewLevel.Equals(CollectionViewModel
+            //                                               .StandardViewLevel.None));
+            //            d.ViewModel.Position =
+            //                d.ViewModel
+            //                    .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+            //            d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+            //        });
+            //        var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+            //        if (ViewModel.IsAdornmentGroup && !wasSelected)
+            //        {
+            //            if (ParentCollection.CurrentView is CollectionFreeformView ||
+            //                ParentCollection.CurrentView is CollectionStandardView)
+            //            {
+            //                SelectionManager.DeselectAll();
+            //            }
+            //        }
+            //    }
+            //};
 
-            KeyDown += (sender, args) =>
-            {
-                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
-                {
-                    if (!_isQuickEntryOpen)
-                    {
-                        _clearByClose = true;
-                        ClearQuickEntryBoxes();
-                        xKeyBox.Focus(FocusState.Keyboard);
-                    }
+            //KeyDown += (sender, args) =>
+            //{
+            //    if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+            //    {
+            //        if (!_isQuickEntryOpen)
+            //        {
+            //            _clearByClose = true;
+            //            ClearQuickEntryBoxes();
+            //            xKeyBox.Focus(FocusState.Keyboard);
+            //        }
 
-                    ToggleQuickEntry();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
-                {
-                    if (xKeyBox.FocusState != FocusState.Unfocused)
-                    {
-                        _articialChange = true;
-                        int pos = xKeyBox.SelectionStart;
-                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
-                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
-                        xKeyBox.SelectionStart = pos;
-                    }
-                    args.Handled = true;
-                }
-            };
+            //        ToggleQuickEntry();
+            //        args.Handled = true;
+            //    }
+            //    else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+            //    {
+            //        if (xKeyBox.FocusState != FocusState.Unfocused)
+            //        {
+            //            _articialChange = true;
+            //            int pos = xKeyBox.SelectionStart;
+            //            if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+            //            else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+            //            xKeyBox.SelectionStart = pos;
+            //        }
+            //        args.Handled = true;
+            //    }
+            //};
 
             xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
             xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
@@ -478,6 +490,25 @@ namespace Dash
             };
 
             ToFront();
+        }
+
+        private void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.Data.AddDragModel(new DragDocumentModel(
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
+            args.AllowedOperations =
+                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            //doc.ViewModel.DecorationState = false;
+        }
+
+        private async void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (_pointerCapture != null && SelectionManager.IsSelected(this))
+            {
+                e.Handled = true;
+                e.Complete();
+                await this.StartDragAsync(_pointerCapture.GetCurrentPoint(this));
+            }
         }
 
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
@@ -557,7 +588,7 @@ namespace Dash
             Debug.WriteLine(new Point(ActualWidth, ActualHeight));
 
             var trans = new MatrixTransform { Matrix = mat };
-            Point p = trans.TransformPoint(new Point(ActualWidth/* - xTitleBorder.Margin.Left*/, ActualHeight));
+            Point p = trans.TransformPoint(new Point(ActualWidth, ActualHeight));
 
             var cdo = new CoreDragOperation();
             var rtb = new RenderTargetBitmap();
@@ -567,20 +598,23 @@ namespace Dash
             IBuffer buf = await rtb.GetPixelsAsync();
             SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
 
-            Point pos = e?.GetCurrentPoint(this).Position ?? new Point();
+            Point pos = e?.GetCurrentPoint(this).Position ?? new Point(ActualWidth / 2, ActualHeight / 2);
 
             //pos.X -= xTitleBorder.Margin.Left;
             pos = trans.TransformPoint(pos);
-            pos.X = Math.Max(0, pos.X);
-            pos.Y = Math.Max(0, pos.Y);
-            pos.X = Math.Min(pos.X, ActualWidth);
-            pos.Y = Math.Min(pos.Y, ActualHeight);
+            //pos.X = Math.Max(0, pos.X);
+            //pos.Y = Math.Max(0, pos.Y);
+            //var transformRect = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, pos.X, pos.Y));
+            //var newPos = new Point(transformRect.Width, transformRect.Height);
 
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
 
             cdo.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
+            {
+                SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
+            });
 
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 

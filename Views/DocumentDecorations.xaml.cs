@@ -95,9 +95,9 @@ namespace Dash
                             ManipulatorCompleted;
                     }
 
-                    doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
-                    doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
-                    doc.ManipulationControls.OnManipulatorAborted -= ManipulationControls_OnManipulatorAborted;
+                    //doc.ManipulationControls.OnManipulatorStarted -= ManipulatorStarted;
+                    //doc.ManipulationControls.OnManipulatorCompleted -= ManipulatorCompleted;
+                    //doc.ManipulationControls.OnManipulatorAborted -= ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -123,10 +123,10 @@ namespace Dash
                             OnManipulatorHelperCompleted;
                     }
 
-                    doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
-                    doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
-                    doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
-                    doc.ManipulationControls.OnManipulatorAborted += ManipulationControls_OnManipulatorAborted;
+                    //doc.ManipulationControls.OnManipulatorStarted += ManipulatorStarted;
+                    //doc.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorMoving;
+                    //doc.ManipulationControls.OnManipulatorCompleted += ManipulatorCompleted;
+                    //doc.ManipulationControls.OnManipulatorAborted += ManipulationControls_OnManipulatorAborted;
                     doc.FadeOutBegin += DocView_OnDeleted;
                 }
 

@@ -18,6 +18,7 @@ namespace Dash
         * The XAML view that originated the drag operation - not required
         */
         public List<DocumentView> LinkSourceViews;
+        public List<CollectionView> SourceCollectionViews;
 
         public List<DocumentController> DraggedDocuments;
 
