@@ -718,7 +718,8 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
-                AddDocuments(await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where));
+                var docs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                AddDocuments(docs);
             }
         }
 
