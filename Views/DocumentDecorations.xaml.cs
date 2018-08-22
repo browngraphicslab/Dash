@@ -324,8 +324,8 @@ namespace Dash
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            ContentColumn.Width = new Windows.UI.Xaml.GridLength(botRight.X - topLeft.X);
+            xRow.Height = new Windows.UI.Xaml.GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
