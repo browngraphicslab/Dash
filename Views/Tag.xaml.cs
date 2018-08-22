@@ -96,7 +96,11 @@ namespace Dash
             
             currtags.Clear();
 
-            _docdecs.Tags.Remove(this);
+
+            if (_docdecs.Tags.Contains(this))
+            {
+                _docdecs.Tags.Remove(this);
+            }
 
             link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
         }

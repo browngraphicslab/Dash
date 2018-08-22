@@ -755,6 +755,7 @@ namespace Dash
                 }
                 else
                 {
+
                     foreach (var tag in Tags)
                     {
                         if (tag.Text.StartsWith(search))
@@ -836,9 +837,9 @@ namespace Dash
 
 
                 var newtag = AddTagIfUnique(entry);
-                foreach (var tag in Tags)
+                foreach (var tag in xTest.Children)
                 {
-                    tag.Deselect();
+                    (tag as Tag).Deselect();
                 }
 
                 newtag.Select();
@@ -983,6 +984,7 @@ namespace Dash
 
         private void XLinkTypeBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+
             //save field for what link behavior is selected
             var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
 
