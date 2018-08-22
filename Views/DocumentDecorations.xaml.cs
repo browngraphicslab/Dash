@@ -516,22 +516,22 @@ namespace Dash
                 }
             }
 
-            if (links != null)
-            {
-                //connect link to tag
-                foreach (DocumentController link in links)
-                {
-                    tag.AddLink(link);
-                }
-            }
+            //if (links != null)
+            //{
+            //    //connect link to tag
+            //    foreach (DocumentController link in links)
+            //    {
+            //        tag.AddLink(link);
+            //    }
+            //}
             return tag;
         }
 
         //adds the tag box & link button that connexts the name of the tag to all link docs included in the list
         private void AddTagGraphic(string name, List<DocumentController> linkList)
         {
-            //maybe call this
-            AddTag(name, tagMap[name]);
+            ////maybe call this
+            //AddTag(name, tagMap[name]);
             AddLinkTypeButton(name);
         }
 
@@ -546,6 +546,7 @@ namespace Dash
                 if (name != "")
                 {
                     AddTagGraphic(name, tagMap[name]);
+                    AddTag(name, tagMap[name]);
                 }
             }
         }
@@ -835,12 +836,13 @@ namespace Dash
 
 
                 var newtag = AddTagIfUnique(entry);
-                foreach (var tag in xTest.Children)
-                {
-                    (tag as Tag).Deselect();
-                }
+                tagMap.Add(entry, new List<DocumentController>());
+                //foreach (var tag in xTest.Children)
+                //{
+                //    (tag as Tag).Deselect();
+                //}
 
-                newtag.Select();
+                //newtag.Select();
 
                 box.Text = "";
             }
@@ -883,11 +885,11 @@ namespace Dash
             {
                 CurrEditTag = currTag;
                 //update selected recent tag
-                foreach (var tag in _recentTags)
-                {
-                    tag.RidSelectionBorder();
-                    if (tag.Text.Equals(currTag.Text)) tag.AddSelectionBorder();
-                }
+                //foreach (var tag in _recentTags)
+                //{
+                //    tag.RidSelectionBorder();
+                //    if (tag.Text.Equals(currTag.Text)) tag.AddSelectionBorder();
+                //}
                 currEditLink = tagMap[currTag.Text].First();
                 SuggestGrid.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
@@ -897,11 +899,11 @@ namespace Dash
                 CurrEditTag = currTag;
                 currEditLink = chosenLink;
                 //update selected recent tag
-                foreach (var tag in _recentTags)
-                {
-                    tag.RidSelectionBorder();
-                    if (chosenLink.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(tag.Text) ?? false) tag.AddSelectionBorder();
-                }
+                //foreach (var tag in _recentTags)
+                //{
+                //    tag.RidSelectionBorder();
+                //    if (chosenLink.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(tag.Text) ?? false) tag.AddSelectionBorder();
+                //}
                 SuggestGrid.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
             }
@@ -965,10 +967,10 @@ namespace Dash
         {
             //get active links from last-pressed btn & add this tag to them
 
-            foreach (var link in tagMap[CurrEditTag.Text])
-            {
-                selected.AddLink(link);
-            }
+            //foreach (var link in tagMap[CurrEditTag.Text])
+            //{
+            //    selected.AddLink(link);
+            //}
 
         }
 

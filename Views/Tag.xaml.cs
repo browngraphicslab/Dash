@@ -57,53 +57,53 @@ namespace Dash
         }
 
 
-        private void XTagContainer_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (xTagContainer.BorderBrush.Equals(selectedBrush))
-            {
-				Deselect();
-			}
-            else
-            {
-	            Select();
+        //      private void XTagContainer_OnTapped(object sender, TappedRoutedEventArgs e)
+        //      {
+        //          if (xTagContainer.BorderBrush.Equals(selectedBrush))
+        //          {
+        //		Deselect();
+        //	}
+        //          else
+        //          {
+        //           Select();
 
-			}
-        }
+        //	}
+        //      }
 
-        //temporary method for telling all links associated with this tag that an additional tag has been added
-        public void UpdateOtherTags()
-        {
-            //get active links from doc dec based on last-pressed btn & add this tag to them
-            _docdecs.UpdateAllTags(this);
+        //      //temporary method for telling all links associated with this tag that an additional tag has been added
+        //      public void UpdateOtherTags()
+        //      {
+        //          //get active links from doc dec based on last-pressed btn & add this tag to them
+        //          _docdecs.UpdateAllTags(this);
 
-        }
+        //      }
 
-        public void AddLink(DocumentController link)
-        {
-            var currtags = link.GetDataDocument().GetLinkTags();
-
-           
-            
-            currtags = new ListController<TextController>();
-            currtags.Add(new TextController(this.Text));
-            
-            _docdecs.Tags.Add(this);
-            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
-        }
-
-        private void RemoveLink(DocumentController link, ListController<TextController> currtags)
-        {
-            
-            currtags.Clear();
+        //      public void AddLink(DocumentController link)
+        //      {
+        //          var currtags = link.GetDataDocument().GetLinkTags();
 
 
-            if (_docdecs.Tags.Contains(this))
-            {
-                _docdecs.Tags.Remove(this);
-            }
 
-            link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
-        }
+        //          currtags = new ListController<TextController>();
+        //          currtags.Add(new TextController(this.Text));
+
+        //          _docdecs.Tags.Add(this);
+        //          link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
+        //      }
+
+        //      private void RemoveLink(DocumentController link, ListController<TextController> currtags)
+        //      {
+
+        //          currtags.Clear();
+
+
+        //          if (_docdecs.Tags.Contains(this))
+        //          {
+        //              _docdecs.Tags.Remove(this);
+        //          }
+
+        //          link.GetDataDocument().SetField(KeyStore.LinkTagKey, currtags, true);
+        //      }
 
         public int Compare(Tag x, Tag y)
         {
@@ -120,108 +120,108 @@ namespace Dash
             return 0;
         }
 
-	    public void Deselect()
-	    {
-		    Selected = false;
-		    XTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
-            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-			if (_docdecs.SelectedDocs.Count == 1)
-			{
-                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-				    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-				    {
-                        var currtags = link.GetDataDocument().GetLinkTags();
-					    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-					    {
-						    RemoveLink(link, currtags);
-						    break;
-					    }
+        //   public void Deselect()
+        //   {
+        //    Selected = false;
+        //    XTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+        //          var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+        //	if (_docdecs.SelectedDocs.Count == 1)
+        //	{
+        //              foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+        //		    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+        //		    {
+        //                      var currtags = link.GetDataDocument().GetLinkTags();
+        //			    if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+        //			    {
+        //				    RemoveLink(link, currtags);
+        //				    break;
+        //			    }
 
-                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
-                        {
-                            RemoveLink(link, currtags);
-                            break;
-                        }
-                    }
-			}
-		}
+        //                      if ((link.GetLinkTags()?.Count ?? 0) == 0)
+        //                      {
+        //                          RemoveLink(link, currtags);
+        //                          break;
+        //                      }
+        //                  }
+        //	}
+        //}
 
-	    public void Select()
-	    {
-		    Selected = true;
+        //   public void Select()
+        //   {
+        //    Selected = true;
 
-	        foreach (var tag in _docdecs.RecentTags)
-	        {
-	            tag.Deselect();
-	        }
+        //       foreach (var tag in _docdecs.RecentTags)
+        //       {
+        //           tag.Deselect();
+        //       }
 
-            xTagContainer.BorderBrush = selectedBrush;
-            //xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+        //          xTagContainer.BorderBrush = selectedBrush;
+        //          //xTagContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
 
-            //tell doc decs to change currently activated buttons 
-	        
+        //          //tell doc decs to change currently activated buttons 
 
-            bool unique = true;
-            foreach (var recent in _docdecs.RecentTags)
-            {
-                if (recent.Text == _text)
-                {
-                    unique = false;
-                }
-            }
 
-            var doc = new DocumentController();
-			doc.SetField<TextController>(KeyStore.DataKey, _text, true);
-			doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
+        //          bool unique = true;
+        //          foreach (var recent in _docdecs.RecentTags)
+        //          {
+        //              if (recent.Text == _text)
+        //              {
+        //                  unique = false;
+        //              }
+        //          }
 
-            if (unique)
-            {
-                if (_docdecs.RecentTags.Count < 5)
-				{
-					_docdecs.RecentTags.Enqueue(this);
-					_docdecs.RecentTagsSave.Add(doc);
-				}
-				else
-				{
-					_docdecs.RecentTags.Dequeue();
-					_docdecs.RecentTagsSave.RemoveAt(0);
-					_docdecs.RecentTags.Enqueue(this);
-					_docdecs.RecentTagsSave.Add(doc);
-				}
-			}
+        //          var doc = new DocumentController();
+        //	doc.SetField<TextController>(KeyStore.DataKey, _text, true);
+        //	doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
 
-            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            if (_docdecs.SelectedDocs.Count == 1)
-            {
-                foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-                    foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-                    {
-                        if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-                        {
-                            AddLink(link);
-                            break;
-                        }
+        //          if (unique)
+        //          {
+        //              if (_docdecs.RecentTags.Count < 5)
+        //		{
+        //			_docdecs.RecentTags.Enqueue(this);
+        //			_docdecs.RecentTagsSave.Add(doc);
+        //		}
+        //		else
+        //		{
+        //			_docdecs.RecentTags.Dequeue();
+        //			_docdecs.RecentTagsSave.RemoveAt(0);
+        //			_docdecs.RecentTags.Enqueue(this);
+        //			_docdecs.RecentTagsSave.Add(doc);
+        //		}
+        //	}
 
-                        if ((link.GetLinkTags()?.Count ?? 0) == 0)
-                        {
-                            AddLink(link);
-                            break;
-                        }
-                    }
-            }
-			
-		}
+        //          var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
+        //          if (_docdecs.SelectedDocs.Count == 1)
+        //          {
+        //              foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+        //                  foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
+        //                  {
+        //                      if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+        //                      {
+        //                          AddLink(link);
+        //                          break;
+        //                      }
 
-	    public void RidSelectionBorder()
-	    {
-		    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+        //                      if ((link.GetLinkTags()?.Count ?? 0) == 0)
+        //                      {
+        //                          AddLink(link);
+        //                          break;
+        //                      }
+        //                  }
+        //          }
 
-	    }
+        //}
 
-		public void AddSelectionBorder()
-		{
-			xTagContainer.BorderBrush = selectedBrush;
+        //   public void RidSelectionBorder()
+        //   {
+        //    xTagContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
-		}
-	}
+        //   }
+
+        //public void AddSelectionBorder()
+        //{
+        //	xTagContainer.BorderBrush = selectedBrush;
+
+        //}
+    }
 }
