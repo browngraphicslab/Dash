@@ -185,7 +185,6 @@ namespace Dash
                     }
                     break;
                 case "D":
-                    //TODO: if show in context is off, go straight here to showing doc
                     MainPage.Instance.Dock_Link(link, direction, linkContext);
                     break;
                 case "F":

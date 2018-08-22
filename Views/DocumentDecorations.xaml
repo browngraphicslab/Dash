@@ -134,10 +134,10 @@
 
                 </Grid>
                 <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10">
-                    <ComboBoxItem IsSelected="True">Zoom</ComboBoxItem>
-                    <ComboBoxItem>Annotation</ComboBoxItem>
-                    <ComboBoxItem>Dock</ComboBoxItem>
-                    <ComboBoxItem>Float</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeZoom" IsSelected="True">Zoom</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>
                 </ComboBox>
 
 

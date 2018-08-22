@@ -875,7 +875,7 @@ namespace Dash
             //TODO: DO I NEED THIS?
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
-            //TODO: make sure right thing in xLinkTypeBox is selected
+       
 
             //if one link has this tag, open tag editor for that link
             if (tagMap[currTag.Text].Count == 1)
@@ -938,6 +938,24 @@ namespace Dash
                 flyout.ShowAt(button);
             }
 
+            //select saved link options
+            xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+            var linkType = currEditLink?.GetDataDocument()?.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data ?? "";
+            switch (linkType)
+            {
+                case "Z":
+                    xTypeZoom.IsSelected = true;
+                    break;
+                case "A":
+                    xTypeAnnotation.IsSelected = true;
+                    break;
+                case "D":
+                    xTypeDock.IsSelected = true;
+                    break;
+                case "F":
+                    xTypeFloat.IsSelected = true;
+                    break;
+            }
 
         }
 
