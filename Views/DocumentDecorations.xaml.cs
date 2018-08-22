@@ -238,10 +238,10 @@ namespace Dash
             }
 
             //add four link behavior tags
-            xLinkTypeTags.Children.Add(new Tag(this, "Zoom", Colors.CornflowerBlue));
-            xLinkTypeTags.Children.Add(new Tag(this, "Annotation", Colors.OrangeRed));
-            xLinkTypeTags.Children.Add(new Tag(this, "Dock", Colors.MediumPurple));
-            xLinkTypeTags.Children.Add(new Tag(this, "Float", Colors.PaleVioletRed));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Zoom", Colors.CornflowerBlue));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Annotation", Colors.OrangeRed));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Dock", Colors.MediumPurple));
+            //xLinkTypeTags.Children.Add(new Tag(this, "Float", Colors.PaleVioletRed));
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -970,15 +970,31 @@ namespace Dash
             {
                 case "Zoom":
                     currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "Z", true);
+                    //set in context toggle based on saved info before making area visible 
+                    if (xInContext != null && xInContextGrid != null)
+                    {
+                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                        xInContextGrid.Visibility = Visibility.Visible;
+                    }
+                    
                     break;
                 case "Annotation":
                     currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "A", true);
+                    xInContextGrid.Visibility = Visibility.Collapsed;
                     break;
                 case "Dock":
                     currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "D", true);
+                    //set in context toggle based on saved info before making area visible 
+                    if (xInContext != null && xInContextGrid != null)
+                    {
+                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                        xInContextGrid.Visibility = Visibility.Visible;
+                    }
+                    
                     break;
                 case "Float":
                     currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "F", true);
+                    xInContextGrid.Visibility = Visibility.Collapsed;
                     break;
                 default:
                     break;
