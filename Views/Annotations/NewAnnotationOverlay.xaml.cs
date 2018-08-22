@@ -99,7 +99,7 @@ namespace Dash
             var deselect = SelectedRegion?.Selected == true;
             var selectable = Regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
+                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
                     nvo.SelectedRegion?.Deselect();
                     nvo.SelectedRegion = deselect ? null : r;

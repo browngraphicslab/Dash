@@ -34,8 +34,8 @@ namespace Dash
 
         public override void Render(SelectionViewModel vm)
         {
-            var posList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
 
             Debug.Assert(posList.Count == sizeList.Count);
 
