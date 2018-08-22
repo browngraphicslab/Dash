@@ -218,7 +218,23 @@ namespace Dash
         }
 
         // helper method for moving the mainpage screen
-        private static void NavigateToDocument(DocumentController dc) => MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true);
+        private static void NavigateToDocument(DocumentController dc)
+        {
+            //if navigation failed, it wasn't in current workspace or something
+            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true))
+            {
+                var tree = DocumentTree.MainPageTree;
+                if (tree.Nodes.ContainsKey(dc))//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work
+                {
+                    var docNode = tree.Nodes[dc];
+                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                }
+                else
+                {
+                    MainPage.Instance.SetCurrentWorkspace(dc);
+                }
+            }
+        } 
 
         // these buttons are only enabled when the presentation is playing
         private void ResetBackNextButtons()
