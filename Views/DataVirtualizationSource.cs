@@ -1,213 +1,132 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.Storage.Streams;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 
 namespace Dash
 {
     public class DataVirtualizationSource<T>
     {
-        public List<Size> PageSizes;
-        private readonly ObservableCollection<UIElement> _visibleElements;
+        private const double MaxPageWidth = 1500; // maximum width to render a page.  avoids generating oversized (memory-wise) Bitmaps
+        private readonly ObservableCollection<Image> _visibleElements = new ObservableCollection<Image>();
+        private readonly List<double> _visibleElementsRenderedWidth = new List<double>();
+        private readonly List<double> _visibleElementsTargetedWidth = new List<double>();
+        private readonly List<bool>   _visibleElementsIsRendering = new List<bool>();
         private readonly ScrollViewer _scrollViewer;
         private readonly CustomPdfView _view;
-        private int _pageBuffer = 1;
-        private int _startIndex;
-        private int _endIndex;
-        private double _verticalOffset;
+        private double  _verticalOffset;
+        public List<Size> PageSizes;
 
         public DataVirtualizationSource(CustomPdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
             _view = view;
             _scrollViewer = scrollviewer;
-            _visibleElements = new ObservableCollection<UIElement>();
             PageSizes = new List<Size>();
             pageItemsControl.ItemsSource = _visibleElements;
             view.DocumentLoaded += View_Loaded;
         }
+        ~DataVirtualizationSource()
+        {
+            Debug.WriteLine("Finalizing DataVirtualizationSource");
+        }
 
         /// <summary>
-        ///     Given a vertical offset, returns an integer that represents in 0-index the page that
-        ///     that offset correlates with.
+        /// Given a vertical offset, return the corresponding 0-index page
         /// </summary>
         public int GetIndex(double verticalOffset)
         {
             var index = 0;
             var scale = _scrollViewer.ActualWidth / _view.PdfMaxWidth;
-            var height = PageSizes[index].Height * scale;
-            var currOffset = verticalOffset;
-            while (currOffset - height > 0)
+            var currOffset = verticalOffset - PageSizes[index].Height * scale;
+            while (currOffset > 0)
             {
-                currOffset -= height;
-                index++;
-                height = index < PageSizes.Count ? PageSizes[index].Height * scale : 10000000000;
+                if (index < PageSizes.Count-1)
+                    currOffset -= PageSizes[++index].Height * scale;
+                else
+                    break;
             }
 
             return index;
         }
-
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
-            // initializes the stackpanel with white rectangles
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
-                _visibleElements.Add(new Rectangle
-                {
-                    Width = PageSizes[i].Width,
-                    Height = PageSizes[i].Height,
-                    Margin = new Thickness(0, 0, 0, 10),
-                    Fill = new SolidColorBrush(Colors.White),
-                    Tag = false
-                });
+                _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
+                _visibleElementsTargetedWidth.Add(-1);
+                _visibleElementsRenderedWidth.Add(-1);
+                _visibleElementsIsRendering.Add(false);
             }
-
-            // updates the scrollviewer to scroll to the previous scroll position if existent
-            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey);
-            if (scrollRatio != null)
-            {
-                _scrollViewer.UpdateLayout();
-                _scrollViewer.ChangeView(null, scrollRatio.Data * _scrollViewer.ExtentHeight, null, true);
-            }
-
-            _verticalOffset = scrollRatio?.Data * _scrollViewer.ExtentHeight ?? 0;
-            // get the start index and apply the buffer if possible
-            var startIndex = GetIndex(_verticalOffset);
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            _startIndex = startIndex;
-
-            // get the end index and apply the buffer if possible
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-            _endIndex = endIndex;
-
-            // render the indices requested
-            RenderIndices(startIndex, endIndex, true);
             
-            _scrollViewer.ViewChanging += ScrollViewer_ViewChanging;
-        }
+            _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
+            _scrollViewer.SizeChanged   += (s,e) => RenderIndices(_verticalOffset);
 
-        public void View_SizeChanged()
-        {
-            if (!_visibleElements.Any()) return;
-
-            // get the start and end indices with buffers
-            var startIndex = GetIndex(_verticalOffset);
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + _verticalOffset) + 1;
-
-            // set the page buffer to the amount of pages visible at any given moment
-            _pageBuffer = endIndex - startIndex;
-
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-
-            // render the requested indices, force them to re-render (since the size has changed)
-            RenderIndices(startIndex, endIndex, true);
-
-            _startIndex = startIndex;
-            _endIndex = endIndex;
-        }
-
-        private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-        {
-            // get the start and end vertices with buffers
-            _verticalOffset = e.FinalView.VerticalOffset;
-            var startIndex = GetIndex(e.FinalView.VerticalOffset);
-            var endIndex = GetIndex(_scrollViewer.ViewportHeight + e.FinalView.VerticalOffset) + 1;
-
-            startIndex = Math.Max(startIndex - _pageBuffer, 0);
-            endIndex = Math.Min(endIndex + _pageBuffer, _visibleElements.Count - 1);
-
-            // render the requested indices
-            RenderIndices(startIndex, endIndex);
-
-            _startIndex = startIndex;
-            _endIndex = endIndex;
-        }
-
-        public void ForceRender()
-        {
-            RenderIndices(_startIndex, _endIndex, true);
-        }
-
-        private async void RenderIndices(int startIndex, int endIndex, bool forceRender = false)
-        {
-            // don't re-render anything if we don't need to
-            if (startIndex == _startIndex && endIndex == _endIndex && !forceRender)
+            _scrollViewer.UpdateLayout(); // bcz: Ugh!  _scrollViewer's ExtentHeight and ActualHeight aren't set when this gets loaded, so we're forced to update it here
+            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
+            if (scrollRatio != 0)
             {
-                return;
+                _scrollViewer.ChangeView(null, scrollRatio * _scrollViewer.ExtentHeight, null, true);
             }
-
-            // start with rendering the indices requested
-            for (var i = startIndex; i <= endIndex; i++)
+            else
+                RenderIndices(0);
+        }
+        private void RenderIndices(double scrollOffset)
+        {
+            _verticalOffset = scrollOffset;
+            if (_scrollViewer.ActualHeight != 0)
             {
-                // if the item is curerntly an image and we're forcing a re-render, re-render the image's source
-                if (_visibleElements[i] is Image img && forceRender)
+                var endIndex   = GetIndex(_scrollViewer.ActualHeight + scrollOffset) + 1;
+                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight));
+                var pageBuffer = (endIndex - startIndex) / 2;
+                startIndex = Math.Max(startIndex - pageBuffer, 0);
+                endIndex   = Math.Min(endIndex   + pageBuffer, _visibleElements.Count - 1);
+                for (var i = 0; i < _visibleElements.Count; i++)
                 {
-                    img.Source = await RenderPage((uint)i);
-                }
-                // otherwise, if it's currently a rectangle, create a new image with the rendered page
-                else if (_visibleElements[i] is Rectangle rect && !(bool)rect.Tag)
-                {
-                    rect.Tag = true;
-                    _visibleElements[i] = new Image
+                    var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
+                    if (!_visibleElementsIsRendering[i] && targetWidth != _visibleElementsRenderedWidth[i])
                     {
-                        Source = await RenderPage((uint) i),
-                        Margin = new Thickness(0, 0, 0, 10)
-                    };
-                }
-                // if it's already an image and we don't want to force a re-render, don't do anything to it
-            }
-
-            // unrender anything that's no longer in the range of requested indices
-            for (var i = 0; i < _visibleElements.Count; i++)
-            {
-                if (i < startIndex || i > endIndex)
-                {
-                    // if it's an image, change it to a rectangle with a matching size
-                    if (_visibleElements[i] is Image img)
+                        _visibleElementsIsRendering[i] = true;
+                        _visibleElementsTargetedWidth[i] = targetWidth;
+                        if (_view.PdfUri != null)
+                            RenderPage(i);
+                    }
+                    else
                     {
-                        _visibleElements[i] = new Rectangle
-                        {
-                            Width = img.ActualWidth,
-                            Height = img.ActualHeight,
-                            Margin = new Thickness(0, 0, 0, 10),
-                            Fill = new SolidColorBrush(Colors.White),
-                            Tag = false
-                        };
+                        _visibleElementsTargetedWidth[i] = targetWidth;
                     }
                 }
             }
         }
-
-        private async Task<ImageSource> RenderPage(uint pageNum)
+        private async void RenderPage(int pageNum)
         {
-            if (_view.PdfUri == null)
+            using (var page = _view.PDFdoc.GetPage((uint)pageNum))
             {
-                return null;
-            }
-
-            using (var page = _view.PDFdoc.GetPage(pageNum))
-            {
-                var options = new Windows.Data.Pdf.PdfPageRenderOptions();
-                var stream = new InMemoryRandomAccessStream();
-                var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
-                var widthRatio = _view.ActualWidth == 0 ? 1 : (_view.ActualWidth / screenMap.X) / _view.PdfMaxWidth;
-                var box = page.Dimensions.MediaBox;
-                options.DestinationWidth = (uint) Math.Min(widthRatio * box.Width, 1500);
-                options.DestinationHeight = (uint) Math.Min(widthRatio * box.Height, 1500 * box.Height / box.Width);
-                await page.RenderToStreamAsync(stream, options);
-                var source = new BitmapImage();
-                await source.SetSourceAsync(stream);
-                return source;
+                while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
+                {
+                    BitmapSource source = null;
+                    var targetWidth = _visibleElementsTargetedWidth[pageNum];
+                    if (targetWidth != 0)
+                    {
+                        var options = new Windows.Data.Pdf.PdfPageRenderOptions();
+                        var stream = new InMemoryRandomAccessStream();
+                        var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
+                        var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
+                        var box = page.Dimensions.MediaBox;
+                        options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, MaxPageWidth);
+                        options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width);
+                        await page.RenderToStreamAsync(stream, options);
+                        source = new BitmapImage();
+                        await source.SetSourceAsync(stream);
+                    }
+                    _visibleElements[pageNum].Source = source;
+                    _visibleElementsRenderedWidth[pageNum] = targetWidth;
+                }
+                _visibleElementsIsRendering[pageNum] = false;
             }
         }
     }

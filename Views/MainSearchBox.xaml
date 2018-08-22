@@ -24,15 +24,15 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
-            <!--<TextBlock x:Name="xCollDragIcon" 
+        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" Margin="-35, 0, 0, 0" CanDrag="True">
+            <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
                        FontSize="{StaticResource DefaultFontSize}" 
                        Text="{StaticResource CollectionIcon}" 
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Center"
-            />-->
+            />
         </Border>
         <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped" Width="35">
             <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0">

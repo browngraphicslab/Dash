@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -8,11 +7,11 @@ using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Models.DragModels;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -51,22 +50,64 @@ namespace Dash
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
         private readonly ObservableCollection<SnapshotView> _items = new ObservableCollection<SnapshotView>();
-        private bool snapStarted;
+        private bool _snapStarted;
 
         public TreeViewNode()
         {
             this.InitializeComponent();
             MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
-          focusOnSelected();
+            focusOnSelected();
+            SetupTooltips();
+        }
+
+        private ToolTip _snapshots;
+        private void SetupTooltips()
+        {
+            _snapshots = new ToolTip()
+            {
+                Content = "View Snapshots",
+                Placement = PlacementMode.Bottom,
+                VerticalOffset = 5
+            };
+            ToolTipService.SetToolTip(XSnapshotArrowBlock, _snapshots);
+        }
+
+        public void UpdateSnapshots()
+        {
+            var snapshots = ViewModel?.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
+            if (snapshots != null && snapshots.Count > _items.Count && !_snapStarted)
+            {
+                _snapStarted = true;
+                XSnapshotArrowBlock.Visibility = Visibility.Visible;
+
+                NewSnapshot();
+            }
+
+            if (snapshots == null || snapshots.Count == 0)
+            {
+                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            if (sender is FontIcon icon && ToolTipService.GetToolTip(icon) is ToolTip tipIcon) tipIcon.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            if (sender is FontIcon icon && ToolTipService.GetToolTip(icon) is ToolTip tipIcon) tipIcon.IsOpen = false;
         }
 
         public async void NewSnapshot()
         {
-            var snapshots =
-                (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
-                    ListController<DocumentController>);
-            var index = _items.Count;
-            var doc = snapshots?[index];
+            var snapshots = (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>);
+            int index = _items.Count;
+            DocumentController doc = snapshots?[index];
 
             string image = null;
             string time = null;
@@ -86,26 +127,8 @@ namespace Dash
 
             var newSnapshot = new SnapshotView(time, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + image, index);
             _items.Add(newSnapshot);
-            snapStarted = false;
+            _snapStarted = false;
 
-        }
-
-        public void UpdateSnapshots()
-        {
-            var dvm = ViewModel;
-            var snapshots = dvm?.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
-            if (snapshots != null && snapshots.Count > _items.Count && !snapStarted)
-            {
-                snapStarted = true;
-                XSnapshotArrowBlock.Visibility = Visibility.Visible;
-
-                NewSnapshot();
-            }
-
-            if (snapshots == null || snapshots.Count == 0)
-            {
-                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-            }
         }
 
         private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
@@ -258,6 +281,7 @@ namespace Dash
         private void XSnapshotBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
+            if (ToolTipService.GetToolTip(XSnapshotArrowBlock) is ToolTip tip) tip.IsOpen = false;
             //Toggle visibility
             if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
@@ -297,7 +321,7 @@ namespace Dash
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+                MainPage.Instance.SetCurrentWorkspace(docToFocus);
 
             UnfocusText();
             ClosePopups();
@@ -308,7 +332,7 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((DataContext as DocumentViewModel).DocumentController, true);
+            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController, true));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 
@@ -370,8 +394,10 @@ namespace Dash
 
         private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
         {
-            var data = (e.OriginalSource as TextBlock).DataContext as SnapshotView;
-            var index = data.Index;
+            var data = (SnapshotView)((e.OriginalSource as TextBlock)?.DataContext ?? (e.OriginalSource as Grid)?.DataContext);
+            if (data == null) return;
+
+            int index = data.Index;
             if (!_items.Count.Equals(0))
             {
                 _items.RemoveAt(index);
@@ -470,22 +496,22 @@ namespace Dash
         private void xControlIcon_DragStarting(UIElement uiElement, DragStartingEventArgs args)
         {
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            foreach (var d in snapshots)
+            foreach (DocumentController d in snapshots)
             {
                 d.SetWidth(200);
                 d.SetHeight(200);
             }
-            var dvm = ViewModel;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dvm.DataDocument, KeyStore.SnapshotsKey);
+            DocumentViewModel dvm = ViewModel;
+            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             if (e.Items.Count.Equals(0)) return;
-            var first = e.Items.First() as SnapshotView;
+            var first = (SnapshotView) e.Items.First();
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(snapshots[first.Index], true);
+            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index], true));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 

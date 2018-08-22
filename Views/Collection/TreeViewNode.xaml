@@ -55,8 +55,21 @@
             </Border>
             <TextBlock x:Name="xArrowBlock" FontSize="20"  FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0" Tapped="XArrowBlock_OnTapped"/>
 
-
-            <FontIcon x:Name="XSnapshotArrowBlock" Glyph="&#xE81C;"  FontSize="15" FontFamily="Segoe MDL2 Assets"  Grid.Column="2" Tapped="XSnapshotBlock_OnTapped" CanDrag="True"  DragStarting="xControlIcon_DragStarting" HorizontalAlignment="Right"  Foreground="White" Visibility="Collapsed" Margin="8,0,5,0" />
+            <FontIcon 
+                x:Name="XSnapshotArrowBlock" 
+                Glyph="&#xE81C;" 
+                FontSize="15" 
+                FontFamily="Segoe MDL2 Assets"
+                Grid.Column="2" 
+                Tapped="XSnapshotBlock_OnTapped" 
+                CanDrag="True"  
+                DragStarting="xControlIcon_DragStarting" 
+                HorizontalAlignment="Right"  
+                Foreground="White" 
+                Visibility="Collapsed" 
+                Margin="8,0,5,0" 
+                PointerEntered="XOnPointerEntered"
+                PointerExited="XOnPointerExited"/>
 
             <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0">
                 <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="{StaticResource DashMediumBlueBrush}" DragItemsStarting="ListViewBase_OnDragItemsStarting" DragItemsCompleted="ListViewBase_OnDragItemsCompleted">

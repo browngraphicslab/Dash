@@ -100,6 +100,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
@@ -216,8 +217,11 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
+    <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
+    <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
     <Compile Include="NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>
@@ -303,7 +307,6 @@
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
-    <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
@@ -410,12 +413,14 @@
     <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
+    <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\HtmlToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
@@ -984,7 +989,6 @@
     <Content Include="Assets\Store\StoreLogo.scale-200.png" />
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
-    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\unlocked.png" />
     <Content Include="Assets\pinned.png" />

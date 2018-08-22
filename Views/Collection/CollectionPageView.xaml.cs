@@ -1,9 +1,7 @@
-﻿using Dash.Models.DragModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -14,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -297,7 +296,6 @@ namespace Dash
             }
         }
         
-
         #region DragAndDrop
 
         //private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
@@ -414,19 +412,19 @@ namespace Dash
             }
         }
 
-        private void xDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void XDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Handled = true;
             e.Complete();
         }
 
-        private void xDragContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
+        private void XDragContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
         {
             e.Data.RequestedOperation = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             e.AllowedOperations       = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             e.Data.Properties.Add("Width", xDocView.ActualWidth);
             e.Data.Properties.Add("Height", xDocView.ActualHeight);
-            e.Data.Properties.Add(nameof(DragDocumentModel), new DragDocumentModel(CurPage.DocumentController, true));
+            e.Data.AddDragModel(new DragDocumentModel(CurPage.DocumentController, true));
         }
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -468,21 +466,22 @@ namespace Dash
         }
         private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            var focus = FocusManager.GetFocusedElement() as FrameworkElement;
-            if (focus == null || focus.GetFirstAncestorOfType<CollectionPageView>() != this || xThumbs.GetDescendants().Contains(focus))
+            if (!(FocusManager.GetFocusedElement() is FrameworkElement focus) || 
+                focus.GetFirstAncestorOfType<CollectionPageView>() != this || 
+                xThumbs.GetDescendants().Contains(focus))
             {
                 xThumbs.Focus(FocusState.Pointer);
                 e.Handled = true;
             }
         }
 
-        private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-            foreach (var m in e.Items)
+            foreach (object m in e.Items)
             {
-                var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
+                int ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
+                e.Data.AddDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true));
             }
         }
 
@@ -524,25 +523,13 @@ namespace Dash
 
         private void XTextBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            if (e.DataView.TryGetLoneDragModel(out DragModelBase dragModel) && dragModel is DragFieldModel field)
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var showField = dragModel.DraggedKey;
+                KeyController fieldKey = field.DraggedRefs.First().FieldKey;
 
-                if (xTextBox.Text.Length == 0)
-                {
-                    xTextBox.Text = "=this";
-                }
+                if (xTextBox.Text.Length == 0) xTextBox.Text = "=this";
 
-                var fieldName = "";
-                foreach (var letter in showField.Name)
-                {
-                    if (!char.IsWhiteSpace(letter))
-                    {
-                        fieldName += letter;
-                    }
-                }
-                xTextBox.Text += "." + fieldName;
+                xTextBox.Text += "." + fieldKey.Name.RemoveWhitespace();
 
                 e.Handled = true;
             }
@@ -575,7 +562,7 @@ namespace Dash
 
                 i++;
             }
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document, true);
+            args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document, true));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

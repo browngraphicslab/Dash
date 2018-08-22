@@ -8,9 +8,9 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash
 {
-    public enum LinkContexts
+    public enum LinkTargetPlacement
     {
-        PDFSplitScreen, None, PushPin
+        Docked, Default, Overlay, Floating
     }
     public class AnnotationManager
 	{
@@ -28,19 +28,17 @@ namespace Dash
 	    public void FollowRegion(DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
         {
             _linkFlyout.Items?.Clear();
-            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData.ToList() ?? new List<DocumentController>();
-	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData.ToList() ?? new List<DocumentController>();
+            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
+	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
             var subregions = region.GetDataDocument().GetRegions()?.TypedData;
             if (subregions != null)
             {
                 foreach (var subregion in subregions.Select((sr) => sr.GetDataDocument()))
                 {
-                    var sublinksTo = subregion.GetLinks(KeyStore.LinkToKey);
+                    var sublinksTo   = subregion.GetLinks(KeyStore.LinkToKey);
                     var sublinksFrom = subregion.GetLinks(KeyStore.LinkFromKey);
-                    if (sublinksTo != null)
-                        linksTo.AddRange(sublinksTo);
-                    if (sublinksFrom != null)
-                        linksFrom.AddRange(sublinksFrom);
+                    linksTo.AddRange(sublinksTo);
+                    linksFrom.AddRange(sublinksFrom);
                 }
             }
             int linkToCount = linksTo?.Count ?? 0;
@@ -51,7 +49,7 @@ namespace Dash
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (linkType == null || (link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                if (linkType == null || (link.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else if (!MainPage.Instance.IsShiftPressed())
@@ -59,7 +57,7 @@ namespace Dash
                 if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                        if (linkType == null || (linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
                         {
                             FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
                         }
@@ -70,7 +68,7 @@ namespace Dash
                 if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                        if (linkType == null || (linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
                         {
                             FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
                         }
@@ -79,11 +77,10 @@ namespace Dash
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
-				ObservableCollection<string> addedNames = new ObservableCollection<string>();
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || (linkTo.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
 	                    {
 		                    var targetTitle = linkTo.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination)
 			                    .Title;
@@ -97,17 +94,6 @@ namespace Dash
 		                    item.Click += itemHdlr;
 		                    defaultHdlr = itemHdlr;
 		                    _linkFlyout.Items?.Add(item);
-
-							/*
-		                    foreach (string name in linkNames)
-		                    {
-			                    if (!addedNames.Contains(name))
-			                    {
-				                    addedNames.Add(name);
-				                    
-								}
-		                    }
-                        */
 						}
                 }
 
@@ -116,7 +102,7 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || (linkFrom.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
                     {
 	                    var targetTitle = linkFrom.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)
 		                    .Title;
@@ -131,15 +117,12 @@ namespace Dash
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
                     }
-
-					
                 }
-
 
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
                 else _linkFlyout.ShowAt(_element, flyoutPosition);
-            }
+			}
 	    }
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)

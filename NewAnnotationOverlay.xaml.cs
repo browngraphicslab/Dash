@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Windows.Foundation;
 using System.Threading.Tasks;
 using System.Web;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
-using Dash.Models.DragModels;
 using MyToolkit.Multimedia;
-using System.Collections.ObjectModel;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Point = Windows.Foundation.Point;
-using Syncfusion.Windows.PdfViewer;
+using static Dash.DataTransferTypeInfo;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -39,19 +37,11 @@ namespace Dash
         Pin 
     }
 
-
-	public enum AnnotationScrollVisibility
-	{
-		VisibleOnScroll,
-		ManualToggle,
-	}
-
 	public enum PushpinType
 	{
 		Text,
 		Video,
 		Image
-
 	}
 
     public interface ISelectable
@@ -65,8 +55,13 @@ namespace Dash
     }
 
     public class NewAnnotationOverlayViewModel : ViewModelBase
-    { 
-        public ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
+    {
+        public ObservableCollection<DocumentViewModel> ViewModels { get; set; }
+        // should also add all of the annotations in here as their own view model...
+        public NewAnnotationOverlayViewModel()
+        {
+            ViewModels = new ObservableCollection<DocumentViewModel>();
+        }
     }
 
     public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
@@ -79,11 +74,11 @@ namespace Dash
         private readonly AnnotationManager  _annotationManager;
         private ISelectable                 _selectedRegion;
         private AnnotationType              _currAnnotationType = AnnotationType.None;
-        private List<ISelectable>           _regions = new List<ISelectable>();
+        private readonly List<ISelectable>  _regions = new List<ISelectable>();
 
         // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
-        public readonly List<KeyValuePair<int, int>> _currentSelections = new List<KeyValuePair<int, int>>();
-        public readonly List<Rect>                   _currentSelectionClipRects = new List<Rect>();
+        public readonly List<KeyValuePair<int, int>> CurrentSelections = new List<KeyValuePair<int, int>>();
+        public readonly List<Rect>                   CurrentSelectionClipRects = new List<Rect>();
         public static readonly DependencyProperty AnnotationVisibilityProperty = DependencyProperty.Register(
             "AnnotationVisibility", typeof(bool), typeof(NewAnnotationOverlay), new PropertyMetadata(true));
 
@@ -121,7 +116,7 @@ namespace Dash
             var deselect = _selectedRegion?.Selected == true;
             var selectable = _regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable?.RegionDocument)))
+                foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                 {
                     nvo._selectedRegion?.Deselect();
                     nvo._selectedRegion = deselect ? null : r;
@@ -147,7 +142,7 @@ namespace Dash
             if (_selectedRegion != selectable)
             {
                 foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectable.RegionDocument)))
+                    foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                     {
                         nvo._selectedRegion?.Deselect();
                         nvo._selectedRegion = r;
@@ -161,7 +156,7 @@ namespace Dash
             var selectedRegion = _selectedRegion;
             if (selectedRegion != null)
                 foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo._regions.Where((r) => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
+                    foreach (var r in nvo._regions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
                         nvo._selectedRegion?.Deselect();
                         nvo._selectedRegion = null;
@@ -170,7 +165,7 @@ namespace Dash
 
         public NewAnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter regionGetter)
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _mainDocument = viewDocument;
             _regionGetter = regionGetter;
@@ -218,7 +213,7 @@ namespace Dash
                         int prevIndex = -1;
                         foreach (int index in indices)
                         {
-                            SelectableElement elem = _textSelectableElements[index];
+                            SelectableElement elem = TextSelectableElements[index];
                             if (prevIndex + 1 != index)
                             {
                                 var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
@@ -259,7 +254,7 @@ namespace Dash
         {
             _inkController.FieldModelUpdated += _inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += RegionDocsListOnFieldModelUpdated;
-            this.xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
+            xItemsControl.ItemsSource = (DataContext as NewAnnotationOverlayViewModel).ViewModels;
         }
 
         public void LoadPinAnnotations(CustomPdfView pdfView)
@@ -303,7 +298,7 @@ namespace Dash
             }
         }
 
-        private bool _maskInkUpdates = false;
+        private bool _maskInkUpdates;
         private void _inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (!_maskInkUpdates)
@@ -313,7 +308,7 @@ namespace Dash
             }
         }
 
-        public DocumentController GetRegionDoc(bool AddToList = true)
+        public DocumentController GetRegionDoc(bool addToList = true)
         {
             if (_selectedRegion != null)
             {
@@ -325,7 +320,7 @@ namespace Dash
             {
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
-                    if (!_regionRectangles.Any(rect => rect.Width > 10 && rect.Height > 10) && (!_currentSelections.Any() || _currentSelections.Last().Key == -1))
+                    if (!_regionRectangles.Any(rect => rect.Width > 10 && rect.Height > 10) && (!CurrentSelections.Any() || CurrentSelections.Last().Key == -1))
                     {
                         ClearSelection(true);
                         goto case AnnotationType.None;
@@ -344,7 +339,6 @@ namespace Dash
                         regionPosList.Add(new PointController(rect.X, rect.Y));
                         regionSizeList.Add(new PointController(rect.Width, rect.Height));
                         var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
-                        var imgView = this.GetFirstAncestorOfType<EditableImage>();
                         var scale = pdfView?.ActualWidth / pdfView?.PdfMaxWidth ?? 1;
                         var vOffset = rect.Y * scale; 
                         var scrollRatio = vOffset / pdfView?.TopScrollViewer.ExtentHeight ?? 0;
@@ -355,13 +349,13 @@ namespace Dash
 
                     // loop through each selection and add the indices in each selection set
                     var indices = new List<int>();
-                    foreach (var selection in _currentSelections)
+                    foreach (var selection in CurrentSelections)
                     {
-                        var ind = _currentSelections.IndexOf(selection);
+                        var ind = CurrentSelections.IndexOf(selection);
                         for (var i = selection.Key; i <= selection.Value; i++)
                         {
-                            var elem = _textSelectableElements[i];
-                            if (_currentSelectionClipRects[ind] == Rect.Empty || _currentSelectionClipRects[ind].Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
+                            var elem = TextSelectableElements[i];
+                            if (CurrentSelectionClipRects[ind] == Rect.Empty || CurrentSelectionClipRects[ind].Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
                             {
                                 // this will avoid double selecting any items
                                 if (!indices.Contains(i))
@@ -376,7 +370,7 @@ namespace Dash
                     int prevIndex = -1; 
                     foreach (int index in indices)
                     {
-                        SelectableElement elem = _textSelectableElements[index];
+                        SelectableElement elem = TextSelectableElements[index];
                         if (prevIndex + 1 != index)
                         {
                             var pdfView = this.GetFirstAncestorOfType<CustomPdfView>();
@@ -432,8 +426,8 @@ namespace Dash
             var linkTarget = (tStartIndex is double tStart && tEndIndex is double tEnd) ? createRegionDoc(targetDoc, tStart, tEnd) : targetDoc;
 
             if (linkTag != null)
-                 linkSource.Link(linkTarget, LinkContexts.None, linkTag);
-            else linkSource.Link(linkTarget, LinkContexts.None);
+                 linkSource.Link(linkTarget, LinkTargetPlacement.Default, linkTag);
+            else linkSource.Link(linkTarget, LinkTargetPlacement.Default);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -453,7 +447,7 @@ namespace Dash
             }
             DocumentController ExistingRegionAtIndices(DocumentController doc, double startIndex, double endIndex)
             {
-                return doc.GetDataDocument().GetRegions().FirstOrDefault((reg) =>
+                return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
                     var selectionIndices = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
                     if (selectionIndices.Count == 1)
@@ -524,7 +518,7 @@ namespace Dash
             _maskInkUpdates = false;
         }
 
-        private void InkPresenter_StrokesCollected(Windows.UI.Input.Inking.InkPresenter sender, Windows.UI.Input.Inking.InkStrokesCollectedEventArgs args)
+        private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
             _maskInkUpdates = true;
             _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
@@ -540,9 +534,9 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Collapsed;
         }
 
-        private bool _annotatingRegion = false;
+        private bool _annotatingRegion;
         private Point _previewStartPoint;
-        private List<Rect> _regionRectangles = new List<Rect>();
+        private readonly List<Rect> _regionRectangles = new List<Rect>();
         public void StartRegion(Point p)
         {
             if (CurrentAnnotationType != AnnotationType.Region)
@@ -552,7 +546,7 @@ namespace Dash
 
             if (!this.IsCtrlPressed())
             {
-                if (_regionRectangles.Any() || _currentSelections.Any())
+                if (_regionRectangles.Any() || CurrentSelections.Any())
                 {
                     ClearSelection();
                 }
@@ -587,7 +581,7 @@ namespace Dash
             annotation.GetDataDocument().SetRegionDefinition(_mainDocument);
             if (linkedDoc != null)
             {
-                annotation.Link(linkedDoc, LinkContexts.PushPin);
+                annotation.Link(linkedDoc, LinkTargetPlacement.Overlay);
             }
 
             RegionDocsList.Add(annotation);
@@ -731,7 +725,7 @@ namespace Dash
 
 		    if (videoNote == null) return null;
 
-		    videoNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    videoNote.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
 		    videoNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
 		    videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
 		    videoNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
@@ -745,7 +739,7 @@ namespace Dash
 		    if (file == null) return null;
 
 		    var imageNote = await new ImageToDashUtil().ParseFileAsync(file);
-		    imageNote.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+		    imageNote.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
 		    imageNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
 		    imageNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
 		    imageNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
@@ -762,7 +756,7 @@ namespace Dash
 			var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
 				new Size(150, 75));
 			richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-			richText.Document.SetField(KeyStore.LinkContextKey, new TextController(nameof(LinkContexts.PushPin)), true);
+			richText.Document.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
 
 		    return richText.Document;
 		}
@@ -786,9 +780,9 @@ namespace Dash
             var vm = new SelectionViewModel(region, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
             pin.DataContext = vm;
 
-			var tip = new ToolTip()
+			var tip = new ToolTip
 			{
-				Placement = PlacementMode.Bottom,
+				Placement = PlacementMode.Bottom
 			};
 			ToolTipService.SetToolTip(pin, tip);
 
@@ -798,40 +792,19 @@ namespace Dash
                 tip.IsOpen = true;
                 //update tag content based on current tags of region
                 var tags = new ObservableCollection<string>();
-				ListController<DocumentController> linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
-
-				if (linksFrom != null)
+                
+				foreach (var link in region.GetDataDocument().GetLinks(null))
 				{
-					foreach (var link in linksFrom)
+                    var currTags = link.GetDataDocument().GetLinkTags()?.TypedData ?? new List<TextController>();
+                    foreach (var text in currTags)
 					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey).Data;
-						foreach (TextController text in currtags)
-						{
-							tags.Add(text.Data);
-						}
-					}
-				}
-
-				ListController<DocumentController> linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
-
-				if (linksTo != null)
-				{
-					foreach (var link in linksTo)
-					{
-						var currtags = link.GetDataDocument().GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Data;
-						if (currtags != null)
-						{
-							foreach (TextController text in currtags)
-							{
-								tags.Add(text.Data);
-							}
-						}
-						
+						tags.Add(text.Data);
 					}
 				}
 
 		        var content = tags.Count == 0 ? "" : tags[0];
-		        if (tags.Count > 0) tags.Remove(tags[0]);
+		        if (tags.Count > 0)
+                    tags.Remove(tags[0]);
 		        foreach (var str in tags)
 		        {
 			        content = content + ", " + str;
@@ -848,7 +821,8 @@ namespace Dash
 					var docView = _pinAnnotations.FirstOrDefault(i => i.ViewModel.DocumentController.Equals(dest));
                     if (docView != null)
                     {
-                        if (XAnnotationCanvas.Children.Contains(docView)) XAnnotationCanvas.Children.Remove(docView);
+                        if (XAnnotationCanvas.Children.Contains(docView))
+                            XAnnotationCanvas.Children.Remove(docView);
                         _pinAnnotations.Remove(docView);
 	                    _mainDocument.GetDataDocument()
 		                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
@@ -870,9 +844,10 @@ namespace Dash
 	        };
 	        pin.ManipulationDelta += (s, e) =>
 	        {
-		        var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
+		        region.SetPosition(new Point(Canvas.GetLeft(pin) + e.Delta.Translation.X, Canvas.GetTop(pin) + e.Delta.Translation.Y));
+				var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
 		        Canvas.SetLeft(pin, Canvas.GetLeft(pin) + p.X);
-		        Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
+		       Canvas.SetTop(pin, Canvas.GetTop(pin) + p.Y);
 		        e.Handled = true;
 	        };
 
@@ -908,14 +883,8 @@ namespace Dash
 
 	        void VisOnScrollOnOnClick(object o, RoutedEventArgs routedEventArgs)
 	        {
-	            var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-	            var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-	            var allLinks = new List<DocumentController>();
-	            if (toLinks != null) allLinks.AddRange(toLinks);
-	            if (fromLinks != null) allLinks.AddRange(fromLinks);
-
-	            bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
+	            var allLinks   = region.GetDataDocument().GetLinks(null);
+	            var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
 	            foreach (DocumentController link in allLinks)
 	            {
@@ -927,16 +896,10 @@ namespace Dash
             regionGraphic.ContextFlyout = flyout;
 		    regionGraphic.RightTapped += (s, e) =>
 		    {
-		        var toLinks = region.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
-		        var fromLinks = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey)?.TypedData;
-
-		        var allLinks = new List<DocumentController>();
-		        if (toLinks != null) allLinks.AddRange(toLinks);
-		        if (fromLinks != null) allLinks.AddRange(fromLinks);
-
+		        var  allLinks   = region.GetDataDocument().GetLinks(null);
 		        bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
-                MenuFlyoutItem item = allVisible ? visOnScrollON : visOnScrollOFF;
+                var item = allVisible ? visOnScrollON : visOnScrollOFF;
 			    flyout.Items?.Clear();
 			    flyout.Items?.Add(item);
 			    flyout.ShowAt(regionGraphic as FrameworkElement);
@@ -1058,13 +1021,13 @@ namespace Dash
 
             public event PropertyChangedEventHandler PropertyChanged;
 
-            public SolidColorBrush SelectedBrush { get; set; } = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0));
+            public SolidColorBrush SelectedBrush { get; set; }
 
-            public SolidColorBrush UnselectedBrush { get; set; } = new SolidColorBrush(Color.FromArgb(128, 255, 255, 0));
+            public SolidColorBrush UnselectedBrush { get; set; }
 
             public SelectionViewModel(DocumentController region, 
-                SolidColorBrush selectedBrush= null, 
-                SolidColorBrush unselectedBrush= null)
+                SolidColorBrush selectedBrush,
+                SolidColorBrush unselectedBrush)
             {
                 RegionDocument = region;
                 UnselectedBrush = unselectedBrush;
@@ -1072,7 +1035,7 @@ namespace Dash
                 _selectionColor = UnselectedBrush;
             }
 
-            public bool Selected { get; private set; } = false;
+            public bool Selected { get; private set; }
 
             public DocumentController RegionDocument { get; }
 
@@ -1095,11 +1058,11 @@ namespace Dash
             }
         }
 
-        public List<SelectableElement> _textSelectableElements;
+        public List<SelectableElement> TextSelectableElements;
 
         public void SetSelectableElements(IEnumerable<SelectableElement> selectableElements)
         {
-            _textSelectableElements = selectableElements.ToList();
+            TextSelectableElements = selectableElements.ToList();
 
             foreach (var documentController in RegionDocsList)
             {
@@ -1109,8 +1072,8 @@ namespace Dash
 
         public void ClearSelection(bool hardReset = false)
         {
-            _currentSelections.Clear();
-            _currentSelectionClipRects.Clear();
+            CurrentSelections.Clear();
+            CurrentSelectionClipRects.Clear();
             _selectionStartPoint = hardReset ? null : _selectionStartPoint;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
@@ -1136,7 +1099,7 @@ namespace Dash
         {
             if (!this.IsCtrlPressed())
             {
-                if (_currentSelections.Any() || _regionRectangles.Any())
+                if (CurrentSelections.Any() || _regionRectangles.Any())
                 {
                     ClearSelection();
                 }
@@ -1171,7 +1134,7 @@ namespace Dash
 
         public void EndTextSelection(Point p)
         {
-            if (!_currentSelections.Any() || _currentSelections.Last().Key == -1) return;//Not currently selecting anything
+            if (!CurrentSelections.Any() || CurrentSelections.Last().Key == -1) return;//Not currently selecting anything
             _selectionStartPoint = null;
         }
 
@@ -1198,7 +1161,7 @@ namespace Dash
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
 
-            if (_textSelectableElements != null)
+            if (TextSelectableElements != null && indexList.Any())
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -1208,20 +1171,20 @@ namespace Dash
                     var range = t.Data;
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var rect = _textSelectableElements[ind].Bounds;
+                        var rect = TextSelectableElements[ind].Bounds;
                         topLeft.X = Math.Min(topLeft.X, rect.Left);
                         topLeft.Y = Math.Min(topLeft.Y, rect.Y);
                         if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
                             lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, rect.X + rect.Width - lastRect.Rect.X, rect.Y + rect.Height - lastRect.Rect.Y);
                         else
-                            geometryGroup.Children.Add( lastRect = new RectangleGeometry() { Rect = rect });
+                            geometryGroup.Children.Add( lastRect = new RectangleGeometry { Rect = rect });
                     }
                 }
                 foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
                 {
                     rect.Rect = new Rect(new Point(rect.Rect.X - topLeft.X, rect.Rect.Y -topLeft.Y), new Size(rect.Rect.Width, rect.Rect.Height));
                 }
-                var path = new Path()
+                var path = new Path
                 {
                     Data = geometryGroup,
                     DataContext = vm,
@@ -1253,19 +1216,21 @@ namespace Dash
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip() { Placement = mode };
+            var tip = new ToolTip { Placement = mode };
 	        ToolTipService.SetToolTip(r, tip);
             r.PointerExited += (s, e) => tip.IsOpen = false;
             r.PointerEntered += (s, e) =>
             {
                 tip.IsOpen = true;
                 var regionDoc = vm.RegionDocument.GetDataDocument();
-                var allLinkSets = new List<IEnumerable<DocumentController>>() {
-                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
-                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select((l) => l.GetDataDocument()) ?? new DocumentController[] { },
+
+                var allLinkSets = new List<IEnumerable<DocumentController>>
+                {
+                     regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
+                     regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
                 };
-                var allTagSets = allLinkSets.SelectMany((lset) => lset.Select((l) => l.GetLinkTags()));
-                var allTags = allTagSets.SelectMany((tagSet) => tagSet?.Select((text) => text.Data));
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
+                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
@@ -1302,7 +1267,7 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in _textSelectableElements)
+            foreach (var selectableElement in TextSelectableElements)
             {
                 var b = selectableElement.Bounds;
                 if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
@@ -1324,7 +1289,7 @@ namespace Dash
         {
             if (_selectedRectangles.ContainsKey(index))
             {
-                var ele = _textSelectableElements[index];
+                var ele = TextSelectableElements[index];
                 if (clipRect == null || clipRect == Rect.Empty || 
                     clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
                 {
@@ -1340,7 +1305,7 @@ namespace Dash
 
         private void SelectIndex(int index, Rect? clipRect = null)
         {
-            var ele = _textSelectableElements[index];
+            var ele = TextSelectableElements[index];
             if (clipRect == null || clipRect == Rect.Empty ||
                 clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
             {
@@ -1366,7 +1331,7 @@ namespace Dash
 
 
         private Point? _selectionStartPoint;
-        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
         private void SelectElements(int startIndex, int endIndex, Point start, Point end)
         {
@@ -1375,7 +1340,7 @@ namespace Dash
             {
                 var bounds = new Rect(new Point(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y)),
                              new Point(Math.Max(start.X, end.X), Math.Max(start.Y, end.Y)));
-                foreach (var ele in _textSelectableElements)
+                foreach (var ele in TextSelectableElements)
                 {
                     if (bounds.Contains(new Point(ele.Bounds.Left + ele.Bounds.Width / 2, ele.Bounds.Top + ele.Bounds.Height / 2)))
                     {
@@ -1387,17 +1352,17 @@ namespace Dash
                 }
             }
             // if there's no current selections or if there's nothing in the list of selections that matches what we're trying to select
-            if (!_currentSelections.Any() || !_currentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
+            if (!CurrentSelections.Any() || !CurrentSelections.Any(sel => sel.Key <= startIndex && startIndex <= sel.Value))
             {
                 // create a new selection
-                _currentSelections.Add(new KeyValuePair<int, int>(-1, -1));
-                _currentSelectionClipRects.Add(Rect.Empty);
+                CurrentSelections.Add(new KeyValuePair<int, int>(-1, -1));
+                CurrentSelectionClipRects.Add(Rect.Empty);
             }
-            var currentSelectionStart = _currentSelections.Last().Key;
-            var currentSelectionEnd   = _currentSelections.Last().Value;
-            var lastSelectionClipRect = _currentSelectionClipRects.LastOrDefault();
+            var currentSelectionStart = CurrentSelections.Last().Key;
+            var currentSelectionEnd   = CurrentSelections.Last().Value;
+            var lastSelectionClipRect = CurrentSelectionClipRects.LastOrDefault();
 
-            _currentSelectionClipRects[_currentSelectionClipRects.Count - 1] = this.IsAltPressed() ? 
+            CurrentSelectionClipRects[CurrentSelectionClipRects.Count - 1] = this.IsAltPressed() ? 
                 new Rect(new Point(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y)), 
                          new Point(Math.Max(start.X, end.X), Math.Max(start.Y, end.Y))) : 
                 Rect.Empty;
@@ -1409,7 +1374,7 @@ namespace Dash
                 }
                 for (var i = startIndex; i <= endIndex; ++i)
                 {
-                    SelectIndex(i, _currentSelectionClipRects.LastOrDefault());
+                    SelectIndex(i, CurrentSelectionClipRects.LastOrDefault());
                 }
             }
             else
@@ -1418,7 +1383,7 @@ namespace Dash
                 {
                     for (var i = startIndex; i <= endIndex; ++i)
                     {
-                        SelectIndex(i, _currentSelectionClipRects.LastOrDefault());
+                        SelectIndex(i, CurrentSelectionClipRects.LastOrDefault());
                     }
                 }
                 else
@@ -1446,7 +1411,7 @@ namespace Dash
             }
 
             // you can't set kvp keys and values, so we have to just create a new one?
-            _currentSelections[_currentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
+            CurrentSelections[CurrentSelections.Count - 1] = new KeyValuePair<int, int>(startIndex, endIndex);
         }
 
         #endregion
@@ -1455,8 +1420,7 @@ namespace Dash
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if ((linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkContextKey)?.Data
-                     .Equals(nameof(LinkContexts.PushPin)) ?? false) &&
+            if (linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data == nameof(LinkTargetPlacement.Overlay) &&
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
@@ -1467,40 +1431,37 @@ namespace Dash
 
             return LinkHandledResult.Unhandled;
         }
-        private List<DocumentView> _pinAnnotations = new List<DocumentView>();
+        private readonly List<DocumentView> _pinAnnotations = new List<DocumentView>();
 
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
-		    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-		    if (dragModel != null && dragModel.DraggedDocument != null && dragModel.DraggedKey == null)
-		    {
+		    if (e.DataView.HasDragModels())
 		        e.AcceptedOperation |= DataPackageOperation.Copy;
-		    }
 		    else
-		    {
 			    e.AcceptedOperation = DataPackageOperation.None;
-		    }
-		    //e.Handled = true;
 	    }
 
         public async void OnDrop(object sender, DragEventArgs e)
         {
             var where = e.GetPosition(XAnnotationCanvas);
-            if (this.IsShiftPressed() && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (this.IsShiftPressed() && e.DataView.HasDataOfType(Internal))
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var target = dragModel?.GetDropDocument(where);
-                target.SetBackgroundColor(Colors.White);
-                if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
+
+                foreach (DocumentController doc in targets)
                 {
-                    if (target.GetActualSize()?.X > 200)
+                    doc.SetBackgroundColor(Colors.White);
+                    if (!doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
                     {
-                        var ratio = target.GetHeight() / target.GetWidth();
-                        target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
-                        target.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                        if (doc.GetActualSize()?.X > 200)
+                        {
+                            double ratio = doc.GetHeight() / doc.GetWidth();
+                            doc.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+                            doc.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                        }
                     }
+                    CreatePin(where, doc);
                 }
-                CreatePin(where, target);
                 e.Handled = true;
             }
             // if we drag from the file system
@@ -1509,7 +1470,7 @@ namespace Dash
                 e.Handled = true;
                 try
                 {
-                    var target = await FileDropHelper.HandleDrop(where, e.DataView);
+                    var target = await FileDropHelper.HandleDrop(e.DataView, where);
                     if (target != null)
                         CreatePin(where, target);
                     if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
@@ -1517,7 +1478,6 @@ namespace Dash
                         var ratio = target.GetHeight() / target.GetWidth();
                         target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
                     }
-                    return;
                 }
                 catch (Exception exception)
                 {
