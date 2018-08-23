@@ -49,7 +49,7 @@ namespace Dash
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (linkType == null || (link.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                if (linkType == null || (link.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else if (!MainPage.Instance.IsShiftPressed())
@@ -57,7 +57,7 @@ namespace Dash
                 if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
                         }
@@ -68,7 +68,7 @@ namespace Dash
                 if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
                         }
@@ -80,7 +80,7 @@ namespace Dash
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
 	                    {
 		                    var targetTitle = linkTo.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination)
 			                    .Title;
@@ -102,7 +102,7 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     {
 	                    var targetTitle = linkFrom.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)
 		                    .Title;

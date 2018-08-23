@@ -249,14 +249,14 @@ namespace Dash
             {
                 tip.IsOpen = true;
                 //update tag content based on current tags of region
-                var tags = new ObservableCollection<string>();
+                var tags = new List<string>();
 
                 foreach (var link in DocumentController.GetDataDocument().GetLinks(null))
                 {
-                    var currTags = link.GetDataDocument().GetLinkTags()?.TypedData ?? new List<TextController>();
-                    foreach (var text in currTags)
+                    var currTag = link.GetDataDocument().GetLinkTag();
+                    if (currTag != null)
                     {
-                        tags.Add(text.Data);
+                        tags.Add(currTag.Data);
                     }
                 }
 

@@ -129,8 +129,8 @@ namespace Dash
                      regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
                      regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
                 };
-                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
-                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTag()));
+                var allTags = regionDoc.GetLinks(null).Select((l) => l.GetDataDocument().GetLinkTag().Data);
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);

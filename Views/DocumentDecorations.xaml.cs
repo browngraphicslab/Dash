@@ -33,7 +33,7 @@ namespace Dash
         private bool _isMoving;
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
-        public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
+        public Dictionary<string, Tag> _tagNameDict = new Dictionary<string, Tag>();
         //TagMap is used to keep track of the different activated tags displayed underneath the link button. it contains a list of names of tags paired with a list of all of the links tagged with that specific tag.
         public Dictionary<string, List<DocumentController>> TagMap = new Dictionary<string, List<DocumentController>>();
         public List<DocumentController> CurrentLinks;
@@ -584,9 +584,8 @@ namespace Dash
             foreach (var l in doc.GetLinks(null))
             {
                 //for each tag name of this link
-                foreach (var name in l.GetDataDocument().GetLinkTags()?.TypedData ?? new List<TextController>())
-                {
-                    var str = name.Data;
+                
+                    var str = l.GetDataDocument().GetLinkTag().Data;
                     //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
                     if (map.ContainsKey(str))
                     {
@@ -597,7 +596,7 @@ namespace Dash
                     {
                         map.Add(str, new List<DocumentController> { l.GetDataDocument() });
                     }
-                }
+              
                 //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
             }
 
@@ -939,7 +938,7 @@ namespace Dash
 
                 foreach (DocumentController link in TagMap[currTag.Text])
                 {
-                    if (link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(currTag.Text) ?? false)
+                    if (link.GetField<TextController>(KeyStore.LinkTagKey)?.Data.Equals(currTag.Text) ?? false)
                     {
                         //get title of target
                         var targetTitle = link.GetLinkedDocument(LinkDirection.ToDestination)?

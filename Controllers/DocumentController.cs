@@ -393,7 +393,7 @@ namespace Dash
             linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
             linkDocument.GetDataDocument().SetField(KeyStore.LinkBehaviorKey,
                 annotation ? new TextController("A") : new TextController("Z"), true);
-            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey, true).Add(new TextController(specTitle));
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
