@@ -224,7 +224,7 @@ namespace Dash
             if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true))
             {
                 var tree = DocumentTree.MainPageTree;
-                if (tree.Nodes.ContainsKey(dc))//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work
+                if (tree.Nodes.ContainsKey(dc))//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
                 {
                     var docNode = tree.Nodes[dc];
                     MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
