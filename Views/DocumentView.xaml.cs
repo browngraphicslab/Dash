@@ -494,7 +494,6 @@ namespace Dash
 
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //TODO: add offset between mouse and sender as parameter to drag doc model
             var pos = args.GetPosition(sender);
             
             args.Data.AddDragModel(new DragDocumentModel(
