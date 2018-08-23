@@ -1,8 +1,5 @@
-﻿using Dash.Models.DragModels;
-using System.Linq;
+﻿using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -95,12 +92,10 @@ namespace Dash
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm != null)
-            {
-                var drag = new DragDocumentModel(dvm.DocumentController, true);
-                e.Data.Properties[nameof(DragDocumentModel)] = drag;
-            }
+            DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm == null) return;
+
+            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController, true));
         }
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

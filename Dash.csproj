@@ -100,6 +100,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
@@ -162,7 +163,8 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnnotationManager.cs" />
+    <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
+    <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
@@ -217,9 +219,12 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
-    <Compile Include="NewAnnotationOverlay.xaml.cs">
+    <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
+    <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
+    <Compile Include="Views\Annotations\NewAnnotationOverlay.xaml.cs">
       <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\DashPopup.cs" />
@@ -241,7 +246,7 @@
     <Compile Include="Popups\YouTubeLinkPopup.xaml.cs">
       <DependentUpon>YouTubeLinkPopup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RegionAnnotation.xaml.cs">
+    <Compile Include="Views\Annotations\RegionAnnotation.xaml.cs">
       <DependentUpon>RegionAnnotation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\ColorModel.cs" />
@@ -307,7 +312,6 @@
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
-    <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
@@ -414,12 +418,14 @@
     <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
+    <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\HtmlToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
@@ -496,10 +502,16 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Annotations\PinAnnotation.xaml.cs">
+      <DependentUpon>PinAnnotation.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Annotations\TextAnnotation.xaml.cs">
+      <DependentUpon>TextAnnotation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionGraphView.xaml.cs">
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
     <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
       <DependentUpon>CollectionStandardView.xaml</DependentUpon>
     </Compile>
@@ -546,12 +558,12 @@
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
-    <Compile Include="Views\DataVirtualizationSource.cs" />
+    <Compile Include="Views\Annotations\DataVirtualizationSource.cs" />
     <Compile Include="Views\DishScriptEditView.xaml.cs">
       <DependentUpon>DishScriptEditView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CustomPdfView.xaml.cs">
-      <DependentUpon>CustomPdfView.xaml</DependentUpon>
+    <Compile Include="Views\Annotations\PdfView.xaml.cs">
+      <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DockingFrame.xaml.cs">
       <DependentUpon>DockingFrame.xaml</DependentUpon>
@@ -655,14 +667,11 @@
     <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
       <DependentUpon>SearchOperatorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PDFRegionMarker.xaml.cs">
+    <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PdfSideAnnotation.xaml.cs">
+    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
       <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PdfView.xaml.cs">
-      <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
@@ -751,7 +760,7 @@
     <Compile Include="Views\PresentationViewTextBox.xaml.cs">
       <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SelectableElement.cs" />
+    <Compile Include="Views\Annotations\SelectableElement.cs" />
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -989,7 +998,6 @@
     <Content Include="Assets\Store\StoreLogo.scale-200.png" />
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
-    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\unlocked.png" />
     <Content Include="Assets\pinned.png" />
@@ -1027,7 +1035,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="NewAnnotationOverlay.xaml">
+    <Page Include="Views\Annotations\NewAnnotationOverlay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1055,7 +1063,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="RegionAnnotation.xaml">
+    <Page Include="Views\Annotations\RegionAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1064,6 +1072,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PinAnnotation.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Annotations\TextAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1143,7 +1159,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CustomPdfView.xaml">
+    <Page Include="Views\Annotations\PdfView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1271,15 +1287,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PDFRegionMarker.xaml">
+    <Page Include="Views\Annotations\PDFRegionMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PdfSideAnnotation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PdfView.xaml">
+    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

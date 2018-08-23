@@ -21,7 +21,7 @@ namespace Dash
     public sealed partial class PdfSubToolbar : UserControl, ICommandBarBased
     {
         private DocumentView _currentDocView;
-        private CustomPdfView _currentPdfView;
+        private PdfView _currentPdfView;
         private DocumentController _currentDocController;
 
         public PdfSubToolbar()
@@ -52,7 +52,7 @@ namespace Dash
         internal void SetPdfBinding(DocumentView selection)
         {
             _currentDocView = selection;
-            _currentPdfView = _currentDocView.GetFirstDescendantOfType<CustomPdfView>();
+            _currentPdfView = _currentDocView.GetFirstDescendantOfType<PdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 
             xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
@@ -167,30 +167,28 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                var desiredPage = xToPageBox.Text;
+	            var desiredPage = xToPageBox.Text;
 
-                if (!double.TryParse(desiredPage, out double pageNum))
-                {
-                    xToPageBox.PlaceholderText = "Error: invalid page #";
-                    xToPageBox.Text = "";
-                    //xFadeAnimationIn.Begin();
-                    //xFadeAnimationOut.Begin();
-                    return;
-                }
-                if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
-                {
-                    xToPageBox.PlaceholderText = "Error: invalid page #";
-                    xToPageBox.Text = "";
-                    //xFadeAnimationIn.Begin();
-                    //xFadeAnimationOut.Begin();
-                    return;
-                }
+		            if (!double.TryParse(desiredPage, out double pageNum))
+		            {
+			            xToPageBox.PlaceholderText = "Error: invalid page #";
+			            xToPageBox.Text = "";
+			            //xFadeAnimationIn.Begin();
+			            //xFadeAnimationOut.Begin();
+			            return;
+		            }
+		            if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+		            {
+			            xToPageBox.PlaceholderText = "Error: invalid page #";
+			            xToPageBox.Text = "";
+			            //xFadeAnimationIn.Begin();
+			            //xFadeAnimationOut.Begin();
+			            return;
+		            }
 
-                _currentPdfView.GoToPage(pageNum);
-                xToPageBox.PlaceholderText = "Go to page...";
-            }
-            
-
+		            _currentPdfView.GoToPage(pageNum);
+		            xToPageBox.PlaceholderText = "Go to page...";
+				}
         }
 
         private ToolTip _toggle;
@@ -214,7 +212,7 @@ namespace Dash
 
 	        _scrollVis = new ToolTip()
 	        {
-		        Content = "Annotations Visible on Scroll",
+		        Content = "Show Annotations on Scroll",
 		        Placement = placementMode,
 		        VerticalOffset = offset
 	        };
@@ -260,12 +258,14 @@ namespace Dash
 
 	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
 	    {
-		    _currentPdfView.SetAnnotationsVisibleOnScroll(true);
+            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Show Annotations on Scroll";
+	        _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
 	    }
 
 	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
 	    {
-		    _currentPdfView.SetAnnotationsVisibleOnScroll(false);
+	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Hide Annotations on Scroll";
+            _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
 	    }
 	}
 

@@ -11,6 +11,7 @@ using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using MyToolkit.Resources;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -33,7 +34,9 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.DataKey] = new ImageController(new Uri(file.Path)),
-                [KeyStore.TitleKey] = new TextController(title)
+                [KeyStore.TitleKey] = new TextController(title),
+                [KeyStore.DateCreatedKey] = new DateTimeController(),
+                [KeyStore.AuthorKey] = new TextController("avd")
             };
             var dataDoc = new DocumentController(fields, PdfType);
 

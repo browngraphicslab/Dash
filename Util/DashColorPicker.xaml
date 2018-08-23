@@ -28,6 +28,9 @@
                      Margin="0,10,0,0"
                      IsColorChannelTextInputVisible="True"
                      IsHexInputVisible="True"
+                PointerPressed="XColorPicker_OnPointerPressed"
+                PointerReleased="XColorPicker_OnPointerReleased"
+                
                      />
             
         </StackPanel>

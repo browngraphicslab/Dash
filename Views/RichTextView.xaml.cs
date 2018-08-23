@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models.DragModels;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
@@ -76,11 +75,6 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            Application.Current.Suspending += (sender, args) =>
-            {
-                ClearSearchHighlights();
-                //SetSelected("");
-            };
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -187,6 +181,10 @@ namespace Dash
                     relative.Height = double.NaN;
                 }
             };
+        }
+        ~RichTextView()
+        {
+            Debug.WriteLine("Finalized RichTextView");
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -389,7 +387,7 @@ namespace Dash
         {
             double dist = double.MaxValue;
             DocumentView nearest = null;
-            foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select(c => (c as ContentPresenter)))
+            foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).GetItemsControl().ItemsPanelRoot.Children.Select(c => (c as ContentPresenter)))
             {
                 var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
                 if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
@@ -425,12 +423,9 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var dragDoc = dragModel.DraggedDocument;
-
-                if (dragModel.LinkSourceView != null && !MainPage.Instance.IsShiftPressed())
+                if (view != null && !MainPage.Instance.IsShiftPressed())
                 {
                     e.Handled = false;
                     return;
@@ -441,7 +436,7 @@ namespace Dash
                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 //}
 
-                linkDocumentToSelection(dragModel.DraggedDocument, true);
+                linkDocumentToSelection(dragDoc, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
@@ -564,7 +559,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
@@ -583,8 +578,10 @@ namespace Dash
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
+            Debug.WriteLine("RICH TEXT VIEW IS UNLOADED");
             IsLoaded = false;
             ClearSearchHighlights(true);
+            Application.Current.Suspending -= AppSuspending;
             SetSelected("");
             DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
@@ -592,6 +589,10 @@ namespace Dash
 
         public const string HyperlinkMarker = "<hyperlink marker>";
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
+        {
+            ClearSearchHighlights();
+        }
 
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -600,8 +601,9 @@ namespace Dash
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
-
+            
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
@@ -616,7 +618,7 @@ namespace Dash
                     var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
                     //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? CollectionViewModel.GetTitlesUrl(url);
+                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
 
                     this.xRichEditBox.Document.Selection.CharacterFormat.Size = 9;
                     this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
@@ -700,17 +702,22 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
 
-            if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
-            {
-                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
-            }
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+		        {
+			        if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+		        }
+
 
             var region = GetRegionDocument();
-            region.Link(theDoc, LinkContexts.None);
+            region.Link(theDoc, LinkTargetPlacement.Default);
 
-            convertTextFromXamlRTF();
 
-            xRichEditBox.Document.Selection.SetRange(s1, s2);
+		        convertTextFromXamlRTF();
+
+		        xRichEditBox.Document.Selection.SetRange(s1, s2);
+			}
         }
 
         DocumentController createRTFHyperlink()

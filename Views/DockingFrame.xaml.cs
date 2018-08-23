@@ -1,22 +1,14 @@
-﻿using Dash.Models.DragModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using static Dash.DataTransferTypeInfo;
 
 //The User Control item template is documented at https:
 //using Dash;
@@ -363,17 +355,17 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Move;
                 else e.AcceptedOperation = e.DataView.RequestedOperation;
 
-                if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-                {
-                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                    Dock(dragModel.GetDropDocument(new Point()), dir);
-                }
+                //if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                //{
+                //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                //    Dock(dragModel.GetDropDocument(new Point()), dir);
+                //}
                 // if we drag from the file system
                 if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
                 {
                     try
                     {
-                        var droppedDoc = await FileDropHelper.HandleDrop(new Point(), e.DataView);
+                        var droppedDoc = await FileDropHelper.HandleDrop(e.DataView, new Point());
                         Dock(droppedDoc, dir);
                         return;
                     }
@@ -402,10 +394,11 @@ namespace Dash
 
         private void xDockLeft_DragOver(object sender, DragEventArgs e)
         {
-            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
             }
+
             if (e.DataView?.Properties.ToList().Count == 0)
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;

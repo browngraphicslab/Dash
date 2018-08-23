@@ -10,23 +10,21 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Type = Zu.TypeScript.TsTypes.Type;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
 	/// <summary>
 	/// Allows interactions with underlying DocumentModel.
 	/// </summary>
-	[DebuggerDisplay("DocumentController: {Tag}")]
+	//[DebuggerDisplay("DocumentController")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args,
-            Context context);
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
-        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary
-            = new Dictionary<KeyController, DocumentUpdatedHandler>();
+        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, DocumentUpdatedHandler>();
 
         public event EventHandler DocumentDeleted;
 
@@ -43,9 +41,11 @@ namespace Dash
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
+
         public DocumentController(DocumentModel model) : base(model)
         {
         }
+
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
@@ -64,7 +64,7 @@ namespace Dash
 
         public bool IsMovingCollections { get; set; }
 
-        public override void Init()
+        public sealed override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
@@ -379,25 +379,21 @@ namespace Dash
         }
 
 		//links this => target
-        public void Link(DocumentController target, LinkContexts context, string specTitle = null)
+        public void Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null)
         {
 			//document that represents the actual link
             DocumentController linkDocument = new RichTextNote("link").Document;
 
 	        if (specTitle == null)
 	        {
-				//create unique, default tag 
-	            var newTitle = "Annotation";
-		        specTitle = newTitle;
+                //create unique, default tag 
+                specTitle = "Annotation";
 	        }
 
-            if (specTitle != null)
-            {
-                linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
-            }
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
-            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkContextKey, context.ToString(), true);
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
             target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
         }
@@ -450,7 +446,7 @@ namespace Dash
         /// <param name="value">the value being added to the list</param>
         public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
-            GetDereferencedField<ListController<T>>(key, null)?.Add(value);
+            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
 
             foreach (var d in GetDelegates().TypedData)
             {

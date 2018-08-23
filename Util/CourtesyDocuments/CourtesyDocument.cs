@@ -333,14 +333,27 @@ namespace Dash
             hiddenField.Data = !hiddenField.Data;
         }
 
-        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
         {
-            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
+            if (linkFromOrToKey == null)
+            {
+                var fromLinks = document.GetLinks(KeyStore.LinkFromKey);
+                var toLinks   = document.GetLinks(KeyStore.LinkToKey);
+                var allinks   = new List<DocumentController>(fromLinks);
+                allinks.AddRange(toLinks);
+                return allinks;
+            }
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
+        }
+
+        public static ListController<TextController> GetLinkTags(this DocumentController document)
+        {
+            return document.GetDereferencedField<ListController<TextController>>(KeyStore.LinkTagKey, null);
         }
 
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
-            var todocs = document.GetLinks(LinkFromOrToKey);
+            var todocs = document.GetDereferencedField<ListController<DocumentController>>(LinkFromOrToKey, null);
             if (todocs == null)
             {
                 document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);

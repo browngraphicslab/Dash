@@ -190,7 +190,7 @@ namespace Dash
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
-                //setupMapView(lastWorkspace);
+                setupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
@@ -844,18 +844,19 @@ namespace Dash
         {
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
-            this.JavaScriptHack.Focus(FocusState.Programmatic);
-            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.xItemsControl.GetFirstDescendantOfType<Canvas>();
-            var mapPt = e.GetPosition(mapViewCanvas);
+	        this.JavaScriptHack.Focus(FocusState.Programmatic);
+		        var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+		        var mapPt = e.GetPosition(mapViewCanvas);
 
-            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
-            var mainFreeFormCanvas = mainFreeform?.xItemsControl.GetFirstDescendantOfType<Canvas>();
-            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11 , MainDocView.ActualHeight / 2  / mainFreeformXf.M22);
-            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-            mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth/2 , Y = -mapPt.Y  + xMainDocView.ActualHeight/ 2  },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+		        var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+		        var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+		        var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+		        var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
+		        var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
+		        mainFreeform?.SetTransformAnimated(
+			        new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
+			        new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+			
          }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -1063,6 +1064,37 @@ namespace Dash
             }
         }
 
+        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
+        {
+            //make doc view out of doc controller
+            var docCopy = doc.GetViewCopy();
+            docCopy.SetWidth(size?.X ?? 200);
+            docCopy.SetHeight(size?.Y ?? 200);
+            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 100, xCanvas.RenderSize.Height / 2 - 100);
+            docCopy.SetPosition(position ?? defaultPt);
+            
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(docCopy),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                BindRenderTransform = true
+            };
+
+            SelectionManager.Select(docView, false);
+
+            docView.DocumentDeselected += DocView_DocumentDeselected;
+
+            //add to xCanvas
+            xCanvas.Children.Add(docView);
+        }
+
+        private void DocView_DocumentDeselected(DocumentView sender)
+        {
+            sender.DocumentDeselected -= DocView_DocumentDeselected;
+            xCanvas.Children.Remove(sender);
+        }
+
         #region Annotation logic
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
@@ -1077,7 +1109,7 @@ namespace Dash
             }
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
 
-            if (target.GetField<TextController>(KeyStore.LinkContextKey)?.Data.Equals(nameof(LinkContexts.PushPin)) ?? false)
+            if (target.GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data.Equals(nameof(LinkTargetPlacement.Overlay)) ?? false)
             {
                 target.GotoRegion(region, linkDoc);
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
@@ -1236,9 +1268,7 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
-
-
-
+        
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
@@ -1247,8 +1277,7 @@ namespace Dash
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
@@ -1282,13 +1311,12 @@ namespace Dash
         private ToolTip _search;
         private ToolTip _back;
         private ToolTip _forward;
-        private ToolTip _snapshot;
         private ToolTip _presentation;
         private ToolTip _export;
 
         private void SetUpToolTips()
         {
-            var placementMode = PlacementMode.Bottom;
+            const PlacementMode placementMode = PlacementMode.Bottom;
             const int offset = 5;
 
             _search = new ToolTip()
@@ -1314,16 +1342,6 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xForwardButton, _forward);
-
-            _snapshot = new ToolTip()
-            {
-                Content = "Snapshot workspace",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xSnapshotButton, _snapshot);
-
-
         }
 
 		/// <summary>
