@@ -104,7 +104,7 @@ namespace Dash
                 _visibilityLock = false;
                 foreach (var doc in value)
                 {
-                    if (doc.ViewModel.Undecorated)
+                    if (doc.ViewModel?.Undecorated ?? false)
                     {
                         _visibilityLock = true;
                         VisibilityState = Visibility.Collapsed;

@@ -130,7 +130,6 @@ namespace Dash
         {
             var dragModels = packageView.GetDragModels();
             var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
-            var offsets = dropSafe.OfType<DragDocumentModel>().Select(ddm => ddm.offset);
 
             return dropSafe.SelectMany(dm => dm.GetDropDocuments(
                 new Point(where.X - ((DragDocumentModel) dm).offset.X, where.Y - ((DragDocumentModel)dm).offset.Y))).ToList();
