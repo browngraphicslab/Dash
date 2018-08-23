@@ -133,7 +133,8 @@ namespace Dash
             var offsets = dropSafe.OfType<DragDocumentModel>().Select(ddm => ddm.offset);
 
 
-            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where)).ToList();
+            return dropSafe.SelectMany(dm => dm.GetDropDocuments(
+                new Point(where.X - ((DragDocumentModel) dm).offset.X, where.Y - ((DragDocumentModel)dm).offset.Y))).ToList();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)
