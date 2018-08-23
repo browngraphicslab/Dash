@@ -494,8 +494,11 @@ namespace Dash
 
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            //TODO: add offset between mouse and sender as parameter to drag doc model
+            var pos = args.GetPosition(sender);
+            
             args.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off:pos)
             {
                 SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
             });

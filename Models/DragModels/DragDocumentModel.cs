@@ -24,6 +24,8 @@ namespace Dash
 
         public string LinkType = null;
 
+        public Point offset;
+
         public bool MakeCollection { get; set; }
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
@@ -36,10 +38,12 @@ namespace Dash
             MakeCollection = false;
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, bool showView, List<DocumentView> sourceViews = null)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, bool showView, 
+            List<DocumentView> sourceViews = null, Point? off = null)
         {
             DraggedDocuments = draggedDocuments;
             ShowViewCopy = showView;
+            offset = off ?? new Point(0, 0);
             if (sourceViews != null) LinkSourceViews = sourceViews;
             MakeCollection = false;
 
