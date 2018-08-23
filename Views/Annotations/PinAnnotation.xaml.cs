@@ -57,7 +57,7 @@ namespace Dash
         {
             foreach (var region in ParentOverlay.XAnnotationCanvas.Children)
             {
-                if (region is Ellipse existingPin && existingPin.GetBoundingRect(this).Contains(point))
+                if (region is Ellipse existingPin && existingPin.GetBoundingRect(ParentOverlay).Contains(point))
                 {
                     return;
                 }

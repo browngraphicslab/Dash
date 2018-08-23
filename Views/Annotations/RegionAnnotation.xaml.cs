@@ -133,8 +133,12 @@ namespace Dash
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
             region.AddToListField(KeyStore.SelectionRegionSizeKey,
                 new PointController(XRegionRect.Width, XRegionRect.Height));
+			// hello wanderer please do not delete the next two lines despite them looking repetitive: the publisher needs this!!
+	        region.GetDataDocument().AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
+	        region.GetDataDocument().AddToListField(KeyStore.SelectionRegionSizeKey,
+		        new PointController(XRegionRect.Width, XRegionRect.Height));
 
-            return YPos;
+			return YPos;
         }
     }
 }

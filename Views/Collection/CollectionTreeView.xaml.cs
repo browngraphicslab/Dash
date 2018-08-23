@@ -97,15 +97,22 @@ namespace Dash
 
         public async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //List of Document Controller - one document controller for each collection
-            //so a data file is made for each element in this list
-            var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
+	        // TODO: do the following eventually; for now it will just export everything you have
+	        // var documentList = await GetDocumentsToPublish();
 
-            ExportToTxt newExport = new ExportToTxt();
+	        var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.DocumentType)).ToList();
+	        allDocuments.Remove(MainPage.Instance.MainDocument.GetDataDocument());
 
-            //Now call function in ExportToTxt that converts all collections to files
-           newExport.DashToTxt(collectionDataDocs);
-        }
+	        await new Publisher().StartPublication(allDocuments);
+			//    //List of Document Controller - one document controller for each collection
+			//    //so a data file is made for each element in this list
+			//    var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
+
+			//    ExportToTxt newExport = new ExportToTxt();
+
+			//    //Now call function in ExportToTxt that converts all collections to files
+			//   newExport.DashToTxt(collectionDataDocs);
+		}
         
         public void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {

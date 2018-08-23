@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
@@ -129,5 +133,55 @@ namespace Dash
                 _visibleElementsIsRendering[pageNum] = false;
             }
         }
-    }
+
+	    public static async Task<WriteableBitmap> GetImageFromPdf(WPdf.PdfDocument pdf, uint pageNum)
+	    {
+		    WriteableBitmap wb;
+		    using (var page = pdf.GetPage(pageNum))
+		    {
+			    //todo get a way to write out to disk as opposed to memory
+			    var stream = new InMemoryRandomAccessStream();
+			    await page.RenderToStreamAsync(stream, new WPdf.PdfPageRenderOptions() { DestinationHeight = (uint)page.Size.Height, DestinationWidth = (uint)page.Size.Width });
+
+			    wb = new WriteableBitmap((int)page.Size.Width, (int)page.Size.Height);
+			    await wb.SetSourceAsync(stream);
+		    }
+
+		    return wb;
+	    }
+
+	    public static async Task<Size> RenderPageToFile(WPdf.PdfDocument pdf, uint pageNum, StorageFile file)
+	    {
+		    using (var page = pdf.GetPage(pageNum))
+		    {
+			    var randomStream = await file.OpenAsync(FileAccessMode.ReadWrite);
+			    await page.RenderToStreamAsync(randomStream, new WPdf.PdfPageRenderOptions { DestinationWidth = (uint)page.Size.Width, BitmapEncoderId = BitmapEncoder.JpegEncoderId });
+			    await randomStream.FlushAsync();
+			    randomStream.Dispose();
+			    return page.Size;
+		    }
+	    }
+
+	    public static async Task<WPdf.PdfDocument> GetPdf(DocumentController pdf)
+	    {
+		    var pdfUri = pdf.GetDataDocument().GetField<ImageController>(KeyStore.DataKey).Data;
+		    StorageFile file;
+		    try
+		    {
+			    file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
+		    }
+		    catch (ArgumentException)
+		    {
+			    try
+			    {
+				    file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
+			    }
+			    catch (ArgumentException)
+			    {
+				    return null;
+			    }
+		    }
+		    return await WPdf.PdfDocument.LoadFromFileAsync(file);
+	    }
+	}
 }

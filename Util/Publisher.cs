@@ -229,11 +229,52 @@ namespace Dash
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
 			//var regions = regionsToRender ?? dc.GetRegions()?.TypedData;
-			var regions = dc.GetRegions()?.TypedData;
+			var regions = regionsToRender ?? dc.GetRegions()?.TypedData;
 			var pageSize = _pdfPageSize[dc];
+			var pageNums = new List<int>();
+
+			if (truncate && regionsToRender != null)
+			{
+				foreach (var region in regionsToRender)
+				{
+					var page = 1;
+
+					switch (region.GetAnnotationType())
+					{
+						case AnnotationType.None:
+							break;
+						case AnnotationType.Region:
+							page = GetPageAtOffset(region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data.Y);
+							break;
+						case AnnotationType.Selection:
+							break;
+						case AnnotationType.Ink:
+							break;
+						case AnnotationType.Pin:
+							page = GetPageAtOffset(region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data.Y);
+							break;
+						default:
+							throw new ArgumentOutOfRangeException();
+					}
+
+					if (!pageNums.Contains(page))
+					{
+						pageNums.Add(page);
+					}
+				}
+
+				// at the very least render the first page if there were no regions in it
+				if (pageNums.Count == 0) pageNums.Add(1);
+			}
+			else
+			// no truncation, just add in all the page numbers to render
+			{
+				for (var i = 1; i <= numPages; i++)
+					pageNums.Add(i);
+			}
 
 			// render the whole pdf
-			for (var i = 1; i <= numPages; i++)
+			foreach (var i in pageNums)
 			{
 				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
 				var path = "media\\" + _fileNames[dc] + "/" + fileName;
@@ -241,42 +282,6 @@ namespace Dash
 				html.Add("<img src=\"" + path + "\">");
 				html.Add("</div>");
 			}
-
-			//// todo: clean this up lol
-			//if (!truncate)
-			//{
-			//	// render the whole pdf
-			//	for (var i = 1; i <= numPages; i++)
-			//	{
-			//		var fileName = _fileNames[dc] + "_page" + i + ".jpg";
-			//		var path = "media\\" + _fileNames[dc] + "/" + fileName;
-			//		html.Add("<div class=\"pdf\">");
-			//		html.Add("<img src=\"" + path + "\">");
-			//		html.Add("</div>");
-			//	}
-			//} else if (regionsToRender != null)
-			//{
-			//	// only render the pages with things on them
-			//	List<int> pageNumbers = regionsToRender.Select(region =>
-			//		GetPageAtOffset(region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data.Y)).ToList();
-			//	foreach (var i in pageNumbers)
-			//	{
-			//		var fileName = _fileNames[dc] + "_page" + i + ".jpg";
-			//		var path = "media\\" + _fileNames[dc] + "/" + fileName;
-			//		html.Add("<div class=\"pdf\">");
-			//		html.Add("<img src=\"" + path + "\">");
-			//		html.Add("</div>");
-			//	}
-			//}
-			//else
-			//{
-			//	// only render the first page
-			//	var fileName = _fileNames[dc] + "_page" + 1 + ".jpg";
-			//	var path = "media\\" + _fileNames[dc] + "/" + fileName;
-			//	html.Add("<div class=\"pdf\">");
-			//	html.Add("<img src=\"" + path + "\">");
-			//	html.Add("</div>");
-			//}
 
 			// do the regioning: use IndexOf to find the appropriate <img src> endpoint to insert the annotation
 			if (regions != null)
@@ -324,6 +329,7 @@ namespace Dash
 
 							break;
 						case AnnotationType.Selection:
+							// TODO: do this
 							break;
 						default:
 							break;
@@ -363,13 +369,13 @@ namespace Dash
 			var regionLinkTo = link.GetDataDocument().GetLinks(KeyStore.LinkToKey);
 			var regionLinkFrom = link.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
 			// trying to see if the one target is linkTo or linkFrom, and if it's one of them, set it to that target
-			if (regionLinkTo == null && regionLinkFrom != null && regionLinkFrom.Count == 1)
+			if ((regionLinkTo == null || regionLinkTo.Count == 0) && regionLinkFrom != null && regionLinkFrom.Count == 1)
 			{
-				oneTarget = regionLinkFrom.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
+				oneTarget = regionLinkFrom.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
 			}
-			else if (regionLinkFrom == null && regionLinkTo != null && regionLinkTo.Count == 1)
+			else if ((regionLinkFrom == null || regionLinkFrom.Count == 0) && regionLinkTo != null && regionLinkTo.Count == 1)
 			{
-				oneTarget = regionLinkTo.TypedData.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+				oneTarget = regionLinkTo.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
 			}
 
 			return oneTarget;
@@ -567,7 +573,7 @@ namespace Dash
 			var html = new List<string>();
 
 			// cycle through each link/region's links as necessary, building a new HTML segment as we go
-			var linksTo = dc.GetLinks(KeyStore.LinkToKey)?.TypedData;
+			var linksTo = dc.GetLinks(KeyStore.LinkToKey);
 			if (linksTo != null)
 			{
 				// linksFrom uses LinkDestination to get the opposite document
@@ -584,7 +590,7 @@ namespace Dash
 				}
 			}
 
-			var linksFrom = dc.GetLinks(KeyStore.LinkFromKey)?.TypedData;
+			var linksFrom = dc.GetLinks(KeyStore.LinkFromKey);
 			if (linksFrom != null)
 			{
 				// linksFrom uses LinkSource to get the opposite document
