@@ -719,8 +719,17 @@ namespace Dash
                 adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+                foreach (var d in dragDocs)
+                {
+                    for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                    {
+                        d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                    }
+                }
                 AddDocuments(docsToAdd);
-                //RemoveDocuments();
+
+                e.DataView.ReportOperationCompleted(DataPackageOperation.Move);
             }
         }
 

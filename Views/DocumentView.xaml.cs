@@ -45,7 +45,7 @@ namespace Dash
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
-        public ManipulationControls ManipulationControls { get; set; }
+        //public ManipulationControls ManipulationControls { get; set; }
         public DocumentViewModel ViewModel
         {
             get => DataContext as DocumentViewModel;
@@ -492,21 +492,57 @@ namespace Dash
             ToFront();
         }
 
-        private void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             args.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
+            {
+                SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
+            });
+            this.DropCompleted += DocumentView_DropCompleted;
+
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+
+            var def = args.GetDeferral();
+            var rtb = new RenderTargetBitmap();
+
+            var s = new Point(ActualWidth, ActualHeight);
+            var rect = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
+            s = new Point(rect.Width, rect.Height);
+            await rtb.RenderAsync(this, (int)s.X, (int)s.Y);
+
+            IBuffer buf = await rtb.GetPixelsAsync();
+            SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+
+            var p = args.GetPosition(this);
+            rect = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, p.X, p.Y));
+            p = new Point(rect.Width, rect.Height);
+            args.DragUI.SetContentFromSoftwareBitmap(sb, p);
+
+            Visibility = Visibility.Collapsed;
+            def.Complete();
+
             //doc.ViewModel.DecorationState = false;
+        }
+
+        private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            //if (args.DropResult == DataPackageOperation.Move)
+            //{
+            //    ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            //}
         }
 
         private async void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_pointerCapture != null && SelectionManager.IsSelected(this))
+            if (e != null)
             {
                 e.Handled = true;
                 e.Complete();
+            }
+            if (_pointerCapture != null && SelectionManager.IsSelected(this))
+            {
                 await this.StartDragAsync(_pointerCapture.GetCurrentPoint(this));
             }
         }
@@ -611,10 +647,7 @@ namespace Dash
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
 
             cdo.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true)
-            {
-                SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
-            });
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
 
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
@@ -1911,7 +1944,7 @@ namespace Dash
                 ViewModel.LayoutDocument.SetHidden(true);
             }
         }
-
+        
         public void SetLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
@@ -1925,6 +1958,13 @@ namespace Dash
         ~DocumentView()
         {
             Debug.Write("dispose DocumentView");
+        }
+
+        public async void StartManipulation(PointerRoutedEventArgs pointer)
+        {
+            _pointerCapture = pointer;
+            await StartDragAsync(pointer.GetCurrentPoint(this));
+            //DocumentView_ManipulationStarted(null, null);
         }
     }
 }

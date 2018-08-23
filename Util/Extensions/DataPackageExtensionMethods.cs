@@ -69,8 +69,6 @@ namespace Dash
             return retVal;
         }
 
-        //public static async Task<List<DocumentController>> Get
-
         // DATA ACCESS
 
         public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point @where = new Point())

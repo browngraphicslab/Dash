@@ -80,9 +80,9 @@ namespace Dash
             {
                 var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
+                if ((shifted || parentParentFreeform == null))
                 {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
+                    new ManipulationControlHelper(this, args, true); // manipulate the top-most collection view
 
                     args.Handled = true;
                 }

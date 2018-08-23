@@ -66,7 +66,7 @@ namespace Dash
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                 {
                     OnManipulatorHelperStarted?.Invoke();
-                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                    new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 }
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
@@ -99,6 +99,7 @@ namespace Dash
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;
+
             xRichEditBox.GotFocus += (s, e) =>
             {
                 var docView = getDocView();
@@ -182,6 +183,7 @@ namespace Dash
                 }
             };
         }
+
         ~RichTextView()
         {
             Debug.WriteLine("Finalized RichTextView");

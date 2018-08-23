@@ -28,7 +28,7 @@ namespace Dash
             return container.PointerPos();
         }
 
-        public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown, bool useCache = false)
+        public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)
         {
             _useCache = useCache;
             move_hdlr = new PointerEventHandler((sender, e) => PointerMoved(sender, e));
@@ -48,15 +48,15 @@ namespace Dash
             if (_collection != null)
                 _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 			
-            if (_manipulationDocumentTarget.ManipulationControls == null) return;
-            pointerPressed(_eventElement, null);
+            //if (_manipulationDocumentTarget.ManipulationControls == null) return;
+            pointerPressed(_eventElement, pointer);
 
-            _manipulationDocumentTarget.PointerId = (pointer is Pointer pt) ? pt.PointerId : 1;
+            _manipulationDocumentTarget.PointerId = (pointer?.Pointer is Pointer pt) ? pt.PointerId : 1;
             
-            _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
-            _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-            if (!_eventElement.IsShiftPressed() && pointer != null)
-                _eventElement.CapturePointer(pointer);
+            //_eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
+            //_eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
+            //if (!_eventElement.IsShiftPressed() && pointer != null)
+            //    _eventElement.CapturePointer(pointer.Pointer);
         }
 
 
@@ -65,7 +65,8 @@ namespace Dash
             _numMovements = 0;
             var pointerPosition = GetPointerPosition();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-            _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
+            _manipulationDocumentTarget.StartManipulation(e);
+            //_manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
             if (_useCache) _eventElement.CacheMode = null;
         }
 
@@ -77,22 +78,22 @@ namespace Dash
         /// <param name="e"></param>
         public void PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (e?.Pointer != null)
-                _eventElement.CapturePointer(e.Pointer);
-            _numMovements++;
-            if (_manipulationDocumentTarget.ManipulationControls == null) return;
+            //if (e?.Pointer != null)
+            //    _eventElement.CapturePointer(e.Pointer);
+            //_numMovements++;
+            ////if (_manipulationDocumentTarget.ManipulationControls == null) return;
             
-            var pointerPosition = GetPointerPosition();
-            var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
+            //var pointerPosition = GetPointerPosition();
+            //var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
-            _rightDragLastPosition = pointerPosition;
+            //_rightDragLastPosition = pointerPosition;
 
-            var translationAfterAlignment = _manipulationDocumentTarget.ManipulationControls.SimpleAlign(translationBeforeAlignment);
+            //var translationAfterAlignment = _manipulationDocumentTarget.ManipulationControls.SimpleAlign(translationBeforeAlignment);
 
-            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f, null, this, e);
+            //_manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f, null, this, e);
 
-            if (e != null)
-                e.Handled = true;
+            //if (e != null)
+            //    e.Handled = true;
         }
 
         public void Abort(PointerRoutedEventArgs e)
@@ -112,40 +113,40 @@ namespace Dash
 
         public void PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_eventElement != null)
-            {
-                if (e != null)
-                    _eventElement.ReleasePointerCapture(e.Pointer);
-                _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
-                _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
-            }
-            foreach (var n in _ancestorDocs)
-                n.ManipulationMode = ManipulationModes.All;
-            if (_collection != null)
-                _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
+            //if (_eventElement != null)
+            //{
+            //    if (e != null)
+            //        _eventElement.ReleasePointerCapture(e.Pointer);
+            //    _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
+            //    _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            //}
+            //foreach (var n in _ancestorDocs)
+            //    n.ManipulationMode = ManipulationModes.All;
+            //if (_collection != null)
+            //    _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             
-            var pointerPosition = GetPointerPosition();
+            //var pointerPosition = GetPointerPosition();
 
-            var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
-            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-            if (dist < 100 && _numMovements < 10)
-            {
-                _manipulationDocumentTarget?.TappedHandler(false);
-                if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
-                    _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
-                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);
-            }
-            else
-                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();
+            //var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
+            //var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            //if (dist < 100 && _numMovements < 10)
+            //{
+            //    _manipulationDocumentTarget?.TappedHandler(false);
+            //    if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
+            //        _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
+            //    _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(true);
+            //}
+            //else
+            //    _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();
 
-            if (_useCache) _eventElement.CacheMode = new BitmapCache();
-            if (e != null)
-                e.Handled = true;
+            //if (_useCache) _eventElement.CacheMode = new BitmapCache();
+            //if (e != null)
+            //    e.Handled = true;
 
-            if (_eventElement is RichTextView rtv)
-            {
-                rtv.CompletedManipulation();
-            }
+            //if (_eventElement is RichTextView rtv)
+            //{
+            //    rtv.CompletedManipulation();
+            //}
         }
     }
 }

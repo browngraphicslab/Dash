@@ -112,6 +112,11 @@ namespace Dash
             }
             else
             {
+                foreach (var documentController in DraggedDocuments)
+                {
+                    documentController.SetPosition(where);
+                }
+
                 docs = DraggedDocuments;
             }
 
