@@ -228,7 +228,8 @@ namespace Dash
                 if (e.IsRightPressed())
                 {
                     _pointerCapture = e;
-                    SelectionManager.Select(this, false);
+                    if (!SelectionManager.IsSelected(this))
+                        SelectionManager.Select(this, false);
                 }
             };
 
@@ -1967,7 +1968,9 @@ namespace Dash
         public async void StartManipulation(PointerRoutedEventArgs pointer)
         {
             _pointerCapture = pointer;
-            SelectionManager.Select(this, false);
+            if (!SelectionManager.IsSelected(this))
+                SelectionManager.Select(this, false);
+            
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
         }
