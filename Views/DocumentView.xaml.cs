@@ -495,10 +495,8 @@ namespace Dash
 
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var pos = args.GetPosition(sender);
-            
             args.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off:pos)
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off: SelectionManager.GetSelectedDocs().Select(args.GetPosition).ToList())
             {
                 SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
             });

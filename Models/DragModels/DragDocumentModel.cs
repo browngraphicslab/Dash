@@ -21,6 +21,7 @@ namespace Dash
         public List<CollectionView> SourceCollectionViews;
 
         public List<DocumentController> DraggedDocuments;
+        public List<Point> OffsetsDocs;
 
         public string LinkType = null;
 
@@ -39,11 +40,11 @@ namespace Dash
         }
 
         public DragDocumentModel(List<DocumentController> draggedDocuments, bool showView, 
-            List<DocumentView> sourceViews = null, Point? off = null)
+            List<DocumentView> sourceViews = null, List<Point> off = null)
         {
             DraggedDocuments = draggedDocuments;
             ShowViewCopy = showView;
-            offset = off ?? new Point(0, 0);
+            OffsetsDocs = off;
             if (sourceViews != null) LinkSourceViews = sourceViews;
             MakeCollection = false;
 
