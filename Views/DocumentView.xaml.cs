@@ -523,7 +523,10 @@ namespace Dash
             p = new Point(rect.Width, rect.Height);
             args.DragUI.SetContentFromSoftwareBitmap(sb, p);
 
-            Visibility = Visibility.Collapsed;
+            if (!this.IsShiftPressed())
+            {
+                Visibility = Visibility.Collapsed;
+            }
             def.Complete();
 
             //doc.ViewModel.DecorationState = false;

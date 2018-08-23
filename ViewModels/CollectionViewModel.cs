@@ -721,11 +721,14 @@ namespace Dash
 
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                 var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
-                foreach (var d in dragDocs)
+                if (!(sender as FrameworkElement).IsShiftPressed())
                 {
-                    for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                    foreach (var d in dragDocs)
                     {
-                        d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                        for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                        {
+                            d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                        }
                     }
                 }
                 AddDocuments(docsToAdd);
