@@ -36,6 +36,7 @@ namespace Dash
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         //TagMap is used to keep track of the different activated tags displayed underneath the link button. it contains a list of names of tags paired with a list of all of the links tagged with that specific tag.
         public Dictionary<string, List<DocumentController>> TagMap = new Dictionary<string, List<DocumentController>>();
+        public List<DocumentController> CurrentLinks;
         public Tag CurrEditTag;
         private DocumentController currEditLink;
 
@@ -406,6 +407,8 @@ namespace Dash
                         doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
                 }
 
+                
+
             };
             button.Tag = new Tuple<DocumentView, string>(null, linkName);
 
@@ -413,6 +416,7 @@ namespace Dash
             button.RightTapped += (s, e) =>
             {
                 e.Handled = true;
+                CurrentLinks = TagMap[linkName];
                 ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
 
             };
