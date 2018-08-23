@@ -228,6 +228,7 @@ namespace Dash
                 if (e.IsRightPressed())
                 {
                     _pointerCapture = e;
+                    SelectionManager.Select(this, false);
                 }
             };
 
@@ -522,7 +523,10 @@ namespace Dash
             p = new Point(rect.Width, rect.Height);
             args.DragUI.SetContentFromSoftwareBitmap(sb, p);
 
-            Visibility = Visibility.Collapsed;
+            if (!this.IsShiftPressed())
+            {
+                Visibility = Visibility.Collapsed;
+            }
             def.Complete();
 
             //doc.ViewModel.DecorationState = false;
@@ -1965,6 +1969,7 @@ namespace Dash
         public async void StartManipulation(PointerRoutedEventArgs pointer)
         {
             _pointerCapture = pointer;
+            SelectionManager.Select(this, false);
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
         }

@@ -217,7 +217,7 @@ namespace Dash
             if (dragModels.Count == 1 && dragModels.First() is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
             {
                 doc = ddm.DraggedDocuments.First();
-                linkView = ddm.LinkSourceViews.FirstOrDefault();
+                linkView = ddm.LinkSourceViews?.FirstOrDefault();
                 return true;
             }
 
