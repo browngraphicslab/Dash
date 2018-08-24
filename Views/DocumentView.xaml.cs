@@ -507,23 +507,48 @@ namespace Dash
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
+            var width = double.NegativeInfinity;
+            var height = double.NegativeInfinity;
+            var top = double.PositiveInfinity;
+            var left = double.PositiveInfinity;
+            foreach (var doc in SelectionManager.GetSelectedDocs())
+            {
+                top = Math.Min(doc.ViewModel.Position.Y, top);
+                left = Math.Min(doc.ViewModel.Position.X, left);
+            }
+
+            foreach (var doc in SelectionManager.GetSelectedDocs())
+            {
+                width = Math.Max((doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X) - left, width);
+                height = Math.Max((doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y) - top, height);
+            }
+            var s1 = new Point(width, height);
+            var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
+            s1 = new Point(rect1.Width, rect1.Height);
+
+            var bp = new WriteableBitmap((int) s1.X, (int) s1.Y);
+
             var def = args.GetDeferral();
-            var rtb = new RenderTargetBitmap();
-
-            //TODO: use for loop to do for each selected doc and then combine into single image
-
-            var s = new Point(ActualWidth, ActualHeight);
-            var rect = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
-            s = new Point(rect.Width, rect.Height);
-            await rtb.RenderAsync(this, (int)s.X, (int)s.Y);
-
-            IBuffer buf = await rtb.GetPixelsAsync();
-            SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+            foreach (var doc in SelectionManager.GetSelectedDocs())
+            {
+                var rtb = new RenderTargetBitmap();
+                var s = new Point(doc.ActualWidth, doc.ActualHeight);
+                var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
+                s = new Point(rect.Width, rect.Height);
+                await rtb.RenderAsync(doc, (int)s.X, (int)s.Y);
+                IBuffer buf = await rtb.GetPixelsAsync();
+                var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+                SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+                sb.CopyToBuffer(additionalBp.PixelBuffer);
+                bp.Blit(new Rect(ViewModel.XPos - left, ViewModel.YPos - top, s.X, s.Y), additionalBp, new Rect(0, 0, s.X, s.Y));
+            }
 
             var p = args.GetPosition(this);
-            rect = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, p.X, p.Y));
-            p = new Point(rect.Width, rect.Height);
-            args.DragUI.SetContentFromSoftwareBitmap(sb, p);
+            var rect2 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, p.X, p.Y));
+            p = new Point(rect2.Width, rect2.Height);
+            var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
+                bp.PixelHeight);
+            args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
 
             if (!this.IsShiftPressed())
             {
