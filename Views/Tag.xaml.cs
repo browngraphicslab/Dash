@@ -142,7 +142,7 @@ namespace Dash
                 tag.Deselect();
             }
 
-            _docdecs.rebuildMenuIfNeeded();
+            //_docdecs.rebuildMenuIfNeeded();
 
 
             xTagContainer.BorderThickness = new Thickness(2);

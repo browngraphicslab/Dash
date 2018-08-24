@@ -417,7 +417,22 @@ namespace Dash
             {
                 e.Handled = true;
                 CurrentLinks = TagMap[linkName];
+                Tag tag = null;
+                
                 ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
+
+                foreach (var child in xTagContainer.Children)
+                {
+                    var actualchild = child as Tag;
+                    if (actualchild.Text == linkName)
+                    {
+                        actualchild.Select();
+                    }
+                    else
+                    {
+                        actualchild.Deselect();
+                    }
+                }
 
             };
             button.PointerPressed += (s, e) =>
@@ -864,12 +879,8 @@ namespace Dash
 
                 var newtag = AddTagIfUnique(entry);
                 TagMap.Add(entry, new List<DocumentController>());
-                //foreach (var tag in xTest.Children)
-                //{
-                //    (tag as Tag).Deselect();
-                //}
-
-                //newtag.Select();
+                
+                newtag.Select();
 
                 box.Text = "";
             }
