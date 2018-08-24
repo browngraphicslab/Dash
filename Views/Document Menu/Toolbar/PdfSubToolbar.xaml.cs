@@ -21,7 +21,7 @@ namespace Dash
     public sealed partial class PdfSubToolbar : UserControl, ICommandBarBased
     {
         private DocumentView _currentDocView;
-        private CustomPdfView _currentPdfView;
+        private PdfView _currentPdfView;
         private DocumentController _currentDocController;
 
         public PdfSubToolbar()
@@ -52,7 +52,7 @@ namespace Dash
         internal void SetPdfBinding(DocumentView selection)
         {
             _currentDocView = selection;
-            _currentPdfView = _currentDocView.GetFirstDescendantOfType<CustomPdfView>();
+            _currentPdfView = _currentDocView.GetFirstDescendantOfType<PdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 
             xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
