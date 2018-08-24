@@ -579,6 +579,10 @@ namespace Dash
 
         private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
+            if (ViewModel != null)
+            {
+                Visibility = Visibility.Visible;
+            }
             //if (args.DropResult == DataPackageOperation.Move)
             //{
             //    ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
