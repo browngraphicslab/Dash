@@ -31,37 +31,37 @@ body {
     word-wrap: break-word
 }
 
-#sidebar i {
-    color: #8BBBE5;
-}
-
-#sidebar .icon {
-    margin-right: 10px;
-}
-
-/* we don't want the bullet points in the list '*/
-#sidebar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-
-    #sidebar ul li {
-        margin: 20px 0;
+    #sidebar i {
+        color: #8BBBE5;
     }
 
-/* we don't want the underlines showing in the sidebar links */
-#sidebar a {
-    text-decoration: none;
-    color: inherit;
-}
+    #sidebar .icon {
+        margin-right: 10px;
+    }
 
-/* for the link in the sidebar that's the current page */
-#sidebar .activeNote {
-    border-bottom: 3px solid #383A42;
-    text-transform: uppercase;
-    font-weight: 700;
-}
+    /* we don't want the bullet points in the list '*/
+    #sidebar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        #sidebar ul li {
+            margin: 20px 0;
+        }
+
+    /* we don't want the underlines showing in the sidebar links */
+    #sidebar a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* for the link in the sidebar that's the current page */
+    #sidebar .activeNote {
+        border-bottom: 3px solid #383A42;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
 
 #main {
     margin-left: 20%; /* same width as sidebar */
@@ -106,10 +106,10 @@ body {
     font-family: "Karla", sans-serif;
 }
 
-.annotationLink a {
-    text-decoration: none;
-    color: inherit;
-}
+    .annotationLink a {
+        text-decoration: none;
+        color: inherit;
+    }
 
 
 /* ========= finer details ========= */
@@ -139,7 +139,6 @@ iframe {
 .pdf {
     position: relative;
     margin-bottom: 10px;
-    z-index: 0;
 }
 
     .pdf img, audio {
@@ -155,29 +154,30 @@ iframe {
     position: relative;
     display: inline-block;
     width: 30%;
-}
-
-/* Tooltip text */
-.tooltip .tooltipItem {
-    visibility: hidden;
-    background-color: #555;
-    overflow-wrap: break-word;
-    max-width: 100%;
-    color: #fff;
-    text-align: center;
-    padding: 8px;
-    border-radius: 6px;
-    /* Position the tooltip text */
-    position: absolute;
     z-index: 1;
-    left: 10%;
-    /* Fade in tooltip */
-    opacity: 0;
-    transition: opacity 0.3s;
 }
 
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltipItem {
-    visibility: visible;
-    opacity: 1;
-}
+    /* Tooltip text */
+    .tooltip .tooltipItem {
+        visibility: hidden;
+        background-color: #555;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        color: #fff;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        /* Position the tooltip text */
+        position: absolute;
+        z-index: 2;
+        left: 10%;
+        /* Fade in tooltip */
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltipItem {
+        visibility: visible;
+        opacity: 1;
+    }
