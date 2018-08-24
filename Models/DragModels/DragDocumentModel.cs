@@ -110,11 +110,13 @@ namespace Dash
                         !double.IsNaN(vcopy.GetWidthField().Data) ||
                         !double.IsNaN(vcopy.GetHeightField().Data))
                         docs.Add(vcopy);
-
-                    vcopy.SetWidth(500);
-                    vcopy.SetHeight(300);
-                    vcopy.SetFitToParent(true);
-                    docs.Add(vcopy);
+                    else
+                    {
+                        vcopy.SetWidth(500);
+                        vcopy.SetHeight(300);
+                        vcopy.SetFitToParent(true);
+                        docs.Add(vcopy);
+                    }
                 }
             }
             else if (LinkSourceViews != null)
