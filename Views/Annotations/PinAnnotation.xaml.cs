@@ -166,7 +166,8 @@ namespace Dash
                         var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
                         var uri = url.Uri;
                         videoNote = VideoToDashUtil.CreateVideoBoxFromUri(uri);
-                    }
+	                    videoNote.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+					}
                     catch (Exception)
                     {
                         // TODO: display error video not found

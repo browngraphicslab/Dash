@@ -304,9 +304,11 @@ namespace Dash
 									continue;
 								}
 
-								var insert = "<div class=\"pdfPinAnnotation\" style=\"top:" + offsets.Y + "%; left:" +
-								             offsets.X + "%; background-color:" + _colorPairs[dc] + ";\">" + GetOppositeLinkTarget(region)
-									             .GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data + "</div>";
+								var insert = "<div class=\"tooltip\" style=\"position:absolute; top:" + offsets.Y + "%; left:" + offsets.X +
+								             "%;\"><i style=\"font-size: 200%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i>";
+								insert += "<span class=\"tooltipItem\">" + RenderNoteToHtml(GetOppositeLinkTarget(region)) + "</span></div>";
+								//var insert = "<div class=\"pdfPinAnnotation\" style=\"top:" + offsets.Y + "%; left:" +
+								//             offsets.X + "%; background-color:" + _colorPairs[dc] + ";\">" + RenderNoteToHtml(GetOppositeLinkTarget(region)) + "</div>";
 								//if (!truncate)
 								//	insert += "<i style=\"font-size: 200%; position:absolute; top:" + offsets.Y + "%; left:" + offsets.X +
 								//	          "%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i></div>";
