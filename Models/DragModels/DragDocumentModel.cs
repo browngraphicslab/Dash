@@ -79,37 +79,43 @@ namespace Dash
         public override List<DocumentController> GetDropDocuments(Point where, bool forceShowViewCopy = false)
         {
             // For each dragged document...
-            List<DocumentController> docs;
+            List<DocumentController> docs = new List<DocumentController>();
 
             // ...if CTRL pressed, create a key value pane
             if (MainPage.Instance.IsCtrlPressed())
             {
-                docs = DraggedDocuments.Select(d => d.GetDataInstance(where)).ToList();
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetDataInstance(new Point(where.X - OffsetsDocs[i].X, where.Y - OffsetsDocs[i].Y)));
+                }
             } 
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
-                docs = DraggedDocuments.Select(d => d.GetKeyValueAlias(where)).ToList();
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(new Point(where.X - OffsetsDocs[i].X, where.Y - OffsetsDocs[i].Y)));
+                }
             }
             else if (MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
-                docs = DraggedDocuments.Select(d =>
+                for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    DocumentController vcopy = d.GetViewCopy(where);
+                    DocumentController vcopy = DraggedDocuments[i].GetViewCopy(new Point(where.X - OffsetsDocs[i].X, where.Y - OffsetsDocs[i].Y));
 
                     // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
                     // an arbitrary size for it and zero out its pan position so that it will FitToParent
                     if (vcopy.DocumentType.Equals(RichTextBox.DocumentType) ||
                         !double.IsNaN(vcopy.GetWidthField().Data) ||
                         !double.IsNaN(vcopy.GetHeightField().Data))
-                        return vcopy;
+                        docs.Add(vcopy);
 
                     vcopy.SetWidth(500);
                     vcopy.SetHeight(300);
                     vcopy.SetFitToParent(true);
-                    return vcopy;
-                }).ToList();
+                    docs.Add(vcopy);
+                }
             }
             else if (LinkSourceViews != null)
             {
@@ -130,6 +136,7 @@ namespace Dash
 
         //TODO do we want to create link here?
         //TODO Add back ability to drag off collection of links/link targets if we want that.
+        //TODO: this doesn't account for offsets
         private List<DocumentController> GetLinkDocuments(Point where)
         {
             DocumentController anno = new RichTextNote(where: where).Document;
