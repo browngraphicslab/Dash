@@ -230,7 +230,10 @@ namespace Dash
                 {
                     _pointerCapture = e;
                     if (!SelectionManager.IsSelected(this))
+                    {
                         SelectionManager.Select(this, false);
+                        MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+                    }
                 }
             };
 
@@ -2010,7 +2013,11 @@ namespace Dash
         {
             _pointerCapture = pointer;
             if (!SelectionManager.IsSelected(this))
+            {
                 SelectionManager.Select(this, false);
+                MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            }
+               
             
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
