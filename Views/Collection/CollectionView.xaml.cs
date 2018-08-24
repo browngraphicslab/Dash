@@ -43,6 +43,9 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
+        //if this or any of its children are selected, it can move
+        public bool selectedCollection;
+
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;

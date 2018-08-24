@@ -502,6 +502,27 @@ namespace Dash
         {
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
 
+            //if this is a collectiion, only move if not selected
+            //if drag on inner collection and that collection or anything inside is selected, pan collection
+            if (ViewModel.Content is CollectionView collectionView && (collectionView.selectedCollection || SelectionManager.IsSelected(this)))
+            {
+                //this or something inside is selected, pan collection
+                return;
+            }
+            if (ViewModel.Content is CollectionView)
+            {
+                //nothing was selected, drag collection as normal
+                SelectionManager.Select(this, false);
+                MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            }
+
+            //var collectionParent = ParentCollection.GetFirstAncestorOfType<DocumentView>();
+            //if (SelectionManager.IsSelected(collectionParent) || MainPage.Instance.MainDocView == collectionParent)
+            //{
+            //    //only pan
+            //}
+
+
             args.Data.AddDragModel(new DragDocumentModel(
                 SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off: SelectionManager.GetSelectedDocs().Select(args.GetPosition).ToList())
             {
@@ -2018,13 +2039,23 @@ namespace Dash
         public async void StartManipulation(PointerRoutedEventArgs pointer)
         {
             _pointerCapture = pointer;
+
+            //if it's a collection view and it or its children are selected, don't move, but just pan
+            if (ViewModel.Content is CollectionView collectionView && 
+                (SelectionManager.IsSelected(this) || collectionView.selectedCollection))
+            {
+                return;
+            }
+
             if (!SelectionManager.IsSelected(this))
             {
-                SelectionManager.Select(this, false);
+                //if it was a collection with something inside selected, don't it anything else becuase we want inner docs to stay selected
+                if (!(ViewModel.Content is CollectionView)) 
+                    SelectionManager.Select(this, false);
                 MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
-               
             
+            //this is how drag image is made /started
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
         }
