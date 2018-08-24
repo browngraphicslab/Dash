@@ -500,6 +500,8 @@ namespace Dash
 
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+
             args.Data.AddDragModel(new DragDocumentModel(
                 SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off: SelectionManager.GetSelectedDocs().Select(args.GetPosition).ToList())
             {
@@ -540,7 +542,7 @@ namespace Dash
                 var rtb = new RenderTargetBitmap();
                 var s = new Point(doc.ActualWidth, doc.ActualHeight);
                 var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
-                s = new Point(rect.Width, rect.Height);
+                s = new Windows.Foundation.Point(rect.Width, rect.Height);
                 await rtb.RenderAsync(doc, (int)s.X, (int)s.Y);
                 IBuffer buf = await rtb.GetPixelsAsync();
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
