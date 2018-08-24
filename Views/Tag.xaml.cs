@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -14,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Office.Interop.Word;
+using Window = Windows.UI.Xaml.Window;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -213,6 +215,26 @@ namespace Dash
         {
             xTagContainer.BorderThickness = new Thickness(2);
 
+        }
+
+        private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
+        {
+            xDeleteIcon.Opacity = 1;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 1);
+        }
+
+        private void DeleteButton_PointerExited(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
+        {
+            xDeleteIcon.Opacity = 0.5;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
+        {
+            if (_docdecs.RecentTags.Contains(this))
+            {
+             
+            }
         }
     }
 }
