@@ -231,10 +231,30 @@ namespace Dash
 
         private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
         {
-            if (_docdecs.RecentTags.Contains(this))
+            var temp = new List<Tag>();
+            if (_docdecs.RecentTags.Count > 1)
             {
-             
+                if (_docdecs.RecentTags.Contains(this))
+                {
+                    while (_docdecs.RecentTags.Any())
+                    {
+
+                        var currtag = _docdecs.RecentTags.Dequeue();
+                        if (currtag.Text != Text)
+                        {
+                            temp.Add(currtag);
+                        }
+                    }
+                }
+
+                temp.Reverse();
+
+                foreach (var tag in temp)
+                {
+                    _docdecs.RecentTags.Enqueue(tag);
+                }
             }
+            
         }
     }
 }
