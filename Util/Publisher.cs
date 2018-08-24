@@ -510,8 +510,8 @@ namespace Dash
 		private string RenderMarkdownToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-			content = content.Replace("\n", "<br/>");
-			return content;
+			var result = CommonMark.CommonMarkConverter.Convert(content);
+			return result;
 		}
 
 		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender)
