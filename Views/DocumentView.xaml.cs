@@ -533,7 +533,7 @@ namespace Dash
             foreach (var doc in SelectionManager.GetSelectedDocs())
             {
                 var rtb = new RenderTargetBitmap();
-                var s = new Point(doc.ActualWidth, doc.ActualHeight);
+                var s = new Point(Math.Floor(doc.ActualWidth), Math.Floor(doc.ActualHeight));
                 var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
                 s = new Point(rect.Width, rect.Height);
                 await rtb.RenderAsync(doc, (int)s.X, (int)s.Y);
