@@ -230,7 +230,10 @@ namespace Dash
                 {
                     _pointerCapture = e;
                     if (!SelectionManager.IsSelected(this))
+                    {
                         SelectionManager.Select(this, false);
+                        MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+                    }
                 }
             };
 
@@ -507,6 +510,8 @@ namespace Dash
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
+            //combine all selected docs into an image to display on drag
+            //use size of each doc to get size of combined image
             var width = double.NegativeInfinity;
             var height = double.NegativeInfinity;
             var top = double.PositiveInfinity;
@@ -525,7 +530,7 @@ namespace Dash
             var s1 = new Point(width, height);
             var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
             s1 = new Point(rect1.Width, rect1.Height);
-
+            
             var bp = new WriteableBitmap((int) s1.X, (int) s1.Y);
             var thisOffset = new Point();
 
@@ -2008,7 +2013,11 @@ namespace Dash
         {
             _pointerCapture = pointer;
             if (!SelectionManager.IsSelected(this))
+            {
                 SelectionManager.Select(this, false);
+                MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            }
+               
             
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
