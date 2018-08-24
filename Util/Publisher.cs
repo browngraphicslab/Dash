@@ -222,7 +222,7 @@ namespace Dash
 	        }
 
             // This means the htmlString is a website url
-	        return "<embed src=" + htmlString + "/>";
+	        return "<iframe src=\"" + htmlString + "\"></iframe>";
 	    }
 
         private string RenderPdfToHtml(DocumentController dc, List<DocumentController> regionsToRender, bool truncate)
