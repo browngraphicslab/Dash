@@ -31,37 +31,37 @@ body {
     word-wrap: break-word
 }
 
-#sidebar i {
-    color: #8BBBE5;
-}
+    #sidebar i {
+        color: #8BBBE5;
+    }
 
-#sidebar .icon {
-    margin-right: 10px;
-}
+    #sidebar .icon {
+        margin-right: 10px;
+    }
 
-/* we don't want the bullet points in the list '*/
-#sidebar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
+    /* we don't want the bullet points in the list '*/
+    #sidebar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
 
-#sidebar ul li {
-    margin: 20px 0;
-}
+        #sidebar ul li {
+            margin: 20px 0;
+        }
 
-/* we don't want the underlines showing in the sidebar links */
-#sidebar a {
-    text-decoration: none;
-    color: inherit;
-}
+    /* we don't want the underlines showing in the sidebar links */
+    #sidebar a {
+        text-decoration: none;
+        color: inherit;
+    }
 
     /* for the link in the sidebar that's the current page */
-#sidebar .activeNote {
-    border-bottom: 3px solid #383A42;
-    text-transform: uppercase;
-    font-weight: 700;
-}
+    #sidebar .activeNote {
+        border-bottom: 3px solid #383A42;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
 
 #main {
     margin-left: 20%; /* same width as sidebar */
@@ -125,7 +125,7 @@ body {
 }
 
 /* to prevent media from overflowing */
-img, video, iframe {
+img, video, iframe, audio {
     max-width: 100%;
 }
 
@@ -141,10 +141,27 @@ iframe {
     margin-bottom: 10px;
 }
 
-.pdf img {
+.pdf img, audio {
     width: 100%;
 }
 
 .pdfOverlay {
     opacity: 0.2;
+}
+
+.pdfPinAnnotation {
+    opacity: 0.85;
+    position: absolute;
+    -webkit-transition: opacity 0.2s ease;
+    -moz-transition: opacity 0.2s ease;
+    -o-transition: opacity 0.2s ease;
+    padding: 6px;
+    padding-left: 15px;
+    padding-right: 15px;
+    max-width: 30%;
+    display: flex;
+}
+
+.pdfPinAnnotation:hover {
+    opacity: 0;
 }

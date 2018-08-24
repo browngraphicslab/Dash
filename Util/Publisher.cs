@@ -197,6 +197,7 @@ namespace Dash
 					content += RenderVideoToHtml(dc, regionsToRender);
 					break;
 				case "Audio Note":
+					content += RenderAudioToHtml(dc, regionsToRender);
 					break;
                 case "Html Note":
                     content += RenderHtmlToHtml(dc, regionsToRender);
@@ -207,8 +208,8 @@ namespace Dash
 
 			return content;
 		}
-		
-	    public string RenderHtmlToHtml(DocumentController htmlDoc, List<DocumentController> regionsToRender)
+
+		public string RenderHtmlToHtml(DocumentController htmlDoc, List<DocumentController> regionsToRender)
 	    {
 	        //Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
 
@@ -286,7 +287,6 @@ namespace Dash
 			// do the regioning: use IndexOf to find the appropriate <img src> endpoint to insert the annotation
 			if (regions != null)
 			{
-				Debug.WriteLine("DOC PAGE SIZE: " + pageSize);
 				foreach (var region in regions)
 				{
 					switch (region.GetAnnotationType())
@@ -304,8 +304,13 @@ namespace Dash
 									continue;
 								}
 
-								var circle = "<i style=\"font-size: 200%; position:absolute; top:" + offsets.Y + "%; left:" + offsets.X + "%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i>";
-								html.Insert(indexToInsert + 1, circle); // insert an ellipse to go right after the img src thing
+								var insert = "<div class=\"pdfPinAnnotation\" style=\"top:" + offsets.Y + "%; left:" +
+								             offsets.X + "%; background-color:" + _colorPairs[dc] + ";\">" + GetOppositeLinkTarget(region)
+									             .GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data + "</div>";
+								//if (!truncate)
+								//	insert += "<i style=\"font-size: 200%; position:absolute; top:" + offsets.Y + "%; left:" + offsets.X +
+								//	          "%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i></div>";
+								html.Insert(indexToInsert + 1, insert); // insert an ellipse to go right after the img src thing
 							}
 							break;
 						case AnnotationType.Region:
@@ -505,6 +510,13 @@ namespace Dash
 			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			content = content.Replace("\n", "<br/>");
 			return content;
+		}
+
+		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+		{
+			var audioTitle = "aud_" + _fileNames[dc] + ".mp3";
+			var path = "Media\\" + audioTitle;
+			return "<audio controls><source src=\"" + path + "\"> Your browser doesn't support the audio tag :( </audio>";
 		}
 
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
@@ -856,6 +868,7 @@ namespace Dash
 						await CopyVideo(dc);
 						break;
 					case "Audio Note":
+						await CopyAudio(dc);
 						break;
 					default:
 						break;
@@ -901,6 +914,19 @@ namespace Dash
 						96, pixels);
 					await encoder.FlushAsync();
 				}
+			}
+		}
+
+		private async Task CopyAudio(DocumentController dc)
+		{
+			var uriRaw = dc.GetDereferencedField(KeyStore.DataKey, null);
+			if (uriRaw != null)
+			{
+				var olduri = uriRaw.ToString();
+
+				// create file with unique title
+				var audTitle = "aud_" + _fileNames[dc] + ".mp3";
+				await CopyMedia(olduri, audTitle);
 			}
 		}
 
