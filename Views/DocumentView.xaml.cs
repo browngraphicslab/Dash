@@ -519,8 +519,8 @@ namespace Dash
 
             foreach (var doc in SelectionManager.GetSelectedDocs())
             {
-                width = Math.Max((doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X) - left, width);
-                height = Math.Max((doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y) - top, height);
+                width = Math.Max((doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X + doc.xRightResizeControl.ActualWidth + doc.xLeftResizeControl.ActualWidth) - left, width);
+                height = Math.Max((doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y + doc.xBottomResizeControl.ActualHeight + doc.xTopResizeControl.ActualHeight) - top, height);
             }
             var s1 = new Point(width, height);
             var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
@@ -540,7 +540,8 @@ namespace Dash
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
-                bp.Blit(new Rect(ViewModel.XPos - left, ViewModel.YPos - top, s.X, s.Y), additionalBp, new Rect(0, 0, s.X, s.Y));
+                bp.BlitRender(additionalBp, false, 1F,
+                    new TranslateTransform {X = doc.ViewModel.XPos - left, Y = doc.ViewModel.YPos - top});
             }
 
             var p = args.GetPosition(this);
