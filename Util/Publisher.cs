@@ -185,7 +185,7 @@ namespace Dash
 					content += RenderRichTextToHtml(dc, regionsToRender, truncate);
 					break;
 				case "Markdown Note":
-					content += RenderMarkdownToHtml(dc, regionsToRender);
+					content += RenderMarkdownToHtml(dc, regionsToRender, truncate);
 					break;
 				case "Image Note":
 					content += RenderImageToHtml(dc, regionsToRender);
@@ -507,14 +507,19 @@ namespace Dash
 			return plainText;
 		}
 
-		private string RenderMarkdownToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
+		private string RenderMarkdownToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			var result = CommonMark.CommonMarkConverter.Convert(content);
+			if (result.Length > 500 && truncate)
+			{
+				result = result.Substring(0, 500);
+				result += "...";
+			}
 			return result;
 		}
 
-		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender)
+		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var audioTitle = "aud_" + _fileNames[dc] + ".mp3";
 			var path = "Media\\" + audioTitle;
