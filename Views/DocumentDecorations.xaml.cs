@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -39,7 +40,8 @@ namespace Dash
         public List<DocumentController> CurrentLinks;
         public Tag CurrEditTag;
         private DocumentController currEditLink;
-
+        public WrapPanel XTagContainer => xTagContainer;
+        public StackPanel XButtonsPanel => xButtonsPanel;
       
 
         private bool optionClick;
@@ -314,7 +316,6 @@ namespace Dash
             foreach (var item in xButtonsPanel.Children.OfType<Grid>())
             {
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
-                item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
             }
 
             if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) ||
@@ -340,108 +341,33 @@ namespace Dash
         //adds a button for a link type to appear underneath the link button
         private void AddLinkTypeButton(string linkName)
         {
-            //button formatting
-            var tb = new TextBlock()
-            {
-                Text = linkName.Substring(0, 1),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = new SolidColorBrush(Colors.White)
-            };
-            var button = new Grid()
-            {
-                Background = new SolidColorBrush(Colors.Transparent),
-                CanDrag = true,
-                Width = 22,
-                Height = 22,
-            };
+           
             //set button color to tag color
             var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
             var btnColorFinal = btnColorOrig != null
                 ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                 : Color.FromArgb(255, 64, 123, 177);
-            var ellipse = new Ellipse()
-            {
-                Width = 22,
-                Height = 22,
-                Fill = new SolidColorBrush(btnColorFinal),
-                CanDrag = true,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            button.Children.Add(ellipse);
-            button.Children.Add(tb);
 
-            xButtonsPanel.Children.Add(button);
-
-            //adds tooltip with link tag name inside
             ToolTip toolTip = new ToolTip
             {
                 Content = linkName,
                 HorizontalOffset = 5,
                 Placement = PlacementMode.Right
             };
+            
+            //button.Tag = new Tuple<DocumentView, string>(null, linkName);
+            LinkButton button = new LinkButton(this, btnColorFinal, linkName, toolTip);
+            button.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), linkName);
+            xButtonsPanel.Children.Add(button);
+
+            //adds tooltip with link tag name inside
+
             ToolTipService.SetToolTip(button, toolTip);
 
-            button.PointerEntered += (s, e) => toolTip.IsOpen = true;
-            button.PointerExited += (s, e) => toolTip.IsOpen = false;
+           
+            
 
-            button.DragStarting += (s, args) =>
-            {
-                DocumentView doq = ((s as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
-                if (doq == null) return;
-
-                args.Data.AddDragModel(new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName });
-                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                doq.ViewModel.DecorationState = false;
-            };
-
-            //follows the link. if there is only one link tagged under this tag, it zooms to that link's position. otherwise it zooms to the last link added with this tag.
-            button.Tapped += (s, e) =>
-            {
-                if (ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
-                var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-                if (doq != null)
-                {
-                    new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
-                        doq.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(doq), linkName);
-                }
-
-                
-
-            };
-            button.Tag = new Tuple<DocumentView, string>(null, linkName);
-
-            //opens the tag editor for the specific link/tag that is being acted upon
-            button.RightTapped += (s, e) =>
-            {
-                e.Handled = true;
-                CurrentLinks = TagMap[linkName];
-                Tag tag = null;
-                
-                ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
-
-                foreach (var child in xTagContainer.Children)
-                {
-                    var actualchild = child as Tag;
-                    if (actualchild.Text == linkName)
-                    {
-                        actualchild.Select();
-                    }
-                    else
-                    {
-                        actualchild.Deselect();
-                    }
-                }
-
-            };
-            button.PointerPressed += (s, e) =>
-            {
-                foreach (var doc in SelectedDocs)
-                {
-                    doc.ManipulationMode = ManipulationModes.None;
-                }
-            };
+          
         }
 
         /*
@@ -887,7 +813,7 @@ namespace Dash
         }
 
         //opens or closes the tag editor box
-        private void ToggleTagEditor(Tag tagPressed, FrameworkElement button)
+        public void ToggleTagEditor(Tag tagPressed, FrameworkElement button)
         {
             if (tagPressed == CurrEditTag)
             {
