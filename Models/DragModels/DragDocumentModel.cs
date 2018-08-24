@@ -117,9 +117,9 @@ namespace Dash
             }
             else
             {
-                foreach (var documentController in DraggedDocuments)
+                for(int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    documentController.SetPosition(where);
+                    DraggedDocuments[i].SetPosition(new Point(where.X - OffsetsDocs[i].X, where.Y - OffsetsDocs[i].Y));
                 }
 
                 docs = DraggedDocuments;
