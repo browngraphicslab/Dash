@@ -115,6 +115,9 @@ namespace Dash
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey,
                         DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
+
+                    if (doc.ViewModel == null) return;
+
                     if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) &&
                         doc.GetFirstDescendantOfType<RichTextView>() != null)
                     {

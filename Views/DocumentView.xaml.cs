@@ -529,6 +529,7 @@ namespace Dash
             s1 = new Point(rect1.Width, rect1.Height);
             
             var bp = new WriteableBitmap((int) s1.X, (int) s1.Y);
+            var thisOffset = new Point();
 
             var def = args.GetDeferral();
             foreach (var doc in SelectionManager.GetSelectedDocs())
@@ -544,22 +545,31 @@ namespace Dash
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
                 bp.BlitRender(additionalBp, false, 1F,
                     new TranslateTransform {X = doc.ViewModel.XPos - left, Y = doc.ViewModel.YPos - top});
+
+                if (doc == this)
+                {
+                    thisOffset.X = doc.ViewModel.XPos - left;
+                    thisOffset.Y = doc.ViewModel.YPos - top;
+                }
             }
 
             var p = args.GetPosition(this);
             var rect2 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, p.X, p.Y));
             p = new Point(rect2.Width, rect2.Height);
+            p.X += thisOffset.X;
+            p.Y += thisOffset.Y;
             var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
                 bp.PixelHeight);
             args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
 
             if (!this.IsShiftPressed())
             {
-                Visibility = Visibility.Collapsed;
+                foreach (var d in SelectionManager.GetSelectedDocs())
+                {
+                    d.Visibility = Visibility.Collapsed;
+                }
             }
             def.Complete();
-
-            //doc.ViewModel.DecorationState = false;
         }
 
         private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
