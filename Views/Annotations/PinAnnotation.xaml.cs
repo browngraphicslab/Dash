@@ -25,8 +25,6 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        public DocumentController DocumentController { get; set; }
-
         public PinAnnotation(NewAnnotationOverlay parent, Point point, DocumentController target = null) : base(parent)
         {
             this.InitializeComponent();
@@ -39,6 +37,8 @@ namespace Dash
             {
                 InitializeWithTarget(point, target);
             }
+
+            AnnotationType = AnnotationType.Pin;
         }
 
         /// <inheritdoc />
@@ -47,10 +47,10 @@ namespace Dash
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="target"></param>
-        public PinAnnotation(NewAnnotationOverlay parent, DocumentController target) : base(parent)
+        public PinAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
-            DocumentController = target;
+            AnnotationType = AnnotationType.Pin;
         }
 
         public async void Initialize(Point point)
@@ -214,7 +214,7 @@ namespace Dash
         }
 
 
-        public override void Render()
+        public override void Render(SelectionViewModel vm)
         {
             var point = DocumentController.GetPosition() ?? new Point(0, 0);
             point.X -= 10;
@@ -226,8 +226,6 @@ namespace Dash
                 Fill = new SolidColorBrush(Colors.OrangeRed),
                 IsDoubleTapEnabled = false
             };
-            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)),
-                new SolidColorBrush(Colors.OrangeRed));
 
             InitializeAnnotationObject(pin, point, PlacementMode.Bottom, vm);
         }

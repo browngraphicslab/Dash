@@ -99,7 +99,7 @@ namespace Dash
             var deselect = SelectedRegion?.Selected == true;
             var selectable = Regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
+                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
                     nvo.SelectedRegion?.Deselect();
                     nvo.SelectedRegion = deselect ? null : r;
@@ -152,29 +152,29 @@ namespace Dash
 
         private void RenderAnnotation(DocumentController documentController)
         {
+            var newAnnotations = new List<AnchorableAnnotation>();
             switch (documentController.GetAnnotationType())
             {
                 // regions and selectons follow the same functionality
                 case AnnotationType.Region:
-                    var newRegion = new RegionAnnotation(this)
-                    {
-                        DocumentController = documentController
-                    };
-                    newRegion.Render();
-                    break;
                 case AnnotationType.Selection:
-                    var newSelection = new TextAnnotation(this)
-                    {
-                        DocumentController = documentController
-                    };
-                    newSelection.Render();
+                    newAnnotations.Add(new RegionAnnotation(this));
+                    newAnnotations.Add(new TextAnnotation(this));
+                    newAnnotations.ForEach(i => i.DocumentController = documentController);
+                    var rvm = new AnchorableAnnotation.SelectionViewModel(documentController,
+                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
+                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+                    newAnnotations.ForEach(i => i.Render(rvm));
                     break;
                 case AnnotationType.Ink:
                     break;
                 case AnnotationType.Pin:
-					//render pin will be called with specific doc controller if in process of making pin
-                    var newPin = new PinAnnotation(this, documentController);
-                    newPin.Render();
+                    //render pin will be called with specific doc controller if in process of making pin
+                    newAnnotations.Add(new PinAnnotation(this));
+                    newAnnotations.ForEach(i => i.DocumentController = documentController);
+                    var pvm = new AnchorableAnnotation.SelectionViewModel(documentController,
+                        new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
+                    newAnnotations.ForEach(i => i.Render(pvm));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

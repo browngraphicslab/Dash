@@ -21,7 +21,6 @@ namespace Dash
 {
     public sealed partial class TextAnnotation
     {
-        public DocumentController DocumentController { get; set; }
         public int StartIndex = -1;
         public int EndIndex = -1;
         public Rect ClipRect = Rect.Empty;
@@ -30,9 +29,11 @@ namespace Dash
         public TextAnnotation(NewAnnotationOverlay parent) : base(parent)
         {
             this.InitializeComponent();
+
+            AnnotationType = AnnotationType.Selection;
         }
 
-        public override void Render()
+        public override void Render(SelectionViewModel vm)
         {
             if (DocumentController.GetField(KeyStore.PDFSubregionKey) == null)
             {
@@ -69,7 +70,7 @@ namespace Dash
                 }
             }
 
-            HelpRenderRegion();
+            HelpRenderRegion(vm);
         }
 
         public override void StartAnnotation(Point p)
@@ -157,29 +158,27 @@ namespace Dash
             ParentOverlay.CurrentAnchorableAnnotations.Add(this);
         }
 
-        private void HelpRenderRegion()
+        private void HelpRenderRegion(SelectionViewModel vm)
         {
             var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            Debug.Assert(posList.Count == sizeList.Count);
+            //Debug.Assert(posList.Count == sizeList.Count);
 
-            var vm = new SelectionViewModel(DocumentController, new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
-                new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+            //for (var i = 0; i < posList.Count; ++i)
+            //{
+            //    var r = new Rectangle
+            //    {
+            //        Width = sizeList[i].Data.X,
+            //        Height = sizeList[i].Data.Y,
+            //        Fill = vm.UnselectedBrush,
+            //        DataContext = vm,
+            //        IsDoubleTapEnabled = false
+            //    };
 
-            for (var i = 0; i < posList.Count; ++i)
-            {
-                var r = new Rectangle
-                {
-                    Width = sizeList[i].Data.X,
-                    Height = sizeList[i].Data.Y,
-                    Fill = vm.UnselectedBrush,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false
-                };
-                RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
-            }
+            //    InitializeAnnotationObject(r, posList[i].Data, PlacementMode.Bottom, vm);
+            //}
 
             if (ParentOverlay.TextSelectableElements != null && indexList.Any())
             {
@@ -211,20 +210,10 @@ namespace Dash
                     IsDoubleTapEnabled = false,
                     Fill = vm.UnselectedBrush
                 };
-                RenderSubRegion(topLeft, PlacementMode.Mouse, path, vm);
+                InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse, vm);
             }
 
             ParentOverlay.Regions.Add(vm);
-        }
-
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
-        {
-            r.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(vm.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
-            InitializeAnnotationObject(r, pos, mode, vm);
         }
 
         public override double AddSubregionToRegion(DocumentController region)
