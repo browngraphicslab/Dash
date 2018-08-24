@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -556,7 +557,13 @@ namespace Dash
             def.Complete();
 
             //doc.ViewModel.DecorationState = false;
-        }
+            
+
+            //make empty image, render software bitmap and then blit into position
+            WriteableBitmap bmp = new WriteableBitmap(5, 5);
+            
+
+            }
 
         private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
