@@ -507,6 +507,8 @@ namespace Dash
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
+            //combine all selected docs into an image to display on drag
+            //use size of each doc to get size of combined image
             var width = double.NegativeInfinity;
             var height = double.NegativeInfinity;
             var top = double.PositiveInfinity;
@@ -525,7 +527,7 @@ namespace Dash
             var s1 = new Point(width, height);
             var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
             s1 = new Point(rect1.Width, rect1.Height);
-
+            
             var bp = new WriteableBitmap((int) s1.X, (int) s1.Y);
 
             var def = args.GetDeferral();
@@ -558,13 +560,7 @@ namespace Dash
             def.Complete();
 
             //doc.ViewModel.DecorationState = false;
-            
-
-            //make empty image, render software bitmap and then blit into position
-            WriteableBitmap bmp = new WriteableBitmap(5, 5);
-            
-
-            }
+        }
 
         private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
