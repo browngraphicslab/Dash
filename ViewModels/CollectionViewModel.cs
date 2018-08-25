@@ -766,6 +766,9 @@ namespace Dash
             MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
             HighlightPotentialDropTarget(sender as ICollectionView);
 
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsCaptionVisible = false;
+            e.DragUIOverride.IsContentVisible = true;
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
             if (e.DataView.HasDataOfType(Internal) && !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
