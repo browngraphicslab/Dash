@@ -518,6 +518,8 @@ namespace Dash
 
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            //args.DragUI.SetContentFromBitmapImage(new BitmapImage());
+            //args.DragUI.
 
             //combine all selected docs into an image to display on drag
             //use size of each doc to get size of combined image

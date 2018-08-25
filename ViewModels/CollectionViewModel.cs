@@ -748,6 +748,10 @@ namespace Dash
         {
             HighlightPotentialDropTarget(sender as ICollectionView);
 
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsCaptionVisible = false;
+            e.DragUIOverride.IsContentVisible = true;
+
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
             e.DragUIOverride.IsContentVisible = true;
