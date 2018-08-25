@@ -248,6 +248,7 @@ namespace Dash
 							page = GetPageAtOffset(region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data.Y);
 							break;
 						case AnnotationType.Selection:
+							// todo: do this
 							break;
 						case AnnotationType.Ink:
 							break;
@@ -336,7 +337,6 @@ namespace Dash
 
 							break;
 						case AnnotationType.Selection:
-							// TODO: do this
 							break;
 						default:
 							break;
@@ -528,9 +528,41 @@ namespace Dash
 
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
+			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
 			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
 			var path = "Media\\" + imgTitle;
-			return "<img src=\"" + path + "\">";
+			var html = "<div class=\"imgNote\"><img src=\"" + path + "\">";
+
+			if (regions != null)
+			{
+				foreach (var region in regions)
+				{
+					switch (region.GetAnnotationType())
+					{
+						case AnnotationType.Region:
+							// currently the only supported one for images?
+							var oneTarget = GetOppositeLinkTarget(region);
+							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data;
+							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).TypedData.First().Data;
+							var imgSize = region.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null)
+								.GetDereferencedField<PointController>(KeyStore.InitialSizeKey, null).Data;
+							if (oneTarget != null)
+							{
+								var rect = "<a href=\"" + _fileNames[oneTarget] + ".html\"><svg class=\"pdfOverlay\" height=\"" +
+								           size.Y / imgSize.Y * 100 + "%\" width=\"" + size.X / imgSize.X * 100 +
+								           "%\" style=\"position:absolute; top:" +
+								           point.Y / imgSize.Y * 100 + "%; left:" + point.X / imgSize.X * 100 + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget] + "\"></rect></svg></a>";
+								html += rect;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+
+			html += "</div>";
+			return html;
 		}
 
 		private string RenderVideoToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
@@ -637,7 +669,6 @@ namespace Dash
 			if (!_fileNames.ContainsKey(annotation))
 			{
 				// if it wasn't found in the filename, then it means that we're annotating to a region.
-				// TODO: in the future stylize the regions a bit, e.g. only excerpts of text, a region over an image, etc.
 				var parent = annotation.GetDataDocument().GetRegionDefinition()?.GetDataDocument();
 				// if the parent is also null, then this annotation doesn't have a file to link to. In that case, we don't actually link it to anything.
 				if (parent != null && _fileNames.ContainsKey(parent))

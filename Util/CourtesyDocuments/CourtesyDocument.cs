@@ -194,6 +194,7 @@ namespace Dash
             // assign the default fields
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
+				[KeyStore.InitialSizeKey] = new PointController(size.Width, size.Height),
                 [KeyStore.WidthFieldKey] = new NumberController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),

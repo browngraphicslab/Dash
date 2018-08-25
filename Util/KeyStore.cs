@@ -149,6 +149,7 @@ namespace Dash
 		/// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
 		/// </summary>
 		public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
+		public static KeyController InitialSizeKey = new KeyController("Initial size", "1d7abb4c-1c09-4f0f-9dff-d6166651646c");
 
 
 

@@ -207,3 +207,8 @@ iframe {
         visibility: visible;
         opacity: 1;
     }
+
+.imgNote {
+    position: relative;
+    display: inline-block;
+}
