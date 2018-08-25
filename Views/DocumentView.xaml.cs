@@ -2043,14 +2043,15 @@ namespace Dash
             //if it's a collection view and it or its children are selected, don't move, but just pan
             if (ViewModel.Content is CollectionView collectionView && 
                 (SelectionManager.IsSelected(this) || collectionView.selectedCollection))
-            {
                 return;
-            }
+            //if (ViewModel.Content is CollectionView colView)
+            //    //prevent panning if moving collection
+            //    colView.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 
             if (!SelectionManager.IsSelected(this))
             {
-                //if it was a collection with something inside selected, don't it anything else becuase we want inner docs to stay selected
-                if (!(ViewModel.Content is CollectionView)) 
+                if (!(ViewModel.Content is CollectionView))
+                    //if it was a collection with something inside selected, don't it anything else becuase we want inner docs to stay selected
                     SelectionManager.Select(this, false);
                 MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
