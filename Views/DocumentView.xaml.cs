@@ -501,6 +501,7 @@ namespace Dash
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            ToFront();
 
             if (ViewModel.Content is CollectionView)
             {
@@ -1662,7 +1663,7 @@ namespace Dash
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
 
-            e.Handled = true;
+            //Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ > 2 ? ParentCollection.MaxZ - 2 : 1);
         }
 
         void drop(bool footer, DocumentController newFieldDoc)
@@ -2048,7 +2049,7 @@ namespace Dash
                     SelectionManager.Select(this, false);
                 MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
-            
+
             //this is how drag image is made /started
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
