@@ -502,26 +502,12 @@ namespace Dash
         {
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
 
-            //if this is a collectiion, only move if not selected
-            //if drag on inner collection and that collection or anything inside is selected, pan collection
-            if (ViewModel.Content is CollectionView collectionView && (collectionView.selectedCollection || SelectionManager.IsSelected(this)))
-            {
-                //this or something inside is selected, pan collection
-                return;
-            }
             if (ViewModel.Content is CollectionView)
             {
                 //nothing was selected, drag collection as normal
                 SelectionManager.Select(this, false);
                 MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
-
-            //var collectionParent = ParentCollection.GetFirstAncestorOfType<DocumentView>();
-            //if (SelectionManager.IsSelected(collectionParent) || MainPage.Instance.MainDocView == collectionParent)
-            //{
-            //    //only pan
-            //}
-
 
             args.Data.AddDragModel(new DragDocumentModel(
                 SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off: SelectionManager.GetSelectedDocs().Select(args.GetPosition).ToList())
@@ -2052,9 +2038,6 @@ namespace Dash
             if (ViewModel.Content is CollectionView collectionView && 
                 (SelectionManager.IsSelected(this) || collectionView.selectedCollection))
                 return;
-            //if (ViewModel.Content is CollectionView colView)
-            //    //prevent panning if moving collection
-            //    colView.CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
 
             if (!SelectionManager.IsSelected(this))
             {
