@@ -238,35 +238,44 @@ namespace Dash
 			{
 				foreach (var region in regionsToRender)
 				{
-					var page = 1;
-
 					switch (region.GetAnnotationType())
 					{
 						case AnnotationType.None:
 							break;
-						case AnnotationType.Region:
-							page = GetPageAtOffset(region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data.Y);
-							break;
 						case AnnotationType.Selection:
-							// todo: do this
+						case AnnotationType.Region:
+							// something about a single selection/region doc being able to contain both types of annotations
+							var selectionRegions = region
+								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null)?.TypedData;
+							if (selectionRegions != null)
+							{
+								foreach (var point in selectionRegions)
+								{
+									var page1 = GetPageAtOffset(point.Data.Y);
+									pageNums.Add(page1);
+								}
+							}
+							Debug.WriteLine("hi");
 							break;
 						case AnnotationType.Ink:
 							break;
 						case AnnotationType.Pin:
-							page = GetPageAtOffset(region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data.Y);
+							var page = GetPageAtOffset(region.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data.Y);
+							pageNums.Add(page);
 							break;
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
-
-					if (!pageNums.Contains(page))
-					{
-						pageNums.Add(page);
-					}
 				}
 
+				pageNums = pageNums.Distinct().ToList();
 				// at the very least render the first page if there were no regions in it
 				if (pageNums.Count == 0) pageNums.Add(1);
+			}
+			else if (truncate)
+			{
+				// pure truncation? just display the first page
+				pageNums.Add(1);
 			}
 			else
 			// no truncation, just add in all the page numbers to render

@@ -529,7 +529,7 @@ namespace Dash
 
         #endregion
 
-        #region CONVENIENCE AND HELPER METHODS
+        #region CONVENIENCE AND HELPER METHODS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
         public override Task Close()
         {
