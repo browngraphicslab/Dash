@@ -544,11 +544,19 @@ namespace Dash
                 top = Math.Min(doc.ViewModel.Position.Y, top);
                 left = Math.Min(doc.ViewModel.Position.X, left);
             }
+            var origP = new Point(left, top);
+            origP = Util.PointTransformFromVisual(origP, MainPage.Instance.xCanvas);
 
             foreach (var doc in SelectionManager.GetSelectedDocs())
             {
-                width = Math.Max((doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X + doc.xRightResizeControl.ActualWidth + doc.xLeftResizeControl.ActualWidth) - left, width);
-                height = Math.Max((doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y + doc.xBottomResizeControl.ActualHeight + doc.xTopResizeControl.ActualHeight) - top, height);
+                var posRect = Util.PointTransformFromVisual(doc.ViewModel.Position, doc.ParentCollection);
+                var sizeRect = Util.RectTransformFromVisual(new Rect(0, 0,
+                    doc.ViewModel.ActualSize.X + doc.xRightResizeControl.ActualWidth +
+                    doc.xLeftResizeControl.ActualWidth,
+                    doc.ViewModel.ActualSize.Y + doc.xBottomResizeControl.ActualHeight +
+                    doc.xTopResizeControl.ActualHeight), doc.ParentCollection);
+                width = Math.Max(posRect.X + sizeRect.Width - origP.X, width);
+                height = Math.Max(posRect.Y + sizeRect.Height - origP.Y, height);
             }
             var s1 = new Point(width, height);
             var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
@@ -569,13 +577,14 @@ namespace Dash
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
+                var posRect = Util.PointTransformFromVisual(doc.ViewModel.Position, doc.ParentCollection);
                 bp.BlitRender(additionalBp, false, 1F,
-                    new TranslateTransform {X = doc.ViewModel.XPos - left, Y = doc.ViewModel.YPos - top});
+                    new TranslateTransform {X = posRect.X - origP.X, Y = posRect.Y - origP.Y});
 
                 if (doc == this)
                 {
-                    thisOffset.X = doc.ViewModel.XPos - left;
-                    thisOffset.Y = doc.ViewModel.YPos - top;
+                    thisOffset.X = posRect.X - origP.X;
+                    thisOffset.Y = posRect.Y - origP.Y;
                 }
             }
 
@@ -600,14 +609,13 @@ namespace Dash
 
         private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
-            if (ViewModel != null)
+            foreach (var d in SelectionManager.GetSelectedDocs())
             {
-                Visibility = Visibility.Visible;
+                if (d.ViewModel != null)
+                {
+                    d.Visibility = Visibility.Visible;
+                }
             }
-            //if (args.DropResult == DataPackageOperation.Move)
-            //{
-            //    ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            //}
         }
 
         private async void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
