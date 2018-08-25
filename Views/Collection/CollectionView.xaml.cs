@@ -84,7 +84,7 @@ namespace Dash
             else
             {
                 //don't pan
-                new ManipulationControlHelper(this, args, true);
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
             }
         }
 

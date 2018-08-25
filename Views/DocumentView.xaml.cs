@@ -226,14 +226,9 @@ namespace Dash
                     e.Handled = false;
                 }
 
-                if (e.IsRightPressed())
+                if (e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
                 {
                     _pointerCapture = e;
-                    if (!SelectionManager.IsSelected(this))
-                    {
-                        SelectionManager.Select(this, false);
-                        MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-                    }
                 }
             };
 
@@ -519,8 +514,6 @@ namespace Dash
 
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            //args.DragUI.SetContentFromBitmapImage(new BitmapImage());
-            //args.DragUI.
 
             //combine all selected docs into an image to display on drag
             //use size of each doc to get size of combined image
@@ -614,8 +607,13 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
-            if (_pointerCapture != null && SelectionManager.IsSelected(this))
+            if (_pointerCapture != null)
             {
+                if (!SelectionManager.IsSelected(this))
+                {
+                    SelectionManager.Select(this, false);
+                    MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+                }
                 await this.StartDragAsync(_pointerCapture.GetCurrentPoint(this));
             }
         }
@@ -1349,12 +1347,14 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 
@@ -1662,8 +1662,6 @@ namespace Dash
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
-
-            //Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ > 2 ? ParentCollection.MaxZ - 2 : 1);
         }
 
         void drop(bool footer, DocumentController newFieldDoc)

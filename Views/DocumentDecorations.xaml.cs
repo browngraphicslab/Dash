@@ -312,8 +312,16 @@ namespace Dash
                 return;
             }
 
-            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth -
+                MainPage.Instance.xLeftGrid.ActualWidth)
+            {
+                botRight = new Point(
+                    MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth,
+                    botRight.Y);
+                botRight.X = Math.Max(botRight.X, topLeft.X);
+                botRight.Y = Math.Max(botRight.Y, topLeft.Y);
+            }
+
             this.RenderTransform = new TranslateTransform
             {
                 X = topLeft.X - 3,
