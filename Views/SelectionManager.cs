@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.Media.Casting;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -66,6 +67,7 @@ namespace Dash
                     }
                     else
                     {
+                        //deselect
                         DeselectHelper(documentView);
                         deselected.Add(documentView);
                     }
@@ -166,11 +168,13 @@ namespace Dash
         private static void SelectHelper(DocumentView view)
         {
             view.OnSelected();
+            view.GetAncestorsOfType<CollectionView>().ForEach(p => p.selectedCollection = true);
         }
 
         private static void DeselectHelper(DocumentView view)
         {
             view.OnDeselected();
+            view.GetAncestorsOfType<CollectionView>().ForEach(p => p.selectedCollection = false);
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)

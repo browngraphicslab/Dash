@@ -709,7 +709,6 @@ namespace Dash
                     where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xCanvas));
                 else if (DocumentViewModels.Count > 0)
                 {
-                    //TODO: this puts all docs at point of least one, should be different, use offset
                     Point lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
