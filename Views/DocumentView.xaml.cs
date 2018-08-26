@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -21,6 +22,7 @@ using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.Graphics.Display;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Input;
@@ -336,6 +338,7 @@ namespace Dash
 
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += DocumentView_ManipulationStarted;
+            ManipulationCompleted += DocumentView_ManipulationCompleted;
             DragStarting += DocumentView_DragStarting;
 
             // add manipulation code
@@ -498,6 +501,16 @@ namespace Dash
             ToFront();
         }
 
+        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (IsDragging)
+            {
+                SelectionManager.GetSelectedDocs().ForEach(i => i.Visibility = Visibility.Visible);
+            }
+        }
+
+        public bool IsDragging = false;
+
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
@@ -521,11 +534,16 @@ namespace Dash
             //{
             //    //only pan
             //}
+            IsDragging = true;
+            double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
-
+            var rawOffsets = SelectionManager.GetSelectedDocs().Select(args.GetPosition);
+            var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(this).X), (ro.Y - args.GetPosition(this).Y)));
             args.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true, off: SelectionManager.GetSelectedDocs().Select(args.GetPosition).ToList())
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true,
+                off: offsets.ToList())
             {
+                Offset = args.GetPosition(this),
                 SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
             });
             this.DropCompleted += DocumentView_DropCompleted;
@@ -535,33 +553,22 @@ namespace Dash
 
             //combine all selected docs into an image to display on drag
             //use size of each doc to get size of combined image
-            var width = double.NegativeInfinity;
-            var height = double.NegativeInfinity;
-            var top = double.PositiveInfinity;
-            var left = double.PositiveInfinity;
+            Point tl = new Point(double.PositiveInfinity, double.PositiveInfinity);
+            Point br = new Point(double.NegativeInfinity, double.NegativeInfinity);
             foreach (var doc in SelectionManager.GetSelectedDocs())
             {
-                top = Math.Min(doc.ViewModel.Position.Y, top);
-                left = Math.Min(doc.ViewModel.Position.X, left);
+                var bounds = new Rect(0, 0, doc.ActualWidth, doc.ActualHeight);
+                bounds = doc.TransformToVisual(Window.Current.Content).TransformBounds(bounds);
+                tl.X = Math.Min(tl.X, bounds.Left * scaling);
+                tl.Y = Math.Min(tl.Y, bounds.Top * scaling);
+                br.X = Math.Max(br.X, bounds.Right * scaling);
+                br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
             }
-            var origP = new Point(left, top);
-            origP = Util.PointTransformFromVisual(origP, MainPage.Instance.xCanvas);
 
-            foreach (var doc in SelectionManager.GetSelectedDocs())
-            {
-                var posRect = Util.PointTransformFromVisual(doc.ViewModel.Position, doc.ParentCollection);
-                var sizeRect = Util.RectTransformFromVisual(new Rect(0, 0,
-                    doc.ViewModel.ActualSize.X + doc.xRightResizeControl.ActualWidth +
-                    doc.xLeftResizeControl.ActualWidth,
-                    doc.ViewModel.ActualSize.Y + doc.xBottomResizeControl.ActualHeight +
-                    doc.xTopResizeControl.ActualHeight), doc.ParentCollection);
-                width = Math.Max(posRect.X + sizeRect.Width - origP.X, width);
-                height = Math.Max(posRect.Y + sizeRect.Height - origP.Y, height);
-            }
+            double width = (br.X - tl.X);
+            double height = (br.Y - tl.Y);
             var s1 = new Point(width, height);
-            var rect1 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s1.X, s1.Y));
-            s1 = new Point(rect1.Width, rect1.Height);
-            
+
             var bp = new WriteableBitmap((int) s1.X, (int) s1.Y);
             var thisOffset = new Point();
 
@@ -570,29 +577,31 @@ namespace Dash
             {
                 var rtb = new RenderTargetBitmap();
                 var s = new Point(Math.Floor(doc.ActualWidth), Math.Floor(doc.ActualHeight));
-                var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, s.X, s.Y));
-                s = new Windows.Foundation.Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)s.X, (int)s.Y);
+                var transformToVisual = doc.TransformToVisual(Window.Current.Content);
+                var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
+                s = new Point(rect.Width, rect.Height);
+                await rtb.RenderAsync(doc, (int) Math.Floor(s.X), (int) Math.Floor(s.Y));
                 IBuffer buf = await rtb.GetPixelsAsync();
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
-                var posRect = Util.PointTransformFromVisual(doc.ViewModel.Position, doc.ParentCollection);
+                var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
                 bp.BlitRender(additionalBp, false, 1F,
-                    new TranslateTransform {X = posRect.X - origP.X, Y = posRect.Y - origP.Y});
+                    new TranslateTransform {X = pos.X, Y = pos.Y});
 
                 if (doc == this)
                 {
-                    thisOffset.X = posRect.X - origP.X;
-                    thisOffset.Y = posRect.Y - origP.Y;
+                    thisOffset.X = rect.X - tl.X / scaling;
+                    thisOffset.Y = rect.Y - tl.Y / scaling;
                 }
             }
 
-            var p = args.GetPosition(this);
-            var rect2 = this.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, p.X, p.Y));
-            p = new Point(rect2.Width, rect2.Height);
-            p.X += thisOffset.X;
-            p.Y += thisOffset.Y;
+            var p = args.GetPosition(Window.Current.Content);
+            p.X = p.X - tl.X / scaling + thisOffset.X;
+            p.Y = p.Y - tl.Y / scaling + thisOffset.Y;
+            var re = this.TransformToVisual(Window.Current.Content)
+                .TransformBounds(new Rect(0, 0, ActualWidth, ActualHeight));
+            Debug.WriteLine(re);
             var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
                 bp.PixelHeight);
             args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
@@ -627,7 +636,7 @@ namespace Dash
             }
             if (_pointerCapture != null && SelectionManager.IsSelected(this))
             {
-                await this.StartDragAsync(_pointerCapture.GetCurrentPoint(this));
+                await this.StartDragAsync(_pointerCapture.GetCurrentPoint(sender as FrameworkElement));
             }
         }
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -695,6 +696,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
+                SelectionManager.GetSelectedDocs().ForEach(i => i.IsDragging = false);
                 e.Handled = true;
                 // accept move, then copy, and finally accept whatever they requested (for now)
                 e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
@@ -736,7 +738,6 @@ namespace Dash
                     }
                 }
                 AddDocuments(docsToAdd);
-
                 e.DataView.ReportOperationCompleted(DataPackageOperation.Move);
             }
         }
