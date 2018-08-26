@@ -11,6 +11,8 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using DashShared;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
 
 namespace Dash
 {
@@ -29,6 +31,8 @@ namespace Dash
 		private Dictionary<DocumentController, string> _colorPairs = new Dictionary<DocumentController, string>();
 		private Dictionary<DocumentController, int> _pdfNumbers = new Dictionary<DocumentController, int>(); // for storing number of pages in a PDF -- kind of a hack until we find a not-async method to do this
 		private Dictionary<DocumentController, Size> _pdfPageSize = new Dictionary<DocumentController, Size>(); // for storing pdf page sizes -- again, kind of a hack until we find a not-async method to do this
+		private Dictionary<DocumentController, List<SelectableElement>> _pdfSelectableElements =
+			new Dictionary<DocumentController, List<SelectableElement>>(); // stores the selectableElements on a pdf
 
 		/// <summary>
 		/// Use this method to start the publication process. Pass in a list of DocumentControllers to publish. Note that if any annotations are not in the list of DocumentControllers, they will not be published.
@@ -255,7 +259,9 @@ namespace Dash
 									pageNums.Add(page1);
 								}
 							}
-							Debug.WriteLine("hi");
+
+							var selectionIndices = region
+								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionIndicesListKey, null)?.TypedData;
 							break;
 						case AnnotationType.Ink:
 							break;
@@ -942,15 +948,39 @@ namespace Dash
 			var pdf = await DataVirtualizationSource<DocumentController>.GetPdf(dc);
 			var numPages = pdf.PageCount;
 			_pdfNumbers[dc] = (int) numPages;
-			var size = dc.GetDereferencedField<PointController>(KeyStore.PdfHeightKey, null).Data;
-			_pdfPageSize[dc] = new Size(size.X, size.Y);
+			var sizee = dc.GetDereferencedField<PointController>(KeyStore.PdfHeightKey, null).Data;
+			_pdfPageSize[dc] = new Size(sizee.X, sizee.Y);
+
+			// get selectableelements
+			var pdfUri = dc.GetDataDocument().GetField<ImageController>(KeyStore.DataKey).Data;
+			var file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
+			var reader = new PdfReader(await file.OpenStreamForReadAsync());
+			var pdfDocument = new PdfDocument(reader);
+			var strategy = new BoundsExtractionStrategy();
+			var processor = new PdfCanvasProcessor(strategy);
+			double offset = 0;
+
+			await Task.Run(() =>
+			{
+				for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+				{
+					var page = pdfDocument.GetPage(i);
+					var size = page.GetPageSize();
+					strategy.SetPage(i - 1, offset, size, page.GetRotation());
+					offset += page.GetPageSize().GetHeight() + 10;
+					processor.ProcessPageContent(page);
+				}
+			});
+
+			var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+			_pdfSelectableElements[dc] = selectableElements.Item1;
 
 			for (var i = 0; i < numPages; i++)
 			{
 				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint)i);
-				var file = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i + 1) + ".jpg",
+				var newFile = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i + 1) + ".jpg",
 					CreationCollisionOption.GenerateUniqueName);
-				using (var stream = await file.OpenStreamForWriteAsync())
+				using (var stream = await newFile.OpenStreamForWriteAsync())
 				{
 					var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream.AsRandomAccessStream());
 					var pixelStream = bitmap.PixelBuffer.AsStream();
