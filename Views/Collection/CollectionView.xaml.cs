@@ -76,25 +76,16 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-            if (parentFreeform != null && rightBtn)
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection)
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if ((shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                }
-                else
-                    if (parentParentFreeform != null)
-                        CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+                //selected, so pan 
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             }
-            
-
+            else
+            {
+                //don't pan
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+            }
         }
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)

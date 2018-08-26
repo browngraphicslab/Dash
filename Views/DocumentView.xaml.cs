@@ -228,14 +228,9 @@ namespace Dash
                     e.Handled = false;
                 }
 
-                if (e.IsRightPressed())
+                if (e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
                 {
                     _pointerCapture = e;
-                    if (!SelectionManager.IsSelected(this))
-                    {
-                        SelectionManager.Select(this, false);
-                        MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-                    }
                 }
             };
 
@@ -514,14 +509,8 @@ namespace Dash
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            ToFront();
 
-            //if this is a collectiion, only move if not selected
-            //if drag on inner collection and that collection or anything inside is selected, pan collection
-            if (ViewModel.Content is CollectionView collectionView && (collectionView.selectedCollection || SelectionManager.IsSelected(this)))
-            {
-                //this or something inside is selected, pan collection
-                return;
-            }
             if (ViewModel.Content is CollectionView)
             {
                 //nothing was selected, drag collection as normal
@@ -539,6 +528,7 @@ namespace Dash
 
             var rawOffsets = SelectionManager.GetSelectedDocs().Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(this).X), (ro.Y - args.GetPosition(this).Y)));
+
             args.Data.AddDragModel(new DragDocumentModel(
                 SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true,
                 off: offsets.ToList())
@@ -634,7 +624,7 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
-            if (_pointerCapture != null && SelectionManager.IsSelected(this))
+            if (_pointerCapture != null)
             {
                 await this.StartDragAsync(_pointerCapture.GetCurrentPoint(sender as FrameworkElement));
             }
@@ -1369,12 +1359,14 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 
@@ -1682,8 +1674,6 @@ namespace Dash
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
-
-            e.Handled = true;
         }
 
         void drop(bool footer, DocumentController newFieldDoc)
@@ -2060,18 +2050,16 @@ namespace Dash
             //if it's a collection view and it or its children are selected, don't move, but just pan
             if (ViewModel.Content is CollectionView collectionView && 
                 (SelectionManager.IsSelected(this) || collectionView.selectedCollection))
-            {
                 return;
-            }
 
             if (!SelectionManager.IsSelected(this))
             {
-                //if it was a collection with something inside selected, don't it anything else becuase we want inner docs to stay selected
-                if (!(ViewModel.Content is CollectionView)) 
+                if (!(ViewModel.Content is CollectionView))
+                    //if it was a collection with something inside selected, don't it anything else becuase we want inner docs to stay selected
                     SelectionManager.Select(this, false);
                 MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
-            
+
             //this is how drag image is made /started
             await StartDragAsync(pointer.GetCurrentPoint(this));
             //DocumentView_ManipulationStarted(null, null);
