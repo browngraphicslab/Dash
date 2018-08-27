@@ -665,7 +665,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.Link = link;
                 }
                 else
-                    return theDoc;
+                    return theDoc  ?? LayoutDocument;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
