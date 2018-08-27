@@ -77,6 +77,14 @@ namespace Dash
 
         private Queue<Tag> _recentTags;
 
+        private Stack<Tag> _inLineTags;
+
+        public Stack<Tag> InLineTags
+        {
+            get => _inLineTags;
+            set { _inLineTags = value; }
+        }
+
         //Tags keeps track of all of the availble tags a user has created and that can be used
         public List<Tag> Tags;
 
@@ -210,6 +218,7 @@ namespace Dash
             //Recents = new Queue<SuggestViewModel>();
             Tags = new List<Tag>();
             _recentTags = new Queue<Tag>();
+            _inLineTags = new Stack<Tag>();
             Loaded += DocumentDecorations_Loaded;
             Unloaded += DocumentDecorations_Unloaded;
         }
@@ -416,7 +425,7 @@ namespace Dash
 		*/
 
         //checks to see if a tag with the same name has already been created. if not, then a new tag is created
-        private Tag AddTagIfUnique(string name)
+        public Tag AddTagIfUnique(string name)
         {
             foreach (var comp in Tags)
             {
@@ -430,7 +439,7 @@ namespace Dash
         }
 
         //adds a new tag both graphically and to the dictionary
-        private Tag AddTag(string linkName, List<DocumentController> links = null)
+        public Tag AddTag(string linkName, List<DocumentController> links = null)
         {
             xRecentTagsDivider.Visibility = Visibility.Visible;
 
@@ -467,8 +476,9 @@ namespace Dash
                 //otherwise, get rid of the oldest recent tag and add the new tag to recent tags, as well as update the recenttagssave
                 else
                 {
-                    _recentTags.Dequeue();
+                    var deq = _recentTags.Dequeue();
                     RecentTagsSave.RemoveAt(0);
+                    _inLineTags.Push(deq);
                     _recentTags.Enqueue(tag);
                     RecentTagsSave.Add(doc);
                 }

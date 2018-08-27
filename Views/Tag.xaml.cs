@@ -231,29 +231,67 @@ namespace Dash
 
         private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
         {
-            var temp = new List<Tag>();
-            if (_docdecs.RecentTags.Count > 1)
+
+            if (_docdecs.Tags.Count > 1 && _docdecs.Tags.Contains(this))
             {
-                if (_docdecs.RecentTags.Contains(this))
+                if (!this.Text.Equals("Annotation"))
                 {
-                    while (_docdecs.RecentTags.Any())
+                    if (_docdecs.TagMap[Text] != null)
                     {
-
-                        var currtag = _docdecs.RecentTags.Dequeue();
-                        if (currtag.Text != Text)
-                        {
-                            temp.Add(currtag);
-                        }
+                        var newlinks = _docdecs.TagMap[Text];
+                        _docdecs.TagMap.Remove(Text);
+                        var oldlinks = _docdecs.TagMap["Annotation"];
+                        oldlinks.AddRange(newlinks);
+                        _docdecs.TagMap["Annotation"] = oldlinks;
                     }
-                }
 
-                temp.Reverse();
+                    _docdecs.Tags.Remove(this);
+                    //_docdecs.TagsSave.Remove(_docdecs.TagsSave.First(t => t.Title == Text));
+                    _docdecs._tagNameDict.Remove(Text);
 
-                foreach (var tag in temp)
-                {
-                    _docdecs.RecentTags.Enqueue(tag);
+                    
+
+                    _docdecs.XTagContainer.Children.Remove(this as UIElement);
                 }
             }
+
+            //if the tags in the list match the recent tags
+            //var temp = new List<Tag>();
+            //if (_docdecs.RecentTags.Count > 1)
+            //{
+            //    if (_docdecs.RecentTags.Contains(this))
+            //    {
+            //        while (_docdecs.RecentTags.Any())
+            //        {
+
+            //            var currtag = _docdecs.RecentTags.Dequeue();
+            //            if (currtag.Text != Text)
+            //            {
+            //                temp.Add(currtag);
+            //            }
+            //            _docdecs.Tags.Remove(currtag);
+                       
+            //        }
+            //    }
+
+            //    temp.Reverse();
+
+            //    _docdecs.RecentTags.Clear();
+            //    _docdecs.XTagContainer.Children.Clear();
+
+            //    foreach (var tag in temp)
+            //    {
+            //        _docdecs.RecentTags.Enqueue(tag);
+            //    }
+
+            //    foreach (var tag in _docdecs.RecentTags)
+            //    {
+            //        _docdecs.AddTag(tag.Text, _docdecs.TagMap[tag.Text]);
+            //    }
+            //}
+
+
+
             
         }
     }
