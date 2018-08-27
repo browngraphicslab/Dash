@@ -316,7 +316,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 {
-                    var fieldKey = ContentController<FieldModel>.GetController<KeyController>(h.Data);
+                    var fieldKey = RESTClient.Instance.Fields.GetController<KeyController>(h.Data);
                     var hvm = new CollectionDBSchemaHeader.HeaderViewModel()
                     {
                         SchemaView = this,

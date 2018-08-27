@@ -69,11 +69,6 @@ namespace Dash
             }
         }
 
-        public override void Init()
-        {
-            throw new NotImplementedException();
-        }
-
         public override FieldControllerBase GetDefaultController()
         {
             return new ZipOperatorController();

@@ -481,7 +481,7 @@ namespace Dash
             //CONFIRM ERASE DATABASE
             else if (_eraseConfidence == DbEraseSafetyConfidence.Confident)
             {
-                _endpoint.DeleteAllDocuments(null, null);
+                await _endpoint.DeleteAllDocuments();
                 ResetEraseButton();
 
                 await CoreApplication.RequestRestartAsync("");

@@ -502,6 +502,6 @@ namespace Dash
             return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
         }
 
-        public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id);
+        public static DocumentController SearchIndividualById(string id) => RESTClient.Instance.Fields.GetController<DocumentController>(id);
     }
 }

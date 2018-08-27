@@ -369,7 +369,7 @@ namespace Dash
             {
                 //var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
                 var id = doc.Id;
-                DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
+                DocumentController resultDoc = RESTClient.Instance.Fields.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
                 MainPage.Instance.HighlightDoc(resultDoc, false, 1, animate);

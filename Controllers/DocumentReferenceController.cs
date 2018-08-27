@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    public class 
+    public class
         DocumentReferenceController : ReferenceController
     {
         private DocumentController _documentController;
@@ -20,29 +21,29 @@ namespace Dash
             }
         }
 
-        public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite=false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))
+        public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite = false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))
         {
             Debug.Assert(doc != null);
             Debug.Assert(key != null);
-            //DocumentId = docId;
+            _documentController = doc;
+            FieldKey = key;
             SaveOnServer();
-            Init();
         }
 
-        public DocumentReferenceController(DocumentReferenceModel documentReferenceFieldModel) : base(documentReferenceFieldModel)
+        public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
+        {
+            DocumentReferenceController drc = new DocumentReferenceController(model);
+            return drc;
+        }
+        private DocumentReferenceController(DocumentReferenceModel documentReferenceFieldModel) : base(documentReferenceFieldModel)
         {
             Debug.Assert(documentReferenceFieldModel?.DocumentId != null);
         }
 
-        public override void Init()
+        public override async Task InitializeAsync()
         {
-            if (_documentController == null)
-            {
-                _documentController =
-                    ContentController<FieldModel>.GetController<DocumentController>((Model as DocumentReferenceModel)
-                        .DocumentId);
-            }
-            base.Init();
+            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            await base.InitializeAsync();
         }
 
         public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)
@@ -53,7 +54,7 @@ namespace Dash
             //docController for old DocumentId
             var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-                DocumentController = doc;
+            DocumentController = doc;
             //docController for given DocumentId
             var docController2 = GetDocumentController(null);
             docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
@@ -78,7 +79,6 @@ namespace Dash
         }
 
 
-        // todo: more meaningful tostring here
         public override string ToString() => $"dRef[{DocumentController}, {FieldKey}]";
 
         public override FieldControllerBase GetDocumentReference() => DocumentController;

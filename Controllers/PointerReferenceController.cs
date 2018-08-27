@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -12,26 +13,29 @@ namespace Dash
         void fieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             DisposeField();
-            Init();
+            //Init();//TODO DB
         }
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
             SaveOnServer();
-            Init();
         }
-        public PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
+
+        public static PointerReferenceController CreateFromServer(PointerReferenceModel model)
+        {
+            var prc = new PointerReferenceController(model);
+            return prc;
+        }
+
+        private PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
         {
         }
 
-        public override void Init()
+        public override async Task InitializeAsync()
         {
-            DocumentReference =
-                ContentController<FieldModel>.GetController<ReferenceController>(
+            DocumentReference = await RESTClient.Instance.Fields.GetControllerAsync<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
-            base.Init();
-            _lastDoc = DocumentReference?.GetDocumentController(null);
-           _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+            await base.InitializeAsync();
         }
 
         public override void DisposeField()

@@ -23,11 +23,6 @@ namespace Dash
 
         }
 
-        public override void Init()
-        {
-            
-        }
-
         /// <summary>
         /// The <see cref="RichTextFieldModel"/> associated with this <see cref="RichTextController"/>
         /// </summary>

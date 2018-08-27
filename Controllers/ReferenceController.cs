@@ -1,13 +1,14 @@
 using System;
 using DashShared;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Dash.Converters;
 
 namespace Dash
 {
     public abstract class ReferenceController : FieldModelController<ReferenceModel>
     {
-        public ReferenceController(ReferenceModel model) : base(model)
+        protected ReferenceController(ReferenceModel model) : base(model)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
@@ -15,14 +16,16 @@ namespace Dash
 
         }
 
-        DocumentController _lastDoc = null;
-        public override void Init()
+        public override async Task InitializeAsync()
         {
-            FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
-            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            _lastDoc = GetDocumentController(null);
-            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            FieldKey = await RESTClient.Instance.Fields.GetControllerAsync<KeyController>(ReferenceFieldModel.KeyId);
+            //TODO DB
+            //_lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            //_lastDoc = GetDocumentController(null);
+            //_lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
+
+        DocumentController _lastDoc = null;
 
         protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
@@ -35,7 +38,7 @@ namespace Dash
             _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public KeyController FieldKey { get; set; }
+        public KeyController FieldKey { get; protected set; }
 
         public abstract DocumentController GetDocumentController(Context context);
 

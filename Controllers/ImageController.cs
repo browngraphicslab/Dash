@@ -26,10 +26,6 @@ namespace Dash
 		}
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageController" />,

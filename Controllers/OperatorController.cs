@@ -144,12 +144,6 @@ namespace Dash
             return false;
         }
 
-        public override void Init()
-        {
-            // operators can optionally override the init method if they have
-            // to chase down pointers
-        }
-
         public sealed override FieldControllerBase Copy()
         {
             var operatorCopy = GetDefaultController();

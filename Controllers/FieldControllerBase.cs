@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -11,7 +12,7 @@ namespace Dash
     /// abstract controller from which "Controller<T>" should inherit.
     /// This class should hold all the abstract contracts that every Controller must inherit
     /// </summary>
-    public abstract class FieldControllerBase : IController<FieldModel>, IDisposable
+    public abstract class FieldControllerBase : Controller<FieldModel>, IDisposable
     {
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
@@ -29,6 +30,11 @@ namespace Dash
 
         protected FieldControllerBase(FieldModel model) : base(model)
         {
+        }
+
+        public virtual Task InitializeAsync()
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>

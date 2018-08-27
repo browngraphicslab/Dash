@@ -28,10 +28,6 @@ namespace Dash
         {
             UpdateStrokesFromData(inkFieldModel.Data);
         }
-        public override void Init()
-        {
-
-        }
 
         /// <summary>
         ///     The <see cref="InkFieldModel" /> associated with this <see cref="InkController" />,

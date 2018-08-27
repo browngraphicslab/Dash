@@ -19,11 +19,6 @@ namespace Dash
 
         }
 
-        public override void Init()
-        {
-
-        }
-
         /// <summary>
         ///     The <see cref="NumberFieldModel" /> associated with this <see cref="NumberController" />,
         ///     You should only set values on the controller, never directly on the model!

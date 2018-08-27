@@ -341,7 +341,7 @@ namespace Dash
             _target = getHyperlinkTargetForSelection();
             if (_target != null)
             {
-                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
+                var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(_target);
                 if (theDoc != null)
                 {
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
@@ -647,7 +647,7 @@ namespace Dash
 
             // possibly reuse any existing hyperlink region
             var target = getHyperlinkTargetForSelection();
-            var theDoc = target == null ? null : ContentController<FieldModel>.GetController<DocumentController>(target);
+            var theDoc = target == null ? null : RESTClient.Instance.Fields.GetController<DocumentController>(target);
 
 
             // get the document controller for the target hyperlink (region) document

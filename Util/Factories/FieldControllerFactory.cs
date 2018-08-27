@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Dash.Controllers;
 using DashShared;
 using TypeInfo = DashShared.TypeInfo;
@@ -11,7 +12,7 @@ namespace Dash
 {
     public class FieldControllerFactory : BaseControllerFactory
     {
-        public static FieldControllerBase CreateFromModel(FieldModel model)
+        public static async Task<FieldControllerBase> CreateFromModel(FieldModel model)
         {
             Type t = model.GetType();
             System.Reflection.TypeInfo ti;
@@ -40,10 +41,10 @@ namespace Dash
                     controller = MakeOperatorController(model as OperatorModel);
                     break;
                 case TypeInfo.List:
-                    controller = MakeListFieldController(model as ListModel);
+                    controller = await MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentController(model as DocumentModel);
+                    controller = await DocumentController.CreateFromServer(model as DocumentModel);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkController(model as InkModel);
@@ -52,10 +53,10 @@ namespace Dash
                     controller = new NumberController(model as NumberModel);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = new DocumentReferenceController(model as DocumentReferenceModel);
+                    controller = await DocumentReferenceController.CreateFromServer(model as DocumentReferenceModel);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = new PointerReferenceController(model as PointerReferenceModel);
+                    controller = await PointerReferenceController.CreateFromServer(model as PointerReferenceModel);
                     break;
                 case TypeInfo.Rectangle:
                     controller = new RectController(model as RectModel);
@@ -100,7 +101,7 @@ namespace Dash
             return controller;
         }
 
-        private static FieldControllerBase MakeListFieldController(ListModel model)
+        private static async Task<FieldControllerBase> MakeListFieldController(ListModel model)
         {
             FieldControllerBase controller = null;
 
@@ -110,65 +111,64 @@ namespace Dash
                     Debug.Fail("this shouldnt happen????");
                     break;
                 case TypeInfo.Number:
-                    controller = new ListController<NumberController>(model);
+                    controller = await ListController<NumberController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Text:
-                    controller = new ListController<TextController>(model);
+                    controller = await ListController<TextController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Image:
-                    controller = new ListController<ImageController>(model);
+                    controller = await ListController<ImageController>.CreateFromServer(model);
                     break;
 				case TypeInfo.Video:
-					controller = new ListController<VideoController>(model);
+                    controller = await ListController<VideoController>.CreateFromServer(model);
 					break;
                 case TypeInfo.Audio:
-                    controller = new ListController<AudioController>(model);
+                    controller = await ListController<AudioController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Document:
-                    controller = new ListController<DocumentController>(model);
+                    controller = await ListController<DocumentController>.CreateFromServer(model);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = new ListController<PointerReferenceController>(model);
+                    controller = await ListController<PointerReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = new ListController<DocumentReferenceController>(model);
+                    controller = await ListController<DocumentReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Operator:
-                    controller = new ListController<OperatorController>(model);
+                    controller = await ListController<OperatorController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Point:
-                    controller = new ListController<PointController>(model);
+                    controller = await ListController<PointController>.CreateFromServer(model);
                     break;
                 case TypeInfo.List:
                     Debug.Fail("idk why you got here");
                     break;
                 case TypeInfo.Ink:
-                    controller = new ListController<InkController>(model);
+                    controller = await ListController<InkController>.CreateFromServer(model);
                     break;
                 case TypeInfo.RichText:
-                    controller = new ListController<RichTextController>(model);
+                    controller = await ListController<RichTextController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Rectangle:
-                    controller = new ListController<RectController>(model);
+                    controller = await ListController<RectController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Reference:
-                    controller = new ListController<ReferenceController>(model);
+                    controller = await ListController<ReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Key:
-                    controller = new ListController<KeyController>(model);
+                    controller = await ListController<KeyController>.CreateFromServer(model);
                     break;
                 case TypeInfo.DateTime:
-                    controller = new ListController<DateTimeController>(model);
+                    controller = await ListController<DateTimeController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Bool:
-                    controller = new ListController<BoolController>(model);
+                    controller = await ListController<BoolController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Color:
-                    controller = new ListController<ColorController>(model);
+                    controller = await ListController<ColorController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Any:
                     //Debug.Fail("idk why you got here");
-                    controller = new ListController<FieldControllerBase>(model);
                     break;
                 default:
                     break;
@@ -186,12 +186,6 @@ namespace Dash
             var opToBuild = OperatorTypes.First(opType => ((KeyController) opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Equals(model.Type));
             return (OperatorController) Activator.CreateInstance(opToBuild, model);
         }
-
-        public static FieldModelController<T> CreateTypedFromModel<T>(T model) where T : FieldModel
-        {
-            return CreateFromModel(model) as FieldModelController<T>;
-        }
-
 
         public static FieldControllerBase CreateDefaultFieldController(TypeInfo t, TypeInfo listType = TypeInfo.Document)
         {

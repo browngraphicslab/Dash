@@ -618,11 +618,11 @@ namespace Dash
 			GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 		}
 
-		protected void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+		protected async void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 		{
 			if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
 			{
-				var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+				var keys = await RESTClient.Instance.Fields.GetControllersByQueryAsync<KeyController>(new EverythingQuery<FieldModel>());
 				var names = keys.Where(k => !k.Name.StartsWith("_"));
 				GetTagBox().ItemsSource = names;
 			}
@@ -633,7 +633,7 @@ namespace Dash
 			sender.Text = ((KeyController)args.SelectedItem).Name;
 		}
 
-		protected void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+		protected async void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
 		{
 			if (args.ChosenSuggestion != null)
 			{
@@ -641,7 +641,7 @@ namespace Dash
 			}
 			else
 			{
-				var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+			    var keys = await RESTClient.Instance.Fields.GetControllersByQueryAsync<KeyController>(new EverythingQuery<FieldModel>());
 				var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
 
 				if (key == null)

@@ -54,16 +54,16 @@ namespace Dash
 
             //TODO actually optimize this, right now it's just a prood of concept.  
             //optimizing this will be VERY important as we can definitly go from O(n*n) to O(n) 
-            foreach(var obj in set1)
-            {
-                foreach (var obj2 in set2)
-                {
-                    if (obj.Model.ValueEquals(obj2.Model))
-                    {
-                        returnSet.Add(obj);
-                    }
-                }
-            }
+            //foreach(var obj in set1)
+            //{
+            //    foreach (var obj2 in set2)
+            //    {
+            //        if (obj.Model.ValueEquals(obj2.Model))
+            //        {
+            //            returnSet.Add(obj);
+            //        }
+            //    }
+            //}
 
             outputs[IntersectionKey] = returnSet;
         }

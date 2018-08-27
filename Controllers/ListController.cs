@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -113,9 +115,6 @@ namespace Dash
 
         #region // OVERLOADED CONSTRUCTORS, INITIALIZATION //
 
-        // List model
-        public ListController(ListModel model, bool readOnly = false) : base(model) => IsReadOnly = readOnly;
-
         // Parameterless
         public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(false);
 
@@ -125,6 +124,25 @@ namespace Dash
         // T (item)
         public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
 
+        public static async Task<ListController<T>> CreateFromServer(ListModel model)
+        {
+            Debug.Assert(!model.SubTypeInfo.Equals(TypeInfo.None));
+
+            var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(model.Data);
+            List<T> list = fields as List<T> ?? new List<T>(fields);
+
+            // furthermore, confirms the type of the list in the model matches the type of this list controller
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+
+            return new ListController<T>(list, model.IsReadOnly, model);
+        }
+
+        private ListController(List<T> fields, bool readOnly, ListModel model) : base(model)
+        {
+            TypedData = fields;
+            IsReadOnly = readOnly;
+        }
+
         /*
          * Factors out code common to all constructors - sets the readonly status, saves to database and calls the custom initialization
          */
@@ -133,18 +151,6 @@ namespace Dash
             IsReadOnly = readOnly;
             Indexed = true;
             SaveOnServer();
-            Init();
-        }
-
-        public override void Init()
-        {
-            // ensures that the list isn't initialized with a type of none
-            Debug.Assert(!((ListModel)Model).SubTypeInfo.Equals(TypeInfo.None));
-
-            TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
-
-            // furthermore, confirms the type of the list in the model matches the type of this list controller
-            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
         #endregion

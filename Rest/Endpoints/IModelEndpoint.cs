@@ -37,6 +37,18 @@ namespace Dash
         /// <param name="ids"></param>
         Task<List<U>> GetDocuments<U>(IEnumerable<string> ids) where U : EntityBase;
 
+        FieldControllerBase GetController(string id);
+        IList<FieldControllerBase> GetControllers(IEnumerable<string> ids);
+        V GetController<V>(string id) where V : FieldControllerBase;
+        IList<V> GetControllers<V>(IEnumerable<string> ids) where V : FieldControllerBase;
+
+        Task<FieldControllerBase> GetControllerAsync(string id);
+        Task<IList<FieldControllerBase>> GetControllersAsync(IEnumerable<string> ids);
+        Task<V> GetControllerAsync<V>(string id) where V : FieldControllerBase;
+        Task<IList<V>> GetControllersAsync<V>(IEnumerable<string> ids) where V : FieldControllerBase;
+        Task<IList<FieldControllerBase>> GetControllersByQueryAsync(IQuery<T> query);
+        Task<IList<V>> GetControllersByQueryAsync<V>(IQuery<T> query) where V : FieldControllerBase;
+
         /// <summary>
         ///     Deletes a document from the server.
         /// </summary>
@@ -59,7 +71,7 @@ namespace Dash
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<List<EntityBase>> GetDocumentsByQuery(IQuery<T> query);
+        Task<List<T>> GetDocumentsByQuery(IQuery<T> query);
 
         /// <summary>
         /// method to make an arbitrary query for a subset of document T's but only returns the types V
@@ -81,7 +93,7 @@ namespace Dash
         /// <param name="model"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        Task<bool> HasDocument(T model, Action<bool> success, Action<Exception> error);
+        Task<bool> HasDocument(T model);
 
         bool CheckAllDocuments(IEnumerable<T> documents);
 

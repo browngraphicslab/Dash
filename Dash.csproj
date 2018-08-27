@@ -180,7 +180,6 @@
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
-    <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
@@ -217,6 +216,7 @@
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Rest\Endpoints\CachedEndpoint.cs" />
     <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
@@ -416,7 +416,6 @@
     <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />

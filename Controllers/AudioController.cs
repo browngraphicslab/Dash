@@ -24,12 +24,6 @@ namespace Dash
             SaveOnServer();
         }
 
-        public override void Init()
-        {
-
-        }
-
-
         public AudioModel AudioFieldModel => Model as AudioModel;
 
 

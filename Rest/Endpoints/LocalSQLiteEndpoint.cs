@@ -16,7 +16,7 @@ using Timer = System.Threading.Timer;
 
 namespace Dash
 {
-    public class LocalSqliteEndpoint : BaseModelEndpoint<FieldModel>
+    public class LocalSqliteEndpoint : CachedEndpoint
     {
         /// <summary>
         /// Connection to the sqlite database
@@ -82,8 +82,7 @@ namespace Dash
         private async void CleanupDocuments()
         {
             var fields = new HashSet<FieldModel>();
-            await TrackDownReferences(MainPage.Instance.MainDocument?.Model, fields);
-            DeleteDocumentsExcept(fields, null, null);
+            await DeleteDocumentsExcept(fields);
         }
 
         public override void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
@@ -120,7 +119,7 @@ namespace Dash
         #region DATABASE MUTATORS
 
 
-        public override void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
+        public override Task AddDocument(FieldModel newDocument)
         {
             var watch = Stopwatch.StartNew();
 
@@ -137,18 +136,14 @@ namespace Dash
             addDocCommand.Parameters.AddWithValue("@field", newDocument.Serialize());
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(addDocCommand, error, "AddDocument", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(addDocCommand, "AddDocument", watch.ElapsedMilliseconds)) throw new InvalidOperationException("Error adding document");
 
-            success?.Invoke(newDocument);
             NewChangesToBackup = true;
+            return Task.CompletedTask;
         }
 
-        public override void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
+        public override Task UpdateDocument(FieldModel documentToUpdate)
         {
-            if (RichTextView._searchHighlight)
-            {
-                return;
-            }
             var watch = Stopwatch.StartNew();
 
             _transactionMutex.WaitOne();
@@ -164,13 +159,14 @@ namespace Dash
             updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(updateDocCommand, error, "UpdateDocument", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(updateDocCommand, "UpdateDocument", watch.ElapsedMilliseconds)) return Task.FromException(new InvalidOperationException());
 
-            success?.Invoke(documentToUpdate);
             NewChangesToBackup = true;
+
+            return Task.CompletedTask;
         }
 
-        public override void DeleteDocument(FieldModel documentToDelete, Action success, Action<Exception> error)
+        public override Task DeleteDocument(FieldModel documentToDelete)
         {
             var watch = Stopwatch.StartNew();
 
@@ -185,13 +181,13 @@ namespace Dash
             deleteDocCommand.Parameters.AddWithValue("@id", documentToDelete.Id);
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(deleteDocCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(deleteDocCommand, "DeleteDocument", watch.ElapsedMilliseconds)) return Task.FromException(new InvalidOperationException());
 
-            success?.Invoke();
             NewChangesToBackup = true;
+            return Task.CompletedTask;
         }
 
-        public override void DeleteDocuments(IEnumerable<FieldModel> documents, Action success, Action<Exception> error)
+        public override Task DeleteDocuments(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
 
@@ -211,11 +207,11 @@ namespace Dash
 
             for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i]); }
 
-            if (!SafeExecuteMutateQuery(deleteDocsCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
-            success?.Invoke();
+            if (!SafeExecuteMutateQuery(deleteDocsCommand, "DeleteDocument", watch.ElapsedMilliseconds)) return Task.FromException(new InvalidOperationException());
+            return Task.CompletedTask;
         }
 
-        public void DeleteDocumentsExcept(IEnumerable<FieldModel> documents, Action success, Action<Exception> error)
+        public Task DeleteDocumentsExcept(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
 
@@ -238,11 +234,10 @@ namespace Dash
                 reader.Close();
                 ids = ids.Except(enumerable.Select(fm => fm.Id)).ToList();
             }
-            catch (SqliteException e)
+            catch (SqliteException)
             {
                 _transactionMutex.ReleaseMutex();
-                error?.Invoke(e);
-                return;
+                return Task.FromException(new InvalidOperationException());
             }
 
             var deleteDoc = new SqliteCommand
@@ -260,11 +255,10 @@ namespace Dash
                 {
                     deleteDoc.ExecuteNonQuery();
                 }
-                catch (SqliteException e)
+                catch (SqliteException)
                 {
                     _transactionMutex.ReleaseMutex();
-                    error?.Invoke(e);
-                    return;
+                    return Task.FromException(new InvalidOperationException());
                 }
             }
 
@@ -287,10 +281,10 @@ namespace Dash
 
             //if (!SafeExecuteMutateQuery(deleteDocsCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
             Debug.WriteLine($"Delete Documents Except took {watch.ElapsedMilliseconds} ms");
-            success?.Invoke();
+            return Task.CompletedTask;
         }
 
-        public override void DeleteAllDocuments(Action success, Action<Exception> error)
+        public override Task DeleteAllDocuments()
         {
             var watch = Stopwatch.StartNew();
 
@@ -304,17 +298,17 @@ namespace Dash
             };
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) { return; }
+            if (!SafeExecuteMutateQuery(deleteAllCommand, "DeleteAllDocuments", watch.ElapsedMilliseconds)) { return Task.FromException(new InvalidOperationException()); }
 
-            success?.Invoke();
             NewChangesToBackup = true;
+            return Task.CompletedTask;
         }
 
         #endregion
 
         #region DATABASE ACCESSORS
 
-        public override async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override Task<FieldModel> GetDocument(string id)
         {
             var watch = Stopwatch.StartNew();
 
@@ -329,13 +323,13 @@ namespace Dash
             getDocCommand.Parameters.AddWithValue("@id", id);
             watch.Stop();
 
-            var fieldModels = SafeExecuteAccessQuery(getDocCommand, error, "GetDocument", watch.ElapsedMilliseconds);
-            if (fieldModels == null) return;
+            var fieldModels = SafeExecuteAccessQuery(getDocCommand, "GetDocument", watch.ElapsedMilliseconds);
+            if (fieldModels == null) return Task.FromException<FieldModel>(new InvalidOperationException());
 
-            success?.Invoke(new RestRequestReturnArgs(fieldModels));
+            return Task.FromResult(fieldModels.FirstOrDefault());
         }
 
-        public override async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override Task<List<FieldModel>> GetDocuments(IEnumerable<string> ids)
         {
             var watch = Stopwatch.StartNew();
 
@@ -358,18 +352,18 @@ namespace Dash
 
             watch.Stop();
 
-            var fieldModels = SafeExecuteAccessQuery(getDocCommand, error, "GetDocumentsssss", watch.ElapsedMilliseconds);
-            if (fieldModels == null) return;
+            var fieldModels = SafeExecuteAccessQuery(getDocCommand, "GetDocumentsssss", watch.ElapsedMilliseconds);
+            if (fieldModels == null) return Task.FromException<List<FieldModel>>(new InvalidOperationException());
 
-            success?.Invoke(new RestRequestReturnArgs(fieldModels));
+            return Task.FromResult(fieldModels.ToList());
         }
 
-        public override async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error)
+        public override async Task<List<V>> GetDocuments<V>(IEnumerable<string> ids)
         {
-            throw new NotImplementedException();
+            return (await GetDocuments(ids)).OfType<V>().ToList();
         }
 
-        public override async Task GetDocumentsByQuery(IQuery<FieldModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override Task<List<FieldModel>> GetDocumentsByQuery(IQuery<FieldModel> query)
         {
             var watch = Stopwatch.StartNew();
 
@@ -388,56 +382,26 @@ namespace Dash
                 fieldModels = GetFieldModels(getAllDocsCommand.ExecuteReader());
                 fieldModels = fieldModels.Where(query.Func).ToList();
             }
-            catch (SqliteException e)
+            catch (SqliteException)
             {
                 Debug.WriteLine(
                     $"LocalSqliteEndpoint.cs, GetDocumentsByQuery @ Time Elapsed = {watch.ElapsedMilliseconds}");
-                error?.Invoke(e);
-                return;
+                return Task.FromException<List<FieldModel>>(new InvalidOperationException());
             }
             finally
             {
                 _transactionMutex.ReleaseMutex();
             }
 
-            success?.Invoke(new RestRequestReturnArgs(fieldModels));
+            return Task.FromResult(fieldModels);
         }
 
-        public override async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success, Action<Exception> error)
+        public override async Task<List<V>> GetDocumentsByQuery<V>(IQuery<FieldModel> query)
         {
-            var watch = Stopwatch.StartNew();
-
-            _transactionMutex.WaitOne();
-            var getAllDocsCommand = new SqliteCommand
-            {
-                CommandText = @"SELECT field from Fields",
-                Connection = _db,
-                Transaction = _currentTransaction
-            };
-            watch.Stop();
-
-            List<FieldModel> fieldModels;
-            try
-            {
-                fieldModels = GetFieldModels(getAllDocsCommand.ExecuteReader());
-                fieldModels = fieldModels.Where(query.Func).ToList();
-            }
-            catch (SqliteException e)
-            {
-                Debug.WriteLine(
-                    $"LocalSqliteEndpoint.cs, GetDocumentsByQuery<V> (1) @ Time Elapsed = {watch.ElapsedMilliseconds}");
-                error?.Invoke(e);
-                return;
-            }
-            finally
-            {
-                _transactionMutex.ReleaseMutex();
-            }
-
-            success?.Invoke(fieldModels.OfType<V>());
+            return (await GetDocumentsByQuery(query)).OfType<V>().ToList();
         }
 
-        public override void HasDocument(FieldModel model, Action<bool> success, Action<Exception> error)
+        public override Task<bool> HasDocument(FieldModel model)
         {
             var watch = Stopwatch.StartNew();
 
@@ -460,18 +424,17 @@ namespace Dash
                 hasDoc = reader.GetBoolean(0);
                 reader.Close();
             }
-            catch (SqliteException e)
+            catch (SqliteException)
             {
                 Debug.WriteLine($"LocalSqliteEndpoint.cs, HasDocument @ Time Elapsed = {watch.ElapsedMilliseconds}");
-                error?.Invoke(e);
-                return;
+                return Task.FromException<bool>(new InvalidOperationException());
             }
             finally
             {
                 _transactionMutex.ReleaseMutex();
             }
 
-            success?.Invoke(hasDoc);
+            return Task.FromResult(hasDoc);
         }
 
         public override bool CheckAllDocuments(IEnumerable<FieldModel> documents)
@@ -497,7 +460,7 @@ namespace Dash
                 {
                     fieldModels = GetFieldModels(getDocCommand.ExecuteReader());
                 }
-                catch (SqliteException e)
+                catch (SqliteException)
                 {
                     Debug.WriteLine(
                         $"LocalSqliteEndpoint.cs, CheckAllDocuments @ Time Elapsed = {watch.ElapsedMilliseconds}");
@@ -545,17 +508,16 @@ namespace Dash
 
         public override Dictionary<string, string> GetBackups() { return new Dictionary<string, string>(); }
 
-        private bool SafeExecuteMutateQuery(IDbCommand command, Action<Exception> error, string source, long elapsedTime)
+        private bool SafeExecuteMutateQuery(IDbCommand command, string source, long elapsedTime)
         {
             //Try to perform the update. Catch any resulting SQL errors
             try
             {
                 command.ExecuteNonQuery();
             }
-            catch (SqliteException e)
+            catch (SqliteException)
             {
                 Debug.WriteLine("SQL ERROR: LocalSqliteEndpoint.cs, " + source + $" @ Time Elapsed = {elapsedTime}");
-                error?.Invoke(e);
 
                 return false;
             }
@@ -567,17 +529,17 @@ namespace Dash
             return true;
         }
 
-        private IEnumerable<FieldModel> SafeExecuteAccessQuery(IDbCommand command, Action<Exception> error, string source, long elapsedTime)
+        private IEnumerable<FieldModel> SafeExecuteAccessQuery(IDbCommand command, string source, long elapsedTime)
         {
             //Try to perform the access/reading. Catch any resulting SQL errors
             try
             {
                 return GetFieldModels(command.ExecuteReader());
             }
-            catch (SqliteException e)
+            catch (SqliteException)
             {
                 Debug.WriteLine("SQL ERROR: LocalSqliteEndpoint.cs, " + source + $" @ Time Elapsed = {elapsedTime}");
-                error?.Invoke(e);
+
                 return null;
             }
             finally

@@ -23,12 +23,6 @@ namespace Dash
 
         }
 
-        public override void Init()
-        {
-
-        }
-
-
         /// <summary>
         ///     The <see cref="Dash.PointModel" /> associated with this <see cref="PointController" />,
         ///     You should only set values on the controller, never directly on the model!

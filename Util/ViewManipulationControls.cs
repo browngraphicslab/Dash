@@ -113,6 +113,7 @@ namespace Dash
                 _processManipulation = true;
             e.Handled = true;
         }
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>

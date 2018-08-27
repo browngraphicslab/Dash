@@ -18,7 +18,7 @@ namespace Dash
 	/// Allows interactions with underlying DocumentModel.
 	/// </summary>
 	//[DebuggerDisplay("DocumentController")]
-    public class DocumentController : FieldModelController<DocumentModel>
+    public sealed class DocumentController : FieldModelController<DocumentModel>
     {
         public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
         /// <summary>
@@ -42,40 +42,36 @@ namespace Dash
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
 
-        public DocumentController(DocumentModel model) : base(model)
+        public static DocumentController CreateFromServer(DocumentModel model)
         {
+            return new DocumentController(model.DocumentType, model);
         }
 
-        public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
-            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
+        public override async Task InitializeAsync()
         {
-            if (saveOnServer)
-            {
-                IsOnServer(delegate (bool onServer)
-                {
-                    if (!onServer)
-                    {
-                        SaveOnServer();
-                    }
-                });
-            }
-            Init();
+            var endpoint = RESTClient.Instance.Fields;
+
+            var keys = await endpoint.GetControllersAsync<KeyController>(DocumentModel.Fields.Keys);
+            var values = await endpoint.GetControllersAsync(DocumentModel.Fields.Values);
+            SetFields(new Dictionary<KeyController, FieldControllerBase>(keys.Zip(values,
+                    (k, v) => new KeyValuePair<KeyController, FieldControllerBase>(k, v))), true);
         }
 
-        public bool IsMovingCollections { get; set; }
-
-        public sealed override void Init()
+        private DocumentController(DocumentType type,
+            DocumentModel model) : base(model)
         {
-            // get the field controllers associated with the FieldModel id's stored in the document Model
-            // put the field controllers in an observable dictionary
-            var fields = DocumentModel.Fields.Select(kvp =>
-                new KeyValuePair<KeyController, FieldControllerBase>(
-                    ContentController<FieldModel>.GetController<KeyController>(kvp.Key),
-                    ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value))).ToList();
+            DocumentType = type;
+        }
+
+        public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type, string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Id, kv => kv.Value.Id), type, id))
+        {
+                SaveOnServer();
 
             SetFields(fields, true);
             DocumentType = DocumentType;
         }
+
+        public bool IsMovingCollections { get; set; }
 
         /// <summary>
         ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
@@ -848,7 +844,7 @@ namespace Dash
                 overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
-                doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+                doc.DocumentModel.Fields[key.Id] = field.Id;
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
@@ -1248,25 +1244,6 @@ namespace Dash
 
         // == OVERRIDDEN from ICOLLECTION ==
         #region ICollection Overrides
-        public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
-        {
-            if (_fields.ContainsKey(KeyStore.DelegatesKey))
-            {
-                var delegates = (ListController<DocumentController>)_fields[KeyStore.DelegatesKey];
-                foreach (var del in delegates.Data)
-                {
-                    del.DeleteOnServer();
-                }
-            }
-
-            foreach (var field in _fields)
-            {
-                field.Value.DeleteOnServer();
-            }
-            base.DeleteOnServer(success, error);
-
-            DocumentDeleted?.Invoke(this, EventArgs.Empty);
-        }
 
         public override TypeInfo TypeInfo => TypeInfo.Document;
 
@@ -1400,7 +1377,7 @@ namespace Dash
         /// listeners to <see cref="DocumentFieldUpdated"/>
         /// </summary>
         /// <param name="updateDelegates">whether to bubble event down to delegates</param>
-        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
+        private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
         {
             // this invokes listeners which have been added on a per key level of granularity
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))

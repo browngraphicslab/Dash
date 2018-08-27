@@ -47,11 +47,11 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public DocumentView MainDocView { get => xMainDocView; set => xMainDocView = value; }
         public DockingFrame DockManager => xDockFrame;
-	    public LinkActivationManager ActivationManager = new LinkActivationManager();
+        public LinkActivationManager ActivationManager = new LinkActivationManager();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-		
+
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
@@ -108,11 +108,11 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-	            if (ActivePopup != null)
-	            {
-		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
-				}
+                if (ActivePopup != null)
+                {
+                    ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+                    ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                }
             };
 
             xToolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -134,71 +134,67 @@ namespace Dash
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            async Task Success(IEnumerable<DocumentModel> mainPages)
+            await DotNetRPC.Init();
+
+            var docs = await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
+                new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType));
+            var doc = docs.FirstOrDefault();
+            if (doc != null)
             {
-                var doc = mainPages.FirstOrDefault();
-                if (doc != null)
+                MainDocument = RESTClient.Instance.Fields.GetController<DocumentController>(doc.Id);
+                if (MainDocument.GetActiveLayout() == null)
                 {
-                    MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                    if (MainDocument.GetActiveLayout() == null)
-                    {
-                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
-                        MainDocument.SetActiveLayout(layout, true, true);
-                    }
-                }
-                else
-                {
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.DataKey] = new ListController<DocumentController>(),
-                    };
-                    MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
-                LoadSettings();
-
-                var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
-
-                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
-                var history =
-                    MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
-                xDockFrame.DocController = MainDocument;
-                xDockFrame.LoadDockedItems();
-                DocumentController lastWorkspace;
-                if (col.Count == 0)
-                {
-                    var documentController = new CollectionNote(new Point(0, 0),
-                        CollectionView.CollectionViewType.Freeform).Document;
-                    col.Add(documentController);
-                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
-                    lastWorkspace = documentController;
-                }
-                else
-                {
-                    lastWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                }
-                lastWorkspace.SetWidth(double.NaN);
-                lastWorkspace.SetHeight(double.NaN);
-
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
-                MainDocView.RemoveResizeHandlers();
-
-                var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
-                xMainTreeView.DataContext = treeContext;
-                xMainTreeView.ChangeTreeViewTitle("Workspaces");
-                //xMainTreeView.ToggleDarkMode(true);
-
-                setupMapView(lastWorkspace);
-
-                if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
+            else
+            {
+                var fields = new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [KeyStore.DataKey] = new ListController<DocumentController>(),
+                };
+                MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
+                var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
+                MainDocument.SetActiveLayout(layout, true, true);
+            }
+            LoadSettings();
 
-            await DotNetRPC.Init();
+            var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+            xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
 
-            await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
-                new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
+            var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
+            var history =
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
+            xDockFrame.DocController = MainDocument;
+            xDockFrame.LoadDockedItems();
+            DocumentController lastWorkspace;
+            if (col.Count == 0)
+            {
+                var documentController = new CollectionNote(new Point(0, 0),
+                    CollectionView.CollectionViewType.Freeform).Document;
+                col.Add(documentController);
+                MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
+                lastWorkspace = documentController;
+            }
+            else
+            {
+                lastWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            }
+            lastWorkspace.SetWidth(double.NaN);
+            lastWorkspace.SetHeight(double.NaN);
+
+            MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
+            MainDocView.RemoveResizeHandlers();
+
+            var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+            xMainTreeView.DataContext = treeContext;
+            xMainTreeView.ChangeTreeViewTitle("Workspaces");
+            //xMainTreeView.ToggleDarkMode(true);
+
+            setupMapView(lastWorkspace);
+
+            if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
 
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
@@ -284,7 +280,7 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
+            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ? workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
             workspaceView.SetWidth(double.NaN);
             workspaceView.SetHeight(double.NaN);
             MainDocView.DataContext = new DocumentViewModel(workspaceView);
@@ -508,7 +504,7 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, 
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection,
             DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
@@ -540,9 +536,9 @@ namespace Dash
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
 
                     //get zoom changes
-                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
-                    
-                   //get less zoom, so x and y are zoomed by same amt
+                    var shiftZ = new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
+
+                    //get less zoom, so x and y are zoomed by same amt
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
                     if (!zoom)
                     {
@@ -554,7 +550,7 @@ namespace Dash
                         //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.SetTransformAnimated(
                             new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
-                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } 
+                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom }
                         );
                     }
                     else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
@@ -646,34 +642,34 @@ namespace Dash
                 }
             }
 
-			//deactivate all docs if esc was pressed
-	        if (e.VirtualKey == VirtualKey.Escape )
-	        {
-		        using (UndoManager.GetBatchHandle())
-		        {
-			        ActivationManager.DeactivateAll();
-				}
-				
-	        }
+            //deactivate all docs if esc was pressed
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    ActivationManager.DeactivateAll();
+                }
 
-	        //activateall selected docs
-	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
-	        {
-		        var selected = SelectionManager.GetSelectedDocs();
-		        if (selected.Count > 0)
-		        {
-			        using (UndoManager.GetBatchHandle())
-			        {
-						foreach (var doc in SelectionManager.GetSelectedDocs())
-					        {
-						        ActivationManager.ActivateDoc(doc);
-					        }
-						}
-				        
-			        }
-			}
+            }
 
-			var dvm = MainDocView.DataContext as DocumentViewModel;
+            //activateall selected docs
+            if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
+            {
+                var selected = SelectionManager.GetSelectedDocs();
+                if (selected.Count > 0)
+                {
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
+                        {
+                            ActivationManager.ActivateDoc(doc);
+                        }
+                    }
+
+                }
+            }
+
+            var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
 
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
@@ -807,11 +803,11 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true }, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.RemoveResizeHandlers();
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
@@ -844,20 +840,20 @@ namespace Dash
         {
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
-	        this.JavaScriptHack.Focus(FocusState.Programmatic);
-		        var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-		        var mapPt = e.GetPosition(mapViewCanvas);
+            this.JavaScriptHack.Focus(FocusState.Programmatic);
+            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+            var mapPt = e.GetPosition(mapViewCanvas);
 
-		        var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
-		        var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-		        var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-		        var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
-		        var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-		        mainFreeform?.SetTransformAnimated(
-			        new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
-			        new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-			
-         }
+            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+            var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
+            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
+            mainFreeform?.SetTransformAnimated(
+                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
+                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+
+        }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -883,7 +879,7 @@ namespace Dash
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
-        //    TogglePresentationMode(expand);
+            //    TogglePresentationMode(expand);
 
             if (expand)
             {
@@ -900,7 +896,7 @@ namespace Dash
                     xPresentationView.xSettingsIn.Completed += (sender, o) =>
                     {
                         var isChecked = xPresentationView.xShowLinesButton.IsChecked;
-                        if (isChecked != null && (bool) isChecked) xPresentationView.ShowLines();
+                        if (isChecked != null && (bool)isChecked) xPresentationView.ShowLines();
                     };
                 }
                 else
@@ -909,7 +905,7 @@ namespace Dash
                     xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
-                
+
             }
             else
             {
@@ -948,78 +944,78 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
-		
 
-	    public async Task<PushpinType> GetPushpinType()
-	    {
-		    var typePopup = new PushpinTypePopup();
-			SetUpPopup(typePopup);
 
-		    var mode = await typePopup.GetPushpinType();
-		    UnsetPopup();
+        public async Task<PushpinType> GetPushpinType()
+        {
+            var typePopup = new PushpinTypePopup();
+            SetUpPopup(typePopup);
 
-		    return mode;
-	    }
+            var mode = await typePopup.GetPushpinType();
+            UnsetPopup();
+
+            return mode;
+        }
 
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-	        var importPopup = new HTMLRTFPopup();
-			SetUpPopup(importPopup);
+            var importPopup = new HTMLRTFPopup();
+            SetUpPopup(importPopup);
 
-	        var mode = await importPopup.GetLayoutMode();
-	        UnsetPopup();
+            var mode = await importPopup.GetLayoutMode();
+            UnsetPopup();
 
-			return mode;
+            return mode;
         }
 
-	    public async Task<VideoWrapper> GetVideoFile()
-	    {
-		    var videoPopup = new ImportVideoPopup();
-		    SetUpPopup(videoPopup);
+        public async Task<VideoWrapper> GetVideoFile()
+        {
+            var videoPopup = new ImportVideoPopup();
+            SetUpPopup(videoPopup);
 
-		    var video = await videoPopup.GetVideoFile();
-			UnsetPopup();
+            var video = await videoPopup.GetVideoFile();
+            UnsetPopup();
 
-		    return video;
-	    }
+            return video;
+        }
 
-	    public async Task<StorageFile> GetImageFile()
-	    {
-		    var imagePopup = new ImportImagePopup();
-			SetUpPopup(imagePopup);
+        public async Task<StorageFile> GetImageFile()
+        {
+            var imagePopup = new ImportImagePopup();
+            SetUpPopup(imagePopup);
 
-		    var image = await imagePopup.GetImageFile();
-		    UnsetPopup();
+            var image = await imagePopup.GetImageFile();
+            UnsetPopup();
 
-		    return image;
-	    }
+            return image;
+        }
 
-		/// <summary>
-		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
-		/// </summary>
-		/// <param name="popup"></param>
-	    private void SetUpPopup(DashPopup popup)
-		{
-			ActivePopup = popup;
-			xOverlay.Visibility = Visibility.Visible;
-			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
-			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
-			Grid.SetColumn(popup.Self(), 2);
-			xOuterGrid.Children.Add(popup.Self());
-		}
+        /// <summary>
+        /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+        /// </summary>
+        /// <param name="popup"></param>
+        private void SetUpPopup(DashPopup popup)
+        {
+            ActivePopup = popup;
+            xOverlay.Visibility = Visibility.Visible;
+            popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+            popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+            Grid.SetColumn(popup.Self(), 2);
+            xOuterGrid.Children.Add(popup.Self());
+        }
 
-		/// <summary>
-		/// This method is called after a popup closes, to remove it from the page.
-		/// </summary>
-	    private void UnsetPopup()
-		{
-			xOverlay.Visibility = Visibility.Collapsed;
-			if (ActivePopup != null)
-		    {
-			    xOuterGrid.Children.Remove(ActivePopup.Self());
-			    ActivePopup = null;
-		    }
-	    }
+        /// <summary>
+        /// This method is called after a popup closes, to remove it from the page.
+        /// </summary>
+        private void UnsetPopup()
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+            if (ActivePopup != null)
+            {
+                xOuterGrid.Children.Remove(ActivePopup.Self());
+                ActivePopup = null;
+            }
+        }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {
@@ -1061,7 +1057,7 @@ namespace Dash
             docCopy.SetHeight(size?.Y ?? 200);
             var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 100, xCanvas.RenderSize.Height / 2 - 100);
             docCopy.SetPosition(position ?? defaultPt);
-            
+
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(docCopy),
@@ -1090,7 +1086,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            
+
             if (this.IsCtrlPressed() && !this.IsAltPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
@@ -1119,7 +1115,7 @@ namespace Dash
                     if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                         target.ToggleHidden();
                     else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
-                  
+
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
@@ -1174,7 +1170,7 @@ namespace Dash
                             //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
                             double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
                             double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
+                            double xrat = 500 / (double)(node.ViewDocument.GetActualSize()?.X);
                             col.SetField<PointController>(KeyStore.PanPositionKey,
                                 new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
 
@@ -1257,7 +1253,7 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
-        
+
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
@@ -1335,17 +1331,17 @@ namespace Dash
 
         private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.MakePdf_OnTapped(sender, e);
+            xMainTreeView.MakePdf_OnTapped(sender, e);
         }
 
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.TogglePresentationMode(sender, e);
+            xMainTreeView.TogglePresentationMode(sender, e);
         }
 
         private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.Snapshot_OnTapped(sender, e);
+            xMainTreeView.Snapshot_OnTapped(sender, e);
         }
 
 

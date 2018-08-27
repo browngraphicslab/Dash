@@ -52,13 +52,7 @@ namespace Dash
         public KeyModel KeyModel => Model as KeyModel;
         public KeyController(string name) : base(new KeyModel(name, GetId(name)))
         {
-            IsOnServer(delegate (bool onServer)
-            {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
+            SaveOnServer();
         }
 
         /// <summary>
@@ -68,13 +62,7 @@ namespace Dash
         /// <param name="guid"></param>
         public KeyController(string name, string guid) : base(new KeyModel(name, guid))
         {
-            IsOnServer(delegate (bool onServer)
-            {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
+            SaveOnServer();
             Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
             _nameDictionary[name] = guid;
         }
@@ -87,11 +75,6 @@ namespace Dash
         {
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
             _nameDictionary[model.Name] = model.Id;
-        }
-
-        public override void Init()
-        {
-
         }
 
         public override string ToString()
