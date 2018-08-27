@@ -76,7 +76,8 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection)
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection ||
+                this.GetFirstAncestorOfType<DocumentView>() == MainPage.Instance.MainDocView)
             {
                 //selected, so pan 
                 CurrentView.UserControl.ManipulationMode = ManipulationModes.All;

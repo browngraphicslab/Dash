@@ -720,7 +720,10 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
+                SelectionManager.DeselectAll();
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                docsToAdd.ForEach(d => d.SetHidden(false));
+
                 var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
                 if (!(sender as FrameworkElement).IsShiftPressed())
                 {

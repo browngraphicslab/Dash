@@ -515,7 +515,6 @@ namespace Dash
             {
                 //nothing was selected, drag collection as normal
                 SelectionManager.Select(this, false);
-                MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             }
 
             //var collectionParent = ParentCollection.GetFirstAncestorOfType<DocumentView>();
@@ -536,7 +535,6 @@ namespace Dash
                 Offset = args.GetPosition(this),
                 SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
             });
-            this.DropCompleted += DocumentView_DropCompleted;
 
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -575,9 +573,12 @@ namespace Dash
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 SoftwareBitmap sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
+                var c = additionalBp.GetPixel(40, 0);
                 var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
-                bp.BlitRender(additionalBp, false, 1F,
-                    new TranslateTransform {X = pos.X, Y = pos.Y});
+                bp.Blit(pos, additionalBp, new Rect(0, 0, additionalBp.PixelWidth, additionalBp.PixelHeight),
+                    Colors.White, WriteableBitmapExtensions.BlendMode.None);
+                //bp.BlitRender(additionalBp, false, 1F,
+                //    new TranslateTransform {X = pos.X, Y = pos.Y});
 
                 if (doc == this)
                 {
@@ -593,28 +594,17 @@ namespace Dash
                 .TransformBounds(new Rect(0, 0, ActualWidth, ActualHeight));
             Debug.WriteLine(re);
             var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
-                bp.PixelHeight);
+                bp.PixelHeight, BitmapAlphaMode.Premultiplied);
             args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
 
             if (!this.IsShiftPressed())
             {
                 foreach (var d in SelectionManager.GetSelectedDocs())
                 {
-                    d.Visibility = Visibility.Collapsed;
+                    d.ViewModel.DocumentController.SetHidden(true);
                 }
             }
             def.Complete();
-        }
-
-        private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            foreach (var d in SelectionManager.GetSelectedDocs())
-            {
-                if (d.ViewModel != null)
-                {
-                    d.Visibility = Visibility.Visible;
-                }
-            }
         }
 
         private async void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -626,6 +616,10 @@ namespace Dash
             }
             if (_pointerCapture != null)
             {
+                if (!SelectionManager.IsSelected(this))
+                {
+                    SelectionManager.Select(this, false);
+                }
                 await this.StartDragAsync(_pointerCapture.GetCurrentPoint(sender as FrameworkElement));
             }
         }
