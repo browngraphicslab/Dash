@@ -232,13 +232,65 @@ namespace Dash
         private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
         {
 
+            List<string> childList = new List<string>();
+            List<string> recentList = new List<string>();
+
+            foreach (var tag in _docdecs.XTagContainer.Children)
+            {
+                childList.Add((tag as Tag).Text);
+            }
+
+            foreach (var tag in _docdecs.RecentTags)
+            {
+                recentList.Add(tag.Text);
+            }
+
+            recentList.Reverse();
+
+
+            DeleteTag();
+            if (_docdecs.RecentTags.Contains(this))
+            {
+
+                var temp = new List<Tag>();
+                while (_docdecs.RecentTags.Any())
+                {
+                    var currtag = _docdecs.RecentTags.Dequeue();
+                    if (currtag.Text != Text)
+                    {
+                        temp.Add(currtag);
+                    }
+                    _docdecs.Tags.Remove(currtag);
+
+                }
+
+                temp.Reverse();
+
+                _docdecs.RecentTags.Clear();
+                foreach (var tag in temp)
+                {
+                    _docdecs.RecentTags.Enqueue(tag);
+                    _docdecs.Tags.Add(tag);
+                }
+
+                if (_docdecs.InLineTags.Any())
+                {
+                    _docdecs.XTagContainer.Children.Add(_docdecs.InLineTags.Pop());
+                }
+                
+            }
+
+        }
+
+        private void DeleteTag()
+        {
             if (_docdecs.Tags.Count > 1 && _docdecs.Tags.Contains(this))
             {
                 if (!this.Text.Equals("Annotation"))
                 {
-                    if (_docdecs.TagMap[Text] != null)
+                    if (_docdecs.TagMap.TryGetValue(Text, out var list))
                     {
-                        var newlinks = _docdecs.TagMap[Text];
+                        var newlinks = list;
                         _docdecs.TagMap.Remove(Text);
                         var oldlinks = _docdecs.TagMap["Annotation"];
                         oldlinks.AddRange(newlinks);
@@ -246,53 +298,14 @@ namespace Dash
                     }
 
                     _docdecs.Tags.Remove(this);
-                    //_docdecs.TagsSave.Remove(_docdecs.TagsSave.First(t => t.Title == Text));
+                    //_docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.Title == Text));
                     _docdecs._tagNameDict.Remove(Text);
 
-                    
+
 
                     _docdecs.XTagContainer.Children.Remove(this as UIElement);
                 }
             }
-
-            //if the tags in the list match the recent tags
-            //var temp = new List<Tag>();
-            //if (_docdecs.RecentTags.Count > 1)
-            //{
-            //    if (_docdecs.RecentTags.Contains(this))
-            //    {
-            //        while (_docdecs.RecentTags.Any())
-            //        {
-
-            //            var currtag = _docdecs.RecentTags.Dequeue();
-            //            if (currtag.Text != Text)
-            //            {
-            //                temp.Add(currtag);
-            //            }
-            //            _docdecs.Tags.Remove(currtag);
-                       
-            //        }
-            //    }
-
-            //    temp.Reverse();
-
-            //    _docdecs.RecentTags.Clear();
-            //    _docdecs.XTagContainer.Children.Clear();
-
-            //    foreach (var tag in temp)
-            //    {
-            //        _docdecs.RecentTags.Enqueue(tag);
-            //    }
-
-            //    foreach (var tag in _docdecs.RecentTags)
-            //    {
-            //        _docdecs.AddTag(tag.Text, _docdecs.TagMap[tag.Text]);
-            //    }
-            //}
-
-
-
-            
         }
     }
 }
