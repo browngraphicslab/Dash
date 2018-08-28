@@ -12,6 +12,7 @@
     PointerExited="DocumentDecorations_OnPointerExited"
     d:DesignHeight="300"
     d:DesignWidth="400">
+    
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -155,8 +156,8 @@
                     <ToggleSwitch x:Name="xInContext" Toggled="XInContext_OnToggled" HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0"></ToggleSwitch>
                 </StackPanel>
 
-                <Grid>
-                    <Button Tapped="DeleteButton_OnTapped">Delete Link</Button>
+                <Grid >
+                    <Button Tapped="DeleteButton_OnTapped" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="30" Margin="20" Background="{StaticResource DashDarkBlueBrush}" Foreground="White">Delete Link</Button>
                 </Grid>
             </StackPanel>
         </Grid>
