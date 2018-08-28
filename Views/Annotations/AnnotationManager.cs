@@ -49,7 +49,7 @@ namespace Dash
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (linkType == null || (link.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                if (linkType == null || (link.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else if (!MainPage.Instance.IsShiftPressed())
@@ -57,7 +57,7 @@ namespace Dash
                 if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
                         }
@@ -68,7 +68,7 @@ namespace Dash
                 if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
                         }
@@ -80,7 +80,7 @@ namespace Dash
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
 	                    {
 		                    var targetTitle = linkTo.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination)
 			                    .Title;
@@ -102,7 +102,7 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     {
 	                    var targetTitle = linkFrom.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)
 		                    .Title;
@@ -127,23 +127,75 @@ namespace Dash
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
-	        foreach (ILinkHandler linkHandler in linkHandlers)
+            //show link description floating doc if operator output is true
+	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
+	        if (linkOperator?.Data ?? false)
 	        {
-	            LinkHandledResult status = linkHandler.HandleLink(link, direction);
+	            MainPage.Instance.AddFloatingDoc(link);
+            }
 
-	            if (status == LinkHandledResult.HandledClose) break;
-	            if (status == LinkHandledResult.HandledRemainOpen)
-	            {
-	                void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
-	                {
-	                    args.Cancel = true;
-                        _linkFlyout.Closing -= LinkFlyoutOnClosing;
-	                }
+            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null)?.Data;
+            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
 
-                    _linkFlyout.Closing += LinkFlyoutOnClosing; 
-	            }
+            var document = link.GetLinkedDocument(direction);
+
+            switch (linkBehav)
+	        {
+                case "Z":
+                    //navigate to link
+                    if (linkContext)
+                    {
+                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        {
+                            var tree = DocumentTree.MainPageTree;
+                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            {
+                                var docNode = tree.Nodes[document];
+                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                            }
+                            else
+                            {
+                                MainPage.Instance.SetCurrentWorkspace(document);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MainPage.Instance.SetCurrentWorkspace(document);
+                    }
+
+                    break;
+                case "A":
+                    //default behavior of highlighting and toggling link visibility and docking when off screen
+                    foreach (ILinkHandler linkHandler in linkHandlers)
+                    {
+                        LinkHandledResult status = linkHandler.HandleLink(link, direction);
+
+                        if (status == LinkHandledResult.HandledClose) break;
+                        if (status == LinkHandledResult.HandledRemainOpen)
+                        {
+                            void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
+                            {
+                                args.Cancel = true;
+                                _linkFlyout.Closing -= LinkFlyoutOnClosing;
+                            }
+
+                            _linkFlyout.Closing += LinkFlyoutOnClosing;
+                        }
+                    }
+                    break;
+                case "D":
+                    MainPage.Instance.Dock_Link(link, direction, linkContext);
+                    break;
+                case "F":
+                    MainPage.Instance.AddFloatingDoc(document);
+                    break;
+                default:
+                    break;
+
 	        }
-	    }
+
+        }
 
 	    #region Old annotation stuff
 

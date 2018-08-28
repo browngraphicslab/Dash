@@ -200,6 +200,7 @@
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />

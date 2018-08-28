@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 
@@ -637,7 +638,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkTargetPlacement.Default);
+                                region.Link(sourceDoc, LinkTargetPlacement.Default, annotation:true);
 
                             }
                             else
