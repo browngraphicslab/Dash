@@ -122,6 +122,8 @@
                     <controls:WrapPanel x:Name="xTagContainer" HorizontalAlignment="Center" Margin="0 15 0 0" Padding="0"></controls:WrapPanel>
                 </Grid>
 
+                
+
                 <!--LINK BEHAVIOR-->
                 <Grid Margin="0 5 0 0">
                     <Grid.ColumnDefinitions>
@@ -152,6 +154,10 @@
                     </Grid>
                     <ToggleSwitch x:Name="xInContext" Toggled="XInContext_OnToggled" HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0"></ToggleSwitch>
                 </StackPanel>
+
+                <Grid>
+                    <Button Tapped="DeleteButton_OnTapped">Delete Link</Button>
+                </Grid>
             </StackPanel>
         </Grid>
     </Grid>

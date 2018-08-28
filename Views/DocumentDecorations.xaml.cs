@@ -42,6 +42,7 @@ namespace Dash
         private DocumentController currEditLink;
         public WrapPanel XTagContainer => xTagContainer;
         public StackPanel XButtonsPanel => xButtonsPanel;
+        private DocumentController _currentLink;
       
 
         private bool optionClick;
@@ -540,12 +541,12 @@ namespace Dash
                     //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
                     if (map.ContainsKey(str))
                     {
-                        if (!map[str].Contains(l.GetDataDocument()))
-                            map[str].Add(l.GetDataDocument());
+                        if (!map[str].Contains(l))
+                            map[str].Add(l);
                     }
                     else //create new list containing link doc
                     {
-                        map.Add(str, new List<DocumentController> { l.GetDataDocument() });
+                        map.Add(str, new List<DocumentController> { l });
                     }
               
                 //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
@@ -727,7 +728,11 @@ namespace Dash
                 {
                     foreach (var recent in _recentTags.Reverse())
                     {
-                        xTagContainer.Children.Add(recent);
+                        if (!xTagContainer.Children.Contains(recent))
+                        {
+                            xTagContainer.Children.Add(recent);
+                        }
+                        
                     }
                 }
                 else
@@ -852,6 +857,8 @@ namespace Dash
             //TODO: DO I NEED THIS?
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
+            
+
             //if one link has this tag, open tag editor for that link
             if (TagMap[currTag.Text].Count == 1)
             {
@@ -885,7 +892,7 @@ namespace Dash
 
                 foreach (DocumentController link in TagMap[currTag.Text])
                 {
-                    if (link.GetField<TextController>(KeyStore.LinkTagKey)?.Data.Equals(currTag.Text) ?? false)
+                    if (link.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data.Equals(currTag.Text) ?? false)
                     {
                         //get title of target
                         var targetTitle = link.GetLinkedDocument(LinkDirection.ToDestination)?
@@ -912,6 +919,8 @@ namespace Dash
                 //show flyout @ correct point
                 flyout.ShowAt(button);
             }
+
+            _currentLink = currEditLink;
 
             //select saved link options
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
@@ -995,6 +1004,19 @@ namespace Dash
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
-  
+        private void DeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var source = _currentLink.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+            var dest = _currentLink.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
+
+            var to = source.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkToKey);
+            var from = dest.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkFromKey);
+
+            to.Remove(_currentLink);
+            from.Remove(_currentLink);
+
+            xFadeAnimationOut.Begin();
+            CurrEditTag = null;
+        }
     }
 }
