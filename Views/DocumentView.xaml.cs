@@ -484,7 +484,7 @@ namespace Dash
         {
             if (!(sender is MenuFlyoutItem item)) return;
 
-            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
 
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
 
@@ -500,7 +500,7 @@ namespace Dash
 
         private void XMenuFlyout_OnOpening(object sender, object e)
         {
-            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
             xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
@@ -1511,7 +1511,11 @@ namespace Dash
                     DocumentController dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.ContainsKey(dragDoc.DocumentType))
                         dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dm.LinkSourceViews[index]);
-                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+
+                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var linkDoc = dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    MainPage.Instance.AddFloatingDoc(linkDoc);
+
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);

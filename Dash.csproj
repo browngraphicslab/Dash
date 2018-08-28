@@ -200,6 +200,7 @@
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
@@ -646,6 +647,9 @@
     </Compile>
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LinkButton.xaml.cs">
+      <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
@@ -1251,6 +1255,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\KeyValueScriptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LinkButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
