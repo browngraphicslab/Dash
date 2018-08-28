@@ -183,7 +183,6 @@ namespace Dash
                 lastWorkspace.SetHeight(double.NaN);
 
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
-                MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
@@ -812,7 +811,6 @@ namespace Dash
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xMapDocumentView.RemoveResizeHandlers();
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 

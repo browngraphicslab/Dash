@@ -96,6 +96,16 @@ namespace Dash
 
         public event EventHandler ResizeManipulationStarted;
         public event EventHandler ResizeManipulationCompleted;
+        public void SendResizeManipulationCompleted(object sender)
+        {
+            if (ResizeManipulationCompleted != null)
+                ResizeManipulationCompleted.Invoke(sender, null);
+        }
+        public void SendResizeManipulationStarted(object sender)
+        { 
+            if (ResizeManipulationStarted != null)
+                ResizeManipulationStarted.Invoke(sender, null);
+        }
 
         // == CONSTRUCTORs ==
 
@@ -189,7 +199,6 @@ namespace Dash
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
 
                 SetZLayer();
-                UpdateResizers();
             };
 
             Unloaded += (sender, args) =>
@@ -226,99 +235,7 @@ namespace Dash
             RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             Tapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
-
-            void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, true, true); }
-            void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, true); }
-            void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, true); }
-            void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, true); }
-            void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, false); }
-            void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, false); }
-            void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, false); }
-            // setup ResizeHandles
-            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-            {
-                if (this.IsRightBtnPressed())
-                    return;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
-                (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-
-                xTopLeftResizeControl.ManipulationDelta += ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta += ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta += ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta += ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta += ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta += ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta += ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta += ResizeBRunconstrained;
-                ResizeManipulationStarted?.Invoke(sender, null);
-                UndoManager.StartBatch();
-
-                MainPage.Instance.Focus(FocusState.Programmatic);
-                if (!this.IsRightBtnPressed()) // ignore right button drags
-                {
-                    e.Handled = true;
-                }
-            }
-
-            void ResizeHandles_restorePointerTracking()
-            {
-                if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                    StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                    ViewModel.DecorationState = xBottomRightResizeControl.IsPointerOver();
-
-            };
-
-            void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-            {
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
-                ResizeHandles_restorePointerTracking();
-                e.Handled = true;
-
-                UndoManager.EndBatch();
-
-                ResizeManipulationCompleted?.Invoke(sender, null);
-            }
-
-            foreach (var handle in new Rectangle[]
-            {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
-                handle.Tag = handle.ManipulationMode;
-                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.PointerReleased += (s, e) => { handle.ReleasePointerCapture(e.Pointer); ResizeHandles_restorePointerTracking(); e.Handled = true; };
-                handle.PointerPressed += (s, e) =>
-                {
-                    ManipulationMode = ManipulationModes.None;
-                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                    if (e.Handled)
-                    {
-                        handle.CapturePointer(e.Pointer);
-                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
-                    }
-                    else
-                        handle.ManipulationMode = ManipulationModes.All;
-                };
-            }
+            
 
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
@@ -587,26 +504,6 @@ namespace Dash
             await cdo.StartAsync();
         }
 
-        public void RemoveResizeHandlers()
-        {
-            foreach (var handle in new Rectangle[]
-            {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
-                handle.Visibility = Visibility.Collapsed;
-            }
-
-            xLeftColumn.Width = new GridLength(0);
-            xRightColumn.Width = new GridLength(0);
-            xTopRow.Height = new GridLength(0);
-            xBottomRow.Height = new GridLength(0);
-            ViewModel.DecorationState = false;
-            ViewModel.ResizersVisible = false;
-        }
-
         public void ToggleTemplateEditor()
         {
             if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
@@ -869,19 +766,6 @@ namespace Dash
         {
             var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
             if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
-
-            if (this == MainPage.Instance.MainDocView)
-            {
-                view.SetBorderThickness(0);
-                foreach (var handle in new Rectangle[] {
-                    xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                    xLeftResizeControl, xRightResizeControl,
-                    xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
-                    })
-                {
-                    handle.Visibility = Visibility.Collapsed;
-                }
-            }
         }
 
         /// <summary>
@@ -904,10 +788,6 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-            if (this.IsRightBtnPressed())
-            {
-                return;
-            }
             e.Handled = true;
             if (PreventManipulation)
             {
@@ -922,10 +802,6 @@ namespace Dash
             {
                 extraOffsetX = ActualWidth - Width;
             }
-            else
-            {
-                extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
-            }
 
 
             double extraOffsetY = 0;
@@ -934,15 +810,11 @@ namespace Dash
             {
                 extraOffsetY = ActualHeight - Height;
             }
-            else
-            {
-                extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
-            }
 
 
-            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
             //problem is that cumulativeDelta.Y is 0
-            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, this);
 
             //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
             //{
@@ -1231,39 +1103,6 @@ namespace Dash
         private void ColorSelectionBorder(Color color)
         {
             var brush = new SolidColorBrush(color);
-
-            xTopLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xTopResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xTopRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-
-            xTopLeftResizeControl.Fill = brush;
-            xTopResizeControl.Fill = brush;
-            xTopRightResizeControl.Fill = brush;
-            xBottomLeftResizeControl.Fill = brush;
-            xBottomResizeControl.Fill = brush;
-            xBottomRightResizeControl.Fill = brush;
-            xRightResizeControl.Fill = brush;
-            xLeftResizeControl.Fill = brush;
-        }
-
-        public void hideResizers()
-        {
-            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
-            xTopRightResizeControl.Visibility = Visibility.Collapsed;
-            xTopResizeControl.Visibility = Visibility.Collapsed;
-
-            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
-            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
-            xBottomResizeControl.Visibility = Visibility.Collapsed;
-
-            xRightResizeControl.Visibility = Visibility.Collapsed;
-            xLeftResizeControl.Visibility = Visibility.Collapsed;
-            xTargetBorder.Margin = new Thickness(0);
         }
 
         #endregion
@@ -1290,7 +1129,7 @@ namespace Dash
             MainPage.Instance.xPresentationView.TryHighlightMatches(this);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
-            if (!ViewModel.IsAdornmentGroup)
+            if (ViewModel?.IsAdornmentGroup == false)
             {
                 ToFront();
             }
@@ -1509,8 +1348,8 @@ namespace Dash
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
                     DocumentController dragDoc = dragDocs[index];
-                    if (KeyStore.RegionCreator.ContainsKey(dragDoc.DocumentType))
-                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dm.LinkSourceViews[index]);
+                    if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                        dragDoc = creatorFunc(dm.LinkSourceViews[index]);
                     dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
@@ -1658,21 +1497,7 @@ namespace Dash
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
-
-
-        public void UpdateResizers()
-        {
-            var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
-
-            if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
-                newpoint = new Point();
-
-            xBottomRow.Height = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xTopRow.Height = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-        }
-
+        
         private void AdjustEllipseSize(Ellipse ellipse, double length)
         {
             ellipse.Width = length;

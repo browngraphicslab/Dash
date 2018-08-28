@@ -19,15 +19,16 @@ using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
+using Windows.UI.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-
-
     public sealed partial class DocumentDecorations : UserControl, INotifyPropertyChanged
     {
+        static PointerPoint _pointerPointHack; // capture a pointerPoint so that we can call StartDrag from a right-drag manipulationStarted event
+        private Visibility _resizerVisibilityState = Visibility.Collapsed;
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
         private bool _isMoving;
@@ -52,13 +53,21 @@ namespace Dash
                 }
             }
         }
+        public Visibility ResizerVisibilityState
+        {
+            get => _resizerVisibilityState;
+            set
+            {
+                _resizerVisibilityState = value;
+                OnPropertyChanged(nameof(ResizerVisibilityState));
+            }
+        }
 
         public double DocWidth
         {
             get => _docWidth;
             set => _docWidth = value;
         }
-
 
         public Queue<Tag> RecentTags
         {
@@ -104,7 +113,7 @@ namespace Dash
                 _visibilityLock = false;
                 foreach (var doc in value)
                 {
-                    if (doc.ViewModel.Undecorated)
+                    if (doc.ViewModel?.Undecorated == true)
                     {
                         _visibilityLock = true;
                         VisibilityState = Visibility.Collapsed;
@@ -115,7 +124,7 @@ namespace Dash
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey,
                         DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
-                    if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) &&
+                    if (doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) == true &&
                         doc.GetFirstDescendantOfType<RichTextView>() != null)
                     {
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
@@ -144,6 +153,7 @@ namespace Dash
             if (!_isMoving)
             {
                 VisibilityState = Visibility.Visible;
+                ResizerVisibilityState = Visibility.Visible;
             }
         }
 
@@ -170,9 +180,9 @@ namespace Dash
         private void ManipulatorStarted()
         {
             VisibilityState = Visibility.Collapsed;
+            ResizerVisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = VisibilityState;
             _isMoving = true;
-
         }
 
         private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -198,8 +208,58 @@ namespace Dash
             _recentTags = new Queue<Tag>();
             Loaded += DocumentDecorations_Loaded;
             Unloaded += DocumentDecorations_Unloaded;
-        }
+            // setup ResizeHandles
+            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+            {
+                if (this.IsRightBtnPressed())
+                {
+                    _selectedDocs.ForEach((dv) =>
+                        dv.StartDragAsync(_pointerPointHack));
+                }
+                else
+                {
+                    (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
+                    (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
 
+                    _selectedDocs.ForEach((dv) => dv.SendResizeManipulationStarted(sender));
+                    UndoManager.StartBatch();
+
+                    MainPage.Instance.Focus(FocusState.Programmatic);
+                    e.Handled = true;
+                }
+            }
+
+            void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+            {
+                _selectedDocs.ForEach((dv) => dv.SendResizeManipulationCompleted(sender));
+                UndoManager.EndBatch();
+                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
+                e.Handled = true;
+            }
+
+            foreach (var handle in new Rectangle[] {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
+            {
+                handle.Tag = handle.ManipulationMode;
+                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+                handle.PointerReleased += (s, e) => { handle.ReleasePointerCapture(e.Pointer); e.Handled = true; };
+                handle.PointerPressed += (s, e) =>
+                {
+                    _pointerPointHack = e.GetCurrentPoint(MainPage.Instance);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                    if (e.Handled)
+                    {
+                        handle.CapturePointer(e.Pointer);
+                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
+                    }
+                    else
+                        handle.ManipulationMode = ManipulationModes.All;
+                };
+            }
+        }
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
@@ -268,7 +328,7 @@ namespace Dash
 
         static HashSet<string> LinkNames = new HashSet<string>();
 
-        private void SetPositionAndSize()
+        public void SetPositionAndSize()
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
@@ -278,11 +338,11 @@ namespace Dash
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
                     .TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
-                topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
-                topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTargetBorder.BorderThickness.Top, topLeft.Y);
+                topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
+                topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
 
-                botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
-                botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
+                botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
+                botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
 
                 if (doc.ViewModel != null)
                 {
@@ -292,6 +352,9 @@ namespace Dash
                 }
             }
 
+            var br = Util.PointTransformFromVisual(SelectedDocs.FirstOrDefault()?.ViewModel?.DocumentController.GetActualSize() ?? new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
+            var tl = Util.PointTransformFromVisual(new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null || br.X - tl.X < 50 ? Visibility.Collapsed : Visibility.Visible;
 
             rebuildMenuIfNeeded();
 
@@ -308,17 +371,17 @@ namespace Dash
             {
                 return;
             }
-
-            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+            
+            if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X - 3,
+                X = topLeft.X,
                 Y = topLeft.Y
             };
 
-            ContentColumn.Width = new GridLength(botRight.X - topLeft.X);
-            xRow.Height = new GridLength(botRight.Y - topLeft.Y);
+            ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
+            ContentRow.Height = new GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
@@ -631,7 +694,8 @@ namespace Dash
                 SuggestGrid.Visibility = Visibility.Collapsed;
             }
 
-            MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
+            if (doc.ViewModel != null)
+                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
             if (MainPage.Instance.MainDocView != doc)
             {
                 var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
@@ -648,8 +712,9 @@ namespace Dash
             foreach (var doc in SelectedDocs)
             {
                 var ann = new AnnotationManager(doc);
-                ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
-                    e.GetPosition(doc));
+                if (doc.ViewModel != null)
+                    ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
+                        e.GetPosition(doc));
             }
         }
 
@@ -728,7 +793,8 @@ namespace Dash
 
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            VisibilityState = Visibility.Collapsed;
+            if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+                VisibilityState = Visibility.Collapsed;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -937,5 +1003,12 @@ namespace Dash
 
         }
 
+        void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, true, true)); }
+        void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, true)); }
+        void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, true)); }
+        void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, true)); }
+        void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
+        void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
+        void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
     }
 }
