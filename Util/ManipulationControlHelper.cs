@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -59,13 +60,14 @@ namespace Dash
             //    _eventElement.CapturePointer(pointer.Pointer);
         }
 
+        private bool _pointerPressed = false;
 
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (e.IsRightPressed()) _pointerPressed = true;
             _numMovements = 0;
             var pointerPosition = GetPointerPosition();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-            _manipulationDocumentTarget.StartManipulation(e);
             //_manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
             if (_useCache) _eventElement.CacheMode = null;
         }
@@ -78,6 +80,15 @@ namespace Dash
         /// <param name="e"></param>
         public void PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            if (_pointerPressed && e.IsRightPressed() && e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
+            {
+                _pointerPressed = false;
+                _manipulationDocumentTarget.StartManipulation(e);
+            }
+            else if (e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
+            {
+                _pointerPressed = false;
+            }
             //if (e?.Pointer != null)
             //    _eventElement.CapturePointer(e.Pointer);
             //_numMovements++;
@@ -113,6 +124,7 @@ namespace Dash
 
         public void PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            _pointerPressed = false;
             //if (_eventElement != null)
             //{
             //    if (e != null)
@@ -124,7 +136,7 @@ namespace Dash
             //    n.ManipulationMode = ManipulationModes.All;
             //if (_collection != null)
             //    _collection.CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
-            
+
             //var pointerPosition = GetPointerPosition();
 
             //var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);

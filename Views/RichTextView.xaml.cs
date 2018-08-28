@@ -45,6 +45,7 @@ namespace Dash
 
         private Dictionary<ITextSelection, DocumentController> _selectionDocControllers = new Dictionary<ITextSelection, DocumentController>();
         private bool _everFocused;
+        private ManipulationControlHelper _manipulator;
         private AnnotationManager _annotationManager;
         private string _target;
         public Action OnManipulatorHelperStarted;
@@ -66,7 +67,7 @@ namespace Dash
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                 {
                     OnManipulatorHelperStarted?.Invoke();
-                    new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                    _manipulator = new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 }
                 else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
@@ -74,6 +75,16 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) =>
+            {
+                _manipulator?.PointerMoved(s, e);
+            }), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) =>
+                {
+                    _manipulator.PointerReleased(s, e);
+                    _manipulator = null;
+                }),
+                true);
 
 
             xSearchDelete.Click += (s, e) =>
