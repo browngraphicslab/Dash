@@ -252,6 +252,7 @@ namespace Dash
             if (_docdecs.RecentTags.Contains(this))
             {
 
+                _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
                 var temp = new List<Tag>();
                 while (_docdecs.RecentTags.Any())
                 {
@@ -261,21 +262,52 @@ namespace Dash
                         temp.Add(currtag);
                     }
                     _docdecs.Tags.Remove(currtag);
+                    
+
 
                 }
-
-                temp.Reverse();
 
                 _docdecs.RecentTags.Clear();
                 foreach (var tag in temp)
                 {
                     _docdecs.RecentTags.Enqueue(tag);
                     _docdecs.Tags.Add(tag);
+                    _docdecs.RecentTags.Enqueue(tag);
+                    _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == tag.Text));
                 }
 
                 if (_docdecs.InLineTags.Any())
                 {
-                    _docdecs.XTagContainer.Children.Add(_docdecs.InLineTags.Pop());
+                    var pop = _docdecs.InLineTags.Pop();
+
+                    _docdecs.RecentTags.Enqueue(pop);
+                    var doc = new DocumentController();
+                    doc.SetField<TextController>(KeyStore.DataKey, pop.Text, true);
+                    doc.SetField<ColorController>(KeyStore.BackgroundColorKey, pop.Color, true);
+
+                    _docdecs.RecentTagsSave.Add(doc);
+
+                    var tags = new List<Tag>();
+                    foreach (var tag in _docdecs.XTagContainer.Children)
+                    {
+                        tags.Add((tag as Tag));
+                    }
+                    _docdecs.XTagContainer.Children.Clear();
+                    _docdecs.XTagContainer.Children.Add(pop);
+                    foreach (var tag in tags)
+                    {
+                        _docdecs.XTagContainer.Children.Add(tag);
+                    }
+                }
+
+                temp.Reverse();
+
+                foreach (var tag in temp)
+                {
+                    var doc = new DocumentController();
+                    doc.SetField<TextController>(KeyStore.DataKey, tag.Text, true);
+                    doc.SetField<ColorController>(KeyStore.BackgroundColorKey, tag.Color, true);
+                    _docdecs.RecentTagsSave.Add(doc);
                 }
                 
             }
@@ -298,7 +330,7 @@ namespace Dash
                     }
 
                     _docdecs.Tags.Remove(this);
-                    //_docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.Title == Text));
+                    _docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
                     _docdecs._tagNameDict.Remove(Text);
 
 
