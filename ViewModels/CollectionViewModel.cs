@@ -697,10 +697,13 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
+                var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
-                    ? DataPackageOperation.Move
-                    : e.DataView.RequestedOperation;
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
+                    ? DataPackageOperation.Move :
+                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ? 
+                        DataPackageOperation.Copy 
+                        : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
 
@@ -740,7 +743,7 @@ namespace Dash
                     }
                 }
                 AddDocuments(docsToAdd);
-                e.DataView.ReportOperationCompleted(DataPackageOperation.Move);
+                e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
 
