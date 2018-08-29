@@ -88,9 +88,11 @@ namespace Dash
         /// </summary>
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            if (to == null) to = Window.Current.Content;
-            if(from != null) return @from.TransformToVisual(to).TransformPoint(p);
-            return p;
+            if (to == null)
+                to = Window.Current.Content;
+            if (from == null)
+                from = Window.Current.Content;
+            return @from.TransformToVisual(to).TransformPoint(p);
         }
 
         /// <summary>

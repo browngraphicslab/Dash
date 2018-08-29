@@ -115,7 +115,7 @@ namespace Dash
 			if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
 			{
 				var storedPath = settingsView.CustomImagePath;
-				if (storedPath != null) _background = storedPath;
+				if (storedPath != null) _background = storedPath; 
 			}
 			else
 			{
@@ -127,7 +127,7 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.RemoveFromVisualTree();
+            _backgroundCanvas?.RemoveFromVisualTree();
             GetBackgroundContentPresenter().Content = null;
             _backgroundCanvas = null;
             if (_lastViewModel != null)
@@ -199,7 +199,7 @@ namespace Dash
 			{
 				return;
 			}
-			_transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
+			_transformBeingAnimated = new MatrixTransform()  { Matrix = (Matrix)old };
 
 			Debug.Assert(_transformBeingAnimated != null);
 			var milliseconds = 1000;
@@ -369,6 +369,7 @@ namespace Dash
 			composite.Children.Add(scaleDelta); // add the new scaling
 			var matrix = composite.Value;
 			ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
 		}
 
 		#endregion

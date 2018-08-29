@@ -108,8 +108,8 @@ namespace Dash
         {
             if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                 var realPar = cview?.CurrentView.UserControl;
-                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                var realPar = cview?.CurrentView?.UserControl;
+                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
                 
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
@@ -696,7 +696,6 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                SelectionManager.GetSelectedDocs().ForEach(i => i.IsDragging = false);
                 e.Handled = true;
                 // accept move, then copy, and finally accept whatever they requested (for now)
                 e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
@@ -720,7 +719,7 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
-                SelectionManager.DeselectAll();
+                //SelectionManager.DeselectAll();
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                 docsToAdd.ForEach(d => d.SetHidden(false));
 

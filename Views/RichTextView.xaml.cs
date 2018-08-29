@@ -75,16 +75,12 @@ namespace Dash
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
-            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) =>
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => _manipulator?.PointerMoved(s,e)), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler((s,e) =>
             {
-                _manipulator?.PointerMoved(s, e);
+                _manipulator?.PointerReleased(s, e);
+                _manipulator = null;
             }), true);
-            AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) =>
-                {
-                    _manipulator?.PointerReleased(s, e);
-                    _manipulator = null;
-                }),
-                true);
 
 
             xSearchDelete.Click += (s, e) =>
@@ -622,8 +618,6 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
             {
-                documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
-                documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
                 this.xRichEditBox.Document.Selection.FindText(HyperlinkText, this.getRtfText().Length, FindOptions.Case);
                 if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
                 {
@@ -678,7 +672,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.Link = link;
                 }
                 else
-                    return theDoc;
+                    return theDoc  ?? LayoutDocument;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)

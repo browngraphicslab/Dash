@@ -89,8 +89,8 @@ namespace Dash
             var currP = e.GetCurrentPoint(Window.Current.Content).Position;
             if (_pointerPressed && e.IsRightPressed() && e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
             {
+                SelectionManager.StartManipulation(_manipulationDocumentTarget, e.GetCurrentPoint(_manipulationDocumentTarget), null);
                 _pointerPressed = false;
-                _manipulationDocumentTarget.StartManipulation(e);
                 Debug.WriteLine("X-Offset: " + Math.Abs(currP.X - _origP.X));
                 Debug.WriteLine("Y-Offset: " + Math.Abs(currP.Y - _origP.Y));
             }

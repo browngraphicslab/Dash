@@ -95,11 +95,6 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
-
-                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
-                {
-                    view.UpdateResizers();
-                }
             }
         }
 

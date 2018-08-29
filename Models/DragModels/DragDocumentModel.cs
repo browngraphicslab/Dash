@@ -80,7 +80,7 @@ namespace Dash
         public override List<DocumentController> GetDropDocuments(Point where, bool forceShowViewCopy = false)
         {
             // For each dragged document...
-            List<DocumentController> docs = new List<DocumentController>();
+            var docs = new List<DocumentController>();
 
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             // ...if CTRL pressed, create a key value pane

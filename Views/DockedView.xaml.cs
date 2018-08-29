@@ -64,7 +64,6 @@ namespace Dash
 	        xContentGrid.Children.Clear();
             view.Loaded += View_Loaded;
             xContentGrid.Children.Add(view);
-            view.RemoveResizeHandlers();
 			//re-add close button
 			xMainDockedView.Children.Add(xCloseButton);
 

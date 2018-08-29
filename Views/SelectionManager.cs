@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Casting;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 
@@ -31,7 +32,6 @@ namespace Dash
     public static class SelectionManager
     {
         private static IList<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
-
 
         public static IList<DocumentView> GetSelectedDocs()
         {
@@ -200,6 +200,17 @@ namespace Dash
                 return;
             }
             SelectionChanged?.Invoke(args);
+        }
+
+        public static async void StartManipulation(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
+        {
+            if (e != null)
+            {
+                e.Handled = true;
+                e.Complete();
+            }
+            if (p != null)
+                await draggedDoc.StartDragAsync(p);
         }
     }
 }
