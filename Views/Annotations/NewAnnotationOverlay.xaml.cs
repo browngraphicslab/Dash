@@ -665,25 +665,43 @@ namespace Dash
         public async void OnDrop(object sender, DragEventArgs e)
         {
             var where = e.GetPosition(XAnnotationCanvas);
-            if (this.IsShiftPressed() && e.DataView.HasDataOfType(Internal))
+            if (e.DataView.HasDataOfType(Internal))
             {
-                var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
-
-                foreach (DocumentController doc in targets)
+                if (!this.IsShiftPressed())
                 {
-                    doc.SetBackgroundColor(Colors.White);
-                    if (!doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
-                    {
-                        if (doc.GetActualSize()?.X > 200)
+                    var dragLayoutDoc = e.DataView.GetDragModels().OfType<DragDocumentModel>().SelectMany((dm) => dm.DraggedDocuments).FirstOrDefault();
+                    foreach (var rdoc in RegionDocsList.Where((rd) => rd.GetAnnotationType() == AnnotationType.Pin))
+                        if (dragLayoutDoc.GetDataDocument().Equals(rdoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).FirstOrDefault().GetDataDocument().
+                                  GetLinkedDocument((LinkDirection.ToDestination)).GetDataDocument()))
                         {
-                            double ratio = doc.GetHeight() / doc.GetWidth();
-                            doc.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
-                            doc.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
+                            dragLayoutDoc.SetPosition(e.GetPosition(this));
+                            e.AcceptedOperation = DataPackageOperation.None;
+                            e.Handled = true;
                         }
-                    }
-                    CreatePin(where, doc);
                 }
-                e.Handled = true;
+                else
+                {
+                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
+
+                    foreach (var doc in targets)
+                    {
+                        doc.SetBackgroundColor(Colors.White);
+                        if (!doc.DocumentType.Equals(RichTextBox.DocumentType) &&
+                            !doc.DocumentType.Equals(TextingBox.DocumentType))
+                        {
+                            if (doc.GetActualSize()?.X > 200)
+                            {
+                                double ratio = doc.GetHeight() / doc.GetWidth();
+                                doc.SetWidth(200);
+                                doc.SetHeight(200 * ratio);
+                            }
+                        }
+
+                        CreatePin(where, doc);
+                    }
+
+                    e.Handled = true;
+                }
             }
             // if we drag from the file system
             if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
