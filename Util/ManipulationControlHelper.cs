@@ -52,8 +52,6 @@ namespace Dash
 			
             //if (_manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, pointer);
-
-            _manipulationDocumentTarget.PointerId = (pointer?.Pointer is Pointer pt) ? pt.PointerId : 1;
             
             //_eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
             //_eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
@@ -86,10 +84,11 @@ namespace Dash
         /// <param name="e"></param>
         public void PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var currP = e.GetCurrentPoint(Window.Current.Content).Position;
-            if (_pointerPressed && e.IsRightPressed() && e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
+            _numMovements++;
+               var currP = e.GetCurrentPoint(Window.Current.Content).Position;
+            if (_pointerPressed && e.IsRightPressed() && e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other && _numMovements > 2)
             {
-                SelectionManager.StartManipulation(_manipulationDocumentTarget, e.GetCurrentPoint(_manipulationDocumentTarget), null);
+                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e.GetCurrentPoint(_manipulationDocumentTarget), null);
                 _pointerPressed = false;
                 Debug.WriteLine("X-Offset: " + Math.Abs(currP.X - _origP.X));
                 Debug.WriteLine("Y-Offset: " + Math.Abs(currP.Y - _origP.Y));

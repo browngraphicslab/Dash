@@ -31,7 +31,6 @@ namespace Dash
         private Visibility _resizerVisibilityState = Visibility.Collapsed;
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
-        private bool _isMoving;
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         public Tag CurrEditTag;
         private DocumentController currEditLink;
@@ -95,13 +94,6 @@ namespace Dash
                     doc.ViewModel?.DocumentController.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey,
                         DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged -= DocView_OnSizeChanged;
-                    if ((doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) ?? false) &&
-                        doc.GetFirstDescendantOfType<RichTextView>() != null)
-                    {
-                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted -= ManipulatorStarted;
-                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted -=
-                            ManipulatorCompleted;
-                    }
                     doc.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -119,13 +111,6 @@ namespace Dash
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey,
                         DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
-                    if (doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) == true &&
-                        doc.GetFirstDescendantOfType<RichTextView>() != null)
-                    {
-                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
-                        doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperCompleted +=
-                            OnManipulatorHelperCompleted;
-                    }
                     doc.FadeOutBegin += DocView_OnDeleted;
                 }
 
@@ -133,46 +118,10 @@ namespace Dash
             }
         }
 
-        private void ManipulationControls_OnManipulatorAborted()
-        {
-            VisibilityState = Visibility.Collapsed;
-        }
-
-        private void OnManipulatorHelperCompleted()
-        {
-            if (!_isMoving)
-            {
-                VisibilityState = Visibility.Visible;
-                ResizerVisibilityState = Visibility.Visible;
-            }
-        }
-
-        private void ManipulatorMoving(TransformGroupData transformationDelta)
-        {
-            if (!_isMoving)
-            {
-                _isMoving = true;
-            }
-        }
-
         private void DocView_OnDeleted()
         {
             VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
-        }
-
-        private void ManipulatorCompleted()
-        {
-            VisibilityState = Visibility.Visible;
-            _isMoving = false;
-        }
-
-        private void ManipulatorStarted()
-        {
-            VisibilityState = Visibility.Collapsed;
-            ResizerVisibilityState = Visibility.Collapsed;
-            SuggestGrid.Visibility = VisibilityState;
-            _isMoving = true;
         }
 
         private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -203,7 +152,7 @@ namespace Dash
             {
                 if (this.IsRightBtnPressed())
                 {
-                    SelectionManager.StartManipulation(_selectedDocs.First(), _pointerPointHack, null);
+                    SelectionManager.InitiateDragDrop(_selectedDocs.First(), _pointerPointHack, null);
                 }
                 else
                 {
@@ -249,8 +198,8 @@ namespace Dash
                         handle.ManipulationMode = ManipulationModes.All;
                 };
             }
-            DocumentView.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;     
-            DocumentView.DragManipulationCompleted += (s,e) => 
+            SelectionManager.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;
+            SelectionManager.DragManipulationCompleted += (s,e) => 
                  ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
         }
 

@@ -17,7 +17,6 @@ namespace Dash
     public sealed partial class InkCanvasControl
     {
         public InkController InkFieldModelController;
-        private ManipulationControls _controls;
         Symbol SelectIcon = (Symbol)0xEF20;
 
         public Grid Grid => XGrid;

@@ -1,14 +1,32 @@
-﻿using System;
+﻿using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Media.Casting;
-using Windows.UI.Input;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.System;
+using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
+using Dash.Converters;
+using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.Graphics.Display;
+using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
+using Windows.UI.Input;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace Dash
 {
@@ -31,6 +49,11 @@ namespace Dash
 
     public static class SelectionManager
     {
+
+        private static List<DocumentController> _dragDocs;
+        public  static event EventHandler DragManipulationStarted;
+        public  static event EventHandler DragManipulationCompleted;
+
         private static IList<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
 
         public static IList<DocumentView> GetSelectedDocs()
@@ -193,7 +216,7 @@ namespace Dash
             return new List<DocumentView>(new[] { view });
         }
 
-        private static void OnSelectionChanged(DocumentSelectionChangedEventArgs args)
+        static void OnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             if (args.DeselectedViews.Count == 0 && args.SelectedViews.Count == 0)
             {
@@ -202,7 +225,8 @@ namespace Dash
             SelectionChanged?.Invoke(args);
         }
 
-        public static async void StartManipulation(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
+        #region Drag Manipulation Methods
+        public static async void InitiateDragDrop(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null)
             {
@@ -212,5 +236,99 @@ namespace Dash
             if (p != null)
                 await draggedDoc.StartDragAsync(p);
         }
+
+        public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
+        {
+            if (args.DropResult == DataPackageOperation.None)
+                _dragDocs?.ForEach(d => d.SetHidden(false));
+            _dragDocs = null;
+            DragManipulationCompleted?.Invoke(sender, null);
+        }
+        public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
+        {
+            DragManipulationStarted?.Invoke(sender, null);
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
+            docView.ToFront();
+
+            var dragSelectionViews = SelectionManager.GetSelectedDocs().Contains(docView) ? SelectionManager.GetSelectedDocs() : new List<DocumentView>(new DocumentView[] { docView });
+            _dragDocs = dragSelectionViews.Select(dv => dv.ViewModel.DocumentController).ToList();
+            double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+
+            var rawOffsets = dragSelectionViews.Select(args.GetPosition);
+            var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
+
+            args.Data.AddDragModel(new DragDocumentModel(_dragDocs, true, off: offsets.ToList())
+            {
+                Offset = args.GetPosition(docView),
+                SourceCollectionViews = dragSelectionViews.Select(dv => dv.ParentCollection).ToList()
+            });
+
+            args.AllowedOperations =
+                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+
+            //combine all selected docs into an image to display on drag
+            //use size of each doc to get size of combined image
+            var tl = new Point(double.PositiveInfinity, double.PositiveInfinity);
+            var br = new Point(double.NegativeInfinity, double.NegativeInfinity);
+            foreach (var doc in dragSelectionViews)
+            {
+                var bounds = new Rect(0, 0, doc.ActualWidth, doc.ActualHeight);
+                bounds = doc.TransformToVisual(Window.Current.Content).TransformBounds(bounds);
+                tl.X = Math.Min(tl.X, bounds.Left * scaling);
+                tl.Y = Math.Min(tl.Y, bounds.Top * scaling);
+                br.X = Math.Max(br.X, bounds.Right * scaling);
+                br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
+            }
+
+            var width = (br.X - tl.X);
+            var height = (br.Y - tl.Y);
+            var s1 = new Point(width, height);
+
+            var bp = new WriteableBitmap((int)s1.X, (int)s1.Y);
+            var thisOffset = new Point();
+
+            var def = args.GetDeferral();
+            foreach (var doc in dragSelectionViews)
+            {
+                var rtb = new RenderTargetBitmap();
+                var s = new Point(Math.Floor(doc.ActualWidth), Math.Floor(doc.ActualHeight));
+                var transformToVisual = doc.TransformToVisual(Window.Current.Content);
+                var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
+                s = new Point(rect.Width, rect.Height);
+                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
+                var buf = await rtb.GetPixelsAsync();
+                var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+                var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+                sb.CopyToBuffer(additionalBp.PixelBuffer);
+                var c = additionalBp.GetPixel(40, 0);
+                var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
+                bp.Blit(pos, additionalBp, new Rect(0, 0, additionalBp.PixelWidth, additionalBp.PixelHeight),
+                    Colors.White, WriteableBitmapExtensions.BlendMode.None);
+                //bp.BlitRender(additionalBp, false, 1F,
+                //    new TranslateTransform {X = pos.X, Y = pos.Y});
+
+                if (doc == docView)
+                {
+                    thisOffset.X = rect.X - tl.X / scaling;
+                    thisOffset.Y = rect.Y - tl.Y / scaling;
+                }
+            }
+
+            var p = args.GetPosition(Window.Current.Content);
+            p.X = p.X - tl.X / scaling + thisOffset.X;
+            p.Y = p.Y - tl.Y / scaling + thisOffset.Y;
+            var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
+                bp.PixelHeight, BitmapAlphaMode.Premultiplied);
+            args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
+
+            if (!docView.IsShiftPressed())
+            {
+                dragSelectionViews.ForEach((dv) => dv.ViewModel.DocumentController.SetHidden(true));
+            }
+            def.Complete();
+        }
+
+        #endregion
     }
 }

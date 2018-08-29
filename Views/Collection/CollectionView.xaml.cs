@@ -109,8 +109,6 @@ namespace Dash
                 return;
             }
 
-            ParentDocumentView.StyleCollection(this);
-
             #region CollectionView context menu 
 
             /// <summary>

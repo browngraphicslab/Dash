@@ -820,7 +820,6 @@
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
-    <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />

@@ -587,5 +587,34 @@ namespace Dash
             var aMagSq = Math.Pow(a.X, 2) + Math.Pow(a.Y, 2);
             return new Point(a.X * dotProduct / aMagSq, a.Y * dotProduct / aMagSq);
         }
+        /// <summary>
+        ///  clamps a point to lie within a rectangle
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public static Point Clamp(Point point, Rect rect)
+        {
+            if (point.X < rect.Left)
+            {
+                point.X = rect.Left;
+            }
+            else if (point.X > rect.Right)
+            {
+                point.X = rect.Right;
+            }
+
+            if (point.Y < rect.Top)
+            {
+                point.Y = rect.Top;
+            }
+            else if (point.Y > rect.Bottom)
+            {
+                point.Y = rect.Bottom;
+            }
+
+
+            return point;
+        }
     }
 }

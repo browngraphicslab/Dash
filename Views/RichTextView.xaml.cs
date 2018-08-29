@@ -477,13 +477,6 @@ namespace Dash
                 getDocView().HandleShiftEnter();
                 e.Handled = true;
             }
-            else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
-            {
-                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                getDocView().HandleCtrlEnter();
-                e.Handled = true;
-            }
 
             if (e.Key.Equals(VirtualKey.Escape))
             {

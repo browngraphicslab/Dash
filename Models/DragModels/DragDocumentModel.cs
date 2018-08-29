@@ -97,8 +97,8 @@ namespace Dash
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(new Point(where.X - Offset.X / scaling - OffsetsDocs[i].X,
-                        where.Y - Offset.Y / scaling - OffsetsDocs[i].Y)));
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(new Point(where.X - Offset.X / scaling - (OffsetsDocs != null ? OffsetsDocs[i]: new Point()).X,
+                        where.Y - Offset.Y / scaling - (OffsetsDocs != null ? OffsetsDocs[i] : new Point()).Y)));
                 }
             }
             else if (MainPage.Instance.IsShiftPressed())
