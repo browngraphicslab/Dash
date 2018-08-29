@@ -34,7 +34,6 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        PointerPoint       _pointerCapture;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
         DocumentController _templateEditor;
         bool               _isQuickEntryOpen;
         Flyout             _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
@@ -198,16 +197,11 @@ namespace Dash
                 {
                     e.Handled = false;
                 }
-
-                if (e.IsRightPressed())
-                {
-                    _pointerCapture = e.GetCurrentPoint(this);
-                }
             };
 
 
             ManipulationMode = ManipulationModes.All;
-            ManipulationStarted   += (s,e) => SelectionManager.InitiateDragDrop(this, _pointerCapture, e);
+            ManipulationStarted   += (s,e) => SelectionManager.InitiateDragDrop(this, null, e);
             DragStarting          += (s,e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted         += (s,e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped           += (s,e) => e.Handled = TappedHandler(e.Handled);
