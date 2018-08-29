@@ -97,6 +97,7 @@ namespace Dash
 
         private void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
+            splitDoc = splitDoc.GetViewCopy();
             splitDoc.SetWidth(double.NaN);
             splitDoc.SetHeight(double.NaN);
             foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())

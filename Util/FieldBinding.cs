@@ -286,6 +286,7 @@ namespace Dash
                 {
                     binding.Remove(handler);
                 }
+                Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
@@ -367,6 +368,7 @@ namespace Dash
                     element.UnregisterPropertyChangedCallback(property, token);
                     token = -1;
                 }
+                Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)

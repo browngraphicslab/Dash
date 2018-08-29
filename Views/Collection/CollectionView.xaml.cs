@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard }
+        public enum CollectionViewType { None, Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
@@ -46,12 +46,12 @@ namespace Dash
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
+            Unloaded += CollectionView_Unloaded;
             InitializeComponent();
 
-            _viewType = vm.ViewType;
             DataContext = vm;
             _lastViewModel = vm;
-            Unloaded += CollectionView_Unloaded;
+            SetView(vm.ViewType);
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
@@ -118,10 +118,6 @@ namespace Dash
 
             #region CollectionView context menu 
 
-            /// <summary>
-            /// Update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
-            /// view the collection as different formats).
-            /// </summary>
             var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
             // add a horizontal separator in context menu
@@ -248,6 +244,7 @@ namespace Dash
         #region Menu
         public void SetView(CollectionViewType viewType)
         {
+            if (_viewType == viewType) return;
             if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
             {
                 ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;

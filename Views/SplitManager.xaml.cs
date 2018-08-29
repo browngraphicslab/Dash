@@ -228,11 +228,8 @@ namespace Dash
                 var row = Grid.GetRow(frame);
                 var col = Grid.GetColumn(frame);
                 var nested = new SplitManager();
+                nested.SetContent(frame);
                 XContentGrid.Children.Add(nested);
-                nested.SetContent(frame);
-                nested.SetContent(frame);
-                nested.SetContent(frame);
-                nested.SetContent(frame);
                 nested._allowedSplits =
                     CurSplitMode == SplitMode.Horizontal ? SplitMode.Vertical : SplitMode.Horizontal;
                 Grid.SetRow(nested, row);

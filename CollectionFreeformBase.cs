@@ -69,6 +69,7 @@ namespace Dash
         // What the link doesn't say is that apparently having events on any siblings of the CanvasControl without having events on the CanvasControl still somehow prevents it from
         // being GC-ed, so it is easier to just create and destroy it on load and unload rather than try to manage all of the events and references... 
         // Because we create it in this class, we need a content presenter to put it in, otherwise the subclass can't decide where to put it
+        // This ContentPresenter also shouldn't have any events attached to it, as for some reason that also messes with the Garbage Collection
         public abstract ContentPresenter GetBackgroundContentPresenter();
         private CanvasControl _backgroundCanvas;
 
@@ -90,10 +91,14 @@ namespace Dash
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas = new CanvasControl();
+            if (_backgroundCanvas == null)
+            {
+                _backgroundCanvas = new CanvasControl();
+                GetBackgroundContentPresenter().Content = _backgroundCanvas;
+            }
+
             _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
-            GetBackgroundContentPresenter().Content = _backgroundCanvas;
             GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
 
@@ -109,8 +114,8 @@ namespace Dash
             //MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground -= ChangeBackground;
-            setBackgroundOpacity -= ChangeOpacity;
             setBackground += ChangeBackground;
+            setBackgroundOpacity -= ChangeOpacity;
             setBackgroundOpacity += ChangeOpacity;
 
             var settingsView = MainPage.Instance.GetSettingsView;
@@ -129,9 +134,8 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas?.RemoveFromVisualTree();
-            GetBackgroundContentPresenter().Content = null;
-            _backgroundCanvas = null;
+            _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
+            _backgroundCanvas.Draw -= CanvasControl_OnDraw;
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -1201,17 +1205,17 @@ namespace Dash
                         postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
                         _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
                     }
-					//move link activation stuff here
-	                //check if a doc is currently in link activation mode
-	                if (LinkActivationManager.ActivatedDocs.Count >= 1)
-	                {
-		                foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
-		                {
-							//make this rich text an annotation for activated  doc
-							if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
-							{
+                    //move link activation stuff here
+                    //check if a doc is currently in link activation mode
+                    if (LinkActivationManager.ActivatedDocs.Count >= 1)
+                    {
+                        foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+                        {
+                            //make this rich text an annotation for activated  doc
+                            if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
+                            {
                                 var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-                                    Util.PointTransformFromVisual(postitNote.GetPosition()?? new Point(), this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
+                                    Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
 
                                 //link region to this text 
                                 region.Link(postitNote, LinkTargetPlacement.Overlay);

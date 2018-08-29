@@ -137,10 +137,6 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
-                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
