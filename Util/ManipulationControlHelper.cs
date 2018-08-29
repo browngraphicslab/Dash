@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Input;
@@ -61,10 +62,15 @@ namespace Dash
         }
 
         private bool _pointerPressed = false;
+        private Point _origP;
 
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.IsRightPressed()) _pointerPressed = true;
+            if (e.IsRightPressed())
+            {
+                _pointerPressed = true;
+                _origP = e.GetCurrentPoint(Window.Current.Content).Position;
+            }
             _numMovements = 0;
             var pointerPosition = GetPointerPosition();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
@@ -80,10 +86,13 @@ namespace Dash
         /// <param name="e"></param>
         public void PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            var currP = e.GetCurrentPoint(Window.Current.Content).Position;
             if (_pointerPressed && e.IsRightPressed() && e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
             {
                 _pointerPressed = false;
                 _manipulationDocumentTarget.StartManipulation(e);
+                Debug.WriteLine("X-Offset: " + Math.Abs(currP.X - _origP.X));
+                Debug.WriteLine("Y-Offset: " + Math.Abs(currP.Y - _origP.Y));
             }
             else if (e.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
             {

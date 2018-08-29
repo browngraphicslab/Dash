@@ -335,6 +335,8 @@ namespace Dash
             ManipulationStarted += DocumentView_ManipulationStarted;
             ManipulationCompleted += DocumentView_ManipulationCompleted;
             DragStarting += DocumentView_DragStarting;
+            DropCompleted += DocumentView_DropCompleted;
+            Window.Current.CoreWindow.PointerReleased += CoreWindow_PointerReleased;
 
             // add manipulation code
             //ManipulationControls = new ManipulationControls(this);
@@ -496,6 +498,21 @@ namespace Dash
             ToFront();
         }
 
+        private void DocumentView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            IsDragging = false;
+            _dragDocs = null;
+        }
+
+        private void CoreWindow_PointerReleased(CoreWindow sender, PointerEventArgs args)
+        {
+            if (IsDragging)
+            {
+                IsDragging = false;
+                _dragDocs?.ForEach(d => d.SetHidden(false));
+            }
+        }
+
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             if (IsDragging)
@@ -505,6 +522,7 @@ namespace Dash
         }
 
         public bool IsDragging = false;
+        private List<DocumentController> _dragDocs;
 
         private async void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
@@ -523,14 +541,13 @@ namespace Dash
             //    //only pan
             //}
             IsDragging = true;
+            _dragDocs = SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
             var rawOffsets = SelectionManager.GetSelectedDocs().Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(this).X), (ro.Y - args.GetPosition(this).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true,
-                off: offsets.ToList())
+            args.Data.AddDragModel(new DragDocumentModel(_dragDocs, true, off: offsets.ToList())
             {
                 Offset = args.GetPosition(this),
                 SourceCollectionViews = SelectionManager.GetSelectedDocs().Select(dv => dv.ParentCollection).ToList()
@@ -597,7 +614,7 @@ namespace Dash
                 bp.PixelHeight, BitmapAlphaMode.Premultiplied);
             args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
 
-            if (!this.IsShiftPressed())
+            if (!this.IsShiftPressed() && IsDragging)
             {
                 foreach (var d in SelectionManager.GetSelectedDocs())
                 {

@@ -81,7 +81,7 @@ namespace Dash
             }), true);
             AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) =>
                 {
-                    _manipulator.PointerReleased(s, e);
+                    _manipulator?.PointerReleased(s, e);
                     _manipulator = null;
                 }),
                 true);
