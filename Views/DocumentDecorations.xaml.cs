@@ -27,7 +27,6 @@ namespace Dash
 {
     public sealed partial class DocumentDecorations : UserControl, INotifyPropertyChanged
     {
-        static PointerPoint _pointerPointHack; // capture a pointerPoint so that we can call StartDrag from a right-drag manipulationStarted event
         private Visibility _resizerVisibilityState = Visibility.Collapsed;
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
@@ -152,7 +151,7 @@ namespace Dash
             {
                 if (this.IsRightBtnPressed())
                 {
-                    SelectionManager.InitiateDragDrop(_selectedDocs.First(), _pointerPointHack, null);
+                    SelectionManager.InitiateDragDrop(_selectedDocs.First(), null, null);
                 }
                 else
                 {
@@ -186,7 +185,6 @@ namespace Dash
                 };
                 handle.PointerPressed += (s, e) =>
                 {
-                    _pointerPointHack = e.GetCurrentPoint(_selectedDocs.First());
                     ManipulationMode = ManipulationModes.None;
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                     if (e.Handled)
@@ -290,14 +288,11 @@ namespace Dash
                 if (doc.ViewModel != null)
                 {
                     tagMap.Clear();
-                    GetLinkTypes(doc.ViewModel.DataDocument,
-                        tagMap); // make sure all of this documents link types have been added to the menu of link types
+                    GetLinkTypes(doc.ViewModel.DataDocument, tagMap); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
 
-            var br = Util.PointTransformFromVisual(SelectedDocs.FirstOrDefault()?.ViewModel?.DocumentController.GetActualSize() ?? new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
-            var tl = Util.PointTransformFromVisual(new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
-            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null || br.X - tl.X < 50 ? Visibility.Collapsed : Visibility.Visible;
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
 
             rebuildMenuIfNeeded();
 

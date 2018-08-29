@@ -73,6 +73,7 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -80,8 +81,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
-            AddHandler(PointerPressedEvent, new PointerEventHandler((s,e) => PointerCaptureHack = e.GetCurrentPoint(this)), true);
-
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => PointerRoutedArgsHack = e), true); 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;

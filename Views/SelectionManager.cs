@@ -233,7 +233,7 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
-            await draggedDoc.StartDragAsync(p ?? PointerPoint.GetCurrentPoint(MainPage.PointerCaptureHack?.PointerId ?? 1));
+            await draggedDoc.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedDoc));
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
