@@ -669,15 +669,10 @@ namespace Dash
             {
                 if (!this.IsShiftPressed())
                 {
-                    var dragLayoutDoc = e.DataView.GetDragModels().OfType<DragDocumentModel>().SelectMany((dm) => dm.DraggedDocuments).FirstOrDefault();
-                    foreach (var rdoc in RegionDocsList.Where((rd) => rd.GetAnnotationType() == AnnotationType.Pin))
-                        if (dragLayoutDoc.GetDataDocument().Equals(rdoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).FirstOrDefault().GetDataDocument().
-                                  GetLinkedDocument((LinkDirection.ToDestination)).GetDataDocument()))
-                        {
-                            dragLayoutDoc.SetPosition(e.GetPosition(this));
-                            e.AcceptedOperation = DataPackageOperation.None;
-                            e.Handled = true;
-                        }
+                    // if we're assuming that we're only moving annotations, we can just call this method as it will set the positions correctly
+                    await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                    e.AcceptedOperation = DataPackageOperation.None;
+                    e.Handled = true;
                 }
                 else
                 {
