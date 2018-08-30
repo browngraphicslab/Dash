@@ -130,6 +130,7 @@ namespace Dash
         {
             var dragModels = packageView.GetDragModels();
             var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
+
             return dropSafe.SelectMany(dm => dm.GetDropDocuments(where)).ToList();
         }
 
@@ -215,7 +216,7 @@ namespace Dash
             if (dragModels.Count == 1 && dragModels.First() is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
             {
                 doc = ddm.DraggedDocuments.First();
-                linkView = ddm.LinkSourceViews.FirstOrDefault();
+                linkView = ddm.LinkSourceViews?.FirstOrDefault();
                 return true;
             }
 

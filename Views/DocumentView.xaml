@@ -178,7 +178,7 @@
                 </Grid.ContextFlyout>
 
                 <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
-                <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
+                <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
                 <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
                 <Grid x:Name="xIcon" Visibility="Collapsed"  HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.RowDefinitions>

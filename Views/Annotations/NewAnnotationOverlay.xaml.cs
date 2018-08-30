@@ -665,25 +665,38 @@ namespace Dash
         public async void OnDrop(object sender, DragEventArgs e)
         {
             var where = e.GetPosition(XAnnotationCanvas);
-            if (this.IsShiftPressed() && e.DataView.HasDataOfType(Internal))
+            if (e.DataView.HasDataOfType(Internal))
             {
-                var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
-
-                foreach (DocumentController doc in targets)
+                if (!this.IsShiftPressed())
                 {
-                    doc.SetBackgroundColor(Colors.White);
-                    if (!doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
-                    {
-                        if (doc.GetActualSize()?.X > 200)
-                        {
-                            double ratio = doc.GetHeight() / doc.GetWidth();
-                            doc.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
-                            doc.SetField(KeyStore.HeightFieldKey, new NumberController(200 * ratio), true);
-                        }
-                    }
-                    CreatePin(where, doc);
+                    // if we're assuming that we're only moving annotations, we can just call this method as it will set the positions correctly
+                    await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                    e.AcceptedOperation = DataPackageOperation.None;
+                    e.Handled = true;
                 }
-                e.Handled = true;
+                else
+                {
+                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
+
+                    foreach (var doc in targets)
+                    {
+                        doc.SetBackgroundColor(Colors.White);
+                        if (!doc.DocumentType.Equals(RichTextBox.DocumentType) &&
+                            !doc.DocumentType.Equals(TextingBox.DocumentType))
+                        {
+                            if (doc.GetActualSize()?.X > 200)
+                            {
+                                double ratio = doc.GetHeight() / doc.GetWidth();
+                                doc.SetWidth(200);
+                                doc.SetHeight(200 * ratio);
+                            }
+                        }
+
+                        CreatePin(where, doc);
+                    }
+
+                    e.Handled = true;
+                }
             }
             // if we drag from the file system
             if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)

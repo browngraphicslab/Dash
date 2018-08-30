@@ -68,14 +68,10 @@ namespace Dash
 
         private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView?.StyleKeyValuePane();
-
-
             var currPageBinding = new FieldBinding<TextController>
             {
                 Mode = BindingMode.TwoWay,
-                Document = docView.ViewModel.DataDocument,
+                Document = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument,
                 Key = KeyStore.TitleKey
             };
             xTitleBlock.AddFieldBinding(TextBlock.TextProperty, currPageBinding);
