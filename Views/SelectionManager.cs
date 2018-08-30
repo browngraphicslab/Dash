@@ -243,7 +243,7 @@ namespace Dash
             {
                 var rect = new Rect(draggedDoc.ViewModel.XPos, draggedDoc.ViewModel.YPos,
                     draggedDoc.ViewModel.ActualSize.X, draggedDoc.ViewModel.ActualSize.Y);
-                var docs = new List<DocumentView> {draggedDoc};
+                var docs = new List<DocumentView>();
                 foreach (var cp in draggedDoc.GetFirstAncestorOfType<Canvas>()?.Children)
                 {
                     if (cp.GetFirstDescendantOfType<DocumentView>() != null)
@@ -316,27 +316,28 @@ namespace Dash
             var height = (br.Y - tl.Y);
             var s1 = new Point(width, height);
 
-            var bp = new WriteableBitmap((int)s1.X, (int)s1.Y);
+            // create an empty parent bitmap large enough for all selected elements that we can
+            // blip a bitmap for each element onto
+            var parentBitmap = new WriteableBitmap((int)s1.X, (int)s1.Y);
             var thisOffset = new Point();
 
             var def = args.GetDeferral();
             foreach (var doc in dragSelectionViews)
             {
+                // renders a bitmap for each selected document and blits it onto the parent bitmap at the correct position
                 var rtb = new RenderTargetBitmap();
-                var s = new Point(Math.Floor(doc.ActualWidth), Math.Floor(doc.ActualHeight));
+                var s = new Point(Math.Ceiling(doc.ActualWidth), Math.Ceiling(doc.ActualHeight));
                 var transformToVisual = doc.TransformToVisual(Window.Current.Content);
                 var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
                 s = new Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
+                await rtb.RenderAsync(doc, (int)Math.Ceiling(s.X), (int)Math.Ceiling(s.Y));
                 var buf = await rtb.GetPixelsAsync();
-                var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-                var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
-                sb.CopyToBuffer(additionalBp.PixelBuffer);
+                var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+                var miniSBitmap = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
+                miniSBitmap.CopyToBuffer(miniBitmap.PixelBuffer);
                 var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
-                bp.Blit(pos, additionalBp, new Rect(0, 0, additionalBp.PixelWidth, additionalBp.PixelHeight),
-                    Colors.White, WriteableBitmapExtensions.BlendMode.None);
-                //bp.BlitRender(additionalBp, false, 1F,
-                //    new TranslateTransform {X = pos.X, Y = pos.Y});
+                parentBitmap.Blit(pos, miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
+                    Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
 
                 if (doc == docView)
                 {
@@ -348,9 +349,9 @@ namespace Dash
             var p = args.GetPosition(Window.Current.Content);
             p.X = p.X - tl.X / scaling + thisOffset.X;
             p.Y = p.Y - tl.Y / scaling + thisOffset.Y;
-            var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
-                bp.PixelHeight, BitmapAlphaMode.Premultiplied);
-            args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
+            var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
+                parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
+            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, p);
 
             if (!docView.IsShiftPressed())
             {
