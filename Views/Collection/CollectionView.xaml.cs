@@ -56,6 +56,7 @@ namespace Dash
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
+            id = COLid++;
 
             xOuterGrid.PointerPressed += OnPointerPressed;
 	        var color = xOuterGrid.Background;
@@ -94,16 +95,19 @@ namespace Dash
 
         }
 
+        private int count = 0;
+        private static int COLid = 0;
+        private int id = 0;
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("CollectionView unloaded");
+            //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
-            Debug.WriteLine("CollectionView loaded");
+            //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
 

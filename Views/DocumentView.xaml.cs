@@ -179,7 +179,7 @@ namespace Dash
             int count = 0;
             Loaded += (sender, e) =>
             {
-                Debug.WriteLine($"Document View {id} loaded {++count}");
+                //Debug.WriteLine($"Document View {id} loaded {++count}");
                 //FadeIn.Begin();
                 updateBindings();
                 DataContextChanged += ContextChanged;
@@ -204,7 +204,7 @@ namespace Dash
 
             Unloaded += (sender, args) =>
             {
-                Debug.WriteLine($"Document View {id} unloaded {--count}");
+                //Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 DataContextChanged -= ContextChanged;

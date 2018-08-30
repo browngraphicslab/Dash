@@ -54,7 +54,7 @@ namespace Dash
                 ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
             }
         }
-        public DocumentController                      ContainerDocument { get; set; }
+        public DocumentController                      ContainerDocument { get; private set; }
         public KeyController                           CollectionKey { get; set; }
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -72,6 +72,7 @@ namespace Dash
 
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null)
         {
+            id = COLID++;
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             SetCollectionRef(containerDocument, fieldKey);
@@ -91,7 +92,10 @@ namespace Dash
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
             var wasLoaded = _isLoaded;
-            Loaded(false);
+            if (_isLoaded)
+            {
+                Loaded(false);
+            }
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
@@ -132,11 +136,15 @@ namespace Dash
             }
         }
 
+        private int count = 0;
+        private static int COLID = 0;
+        private int id;
         public void Loaded(bool isLoaded)
         {
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                Debug.WriteLine($"CVM {id} loaded {++count}");
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -156,11 +164,11 @@ namespace Dash
             }
             else
             {
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                _lastContainerDocument = null;
+                Debug.WriteLine($"CVM {id} unloaded {--count}");
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             }
         }
         void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
@@ -233,6 +241,7 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents)
         {
+            Debug.WriteLine("Adding " + id);
                 using (BindableDocumentViewModels.DeferRefresh())
                 {
                     foreach (var documentController in documents)

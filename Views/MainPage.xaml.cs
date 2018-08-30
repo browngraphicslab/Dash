@@ -803,6 +803,7 @@ namespace Dash
         Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
+            return;
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
