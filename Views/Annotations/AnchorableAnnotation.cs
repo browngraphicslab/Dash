@@ -92,7 +92,7 @@ namespace Dash
             ParentOverlay.AnnotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
-            if (ParentOverlay.SelectedRegion != selectable)
+            if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
                 foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
                 foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))

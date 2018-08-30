@@ -50,7 +50,7 @@ namespace Dash
     public static class SelectionManager
     {
 
-        private static List<DocumentController> _dragDocs;
+        private static List<DocumentView> _dragViews;
         public  static event EventHandler DragManipulationStarted;
         public  static event EventHandler DragManipulationCompleted;
 
@@ -226,51 +226,48 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
-        public static async void InitiateDragDrop(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
+        public static void InitiateDragDrop(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null)
             {
                 e.Handled = true;
                 e.Complete();
             }
-            await draggedDoc.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedDoc));
+            draggedDoc.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedDoc));
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
-            if (args.DropResult == DataPackageOperation.None)
-                _dragDocs?.ForEach(d => d.SetHidden(false));
-            _dragDocs = null;
+            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
+            _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
         }
+
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
-            docView.ToFront();
 
-            var dragSelectionViews = SelectionManager.GetSelectedDocs().Contains(docView) ? SelectionManager.GetSelectedDocs() : new List<DocumentView>(new DocumentView[] { docView });
-            _dragDocs = dragSelectionViews.Select(dv => dv.ViewModel.DocumentController).ToList();
+            _dragViews = SelectionManager.GetSelectedDocs().Contains(docView) ? SelectionManager.GetSelectedDocs().ToList() : new List<DocumentView>(new DocumentView[] { docView });
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
-            var rawOffsets = dragSelectionViews.Select(args.GetPosition);
+            var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragDocs, true, off: offsets.ToList())
+            args.Data.AddDragModel(new DragDocumentModel(_dragViews, true, off: offsets.ToList())
             {
                 Offset = args.GetPosition(docView),
-                SourceCollectionViews = dragSelectionViews.Select(dv => dv.ParentCollection).ToList()
+                SourceCollectionViews = _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null? dv.ParentCollection:null).ToList()
             });
 
-            args.AllowedOperations =
-                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
             //combine all selected docs into an image to display on drag
             //use size of each doc to get size of combined image
             var tl = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var br = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            foreach (var doc in dragSelectionViews)
+            foreach (var doc in _dragViews)
             {
                 var bounds = new Rect(0, 0, doc.ActualWidth, doc.ActualHeight);
                 bounds = doc.TransformToVisual(Window.Current.Content).TransformBounds(bounds);
@@ -286,9 +283,9 @@ namespace Dash
 
             var bp = new WriteableBitmap((int)s1.X, (int)s1.Y);
             var thisOffset = new Point();
-
+            
             var def = args.GetDeferral();
-            foreach (var doc in dragSelectionViews)
+            foreach (var doc in _dragViews)
             {
                 var rtb = new RenderTargetBitmap();
                 var s = new Point(Math.Floor(doc.ActualWidth), Math.Floor(doc.ActualHeight));
@@ -304,8 +301,6 @@ namespace Dash
                 var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
                 bp.Blit(pos, additionalBp, new Rect(0, 0, additionalBp.PixelWidth, additionalBp.PixelHeight),
                     Colors.White, WriteableBitmapExtensions.BlendMode.None);
-                //bp.BlitRender(additionalBp, false, 1F,
-                //    new TranslateTransform {X = pos.X, Y = pos.Y});
 
                 if (doc == docView)
                 {
@@ -318,14 +313,28 @@ namespace Dash
             p.X = p.X - tl.X / scaling + thisOffset.X;
             p.Y = p.Y - tl.Y / scaling + thisOffset.Y;
             var sb2 = SoftwareBitmap.CreateCopyFromBuffer(bp.PixelBuffer, BitmapPixelFormat.Bgra8, bp.PixelWidth,
-                bp.PixelHeight, BitmapAlphaMode.Premultiplied);
+                                                          bp.PixelHeight, BitmapAlphaMode.Premultiplied);
             args.DragUI.SetContentFromSoftwareBitmap(sb2, p);
-
             if (!docView.IsShiftPressed())
             {
-                dragSelectionViews.ForEach((dv) => dv.ViewModel.DocumentController.SetHidden(true));
+                // unfortunately, there is no synchronization between when the dragDrop feedback begins and
+                // when the document is made (in)visible.
+                // To avoid the jarring temporary artifact of the document appearing to be deleted, we 
+                // wait until we start getting DragOver events and then collapse the dragged document.
+                MainPage.Instance.xOuterGrid.AllowDrop = true;
+                MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
+                MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }
             def.Complete();
+        }
+
+        static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);
+        static void collectionDragOver(object sender, DragEventArgs e)
+        {
+            if (e.DragUIOverride != null)
+                e.DragUIOverride.IsContentVisible = true;
+            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Collapsed);
+            (sender as FrameworkElement).RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
         }
 
         #endregion

@@ -1052,14 +1052,6 @@ namespace Dash
         private void This_DragOver(object sender, DragEventArgs e)
         {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
-
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                ? DataPackageOperation.Copy
-                : e.DataView.RequestedOperation;
-
-            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
-
-            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)
@@ -1076,7 +1068,7 @@ namespace Dash
                     MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
                     if (ViewModel.LayoutDocument == null)
                     {
-                        Debug.WriteLine("uh oh");
+                        Debug.WriteLine("uh-oh");
                     }
                 }
         }

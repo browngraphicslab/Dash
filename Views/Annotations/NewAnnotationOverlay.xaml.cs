@@ -669,9 +669,10 @@ namespace Dash
             {
                 if (!this.IsShiftPressed())
                 {
-                    // if we're assuming that we're only moving annotations, we can just call this method as it will set the positions correctly
-                    await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    e.AcceptedOperation = DataPackageOperation.None;
+                    // if docs are being moved within the overlay, then they will be placed appropriately and returned from this call.
+                    // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
+                    var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                    e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
                     e.Handled = true;
                 }
                 else
