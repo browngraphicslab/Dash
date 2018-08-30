@@ -19,12 +19,10 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Animation;
-using DocumentType = DashShared.DocumentType;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -32,35 +30,31 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
+        public event Action<DocumentView> DocumentDeleted;
 
-        public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentDeletedHandler      DocumentDeleted;
-        
         private DocumentController _templateEditor;
-        private bool               _isQuickEntryOpen;
-        private Flyout             _flyout;
-        private ImageSource        _docPreview = null;
-        private DocumentViewModel  _oldViewModel= null;
+        private bool _isQuickEntryOpen;
+        private Flyout _flyout;
+        private ImageSource _docPreview = null;
+        private DocumentViewModel _oldViewModel = null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
-        public CollectionView       ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
-        public DocumentViewModel    ViewModel
+        public DocumentViewModel ViewModel
         {
             get => DataContext as DocumentViewModel;
             set => DataContext = value;
         }
-        public MenuFlyout           MenuFlyout { get; set; }
-        public bool                 PreventManipulation { get; set; }
-        private ImageSource         DocPreview
+        public MenuFlyout MenuFlyout { get; set; }
+        public bool PreventManipulation { get; set; }
+        private ImageSource DocPreview
         {
-            get { return _docPreview; }
+            get => _docPreview;
             set
             {
                 _docPreview = value;
@@ -92,8 +86,8 @@ namespace Dash
 
         public bool BindVisibility
         {
-            get { return (bool)GetValue(BindVisibilityProperty); }
-            set { SetValue(BindVisibilityProperty, value); }
+            get => (bool)GetValue(BindVisibilityProperty);
+            set => SetValue(BindVisibilityProperty, value);
         }
 
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
@@ -102,6 +96,16 @@ namespace Dash
 
         public event EventHandler ResizeManipulationStarted;
         public event EventHandler ResizeManipulationCompleted;
+        public void SendResizeManipulationCompleted(object sender)
+        {
+            if (ResizeManipulationCompleted != null)
+                ResizeManipulationCompleted.Invoke(sender, null);
+        }
+        public void SendResizeManipulationStarted(object sender)
+        { 
+            if (ResizeManipulationStarted != null)
+                ResizeManipulationStarted.Invoke(sender, null);
+        }
 
         // == CONSTRUCTORs ==
 
@@ -150,7 +154,7 @@ namespace Dash
                         Key = KeyStore.HiddenKey,
                         Mode = BindingMode.OneWay,
                         Tag = "Visibility binding in DocumentView",
-                        FallbackValue=false
+                        FallbackValue = false
                     };
                 this.AddFieldBinding(VisibilityProperty, binding);
             }
@@ -195,9 +199,10 @@ namespace Dash
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
 
                 SetZLayer();
-                UpdateResizers();
             };
-            Unloaded += (sender, args) => {
+
+            Unloaded += (sender, args) =>
+            {
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 ViewModel?.UnLoad();
@@ -208,122 +213,29 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 PointerId = e.Pointer.PointerId;
-                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 bool right =
                     (e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
                      MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
-				ManipulationMode = ManipulationModes.All;
+                ManipulationMode = ManipulationModes.All;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
-						? ManipulationModes.All
-						: ManipulationModes.None;
-				MainPage.Instance.Focus(FocusState.Programmatic);
+                        ? ManipulationModes.All
+                        : ManipulationModes.None;
+                MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
                 e.Handled = true;
 
-	            if (parentParentFreeform != null && !this.IsShiftPressed())
-	            {
-		            e.Handled = false;
-	            }
+                if (parentParentFreeform != null && !this.IsShiftPressed())
+                {
+                    e.Handled = false;
+                }
             };
-            
+
             RightTapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             Tapped += (sender, e) => e.Handled = TappedHandler(e.Handled);
             // AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
-
-            void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, true, true); }
-            void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, true); }
-            void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, true); }
-            void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, true); }
-            void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, true, false, false); }
-            void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, true, false); }
-            void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { Resize(sender as FrameworkElement, e, false, false, false); }
-            // setup ResizeHandles
-            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-            {
-                if (this.IsRightBtnPressed())
-                    return;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
-                (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-
-                xTopLeftResizeControl.ManipulationDelta += ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta += ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta += ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta += ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta += ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta += ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta += ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta += ResizeBRunconstrained;
-                ResizeManipulationStarted?.Invoke(sender, null);
-                UndoManager.StartBatch();
-
-                MainPage.Instance.Focus(FocusState.Programmatic);
-                if (!this.IsRightBtnPressed()) // ignore right button drags
-                {
-                    e.Handled = true;
-                }
-            }
-
-            void ResizeHandles_restorePointerTracking()
-            {
-                if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                    StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                    ViewModel.DecorationState = xBottomRightResizeControl.IsPointerOver();
-
-            };
-
-            void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-            {
-                xTopLeftResizeControl.ManipulationDelta -= ResizeTLaspect;
-                xTopRightResizeControl.ManipulationDelta -= ResizeRTaspect;
-                xBottomLeftResizeControl.ManipulationDelta -= ResizeBLaspect;
-                xBottomRightResizeControl.ManipulationDelta -= ResizeBRaspect;
-                xTopResizeControl.ManipulationDelta -= ResizeRTunconstrained;
-                xLeftResizeControl.ManipulationDelta -= ResizeBLunconstrained;
-                xRightResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                xBottomResizeControl.ManipulationDelta -= ResizeBRunconstrained;
-                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
-                ResizeHandles_restorePointerTracking();
-                e.Handled = true;
-
-                UndoManager.EndBatch();
-
-                ResizeManipulationCompleted?.Invoke(sender, null);
-            }
-
-            foreach (var handle in new Rectangle[]
-            {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
-                handle.Tag = handle.ManipulationMode;
-                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.PointerReleased += (s, e) => { handle.ReleasePointerCapture(e.Pointer); ResizeHandles_restorePointerTracking(); e.Handled = true; };
-                handle.PointerPressed += (s, e) =>
-                {
-                    ManipulationMode = ManipulationModes.None;
-                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                    if (e.Handled)
-                    {
-                        handle.CapturePointer(e.Pointer);
-                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
-                    }
-                    else
-                        handle.ManipulationMode = ManipulationModes.All;
-                };
-            }
+            
 
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
@@ -470,7 +382,7 @@ namespace Dash
             LostFocus += (sender, args) =>
             {
                 if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
-              
+
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
 
@@ -492,7 +404,7 @@ namespace Dash
             Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
 
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
-            
+
             foreach (var docs in linkDocs)
             {
                 foreach (DocumentController l in docs)
@@ -566,7 +478,7 @@ namespace Dash
 
             var cdo = new CoreDragOperation();
             var rtb = new RenderTargetBitmap();
-            
+
             await rtb.RenderAsync(this, (int)p.X, (int)p.Y);
 
             IBuffer buf = await rtb.GetPixelsAsync();
@@ -583,39 +495,14 @@ namespace Dash
 
             cdo.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             cdo.SetDragUIContentFromSoftwareBitmap(sb, pos);
-            if (SelectionManager.GetSelectedDocs().Count > 1)
-            {
-                cdo.Data.Properties[nameof(List<DragDocumentModel>)] = SelectionManager.GetSelectedDocs().Select((dv) => new DragDocumentModel(dv.ViewModel.DocumentController,true)).ToList();
-            }
-            else
-            {
-                var dragDocModel = new DragDocumentModel(ViewModel.DocumentController, true);
-                cdo.Data.Properties[nameof(DragDocumentModel)] = dragDocModel;
-            }
+
+            cdo.Data.AddDragModel(new DragDocumentModel(
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList(), true));
+
             cdo.SetPointerId(e?.Pointer.PointerId ?? PointerId);
 
-            cdo.StartAsync();
+            await cdo.StartAsync();
         }
-
-        public void RemoveResizeHandlers()
-        {
-            foreach (var handle in new Rectangle[]
-            {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl
-            })
-            {
-                handle.Visibility = Visibility.Collapsed;
-            }
-
-            xLeftColumn.Width = new GridLength(0);
-            xRightColumn.Width = new GridLength(0);
-            xTopRow.Height = new GridLength(0);
-            xBottomRow.Height = new GridLength(0);
-            ViewModel.DecorationState = false;
-            ViewModel.ResizersVisible = false;
-		}
 
         public void ToggleTemplateEditor()
         {
@@ -813,7 +700,7 @@ namespace Dash
                 currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-            if (ViewModel.DragBounds != null && 
+            if (ViewModel.DragBounds != null &&
                 (!ViewModel.DragBounds.Rect.Contains(translate) ||
                  !ViewModel.DragBounds.Rect.Contains(new Point(translate.X + ActualWidth,
                                                                translate.Y + ActualHeight))))
@@ -854,44 +741,31 @@ namespace Dash
                 }
             }
         }
-        
+
 
         #region Xaml Styling Methods (used by operator/collection view)
 
-		/// <summary>
-		/// Applies custom override styles to the operator view. 
-		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-		/// </summary>
-		public void StyleOperator(double width, string title)
-		{
-			//xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
-			if (ParentCollection != null)
-			{
-				ViewModel.DocumentController.GetDataDocument().SetTitle(title);
-			}
-		}
-
-		/// <summary>
-		/// Applies custom override styles to the collection view. 
-		/// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
-		/// </summary>
-		public void StyleCollection(CollectionView view)
-		{
-			var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
-			if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
-
-            if (this == MainPage.Instance.MainDocView)
+        /// <summary>
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
+        public void StyleOperator(double width, string title)
+        {
+            //xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+            if (ParentCollection != null)
             {
-                view.SetBorderThickness(0);
-                foreach (var handle in new Rectangle[] {
-                    xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                    xLeftResizeControl, xRightResizeControl,
-                    xBottomLeftResizeControl, xBottomRightResizeControl, xBottomRightResizeControl
-                    })
-                {
-                    handle.Visibility = Visibility.Collapsed;
-                }
+                ViewModel.DocumentController.GetDataDocument().SetTitle(title);
             }
+        }
+
+        /// <summary>
+        /// Applies custom override styles to the collection view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
+        public void StyleCollection(CollectionView view)
+        {
+            var currColor = (xDocumentBackground.Fill as SolidColorBrush)?.Color;
+            if (currColor?.A < 100) xDocumentBackground.Fill = new SolidColorBrush(Color.FromArgb(255, currColor.Value.R, currColor.Value.G, currColor.Value.B));
         }
 
         /// <summary>
@@ -914,10 +788,6 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-            if (this.IsRightBtnPressed())
-            {
-                return;
-            }
             e.Handled = true;
             if (PreventManipulation)
             {
@@ -932,10 +802,6 @@ namespace Dash
             {
                 extraOffsetX = ActualWidth - Width;
             }
-            else
-            {
-                extraOffsetX = xLeftColumn.Width.Value + xRightColumn.Width.Value;
-            }
 
 
             double extraOffsetY = 0;
@@ -944,15 +810,11 @@ namespace Dash
             {
                 extraOffsetY = ActualHeight - Height;
             }
-            else
-            {
-                extraOffsetY = xTopRow.Height.Value + xBottomRow.Height.Value;
-            }
 
 
-            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
             //problem is that cumulativeDelta.Y is 0
-            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, sender as FrameworkElement);
+            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, this);
 
             //if (((this.IsCtrlPressed() || this.IsShiftPressed()) ^ maintainAspectRatio) && delta.Y != 0.0)
             //{
@@ -1125,11 +987,11 @@ namespace Dash
         }
 
         // this action is used to remove template editor in sync with document
-        public Action   FadeOutBegin;
-        private bool   _animationBusy;
+        public Action FadeOutBegin;
+        private bool _animationBusy;
         private string _lastValueInput;
-        private bool   _articialChange;
-        private bool   _clearByClose;
+        private bool _articialChange;
+        private bool _clearByClose;
         private string _mostRecentPrefix;
 
         /// <summary>
@@ -1149,7 +1011,7 @@ namespace Dash
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
 
-				MainPage.Instance.ActivationManager.DeactivateDoc(this);
+                MainPage.Instance.ActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
             }
         }
@@ -1205,7 +1067,7 @@ namespace Dash
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
-            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
+            DocumentDeleted?.Invoke(this);
             UndoManager.EndBatch();
         }
 
@@ -1213,52 +1075,34 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public event Action<DocumentView> DocumentSelected;
+        public event Action<DocumentView> DocumentDeselected;
+
+        public void OnSelected()
+        {
+            SetSelectionBorder(true);
+            DocumentSelected?.Invoke(this);
+        }
+
+        public void OnDeselected()
+        {
+            SetSelectionBorder(false);
+            DocumentDeselected?.Invoke(this);
+        }
+
+        private void SetSelectionBorder(bool selected)
         {
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
-            xTargetBorder.BorderBrush =  new SolidColorBrush(Colors.Transparent);
+            xTargetBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
-	        ColorSelectionBorder(selected ? Color.FromArgb(120, 160, 197, 232) : Colors.Transparent);
+            ColorSelectionBorder(selected ? Color.FromArgb(120, 160, 197, 232) : Colors.Transparent);
 
         }
 
-	    private void ColorSelectionBorder(Color color)
-	    {
-		    var brush = new SolidColorBrush(color);
-
-            xTopLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xTopResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xTopRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xBottomRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xRightResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-            xLeftResizeControl.Visibility = color == Colors.Transparent ? Visibility.Collapsed : Visibility.Visible;
-
-            xTopLeftResizeControl.Fill = brush;
-		    xTopResizeControl.Fill = brush;
-			xTopRightResizeControl.Fill = brush;
-		    xBottomLeftResizeControl.Fill = brush;
-		    xBottomResizeControl.Fill = brush;
-		    xBottomRightResizeControl.Fill = brush;
-		    xRightResizeControl.Fill = brush;
-		    xLeftResizeControl.Fill = brush;
-		}
-
-        public void hideResizers()
+        private void ColorSelectionBorder(Color color)
         {
-            xTopLeftResizeControl.Visibility = Visibility.Collapsed;
-            xTopRightResizeControl.Visibility = Visibility.Collapsed;
-            xTopResizeControl.Visibility = Visibility.Collapsed;
-
-            xBottomLeftResizeControl.Visibility = Visibility.Collapsed;
-            xBottomRightResizeControl.Visibility = Visibility.Collapsed;
-            xBottomResizeControl.Visibility = Visibility.Collapsed;
-
-            xRightResizeControl.Visibility = Visibility.Collapsed;
-            xLeftResizeControl.Visibility = Visibility.Collapsed;
-            xTargetBorder.Margin = new Thickness(0);
+            var brush = new SolidColorBrush(color);
         }
 
         #endregion
@@ -1270,7 +1114,6 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
-            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -1286,7 +1129,7 @@ namespace Dash
             MainPage.Instance.xPresentationView.TryHighlightMatches(this);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
-            if (!ViewModel.IsAdornmentGroup)
+            if (ViewModel?.IsAdornmentGroup == false)
             {
                 ToFront();
             }
@@ -1315,16 +1158,6 @@ namespace Dash
         public class DocumentViewSelectedEventArgs
         {
             public DocumentViewSelectedEventArgs()
-            {
-            }
-        }
-
-        /// <summary>
-        /// Encompasses the different type of events triggers by changing document data.
-        /// </summary>
-        public class DocumentViewDeletedEventArgs
-        {
-            public DocumentViewDeletedEventArgs()
             {
             }
         }
@@ -1402,8 +1235,10 @@ namespace Dash
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                     doc.CopyDocument();
+            }
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
@@ -1464,14 +1299,14 @@ namespace Dash
                     var toDock = ViewModel.DocumentController.GetViewCopy();
                     toDock.SetWidth(double.NaN);
                     toDock.SetHeight(double.NaN);
-                    dockedView.ChangeView(new DocumentView(){DataContext = new DocumentViewModel(toDock) });
+                    dockedView.ChangeView(new DocumentView() { DataContext = new DocumentViewModel(toDock) });
                 }
                 else
                 {
                     MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
                 }
             }
-                
+
         }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
@@ -1500,152 +1335,35 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
-            if (dragModel?.LinkSourceView != null)
+            var dropDoc = ViewModel.DocumentController;
+            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+
+            var dragModels = e.DataView.GetDragModels();
+            foreach (DragModelBase dragModel in dragModels)
             {
-                var dragDoc = dragModel.DraggedDocument;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                if (!(dragModel is DragDocumentModel dm) || dm.LinkSourceViews == null) continue;
 
-
-                //ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-                //Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-                //Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
-
-                Point where = e.GetPosition(MainPage.Instance.xCanvas);
-
-                if (dragModel.LinkType != null)
+                var dragDocs = dm.DraggedDocuments;
+                for (var index = 0; index < dragDocs.Count; index++)
                 {
-                    var dropDoc = ViewModel.DocumentController;
-                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-
-	                var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-	                var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
-
-	                //get pos and avg them
-	                var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-		                ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-	                var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-		                ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
-
-	                var x = (doc1.GetPosition().Value.X +
-	                         doc2.GetPosition().Value.X + offsetWidth / 2) / 2;
-	                var y = (doc1.GetPosition().Value.Y +
-	                         doc2.GetPosition().Value.Y + offsetHeight / 2) / 2;
-
-					var annotNote = new RichTextNote("Link description...", new Point(x, y)).Document;
-	                //dock if drag and drop docs are in the same collection
-	                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-	                {
-		                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-	                }
-	                else
-	                {
-		                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-		                ParentCollection?.ViewModel.AddDocument(annotNote);
-					}
-					//TODO: ensure LinkType is what the user plugged in
-					dragDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
-					dropDoc.Link(annotNote, LinkTargetPlacement.Default, dragModel.LinkType);
+                    DocumentController dragDoc = dragDocs[index];
+                    if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                        dragDoc = creatorFunc(dm.LinkSourceViews[index]);
+                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-					//TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
+                    //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-				}
-                else
-                {
-
-                   
-                        //string entry = inputBox.Text.Trim();
-                        //if (string.IsNullOrEmpty(entry)) return;
-
-                       
-                            var dropDoc = ViewModel.DocumentController;
-                            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-                            //dragDoc.Link(dropDoc, LinkContexts.None, entry);
-                            //dropDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true;
-
-	                        var doc1 = dropDoc.GetRegionDefinition() ?? dropDoc;
-	                        var doc2 = dragDoc.GetRegionDefinition() ?? dragDoc;
-
-							//get pos and avg them
-	                        var offsetWidth = doc1.GetPosition().Value.X < doc2.GetPosition().Value.X
-		                        ? doc1.GetActualSize().Value.X : doc2.GetActualSize().Value.X;
-	                        var offsetHeight = doc1.GetPosition().Value.Y < doc2.GetPosition().Value.Y
-		                        ? doc1.GetActualSize().Value.Y : doc2.GetActualSize().Value.Y;
-
-							var x = (doc1.GetPosition().Value.X +
-	                                 doc2.GetPosition().Value.X + offsetWidth/2) / 2;
-	                        var y = (doc1.GetPosition().Value.Y  +
-	                                 doc2.GetPosition().Value.Y + offsetHeight/2) / 2;
-
-							var annotNote = new RichTextNote("Link description...", new Point(x,y)).Document;
-							//dock if drag and drop docs are in the same collection
-			                if (ParentCollection != dragModel.LinkSourceView.ParentCollection)
-			                {
-				                MainPage.Instance.DockManager.Dock(annotNote, DockDirection.Right);
-			                }
-			                else
-			                {
-				                (ParentCollection?.CurrentView as CollectionFreeformBase)?.MarkLoadingNewTextBox("Link Description", true);
-				                ParentCollection?.ViewModel.AddDocument(annotNote);
-			                }
-							//TODO: ensure LinkType is what the user plugged in
-							dragDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-	                        dropDoc.Link(annotNote, LinkTargetPlacement.Default, null);
-	                        //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
-	                        dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                        dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-	                        annotNote?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-						}
-
-                       
-                
-
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                    ? DataPackageOperation.Link
-                    : e.DataView.RequestedOperation;
-
-                e.Handled = true;
+                    dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+                }
             }
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                ? DataPackageOperation.Link
+                : e.DataView.RequestedOperation;
+
+            e.Handled = true;
         }
-        //void FooterDrop(object sender, DragEventArgs e)
-        //{
-        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-        //    if (dragModel?.LinkSourceView != null)
-        //    {
-        //        var note = new RichTextNote("<annotation>").Document;
-        //        dragModel.DraggedDocument.Link(note);
-        //        drop(true, note);
-        //    }
-        //    else
-        //        drop(true, dragModel.GetDropDocument(new Point()));
-        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-
-        //    e.Handled = true;
-        //}
-        //void HeaderDrop(object sender, DragEventArgs e)
-        //{
-        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-        //    if (dragModel?.LinkSourceView != null)
-        //    {
-        //        var note = new RichTextNote("<annotation>").Document;
-        //        dragModel.DraggedDocument.Link(note);
-        //        drop(false, note);
-        //    }
-        //    else
-        //        drop(false, dragModel.GetDropDocument(new Point()));
-
-        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-
-        //    e.Handled = true;
-        //}
 
         void drop(bool footer, DocumentController newFieldDoc)
         {
@@ -1716,19 +1434,17 @@ namespace Dash
             }
         }
 
-        void This_DragOver(object sender, DragEventArgs e)
+        private void This_DragOver(object sender, DragEventArgs e)
         {
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Copy
                 : e.DataView.RequestedOperation;
 
-            e.DragUIOverride.IsContentVisible = true;
+            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
 
-	        e.Handled = true;
+            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)
@@ -1740,11 +1456,14 @@ namespace Dash
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             if (Equals(MainPage.Instance.MainDocView)) return;
-            
-            MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
-            if (ViewModel.LayoutDocument == null)
+
+            using (UndoManager.GetBatchHandle())
             {
-                Debug.WriteLine("uh oh");
+                MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+                if (ViewModel.LayoutDocument == null)
+                {
+                    Debug.WriteLine("uh oh");
+                }
             }
         }
 
@@ -1778,21 +1497,7 @@ namespace Dash
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
-
-
-        public void UpdateResizers()
-        {
-            var newpoint = Util.DeltaTransformFromVisual(new Point(1, 1), this);
-
-            if (double.IsInfinity(newpoint.X) || double.IsInfinity(newpoint.Y))
-                newpoint = new Point();
-
-            xBottomRow.Height  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xTopRow.Height     = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xLeftColumn.Width  = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-            xRightColumn.Width = new GridLength(ViewModel?.Undecorated == false && ViewModel?.ResizersVisible == true ? newpoint.Y * 15 : 0);
-        }
-
+        
         private void AdjustEllipseSize(Ellipse ellipse, double length)
         {
             ellipse.Width = length;
@@ -1858,7 +1563,7 @@ namespace Dash
                 }
                 _animationBusy = false;
             }
-        } 
+        }
 
         private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
         {
@@ -1869,7 +1574,11 @@ namespace Dash
         private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
         {
             obj.Handled = true;
-            ProcessInput();
+            using (UndoManager.GetBatchHandle())
+            {
+                ProcessInput();
+            }
+
         }
 
         private void XValueBoxOnTextChanged(object sender1, TextChangedEventArgs e)
@@ -1988,18 +1697,21 @@ namespace Dash
 
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.LayoutDocument.SetHidden(true);
+            using (UndoManager.GetBatchHandle())
+            {
+                ViewModel.LayoutDocument.SetHidden(true);
+            }
         }
 
-	    public void SetLinkBorderColor()
-	    {
-		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-	    }
+        public void SetLinkBorderColor()
+        {
+            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
+        }
 
-	    public void RemoveLinkBorderColor()
-	    {
-		    MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
-		    xToYellow.Begin();
+        public void RemoveLinkBorderColor()
+        {
+            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
+            xToYellow.Begin();
         }
         ~DocumentView()
         {

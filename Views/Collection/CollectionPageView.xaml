@@ -96,7 +96,7 @@
                 ScrollViewer.IsVerticalRailEnabled="True"
                 Tapped="xThumbs_Tapped"
                 CanDragItems="True"
-                DragItemsStarting="xThumbs_DragItemsStarting"
+                DragItemsStarting="XThumbs_DragItemsStarting"
                 ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
 

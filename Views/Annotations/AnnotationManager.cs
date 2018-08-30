@@ -77,7 +77,6 @@ namespace Dash
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
-				ObservableCollection<string> addedNames = new ObservableCollection<string>();
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
@@ -95,17 +94,6 @@ namespace Dash
 		                    item.Click += itemHdlr;
 		                    defaultHdlr = itemHdlr;
 		                    _linkFlyout.Items?.Add(item);
-
-							/*
-		                    foreach (string name in linkNames)
-		                    {
-			                    if (!addedNames.Contains(name))
-			                    {
-				                    addedNames.Add(name);
-				                    
-								}
-		                    }
-                        */
 						}
                 }
 
@@ -129,15 +117,12 @@ namespace Dash
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
                     }
-
-					
                 }
-
 
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
                 else _linkFlyout.ShowAt(_element, flyoutPosition);
-            }
+			}
 	    }
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
@@ -170,7 +155,7 @@ namespace Dash
         //		// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
         //		// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
         //              FollowDocument(chosenDC, pos);
-        //           SelectionManager.SelectRegion(chosenDC);
+        //           SelectionManager.SelectRegionFromParent(chosenDC);
         //          }
         //          else
         //	{
@@ -185,7 +170,7 @@ namespace Dash
         //               if (toLinks?.Count + fromLinks?.Count == 1)
         //			{
         //				var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //				dc = dc.GetDataDocument()
         //	                .GetDereferencedField<ListController<DocumentController>>(
         //		                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
@@ -211,7 +196,7 @@ namespace Dash
         //			}
         //			else
         //			{
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //			}
         //		}
 
@@ -272,8 +257,8 @@ namespace Dash
         //    }
 
         //    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
-        //    va?.GetAnnotationManager().SelectRegion(target);
-        //    //if (va is CustomPdfView pdf)
+        //    va?.GetAnnotationManager().SelectRegionFromParent(target);
+        //    //if (va is PdfView pdf)
         //    //{
         //	   // pdf.ScrollToRegion(target);
         //    //}

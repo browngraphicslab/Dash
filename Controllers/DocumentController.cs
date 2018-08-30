@@ -386,15 +386,11 @@ namespace Dash
 
 	        if (specTitle == null)
 	        {
-				//create unique, default tag 
-	            var newTitle = "Annotation";
-		        specTitle = newTitle;
+                //create unique, default tag 
+                specTitle = "Annotation";
 	        }
 
-            if (specTitle != null)
-            {
-                linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
-            }
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
@@ -450,7 +446,7 @@ namespace Dash
         /// <param name="value">the value being added to the list</param>
         public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
-            GetDereferencedField<ListController<T>>(key, null)?.Add(value);
+            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
 
             foreach (var d in GetDelegates().TypedData)
             {

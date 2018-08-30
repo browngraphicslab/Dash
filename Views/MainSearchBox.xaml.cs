@@ -6,12 +6,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Threading.Tasks;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -99,33 +99,18 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
         }
 
-        //// Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
+        // Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.DraggedDocument;
-                xAutoSuggestBox.Text = xAutoSuggestBox.Text + doc.Id;
-                /*
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                if (listKeys.Count == 1)
-                {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
-                    if (!string.IsNullOrWhiteSpace(currText))
-                    {
-                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
-                    }
-                }
-                */
+                xAutoSuggestBox.Text = xAutoSuggestBox.Text + dragDoc.Id;
             }
 
             e.Handled = true;
@@ -180,7 +165,7 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs, null, null, CollectionView.CollectionViewType.Page);
+            args.Data.AddDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -195,11 +180,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dragModel =
-                new DragDocumentModel(
-                    ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
             // get the sender's view docs and set the key for the drag to a static const
-            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
+            args.Data.AddDragModel(dragModel);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -290,14 +273,14 @@ namespace Dash
 
         private void XSearchCode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
+            string text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
-            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+            string script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
             var note = new DishScriptBox(0, 0, 300, 400, script);
 
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(note.Document, true);
+            args.Data.AddDragModel(new DragDocumentModel(note.Document, true));
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -305,10 +288,10 @@ namespace Dash
 
         private void XDragScript_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
+            string text = xAutoSuggestBox.Text.Replace("\"", "\\\"");
 
             //open DishScriptEditView with search text
-            var script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
+            string script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
 
             var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);

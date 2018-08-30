@@ -183,14 +183,13 @@ namespace Dash
                 lastWorkspace.SetHeight(double.NaN);
 
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
-                MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
-                //setupMapView(lastWorkspace);
+                setupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
@@ -817,7 +816,6 @@ namespace Dash
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xMapDocumentView.RemoveResizeHandlers();
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 
@@ -849,19 +847,20 @@ namespace Dash
         {
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
-            this.JavaScriptHack.Focus(FocusState.Programmatic);
-            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-            var mapPt = e.GetPosition(mapViewCanvas);
+	        this.JavaScriptHack.Focus(FocusState.Programmatic);
+		        var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+		        var mapPt = e.GetPosition(mapViewCanvas);
 
-            var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
-            var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
-            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-            mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-        }
+		        var mainFreeform = this.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>();
+		        var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+		        var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+		        var mainDocCenter = new Point(MainDocView.ActualWidth / 2 / mainFreeformXf.M11, MainDocView.ActualHeight / 2 / mainFreeformXf.M22);
+		        var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
+		        mainFreeform?.SetTransformAnimated(
+			        new TranslateTransform() { X = -mapPt.X + xMainDocView.ActualWidth / 2, Y = -mapPt.Y + xMainDocView.ActualHeight / 2 },
+			        new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+			
+         }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -1055,6 +1054,37 @@ namespace Dash
             {
                 parent.GotoRegion(docOrRegion, link);
             }
+        }
+
+        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
+        {
+            //make doc view out of doc controller
+            var docCopy = doc.GetViewCopy();
+            docCopy.SetWidth(size?.X ?? 200);
+            docCopy.SetHeight(size?.Y ?? 200);
+            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 100, xCanvas.RenderSize.Height / 2 - 100);
+            docCopy.SetPosition(position ?? defaultPt);
+            
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(docCopy),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                BindRenderTransform = true
+            };
+
+            SelectionManager.Select(docView, false);
+
+            docView.DocumentDeselected += DocView_DocumentDeselected;
+
+            //add to xCanvas
+            xCanvas.Children.Add(docView);
+        }
+
+        private void DocView_DocumentDeselected(DocumentView sender)
+        {
+            sender.DocumentDeselected -= DocView_DocumentDeselected;
+            xCanvas.Children.Remove(sender);
         }
 
         #region Annotation logic

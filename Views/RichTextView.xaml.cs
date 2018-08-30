@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models.DragModels;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
@@ -439,12 +438,9 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var dragDoc = dragModel.DraggedDocument;
-
-                if (dragModel.LinkSourceView != null && !MainPage.Instance.IsShiftPressed())
+                if (view != null && !MainPage.Instance.IsShiftPressed())
                 {
                     e.Handled = false;
                     return;
@@ -455,7 +451,7 @@ namespace Dash
                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 //}
 
-                linkDocumentToSelection(dragModel.DraggedDocument, true);
+                linkDocumentToSelection(dragDoc, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
@@ -582,7 +578,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
@@ -641,7 +637,7 @@ namespace Dash
                     var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
                     //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? CollectionViewModel.GetTitlesUrl(url);
+                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
 
                     this.xRichEditBox.Document.Selection.CharacterFormat.Size = 9;
                     this.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, this.getRtfText().Length, FindOptions.Case);
@@ -688,7 +684,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.Link = link;
                 }
                 else
-                    return theDoc;
+                    return theDoc  ?? LayoutDocument;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
@@ -725,17 +721,22 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
 
-            if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
-            {
-                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
-            }
+	        using (UndoManager.GetBatchHandle())
+	        {
+		        if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+		        {
+			        if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+		        }
+
 
             var region = GetRegionDocument();
             region.Link(theDoc, LinkTargetPlacement.Default);
 
-            convertTextFromXamlRTF();
 
-            xRichEditBox.Document.Selection.SetRange(s1, s2);
+		        convertTextFromXamlRTF();
+
+		        xRichEditBox.Document.Selection.SetRange(s1, s2);
+			}
         }
 
         DocumentController createRTFHyperlink()

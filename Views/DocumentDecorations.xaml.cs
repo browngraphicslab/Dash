@@ -2,43 +2,39 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
-using Dash.Models.DragModels;
-using System.Diagnostics;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Windows.UI;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-
-
     public sealed partial class DocumentDecorations : UserControl, INotifyPropertyChanged
     {
+        static PointerPoint _pointerPointHack; // capture a pointerPoint so that we can call StartDrag from a right-drag manipulationStarted event
+        private Visibility _resizerVisibilityState = Visibility.Collapsed;
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
         private bool _isMoving;
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         public Tag CurrEditTag;
+        private DocumentController currEditLink;
         private ObservableCollection<string> currNames = new ObservableCollection<string>();
 
         public Dictionary<string, List<DocumentController>> tagMap = new Dictionary<string, List<DocumentController>>();
@@ -51,10 +47,19 @@ namespace Dash
                 if (value != _visibilityState && !_visibilityLock)
                 {
                     _visibilityState = value;
-                    //if (value == Visibility.Collapsed) SuggestGrid.Visibility = Visibility.Collapsed;
+                    SuggestGrid.Visibility = CurrEditTag != null ? Visibility.Visible : Visibility.Collapsed;
                     SetPositionAndSize();
                     OnPropertyChanged(nameof(VisibilityState));
                 }
+            }
+        }
+        public Visibility ResizerVisibilityState
+        {
+            get => _resizerVisibilityState;
+            set
+            {
+                _resizerVisibilityState = value;
+                OnPropertyChanged(nameof(ResizerVisibilityState));
             }
         }
 
@@ -63,7 +68,6 @@ namespace Dash
             get => _docWidth;
             set => _docWidth = value;
         }
-
 
         public Queue<Tag> RecentTags
         {
@@ -109,7 +113,7 @@ namespace Dash
                 _visibilityLock = false;
                 foreach (var doc in value)
                 {
-                    if (doc.ViewModel.Undecorated)
+                    if (doc.ViewModel?.Undecorated == true)
                     {
                         _visibilityLock = true;
                         VisibilityState = Visibility.Collapsed;
@@ -120,7 +124,7 @@ namespace Dash
                     doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey,
                         DocumentController_OnPositionFieldUpdated);
                     doc.SizeChanged += DocView_OnSizeChanged;
-                    if (doc.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) &&
+                    if (doc.ViewModel?.DocumentController.DocumentType.Equals(RichTextBox.DocumentType) == true &&
                         doc.GetFirstDescendantOfType<RichTextView>() != null)
                     {
                         doc.GetFirstDescendantOfType<RichTextView>().OnManipulatorHelperStarted += ManipulatorStarted;
@@ -149,6 +153,7 @@ namespace Dash
             if (!_isMoving)
             {
                 VisibilityState = Visibility.Visible;
+                ResizerVisibilityState = Visibility.Visible;
             }
         }
 
@@ -163,6 +168,7 @@ namespace Dash
         private void DocView_OnDeleted()
         {
             VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
         }
 
         private void ManipulatorCompleted()
@@ -174,6 +180,8 @@ namespace Dash
         private void ManipulatorStarted()
         {
             VisibilityState = Visibility.Collapsed;
+            ResizerVisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = VisibilityState;
             _isMoving = true;
         }
 
@@ -200,8 +208,58 @@ namespace Dash
             _recentTags = new Queue<Tag>();
             Loaded += DocumentDecorations_Loaded;
             Unloaded += DocumentDecorations_Unloaded;
-        }
+            // setup ResizeHandles
+            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+            {
+                if (this.IsRightBtnPressed())
+                {
+                    _selectedDocs.ForEach((dv) =>
+                        dv.StartDragAsync(_pointerPointHack));
+                }
+                else
+                {
+                    (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
+                    (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
 
+                    _selectedDocs.ForEach((dv) => dv.SendResizeManipulationStarted(sender));
+                    UndoManager.StartBatch();
+
+                    MainPage.Instance.Focus(FocusState.Programmatic);
+                    e.Handled = true;
+                }
+            }
+
+            void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+            {
+                _selectedDocs.ForEach((dv) => dv.SendResizeManipulationCompleted(sender));
+                UndoManager.EndBatch();
+                (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
+                e.Handled = true;
+            }
+
+            foreach (var handle in new Rectangle[] {
+                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
+                xLeftResizeControl, xRightResizeControl,
+                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
+            {
+                handle.Tag = handle.ManipulationMode;
+                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+                handle.PointerReleased += (s, e) => { handle.ReleasePointerCapture(e.Pointer); e.Handled = true; };
+                handle.PointerPressed += (s, e) =>
+                {
+                    _pointerPointHack = e.GetCurrentPoint(MainPage.Instance);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                    if (e.Handled)
+                    {
+                        handle.CapturePointer(e.Pointer);
+                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
+                    }
+                    else
+                        handle.ManipulationMode = ManipulationModes.All;
+                };
+            }
+        }
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
@@ -244,6 +302,7 @@ namespace Dash
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
+            CurrEditTag = null;
 
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             if (SelectedDocs.Count > 1)
@@ -269,7 +328,7 @@ namespace Dash
 
         static HashSet<string> LinkNames = new HashSet<string>();
 
-        private void SetPositionAndSize()
+        public void SetPositionAndSize()
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
@@ -279,11 +338,11 @@ namespace Dash
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
                     .TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
-                topLeft.X = Math.Min(viewModelBounds.Left - doc.xTargetBorder.BorderThickness.Left, topLeft.X);
-                topLeft.Y = Math.Min(viewModelBounds.Top - doc.xTargetBorder.BorderThickness.Top, topLeft.Y);
+                topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
+                topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
 
-                botRight.X = Math.Max(viewModelBounds.Right + doc.xTargetBorder.BorderThickness.Right, botRight.X);
-                botRight.Y = Math.Max(viewModelBounds.Bottom + doc.xTargetBorder.BorderThickness.Bottom, botRight.Y);
+                botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
+                botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
 
                 if (doc.ViewModel != null)
                 {
@@ -293,20 +352,17 @@ namespace Dash
                 }
             }
 
+            var br = Util.PointTransformFromVisual(SelectedDocs.FirstOrDefault()?.ViewModel?.DocumentController.GetActualSize() ?? new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
+            var tl = Util.PointTransformFromVisual(new Point(), SelectedDocs.FirstOrDefault(), MainPage.Instance);
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null || br.X - tl.X < 50 ? Visibility.Collapsed : Visibility.Visible;
 
             rebuildMenuIfNeeded();
 
             //TODO: DO WE NEED THIS STILL?
             // update menu items to point to the currently selected document
-            foreach (var item in xButtonsPanel.Children.OfType<Button>())
+            foreach (var item in xButtonsPanel.Children.OfType<Grid>())
             {
-                var target = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument;
-                //tagMap.Clear();
-                //GetLinkTypes(target, tagMap);
                 var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
-                //item.Background = map.ContainsKey(menuLinkName)
-                //	? new SolidColorBrush(new Windows.UI.Color() {A = 0x10, R = 0, G = 0xff, B = 0})
-                //	: null;
                 item.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), menuLinkName);
             }
 
@@ -316,30 +372,23 @@ namespace Dash
                 return;
             }
             
-            if (botRight.X > MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-            {
-                botRight = new Point(MainPage.Instance.ActualWidth - xStackPanel.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
-                topLeft = new Point(topLeft.X, topLeft.Y + 30);
-            }
+            if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
             this.RenderTransform = new TranslateTransform
             {
-                X = topLeft.X-3,
+                X = topLeft.X,
                 Y = topLeft.Y
             };
 
             ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
-            xRow.Height = new GridLength(Math.Max(0,botRight.Y - topLeft.Y));
+            ContentRow.Height = new GridLength(botRight.Y - topLeft.Y);
 
             if (_recentTags.Count == 0) xRecentTagsDivider.Visibility = Visibility.Visible;
         }
 
         private void AddLinkTypeButton(string linkName)
         {
-            //check if link type button already exists 
-            if (tagMap[linkName] == null)
-            {
-
-            }
+            //button formatting
             var tb = new TextBlock()
             {
                 Text = linkName.Substring(0, 1),
@@ -347,55 +396,49 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = new SolidColorBrush(Colors.White)
             };
-            var g = new Grid()
+            var button = new Grid()
             {
-                Background = new SolidColorBrush(Colors.Transparent)
+                Background = new SolidColorBrush(Colors.Transparent),
+                CanDrag = true,
+                Width = 22,
+                Height = 22,
             };
             //set button color to tag color
             var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
             var btnColorFinal = btnColorOrig != null
                 ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                 : Color.FromArgb(255, 64, 123, 177);
-            g.Children.Add(new Windows.UI.Xaml.Shapes.Ellipse()
+            var ellipse = new Ellipse()
             {
                 Width = 22,
                 Height = 22,
-                Fill = new SolidColorBrush(btnColorFinal)
-            });
-            g.Children.Add(tb);
-            var button = new Button()
-            {
-                Content = g,
-                Width = 22,
-                Height = 22,
-                Background = new SolidColorBrush(Colors.Transparent),
+                Fill = new SolidColorBrush(btnColorFinal),
                 CanDrag = true,
                 HorizontalAlignment = HorizontalAlignment.Center,
             };
+            button.Children.Add(ellipse);
+            button.Children.Add(tb);
             button.DragStarting += (s, args) =>
             {
-                var doq = ((s as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-                if (doq != null)
-                {
-                    args.Data.Properties[nameof(DragDocumentModel)] =
-                        new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName };
-                    args.AllowedOperations =
-                        DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                    args.Data.RequestedOperation =
-                        DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                    doq.ViewModel.DecorationState = false;
-                }
+                DocumentView doq = ((s as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
+                if (doq == null) return;
+
+                args.Data.AddDragModel(new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = linkName });
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                doq.ViewModel.DecorationState = false;
             };
 
-            ToolTip toolTip = new ToolTip();
-            toolTip.Content = linkName;
-            toolTip.HorizontalOffset = 5;
-            toolTip.Placement = PlacementMode.Right;
+            ToolTip toolTip = new ToolTip
+            {
+                Content = linkName,
+                HorizontalOffset = 5,
+                Placement = PlacementMode.Right
+            };
             ToolTipService.SetToolTip(button, toolTip);
             xButtonsPanel.Children.Add(button);
             button.PointerEntered += (s, e) => toolTip.IsOpen = true;
             button.PointerExited += (s, e) => toolTip.IsOpen = false;
-            button.DragStarting += XAnnotateEllipseBorder_OnDragStarting;
 
             button.Tapped += (s, e) =>
             {
@@ -413,7 +456,16 @@ namespace Dash
             //allow users to change default tag titles by right click
             button.RightTapped += (s, e) =>
             {
-                ToggleTagEditor(_tagNameDict[linkName]);
+                e.Handled = true;
+                ToggleTagEditor(_tagNameDict[linkName], s as FrameworkElement);
+
+            };
+            button.PointerPressed += (s, e) =>
+            {
+                foreach (var doc in SelectedDocs)
+                {
+                    doc.ManipulationMode = ManipulationModes.None;
+                }
             };
         }
 
@@ -487,39 +539,7 @@ namespace Dash
             //REMOVE OLD TAG
             if (_tagNameDict.ContainsKey(linkName))
             {
-                /*
-				var oldTag = _tagNameDict[linkName];
-				hexColor = oldTag.Color;
-				Tags.Remove(oldTag);
-				DocumentController oldTagDoc = null;
-				foreach (var docC in TagsSave)
-				{
-					if (docC.GetField<TextController>(KeyStore.DataKey, true).Data.Equals(linkName))
-					{
-						oldTagDoc = docC;
-						break;
-					}
-				}
-
-				if (oldTagDoc != null)
-				{
-					if (RecentTagsSave.Contains(oldTagDoc))
-					{
-						RecentTagsSave.Remove(oldTagDoc);
-						//check if this tag is in recent tags & replace
-						int index;
-						Queue<Tag> catchQueue = new Queue<Tag>();
-						foreach (var recent in _recentTags)
-						{
-
-						}
-					}
-					TagsSave.Remove(oldTagDoc);
-					hexColor = oldTagDoc.GetField<ColorController>(KeyStore.BackgroundColorKey, true).Data;
-				}
-				*/
                 tag = _tagNameDict[linkName];
-                //hexColor = tag.Color;
             }
             else
             {
@@ -578,7 +598,6 @@ namespace Dash
         {
             if (SuggestGrid.Visibility == Visibility.Visible) return;
             xButtonsPanel.Children.Clear();
-            //_tagNameDict.Clear();
             //check each relevant tag name & create the tag graphic & button for it!
             foreach (var name in tagMap.Keys)
             {
@@ -672,10 +691,11 @@ namespace Dash
                      !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
                     VisibilityState = Visibility.Collapsed;
                 //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
-                //SuggestGrid.Visibility = Visibility.Collapsed;
+                SuggestGrid.Visibility = Visibility.Collapsed;
             }
 
-            MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
+            if (doc.ViewModel != null)
+                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
             if (MainPage.Instance.MainDocView != doc)
             {
                 var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
@@ -692,8 +712,9 @@ namespace Dash
             foreach (var doc in SelectedDocs)
             {
                 var ann = new AnnotationManager(doc);
-                ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
-                    e.GetPosition(doc));
+                if (doc.ViewModel != null)
+                    ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
+                        e.GetPosition(doc));
             }
         }
 
@@ -716,10 +737,9 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (var doc in SelectedDocs)
+            foreach (DocumentView doc in SelectedDocs)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] =
-                    new DragDocumentModel(doc.ViewModel.DocumentController, false, doc);
+                args.Data.AddDragModel(new DragDocumentModel(doc.ViewModel.DocumentController, false, doc));
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
@@ -763,21 +783,18 @@ namespace Dash
         [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            //ShowTags();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void DocumentDecorations_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             VisibilityState = Visibility.Visible;
-            // ShowTags();
         }
 
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            VisibilityState = Visibility.Collapsed;
-            //SuggestGrid.Visibility = Visibility.Collapsed;
-            //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
+            if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+                VisibilityState = Visibility.Collapsed;
         }
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -842,15 +859,29 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (!MainPage.Instance.IsShiftPressed())
+            //activation mode only relevant for images & pdfs now
+            var shouldActivate = true;
+            foreach (DocumentView doc in SelectedDocs)
             {
-                MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+                var docType = doc.ViewModel.DocumentController.DocumentType;
+                if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
             }
 
-            foreach (var doc in SelectedDocs)
+            if (shouldActivate == false) return;
+
+            using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.ActivationManager.ToggleActivation(doc);
+                if (!MainPage.Instance.IsShiftPressed())
+                {
+                    MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+                }
+
+                foreach (var doc in SelectedDocs)
+                {
+                    MainPage.Instance.ActivationManager.ToggleActivation(doc);
+                }
             }
+
 
         }
 
@@ -869,13 +900,13 @@ namespace Dash
             }
         }
 
-        private void ToggleTagEditor(Tag tagPressed = null)
+        private void ToggleTagEditor(Tag tagPressed, FrameworkElement button)
         {
             if (tagPressed == CurrEditTag)
             {
                 if (SuggestGrid.Visibility == Visibility.Collapsed)
                 {
-                    OpenTagEditor(tagPressed);
+                    OpenTagEditor(tagPressed, button);
                 }
                 else
                 {
@@ -886,23 +917,78 @@ namespace Dash
             }
             else
             {
-                OpenTagEditor(tagPressed);
+                OpenTagEditor(tagPressed, button);
             }
 
         }
 
-        private void OpenTagEditor(Tag currTag)
+        /// <summary>
+        /// Opens the editor beneath the document to edit the tags of the selected links. This is called when the user right clicks a link bubble.
+        /// </summary>
+        /// <param name="currTag"></param>
+        private void OpenTagEditor(Tag currTag, FrameworkElement button, DocumentController chosenLink = null)
         {
+            //TODO: DO I NEED THIS?
             CurrEditTag = currTag;
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
-            foreach (var tag in _recentTags)
+
+            //if one link has this tag, open tag editor for that link
+            if (tagMap[currTag.Text].Count == 1)
             {
-                tag.RidSelectionBorder();
-                if (tag == currTag) tag.AddSelectionBorder();
+                //update selected recent tag
+                foreach (var tag in _recentTags)
+                {
+                    tag.RidSelectionBorder();
+                    if (tag.Text.Equals(currTag.Text)) tag.AddSelectionBorder();
+                }
+                currEditLink = tagMap[currTag.Text].First();
+                SuggestGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
+            }
+            else if (chosenLink != null)
+            {
+                currEditLink = chosenLink;
+                //update selected recent tag
+                foreach (var tag in _recentTags)
+                {
+                    tag.RidSelectionBorder();
+                    if (chosenLink.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(tag.Text) ?? false) tag.AddSelectionBorder();
+                }
+                SuggestGrid.Visibility = Visibility.Visible;
+                xFadeAnimationIn.Begin();
+            }
+            else //open context menu to let user decide which link to edit
+            {
+                var flyout = new MenuFlyout();
+
+                foreach (DocumentController link in tagMap[currTag.Text])
+                {
+                    if (link.GetField<ListController<TextController>>(KeyStore.LinkTagKey)?.Select(tc => tc.Data).Contains(currTag.Text) ?? false)
+                    {
+                        //get title of target
+                        var targetTitle = link.GetLinkedDocument(LinkDirection.ToDestination)?
+                            .Title ?? link.GetLinkedDocument(LinkDirection.ToSource)
+                                              .Title;
+
+                        var item = new MenuFlyoutItem
+                        {
+                            Text = targetTitle,
+                            DataContext = link
+                        };
+                        //clicking menu item should open the editor with the chosen, affected doc as the chosen item
+                        var itemHdlr = new RoutedEventHandler((s, e) =>
+                            OpenTagEditor(currTag, button, (s as MenuFlyoutItem)?.DataContext as DocumentController));
+
+                        item.Click += itemHdlr;
+                        flyout.Items?.Add(item);
+
+                    }
+                }
+                //show flyout @ correct point
+                flyout.ShowAt(button);
             }
 
-            SuggestGrid.Visibility = Visibility.Visible;
-            xFadeAnimationIn.Begin();
+
         }
 
         //temporary method for telling all links associated with this tag that an additional tag has been added
@@ -917,5 +1003,12 @@ namespace Dash
 
         }
 
+        void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, true, true)); }
+        void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, true)); }
+        void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, true)); }
+        void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, true)); }
+        void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
+        void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
+        void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
     }
 }
