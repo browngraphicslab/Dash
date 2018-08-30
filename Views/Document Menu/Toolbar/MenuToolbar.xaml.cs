@@ -290,6 +290,8 @@ namespace Dash
                     DocumentView selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
 
+                    if (selection.ViewModel == null) return;
+
 					//Find the type of the selected node and update the subtoolbar binding appropriately.
 
 					// Image controls

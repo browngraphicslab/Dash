@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -107,8 +108,8 @@ namespace Dash
         {
             if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                 var realPar = cview?.CurrentView.UserControl;
-                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                var realPar = cview?.CurrentView?.UserControl;
+                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
                 
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
@@ -146,13 +147,13 @@ namespace Dash
                 // force the view to refresh now that everything is loaded.  These changed handlers will cause the
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
-                ActualSizeFieldChanged(null, null, null);
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
                     DocumentViewModels.Clear();
                     addViewModels(CollectionController.TypedData);
                 }
+                ActualSizeFieldChanged(null, null, null);
 
                 _lastContainerDocument = ContainerDocument;
             }
@@ -696,10 +697,13 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
+                var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
-                    ? DataPackageOperation.Move
-                    : e.DataView.RequestedOperation;
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
+                    ? DataPackageOperation.Move :
+                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ? 
+                        DataPackageOperation.Copy 
+                        : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
 
@@ -718,8 +722,28 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
 
-                var docs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                AddDocuments(docs);
+                //SelectionManager.DeselectAll();
+                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                docsToAdd.ForEach(d => d.SetHidden(false));
+
+                var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+                if (!(sender as FrameworkElement).IsShiftPressed())
+                {
+                    foreach (var d in dragDocs)
+                    {
+                        for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                        {
+                            if (d.SourceCollectionViews[i].ViewModel == this)
+                            {
+                                docsToAdd.Remove(d.DraggedDocuments[i]);
+                                continue;
+                            }
+                            d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                        }
+                    }
+                }
+                AddDocuments(docsToAdd);
+                e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
 
@@ -730,9 +754,17 @@ namespace Dash
         {
             HighlightPotentialDropTarget(sender as ICollectionView);
 
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            if (e.DragUIOverride != null)
+            {
+                e.DragUIOverride.IsGlyphVisible = false;
+                e.DragUIOverride.IsCaptionVisible = false;
 
-            e.DragUIOverride.IsContentVisible = true;
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                    ? DataPackageOperation.Copy
+                    : e.DataView.RequestedOperation;
+
+                e.DragUIOverride.IsContentVisible = true;
+            }
 
             e.Handled = true;
         }
@@ -744,12 +776,20 @@ namespace Dash
             MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
             HighlightPotentialDropTarget(sender as ICollectionView);
 
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            if (e.DragUIOverride != null)
+            {
+                e.DragUIOverride.IsGlyphVisible = false;
+                e.DragUIOverride.IsCaptionVisible = false;
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                    ? DataPackageOperation.Copy
+                    : e.DataView.RequestedOperation;
 
-            if (e.DataView.HasDataOfType(Internal) && !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
-                e.AcceptedOperation = DataPackageOperation.None;
+                if (e.DataView.HasDataOfType(Internal) &&
+                    !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
+                    e.AcceptedOperation = DataPackageOperation.None;
 
-            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
+                e.DragUIOverride.IsContentVisible = true;
+            }
 
             e.Handled = true;
         }

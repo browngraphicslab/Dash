@@ -32,8 +32,6 @@ namespace Dash
             DocumentController = documentController;
             _lastLayout = LayoutDocument;
             _isDeletedTemplate = false;
-            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
-            InteractiveManipulationScale = Scale;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
             IsSearchHighlighted = false;
@@ -71,17 +69,6 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
 
-        /// <summary>
-        /// The cached Position of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Position instead
-        /// </summary>
-        public Point InteractiveManipulationPosition;
-        /// <summary>
-        /// The cached Scale of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Scale instead
-        /// </summary>
-        public Point InteractiveManipulationScale;
-
         private SolidColorBrush _searchHighlightBrush;
 
         public bool IsAdornmentGroup
@@ -95,7 +82,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetPosition() ?? new Point();
-            set => LayoutDocument.SetPosition(InteractiveManipulationPosition = value);
+            set => LayoutDocument.SetPosition(value);
         }
         public double XPos
         {
@@ -120,7 +107,7 @@ namespace Dash
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
         public RectangleGeometry DragBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
