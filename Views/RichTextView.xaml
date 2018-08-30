@@ -32,8 +32,8 @@
             Visibility="Collapsed">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
-                <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray"
-                        FontSize="8" Background="WhiteSmoke" />
+                <Button x:Name="xReplaceModeButton" Content="▼" Padding="-3" Height="25" Width="15" Foreground="Gray"
+                        FontSize="8" Background="WhiteSmoke" Tapped="XReplaceModeButton_Tapped" />
                 <!--SEARCH BOX-->
                 <SearchBox x:Name="xSearchBox" Padding="0" Height="25" Width="100" BorderBrush="Transparent"
                            Background="WhiteSmoke" />
@@ -51,7 +51,7 @@
                     Replace:
                 </TextBlock>
                 <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90"
-                         BorderBrush="Transparent" Background="WhiteSmoke" FontSize="10" />
+                         BorderBrush="Transparent" Background="WhiteSmoke" FontSize="10" KeyDown="XReplaceBox_KeyDown" />
                 <StackPanel.Clip>
                     <RectangleGeometry Rect="0,0,150,20" />
                 </StackPanel.Clip>
