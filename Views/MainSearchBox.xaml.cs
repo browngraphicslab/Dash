@@ -30,11 +30,22 @@ namespace Dash
         {
             InitializeComponent();
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+
+            _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+            _searchTimer.Tick += SearchTimerOnTick;
         }
+
+        private void SearchTimerOnTick(object sender, object o)
+        {
+            ExecuteDishSearch(xAutoSuggestBox);
+            _searchTimer.Stop();
+        }
+
         #endregion
 
         #region AutoSuggestBox Events
-        private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        private DispatcherTimer _searchTimer = new DispatcherTimer();
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
@@ -44,13 +55,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                int length = sender.Text.Length;
-                // Delay so that the user won't be slowed down by unnecessary searches unless they've been idle
-                await Task.Delay(300);
-                if (length == sender.Text.Length)
-                {
-                    ExecuteDishSearch(sender);
-                }
+                _searchTimer.Start();
 
             }
         }
@@ -127,7 +132,7 @@ namespace Dash
 
             foreach (object res in xAutoSuggestBox.Items)
             {
-                MainPage.Instance.HighlightDoc(((SearchResultViewModel) res).ViewDocument, false);
+                MainPage.Instance.HighlightDoc(((SearchResultViewModel)res).ViewDocument, false);
             }
 
             MainPage.Instance.HighlightDoc(docTapped, true);
@@ -139,7 +144,7 @@ namespace Dash
             DocumentController docTapped = viewModel?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
-        
+
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
             //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
@@ -194,12 +199,12 @@ namespace Dash
             if (show)
             {
                 xCollectionDragBorder.Visibility = Visibility.Visible;
-                
+
             }
             else
             {
                 xCollectionDragBorder.Visibility = Visibility.Collapsed;
-                
+
             }
         }
 
@@ -217,12 +222,12 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-               
+
             }
             else
             {
                 var centX = (float)xArrow.ActualWidth / 2 + 1;
-                var centY = (float) xArrow.ActualHeight / 2 + 1;
+                var centY = (float)xArrow.ActualHeight / 2 + 1;
                 //open search bar
                 xArrow.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
                     easingType: EasingType.Default).Start();
@@ -320,11 +325,11 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
-            
+
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
 
-            var itemsSource = (ObservableCollection<SearchResultViewModel>) searchBox.ItemsSource;
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
@@ -369,7 +374,7 @@ namespace Dash
                 vmGroups.Add(newVm);
             }
 
-            var first = vmGroups 
+            var first = vmGroups
                 .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
@@ -421,7 +426,7 @@ namespace Dash
             if (colDocs != null)
                 foreach (DocumentController doc in colDocs)
                 {
-                   UnHighlightDocs(doc);
+                    UnHighlightDocs(doc);
                 }
         }
 
@@ -484,7 +489,7 @@ namespace Dash
 
         private void XAutoSuggestBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            
+
         }
 
         private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
