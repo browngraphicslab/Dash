@@ -59,9 +59,7 @@ namespace Dash
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
             _documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (_documentView == null)
-                return;
-            _documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
+            _documentView?.ViewModel.DocumentController.GetDataDocument().SetTitle( _operator.GetOperatorType());
         }
 
 

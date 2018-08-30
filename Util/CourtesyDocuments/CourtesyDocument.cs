@@ -369,7 +369,7 @@ namespace Dash
 
         public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
         {
-            var curRegions = document.GetLinks(KeyStore.RegionsKey);
+            var curRegions = document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (curRegions == null)
             {
                 document.SetField(KeyStore.RegionsKey, new ListController<DocumentController>(regions), true);

@@ -191,12 +191,11 @@ namespace Dash
                 case "move": (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
                 case "leave": break;
                 case "up":    parent.ToFront();
-                                if (DocumentView.FocusedDocument != parent)
-                                {
-                                    DocumentView.FocusedDocument = parent;
-                                    parent.ForceLeftTapped();
-                                }
-                              (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
+                              if (DocumentView.FocusedDocument != parent)
+                              {
+                                 DocumentView.FocusedDocument = parent;
+                                 parent.ForceLeftTapped();
+                              }
                               web.Tag = null; break;
             }
         }

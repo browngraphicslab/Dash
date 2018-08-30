@@ -97,11 +97,6 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
-
-                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
-                {
-                    view.UpdateResizers();
-                }
             }
         }
 
@@ -109,16 +104,19 @@ namespace Dash
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
             {
-                e.Complete();
+                //e.Complete();
                 _processManipulation = false;
-            } else
-                _processManipulation = true;
-            e.Handled = true;
-
-            //make red selection border no longer visible
-            if (currentDocDec != null)
+            }
+            else
             {
-                currentDocDec.VisibilityState = Visibility.Collapsed;
+                _processManipulation = true;
+                e.Handled = true;
+
+                //make red selection border no longer visible
+                if (currentDocDec != null)
+                {
+                    currentDocDec.VisibilityState = Visibility.Collapsed;
+                }
             }
         }
         /// <summary>
@@ -126,7 +124,6 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-           
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

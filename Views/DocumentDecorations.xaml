@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     PointerEntered="DocumentDecorations_OnPointerEntered"
     PointerExited="DocumentDecorations_OnPointerExited"
@@ -14,16 +15,15 @@
     d:DesignWidth="400">
     
 
-    <Grid>
+    <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="ContentColumn" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="xRow"/>
+            <RowDefinition x:Name="ContentRow"/>
             <RowDefinition x:Name="XSuggestRow" Height="Auto"/>
         </Grid.RowDefinitions>
-
         <Grid.Resources>
             <Storyboard x:Name="xFadeAnimationIn">
                 <DoubleAnimation
@@ -42,30 +42,45 @@
             </Storyboard>
         </Grid.Resources>
 
-        <Border Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
-                HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" x:FieldModifier="public" />
+            <Grid x:Name="xResizeFrame" Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+                <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
+                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
+                <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
+                                   Fill="LightSkyBlue"  uiControls:Mouse.Cursor="SizeWestEast"  ManipulationDelta="ResizeBLunconstrained" ManipulationMode="TranslateX"/>
+                <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="10" Margin="0 0 -10 0" 
+                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeWestEast" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateX" />
+                <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="10" Margin="0 0 0 -10" 
+                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateY"/>
+                <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10" Margin="-10 -10 0 0"
+                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeTLaspect" ManipulationMode="TranslateY, TranslateX"/>
+                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="10" Width="10"  Margin="-10 0  0 -10"
+                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeBLaspect" ManipulationMode="TranslateY, TranslateX" />
+                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"  Margin="0 -10 -10  0" 
+                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
+                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
+                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
+            </Grid>
 
-        <Grid x:Name="xStackPanel" Grid.Column="1" Height="Auto" Background="#108bbbe5" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+            <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+                HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
+
+            <Grid x:Name="xAnnotationButtonsStack" Grid.Column="1" Height="Auto" Background="#108bbbe5" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="26"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Border x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent"
-                PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" RightTapped="XAnnotateEllipseBorder_OnRightTapped"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" DragStarting="XAnnotateEllipseBorder_OnDragStarting" >
-                <Grid  >
-                    <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
-                    <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
-                    <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
-                    />
-                    </ToolTipService.ToolTip>
-                </Grid>
-            </Border>
+            <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
+                    PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
+                    DragStarting="XAnnotateEllipseBorder_OnDragStarting" RightTapped="XAnnotateEllipseBorder_OnRightTapped">
+                <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
+                <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
+                <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
 
-            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-            </StackPanel>
+            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
 
             <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
                 <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
@@ -87,9 +102,7 @@
             </Grid>
         </Grid>
 
-
-
-        <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="1" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">
+        <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="2" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">
 
 
             <StackPanel Orientation="Vertical" >

@@ -35,5 +35,11 @@ namespace Dash
             DataDocument = node.DataDocument;
             RtfHighlight = new List<Search.SearchTerm>();
         }
+
+        public SearchResult AddRtfTerm(Search.SearchTerm term)
+        {
+            RtfHighlight.Add(term);
+            return this;
+        }
     }
 }

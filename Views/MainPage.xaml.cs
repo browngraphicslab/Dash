@@ -33,6 +33,8 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
+        static public Windows.UI.Input.PointerPoint PointerCaptureHack;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
+
         public enum PresentationViewState
         {
             Expanded,
@@ -71,6 +73,7 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -78,7 +81,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
-
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => PointerRoutedArgsHack = e), true); 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
@@ -183,7 +186,6 @@ namespace Dash
                 lastWorkspace.SetHeight(double.NaN);
 
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) { DecorationState = false };
-                MainDocView.RemoveResizeHandlers();
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
@@ -434,10 +436,10 @@ namespace Dash
             var dvm = MainDocView.ViewModel;
             highlightDoc(dvm, document, flag, search, animate);
 
-            foreach (DockedView dockedView in this.GetDescendantsOfType<DockedView>())
-            {
-                highlightDoc(dockedView.ContainedDocumentView.ViewModel, document, flag, search, animate);
-            }
+            //foreach (DockedView dockedView in this.GetDescendantsOfType<DockedView>())
+            //{
+            //    highlightDoc(dockedView.ContainedDocumentView.ViewModel, document, flag, search, animate);
+            //}
         }
 
         private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
@@ -689,14 +691,19 @@ namespace Dash
             e.Handled = true;
         }
 
+        public void CollapseSearch()
+        {
+            xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+        }
+
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
             {
                 if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
                 {
-                    xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                    xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
+                    CollapseSearch();
                 }
                 return;
             }
@@ -812,7 +819,6 @@ namespace Dash
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xMapDocumentView.RemoveResizeHandlers();
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 
