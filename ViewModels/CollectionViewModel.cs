@@ -734,12 +734,12 @@ namespace Dash
                     {
                         for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
                         {
-                            if (d.SourceCollectionViews[i].ViewModel == this)
+                            if (d.SourceCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
                                 continue;
                             }
-                            d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            d.SourceCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
                         }
                     }
                 }
