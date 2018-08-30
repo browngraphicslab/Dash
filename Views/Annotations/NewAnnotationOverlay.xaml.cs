@@ -197,7 +197,7 @@ namespace Dash
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
             if (linkedDoc != null)
             {
-                annotation.Link(linkedDoc, LinkTargetPlacement.Overlay);
+                annotation.Link(linkedDoc, LinkTargetPlacement.Overlay, null, true);
             }
 
             RegionDocsList.Add(annotation);
