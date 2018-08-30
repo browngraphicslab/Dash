@@ -243,6 +243,8 @@ namespace Dash
             ToFront();
         }
 
+        public bool AllowDragMovement = true;
+
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;

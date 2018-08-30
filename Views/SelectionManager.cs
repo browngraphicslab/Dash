@@ -228,6 +228,10 @@ namespace Dash
         #region Drag Manipulation Methods
         public static async void InitiateDragDrop(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
+            if (!draggedDoc.AllowDragMovement)
+            {
+                return;
+            }
             if (e != null)
             {
                 e.Handled = true;
@@ -245,6 +249,11 @@ namespace Dash
         }
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
+            if (!docView.AllowDragMovement)
+            {
+                return;
+            }
+
             DragManipulationStarted?.Invoke(sender, null);
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
@@ -300,7 +309,6 @@ namespace Dash
                 var additionalBp = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
                 sb.CopyToBuffer(additionalBp.PixelBuffer);
-                var c = additionalBp.GetPixel(40, 0);
                 var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
                 bp.Blit(pos, additionalBp, new Rect(0, 0, additionalBp.PixelWidth, additionalBp.PixelHeight),
                     Colors.White, WriteableBitmapExtensions.BlendMode.None);
