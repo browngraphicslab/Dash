@@ -31,17 +31,14 @@ namespace Dash
             Grid.SetRow(_xWebView, 0);
             _xWebView.Visibility = Visibility.Collapsed;
             _xWebView.CacheMode = new BitmapCache();
-            _xWebView.LoadCompleted += delegate { _xWebView.Visibility = Visibility.Visible; };
-
-            //_hitTextRect = new Rectangle
-            //{
-            //    VerticalAlignment = VerticalAlignment.Stretch,
-            //    HorizontalAlignment = HorizontalAlignment.Stretch,
-            //    Fill = new SolidColorBrush(Colors.Transparent),
-            //};
-            //Grid.SetRowSpan(_hitTextRect, 2);
-            //Grid.SetRow(_hitTextRect, 0);
-            //xOuterGrid.Children.Add(_hitTextRect);
+            _xWebView.LoadCompleted += delegate
+            {
+                _xWebView.Visibility = Visibility.Visible;
+                if (this.GetFirstAncestorOfType<DocumentView>() != null)
+                {
+                    this.GetFirstAncestorOfType<DocumentView>().AllowDragMovement = false;
+                }
+            };
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
         }
@@ -67,7 +64,6 @@ namespace Dash
             {
                 if (!xOuterGrid.Children.Contains(_bitmapImage) && xOuterGrid.Children.Contains(_xWebView))
                 {
-                    //xOuterGrid.Children.Add(_hitTextRect);
                     var rtb = new RenderTargetBitmap();
                     var s = new Point(Math.Floor(_xWebView.ActualWidth), Math.Floor(_xWebView.ActualHeight));
                     var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
@@ -84,7 +80,6 @@ namespace Dash
                         VerticalAlignment = VerticalAlignment.Stretch,
                         HorizontalAlignment = HorizontalAlignment.Stretch
                     };
-
                     xOuterGrid.Children.Remove(_xWebView);
                     xOuterGrid.Children.Add(_bitmapImage);
                     Grid.SetRow(_bitmapImage, 0);

@@ -27,6 +27,7 @@ using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
+using MyToolkit.Mathematics;
 
 namespace Dash
 {
@@ -236,6 +237,28 @@ namespace Dash
             {
                 e.Handled = true;
                 e.Complete();
+            }
+
+            if (draggedDoc.ViewModel.DocumentController.GetIsAdornment())
+            {
+                var rect = new Rect(draggedDoc.ViewModel.XPos, draggedDoc.ViewModel.YPos,
+                    draggedDoc.ViewModel.ActualSize.X, draggedDoc.ViewModel.ActualSize.Y);
+                var docs = new List<DocumentView> {draggedDoc};
+                foreach (var cp in draggedDoc.GetFirstAncestorOfType<Canvas>()?.Children)
+                {
+                    if (cp.GetFirstDescendantOfType<DocumentView>() != null)
+                    {
+                        var dv = cp.GetFirstDescendantOfType<DocumentView>();
+                        var dvmRect = new Rect(dv.ViewModel.XPos, dv.ViewModel.YPos, dv.ViewModel.ActualSize.X,
+                            dv.ViewModel.ActualSize.Y);
+                        if (rect.Intersects(dvmRect))
+                        {
+                            docs.Add(dv);
+                        }
+                    }
+                }
+
+                SelectDocuments(docs, false);
             }
             await draggedDoc.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedDoc));
         }
