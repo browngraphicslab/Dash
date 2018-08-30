@@ -29,14 +29,14 @@ namespace Dash
     public class CollectionViewModel : ViewModelBase
     {
         static ICollectionView _previousDragEntered;
-        bool    _canDragItems = true;
-        bool    _isLoaded;
+        bool _canDragItems = true;
+        bool _isLoaded;
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
-        private SettingsView.WebpageLayoutMode         WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
-        public ListController<DocumentController>      CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-        public InkController                           InkController        => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
+        private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
+        public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
+        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
-        public TransformGroupData                      TransformGroup
+        public TransformGroupData TransformGroup
         {
             get
             {
@@ -54,17 +54,17 @@ namespace Dash
                 ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
             }
         }
-        public DocumentController                      ContainerDocument { get; private set; }
-        public KeyController                           CollectionKey { get; set; }
+        public DocumentController ContainerDocument { get; private set; }
+        public KeyController CollectionKey { get; set; }
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
-        public CollectionView.CollectionViewType       ViewType
+        public AdvancedCollectionView BindableDocumentViewModels { get; set; }
+        public CollectionView.CollectionViewType ViewType
         {
             get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
-        public bool                                    CanDragItems
+        public bool CanDragItems
         {
             get { return _canDragItems; }
             set { SetProperty(ref _canDragItems, value); }
@@ -72,7 +72,6 @@ namespace Dash
 
         public CollectionViewModel(DocumentController containerDocument, KeyController fieldKey, Context context = null)
         {
-            id = COLID++;
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             SetCollectionRef(containerDocument, fieldKey);
@@ -113,9 +112,9 @@ namespace Dash
         {
             if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
-                 var realPar = cview?.CurrentView.UserControl;
-                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
-                
+                var realPar = cview?.CurrentView.UserControl;
+                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight) : ContainerDocument.GetActualSize() ?? new Point();
+
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -136,15 +135,11 @@ namespace Dash
             }
         }
 
-        private int count = 0;
-        private static int COLID = 0;
-        private int id;
         public void Loaded(bool isLoaded)
         {
             _isLoaded = isLoaded;
             if (isLoaded)
             {
-                Debug.WriteLine($"CVM {id} loaded {++count}");
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -164,7 +159,6 @@ namespace Dash
             }
             else
             {
-                Debug.WriteLine($"CVM {id} unloaded {--count}");
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
@@ -203,7 +197,7 @@ namespace Dash
         }
 
         #region DocumentModel and DocumentViewModel Data Changes
-        
+
         private Storyboard _lateralAdjustment = new Storyboard();
         private Storyboard _verticalAdjustment = new Storyboard();
 
@@ -241,14 +235,13 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents)
         {
-            Debug.WriteLine("Adding " + id);
-                using (BindableDocumentViewModels.DeferRefresh())
+            using (BindableDocumentViewModels.DeferRefresh())
+            {
+                foreach (var documentController in documents)
                 {
-                    foreach (var documentController in documents)
-                    {
-                            DocumentViewModels.Add(new DocumentViewModel(documentController));
-                    }
+                    DocumentViewModels.Add(new DocumentViewModel(documentController));
                 }
+            }
         }
 
         void removeViewModels(List<DocumentController> documents)
@@ -617,7 +610,7 @@ namespace Dash
                             if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
                             {
                                 var html = await Clipboard.GetContent().GetHtmlFormatAsync();
-                                foreach (var str in html.Split(new[] {'\r'}))
+                                foreach (var str in html.Split(new[] { '\r' }))
                                 {
                                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                                     if (matches.Count != 0)
@@ -639,7 +632,7 @@ namespace Dash
                                 postitNote = postitView.Document;
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
                                     sourceDoc.Title, true);
-                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController> { region });
 
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
@@ -652,10 +645,10 @@ namespace Dash
                                 postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             }
 
-                            
+
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
-                            
+
 
                         }
                     }

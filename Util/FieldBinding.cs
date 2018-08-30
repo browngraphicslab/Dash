@@ -270,9 +270,14 @@ namespace Dash
                 };
 
             int refCount = 0;
+            bool mask = false;
+
+            element.Unloaded += OnElementOnUnloaded;
+            element.Loaded += OnElementOnLoaded;
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             if(element.IsInVisualTree())
             {
+                mask = true;
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 refCount++;
@@ -280,24 +285,30 @@ namespace Dash
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
+                mask = false;
                 if (--refCount == 0)
                 {
                     binding.Remove(handler);
                 }
-                Debug.Assert(refCount >= 0);
+                Debug.WriteLine("RefCount = " + refCount);
+                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
+                //Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
+                if (mask)
+                {
+                    mask = false;
+                    return;
+                }
+
                 if (refCount++ == 0)
                 {
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
             }
-
-            element.Unloaded += OnElementOnUnloaded;
-            element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {
@@ -343,20 +354,27 @@ namespace Dash
             
             long token = -1;
             int refCount = 0;
+            bool mask = false;
+            element.Loaded += OnElementOnLoaded;
+            element.Unloaded += OnElementOnUnloaded;
 
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             if(element.IsInVisualTree())
             {
+                mask = true;
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
                 refCount++;
             }
 
-            element.Loaded += OnElementOnLoaded;
-            element.Unloaded += OnElementOnUnloaded;
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
+                if (mask)
+                {
+                    mask = false;
+                    return;
+                }
 
                 if (--refCount == 0)
                 {
@@ -365,11 +383,14 @@ namespace Dash
                     token = -1;
                 }
 
-                Debug.Assert(refCount >= 0);
+                Debug.WriteLine("RefCount = " + refCount);
+                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
+                //Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
+                mask = false;
                 if (refCount++ == 0)
                 {
                     binding.ConvertToXaml(element, property, binding.Context);

@@ -1337,13 +1337,8 @@ namespace Dash
         {
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
-                var del = _fieldUpdatedDictionary[key];
                 // ReSharper disable once DelegateSubtraction
-                del -= handler;
-                if (del == null)
-                {
-                    _fieldUpdatedDictionary.Remove(key);
-                }
+                _fieldUpdatedDictionary[key] -= handler;
             }
         }
         /// <summary>
