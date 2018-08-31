@@ -336,7 +336,7 @@ namespace Dash
         {
             _docs = docs;
             _currentDocController = docs.ViewModel.DocumentController;
-            xMenuView?.SetRichTextBinding(_docs.GetFirstDescendantOfType<RichTextView>());
+            xMenuView?.SetRichTextBinding(_docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
             Color ccol = _currentDocController.GetBackgroundColor() ?? Colors.Transparent;
             //xOpacitySlider.Value = ccol.A / 255.0 * xOpacitySlider.Maximum;
             xBackgroundColorPicker.SelectedColor = ccol;

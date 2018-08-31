@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 
@@ -638,7 +639,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkTargetPlacement.Default);
+                                region.Link(sourceDoc, LinkTargetPlacement.Default, annotation:true);
 
                             }
                             else
@@ -724,21 +725,22 @@ namespace Dash
 
                 //SelectionManager.DeselectAll();
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                docsToAdd.ForEach(d => d.SetHidden(false));
 
                 var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
-                if (!(sender as FrameworkElement).IsShiftPressed())
+                if (!MainPage.Instance.IsShiftPressed())
                 {
                     foreach (var d in dragDocs)
                     {
                         for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
                         {
-                            if (d.SourceCollectionViews[i].ViewModel == this)
+                            if (d.SourceCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
-                                continue;
                             }
-                            d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            else
+                            {
+                                d.SourceCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            }
                         }
                     }
                 }
@@ -790,8 +792,6 @@ namespace Dash
 
                 e.DragUIOverride.IsContentVisible = true;
             }
-
-            e.Handled = true;
         }
 
         /// <summary>

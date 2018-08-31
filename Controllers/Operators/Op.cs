@@ -96,6 +96,7 @@ namespace Dash
             data_document,
             data_doc,
             link,
+            link_des_text,
 
                 // collections
                 coll,

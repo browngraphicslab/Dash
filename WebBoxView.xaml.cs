@@ -22,7 +22,8 @@ namespace Dash
     {
         private readonly WebView _xWebView;
         private Image _bitmapImage = new Image();
-
+        public const string BlockManipulation = "true";// bcz: block dragging of web view when it's selected by itself so that we can fully interact with its content
+        public const string AllowManipulation = null;
         public WebBoxView()
         {
             InitializeComponent();
@@ -31,36 +32,26 @@ namespace Dash
             Grid.SetRow(_xWebView, 0);
             _xWebView.Visibility = Visibility.Collapsed;
             _xWebView.CacheMode = new BitmapCache();
-            _xWebView.LoadCompleted += delegate
-            {
-                _xWebView.Visibility = Visibility.Visible;
-                if (this.GetFirstAncestorOfType<DocumentView>() != null)
-                {
-                    this.GetFirstAncestorOfType<DocumentView>().AllowDragMovement = false;
-                }
-            };
-
-            SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
+            _xWebView.Tag = BlockManipulation;
+            _xWebView.LoadCompleted += (s,e) =>_xWebView.Visibility = Visibility.Visible;
+            Loaded   += (s,e) => SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
+            Unloaded += (s, e) => SelectionManager.SelectionChanged -= SelectionManager_SelectionChangedAsync;
         }
 
         private async void SelectionManager_SelectionChangedAsync(DocumentSelectionChangedEventArgs args)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
 
-            if (args.SelectedViews.Contains(docView))
+            if (SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
                 if (xOuterGrid.Children.Contains(_bitmapImage) && !xOuterGrid.Children.Contains(_xWebView))
                 {
                     xOuterGrid.Children.Remove(_bitmapImage);
                     xOuterGrid.Children.Add(_xWebView);
-                    Grid.SetRow(_xWebView, 0);
-                    if (docView != null)
-                    {
-                        docView.AllowDragMovement = false;
-                    }
+                    _xWebView.Tag = BlockManipulation; 
                 }
             }
-            else if (args.DeselectedViews.Contains(docView))
+            else if (!SelectionManager.GetSelectedDocs().Contains(docView) || (SelectionManager.GetSelectedDocs().Count > 1 && _xWebView.Tag is string))
             {
                 if (!xOuterGrid.Children.Contains(_bitmapImage) && xOuterGrid.Children.Contains(_xWebView))
                 {
@@ -83,10 +74,7 @@ namespace Dash
                     xOuterGrid.Children.Remove(_xWebView);
                     xOuterGrid.Children.Add(_bitmapImage);
                     Grid.SetRow(_bitmapImage, 0);
-                    if (docView != null)
-                    {
-                        docView.AllowDragMovement = true;
-                    }
+                    _xWebView.Tag = AllowManipulation;
                 }
             }
         }

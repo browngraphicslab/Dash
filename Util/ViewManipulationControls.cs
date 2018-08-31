@@ -47,6 +47,8 @@ namespace Dash
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
+        public static DocumentDecorations currentDocDec;
+
         private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn == SettingsView.MouseFuncMode.Scroll; 
 
         /// <summary>
@@ -109,8 +111,13 @@ namespace Dash
             {
                 _processManipulation = true;
                 e.Handled = true;
-            }
 
+                //make red selection border no longer visible
+                if (currentDocDec != null)
+                {
+                    currentDocDec.VisibilityState = Visibility.Collapsed;
+                }
+            }
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.

@@ -1063,9 +1063,10 @@ namespace Dash
         {
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
-            docCopy.SetWidth(size?.X ?? 200);
-            docCopy.SetHeight(size?.Y ?? 200);
-            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 100, xCanvas.RenderSize.Height / 2 - 100);
+            docCopy.SetWidth(size?.X ?? 150);
+            docCopy.SetHeight(size?.Y ?? 100);
+            //put popup slightly left of center, so its not covered centered doc
+            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
             docCopy.SetPosition(position ?? defaultPt);
             
             var docView = new DocumentView
@@ -1076,12 +1077,10 @@ namespace Dash
                 BindRenderTransform = true
             };
 
-            SelectionManager.Select(docView, false);
-
             docView.DocumentDeselected += DocView_DocumentDeselected;
-
-            //add to xCanvas
             xCanvas.Children.Add(docView);
+
+            SelectionManager.Select(docView, false);
         }
 
         private void DocView_DocumentDeselected(DocumentView sender)
@@ -1134,61 +1133,7 @@ namespace Dash
             }
             else
             {
-                DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
-                if (docked != null)
-                {
-                    DockManager.Undock(docked);
-                }
-                else  // otherwise, we have to show the document in a docked view
-                {
-                    var tree = DocumentTree.MainPageTree;
-                    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
-                    var collection = node?.Parent.ViewDocument;
-
-                    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
-                    {
-                        var docview = DockManager.Dock(target, DockDirection.Right);
-                    }
-                    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
-                    {
-
-                        DockedView dockedCollection = DockManager.GetDockedView(collection);
-                        if (dockedCollection != null)
-                        {
-                            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
-                                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-                            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
-                                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                            else DockManager.Undock(dockedCollection);
-                        }
-                        else
-                        {
-
-                            target.SetHidden(false);
-                            var docView = DockManager.Dock(collection, DockDirection.Right);
-                            var cview = docView.ViewModel.Content;
-                            cview.Tag = target;
-                            cview.Loaded += Docview_Loaded;
-                            var col = docView.ViewModel.DocumentController;
-
-                            var pos = node.ViewDocument.GetPosition() ?? new Point();
-                            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                            double YZoom = MainDocView.ActualHeight /
-                                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                            //col.SetField<PointController>(KeyStore.PanPositionKey,
-                            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
-                            col.SetField<PointController>(KeyStore.PanPositionKey,
-                                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
-
-                            col.SetField<PointController>(KeyStore.PanZoomKey,
-                                new Point(zoom, zoom), true);
-                        }
-                    }
-                }
+                Dock_Link(linkDoc, direction);
             }
 
             target.GotoRegion(region, linkDoc);
@@ -1200,6 +1145,69 @@ namespace Dash
             }
 
             return LinkHandledResult.HandledRemainOpen;
+        }
+
+        public void Dock_Link(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
+        {
+            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            var target = region.GetRegionDefinition() ?? region;
+            var onScreenView = GetTargetDocumentView(xDockFrame, target);
+
+            DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
+            if (docked != null)
+            {
+                DockManager.Undock(docked);
+            }
+            else  // otherwise, we have to show the document in a docked view
+            {
+                var tree = DocumentTree.MainPageTree;
+                var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
+                var collection = node?.Parent.ViewDocument;
+
+                if (collection == null || !inContext)       // if the document doesn't exist in any collection, then just dock it by itself
+                {
+                    var docview = DockManager.Dock(target, DockDirection.Right);
+                }
+                else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
+                {
+
+                    DockedView dockedCollection = DockManager.GetDockedView(collection);
+                    if (dockedCollection != null)
+                    {
+                        onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
+                            .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+                        if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+                            onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                        else DockManager.Undock(dockedCollection);
+                    }
+                    else
+                    {
+
+                        target.SetHidden(false);
+                        var docView = DockManager.Dock(collection, DockDirection.Right);
+                        var cview = docView.ViewModel.Content;
+                        cview.Tag = target;
+                        cview.Loaded += Docview_Loaded;
+                        var col = docView.ViewModel.DocumentController;
+
+                        var pos = node.ViewDocument.GetPosition() ?? new Point();
+                        double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+                        double YZoom = MainDocView.ActualHeight /
+                                       (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+                        var zoom = Math.Min(xZoom, YZoom) * 0.7;
+                        //col.SetField<PointController>(KeyStore.PanPositionKey,
+                        //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+                        double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+                        double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+                        double xrat = 500 / (double)(node.ViewDocument.GetActualSize()?.X);
+                        col.SetField<PointController>(KeyStore.PanPositionKey,
+                            new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+
+                        col.SetField<PointController>(KeyStore.PanZoomKey,
+                            new Point(zoom, zoom), true);
+                    }
+                }
+            }
         }
 
         private void Docview_Loaded(object sender, RoutedEventArgs e)

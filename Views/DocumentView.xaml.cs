@@ -160,9 +160,12 @@ namespace Dash
                 updateBindings();
                 DataContextChanged += (s, a) =>
                 {
-                    _oldViewModel?.UnLoad();
-                    updateBindings();
-                    _oldViewModel = ViewModel;
+                    if (a.NewValue != _oldViewModel)
+                    {
+                        _oldViewModel?.UnLoad();
+                        updateBindings();
+                        _oldViewModel = ViewModel;
+                    }
                 };
 
                 SizeChanged += sizeChangedHandler;
@@ -242,14 +245,11 @@ namespace Dash
 
             ToFront();
         }
-
-        public bool AllowDragMovement = true;
-
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;
 
-            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
 
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
 
@@ -265,7 +265,7 @@ namespace Dash
 
         private void XMenuFlyout_OnOpening(object sender, object e)
         {
-            var linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            var linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
             xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
@@ -965,14 +965,15 @@ namespace Dash
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
-                    DocumentController dragDoc = dragDocs[index];
+                    var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                         dragDoc = creatorFunc(dm.LinkSourceViews[index]);
-                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var linkDoc = dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-                    dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
             }
 
@@ -1053,14 +1054,6 @@ namespace Dash
         private void This_DragOver(object sender, DragEventArgs e)
         {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
-
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                ? DataPackageOperation.Copy
-                : e.DataView.RequestedOperation;
-
-            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
-
-            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)
@@ -1077,7 +1070,7 @@ namespace Dash
                     MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
                     if (ViewModel.LayoutDocument == null)
                     {
-                        Debug.WriteLine("uh oh");
+                        Debug.WriteLine("uh-oh");
                     }
                 }
         }
