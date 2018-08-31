@@ -1115,6 +1115,7 @@ namespace Dash
 			{
 				e.Handled = true;
 				var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+                Debug.WriteLine("Where = " + where);
 				if (this.IsCtrlPressed())
 				{
 					//deals with control V pasting
@@ -1198,8 +1199,7 @@ namespace Dash
 									var region =
 										KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](
 											activated,
-											Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(),
-												this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
+											Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
 
 									//link region to this text 
 									region.Link(postitNote, LinkBehavior.Annotate);

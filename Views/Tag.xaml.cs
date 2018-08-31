@@ -144,8 +144,6 @@ namespace Dash
                 tag.Deselect();
             }
 
-            //_docdecs.rebuildMenuIfNeeded();
-
 
             xTagContainer.BorderThickness = new Thickness(2);
             xTagContainer.Padding = new Thickness(4, -2, 4, 6);
@@ -172,14 +170,14 @@ namespace Dash
                 if (_docdecs.RecentTags.Count < 5)
                 {
                     _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.Title == Text).First());
+                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
                 }
                 else
                 {
                     _docdecs.RecentTags.Dequeue();
                     _docdecs.RecentTagsSave.RemoveAt(0);
                     _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.Title == Text).First());
+                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
                 }
             }
 
@@ -195,7 +193,7 @@ namespace Dash
                         //    break;
                         //}
 
-                        if (link.GetLinkTag() != null)
+                        if (link.GetDataDocument().GetLinkTag() != null)
                         {
                             AddTag(link);
                             break;
@@ -203,6 +201,8 @@ namespace Dash
                     }
             }
 
+
+            _docdecs.SetPositionAndSize();
         }
 
         public void RidSelectionBorder()

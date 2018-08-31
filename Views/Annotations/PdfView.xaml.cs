@@ -438,9 +438,14 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController GetRegionDocument(Point? point = null)
+        /// <summary>
+        /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
+        /// </summary>
+        /// <param name="docViewPoint"></param>
+        /// <returns></returns>
+        public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
-            if (point == null)
+            if (docViewPoint == null)
                 return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
 
             //if point !null & region is selected, return region 
@@ -450,17 +455,17 @@ namespace Dash
                 return regionDoc;
 
             //else, make a new push pin region closest to given point
-            var newPoint = calculateClosestPointOnPDF(point ?? new Point());
+            var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint ?? new Point(), this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
+            var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
             var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
             return makeAnnotationPinDoc;
         }
 
-        private Point calculateClosestPointOnPDF(Point from)
+        private Point calculateClosestPointOnPDF(Point p)
         {
-            var p = Util.PointTransformFromVisual(from, MainPage.Instance, this._bottomAnnotationOverlay);
-            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
-                                    p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
+            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth  ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
+                             p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
         }
 
         private static DocumentController RegionGetter(AnnotationType type)

@@ -430,7 +430,7 @@ namespace Dash
             {
                 if (name == comp.Text)
                 {
-                    return null;
+                    return comp;
                 }
             }
 
@@ -504,7 +504,6 @@ namespace Dash
         //rebuilds the different link dots when the menu is refreshed or one is added
         public void rebuildMenuIfNeeded()
         {
-            if (SuggestGrid.Visibility == Visibility.Visible) return;
             xButtonsPanel.Children.Clear();
             //check each relevant tag name & create the tag graphic & button for it
             foreach (var name in TagMap.Keys)
@@ -820,7 +819,8 @@ namespace Dash
 
 
                 var newtag = AddTagIfUnique(entry);
-                TagMap.Add(entry, new List<DocumentController>());
+                if (!TagMap.ContainsKey(entry))
+                    TagMap.Add(entry, new List<DocumentController>());
                 
                 newtag.Select();
 
