@@ -639,7 +639,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkTargetPlacement.Default, annotation:true);
+                                region.Link(sourceDoc, LinkBehavior.Annotate);
 
                             }
                             else

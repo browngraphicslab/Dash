@@ -379,10 +379,10 @@ namespace Dash
         }
 
 		//links this => target
-        public DocumentController Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null, bool annotation = false)
+        public DocumentController Link(DocumentController target, LinkBehavior behavior, string specTitle = null)
         {
 			//document that represents the actual link
-            DocumentController linkDocument = new RichTextNote("New link description...").Document;
+            var linkDocument = new RichTextNote("New link description...").Document;
 
 	        if (specTitle == null)
 	        {
@@ -391,12 +391,10 @@ namespace Dash
 	        }
 
             linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
-            linkDocument.GetDataDocument().SetField(KeyStore.LinkBehaviorKey,
-                annotation ? new TextController("A") : new TextController("Z"), true);
+            linkDocument.GetDataDocument().SetLinkBehavior(behavior);
             linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
-            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
             target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
             return linkDocument;

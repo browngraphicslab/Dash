@@ -75,8 +75,6 @@ namespace Dash
                 _tooltip.IsOpen = false;
             }
 
-            _docdecs.VisibilityState = Visibility.Collapsed;
-
             var doq = ((sender as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
             if (doq != null)
             {

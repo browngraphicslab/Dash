@@ -52,9 +52,9 @@ namespace Dash
         {
             // context menu that toggles whether annotations should be show/ hidden on scroll
 
-            MenuFlyout flyout = new MenuFlyout();
-            MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
-            MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
+            var flyout = new MenuFlyout();
+            var visOnScrollON = new MenuFlyoutItem();
+            var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
             visOnScrollOFF.Text = "Pin Annotation";
 
@@ -63,7 +63,7 @@ namespace Dash
                 var allLinks = region.GetDataDocument().GetLinks(null);
                 var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
-                foreach (DocumentController link in allLinks)
+                foreach (var link in allLinks)
                 {
                     link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
                 }

@@ -40,7 +40,6 @@ namespace Dash
         public Tag CurrEditTag;
         private DocumentController currEditLink;
         public WrapPanel XTagContainer => xTagContainer;
-        public StackPanel XButtonsPanel => xButtonsPanel;
         private DocumentController _currentLink;
       
 
@@ -926,19 +925,20 @@ namespace Dash
 
             //select saved link options
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
-            var linkType = currEditLink?.GetDataDocument()?.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data ?? "";
-            switch (linkType)
+            switch (currEditLink?.GetDataDocument().GetLinkBehavior())
             {
-                case "Z":
+                case LinkBehavior.Zoom:
                     xTypeZoom.IsSelected = true;
                     break;
-                case "A":
+                case LinkBehavior.Annotate:
                     xTypeAnnotation.IsSelected = true;
                     break;
-                case "D":
+                case LinkBehavior.Dock:
                     xTypeDock.IsSelected = true;
                     break;
-                case "F":
+                case LinkBehavior.Overlay:
+                    break;
+                case LinkBehavior.Float:
                     xTypeFloat.IsSelected = true;
                     break;
             }
@@ -964,7 +964,7 @@ namespace Dash
             switch (selected)
             {
                 case "Zoom":
-                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "Z", true);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Zoom);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)
                     {
@@ -974,11 +974,11 @@ namespace Dash
                     
                     break;
                 case "Annotation":
-                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "A", true);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
                     xInContextGrid.Visibility = Visibility.Collapsed;
                     break;
                 case "Dock":
-                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "D", true);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)
                     {
@@ -988,7 +988,7 @@ namespace Dash
                     
                     break;
                 case "Float":
-                    currEditLink?.GetDataDocument().SetField<TextController>(KeyStore.LinkBehaviorKey, "F", true);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
                     xInContextGrid.Visibility = Visibility.Collapsed;
                     break;
                 default:

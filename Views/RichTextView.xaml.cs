@@ -299,11 +299,10 @@ namespace Dash
         string _lastXamlRTFText = "";
         static void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (_searchHighlight)
+            if (!_searchHighlight)
             {
-                return;
+                (sender as RichTextView).xRichTextView_TextChangedCallback2(sender, dp);
             }
-            (sender as RichTextView).xRichTextView_TextChangedCallback2(sender, dp);
         }
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
@@ -429,18 +428,21 @@ namespace Dash
         {
             if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
-                if (view != null && !MainPage.Instance.IsShiftPressed())
+                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
                 {
                     e.Handled = false;
                     return;
                 }
-                    
+
                 //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 //{
                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 //}
 
-                linkDocumentToSelection(dragDoc, true);
+                var dropRegion = dragDoc;
+                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                linkDocumentToSelection(dropRegion, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
@@ -679,22 +681,21 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
 
-	        using (UndoManager.GetBatchHandle())
-	        {
-		        if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
-		        {
-			        if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
-		        }
+            using (UndoManager.GetBatchHandle())
+            {
+                if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+                {
+                    if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+                }
 
 
-            var region = GetRegionDocument();
-            region.Link(theDoc, LinkTargetPlacement.Default);
+                var region = GetRegionDocument();
+                region.Link(theDoc, LinkBehavior.Annotate);
 
+                convertTextFromXamlRTF();
 
-		        convertTextFromXamlRTF();
-
-		        xRichEditBox.Document.Selection.SetRange(s1, s2);
-			}
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
+            }
         }
 
         DocumentController createRTFHyperlink()

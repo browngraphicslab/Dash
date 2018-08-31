@@ -494,8 +494,7 @@ namespace Dash
                     return;
                 }
             }
-
-            ;
+            
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();

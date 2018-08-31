@@ -1005,22 +1005,16 @@ namespace Dash
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
 		}
-
-		DocumentController _linkDoc = null;
-		string _linkTypeString = "";
-		public void RenderPreviewTextbox(Point where, DocumentController linkDoc = null, string typeString = "", string defaultString = "")
+        
+		public void RenderPreviewTextbox(Point where)
 		{
-			_linkDoc = linkDoc;
-			_linkTypeString = typeString;
-
-			previewTextBuffer = defaultString;
 			if (previewTextbox != null)
 			{
 				Canvas.SetLeft(previewTextbox, where.X);
 				Canvas.SetTop(previewTextbox, where.Y);
 				previewTextbox.Visibility = Visibility.Visible;
 				AddHandler(KeyDownEvent, previewTextHandler, false);
-				previewTextbox.Text = defaultString;
+				previewTextbox.Text = "";
 				previewTextbox.SelectAll();
 				previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
 				previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -1092,7 +1086,6 @@ namespace Dash
 				RemoveHandler(KeyDownEvent, previewTextHandler);
 				previewTextbox.Visibility = Visibility.Collapsed;
 				previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-				_linkDoc = null;
 			}
 		}
 
@@ -1130,13 +1123,6 @@ namespace Dash
 						{
 							var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
 
-							if (_linkDoc != null)
-							{
-
-                            postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-                            _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-							 }
-
 							//check if a doc is currently in link activation mode
 							if (LinkActivationManager.ActivatedDocs.Count >= 1)
 							{
@@ -1149,7 +1135,7 @@ namespace Dash
 											postitNote.GetPosition());
 
                                     //link region to this text 
-                                    region.Link(postitNote, LinkTargetPlacement.Overlay);
+                                    region.Link(postitNote, LinkBehavior.Overlay);
                                 }
                             }
                         }
@@ -1161,7 +1147,6 @@ namespace Dash
 					{
 						LoadNewActiveTextBox("", where);
 					}
-					_linkDoc = null;
 				}
 				//else if (this.IsCtrlPressed())
 				//{
@@ -1193,28 +1178,17 @@ namespace Dash
 					{
 						var postitNote = new MarkdownNote(text: text).Document;
 						Actions.DisplayDocument(ViewModel, postitNote, where);
-						if (_linkDoc != null)
-						{
-							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-
-						}
 					}
 					else
 					{
 						var postitNote = new RichTextNote(text: text).Document;
 						Actions.DisplayDocument(ViewModel, postitNote, where);
-						if (_linkDoc != null)
-						{
-							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-						}
 
 						//move link activation stuff here
 						//check if a doc is currently in link activation mode
 						if (LinkActivationManager.ActivatedDocs.Count >= 1)
 						{
-							foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+							foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
 							{
 								//make this rich text an annotation for activated  doc
 								if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
@@ -1227,7 +1201,7 @@ namespace Dash
 												this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
 
 									//link region to this text 
-									region.Link(postitNote, LinkTargetPlacement.Overlay);
+									region.Link(postitNote, LinkBehavior.Annotate);
 								}
 							}
 						}
@@ -1390,7 +1364,9 @@ namespace Dash
 						editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
 						editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
 					}
-				}
+
+                    previewTextBuffer = "";
+                }
 			}
 
 		}
@@ -1428,7 +1404,6 @@ namespace Dash
 		{
 			RemoveHandler(KeyDownEvent, previewTextHandler);
 			previewTextbox.Visibility = Visibility.Collapsed;
-			_linkDoc = null;
 			loadingPermanentTextbox = false;
 			var text = previewTextBuffer;
 			var richEditBox = sender as RichEditBox;
@@ -1445,7 +1420,6 @@ namespace Dash
 
 			RemoveHandler(KeyDownEvent, previewTextHandler);
 			previewTextbox.Visibility = Visibility.Collapsed;
-			_linkDoc = null;
 			loadingPermanentTextbox = false;
 			var text = previewTextBuffer;
 			textBox.GotFocus -= TextBox_GotFocus;

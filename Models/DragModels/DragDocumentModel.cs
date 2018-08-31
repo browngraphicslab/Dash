@@ -113,7 +113,7 @@ namespace Dash
                     docs.Add(DraggedDocuments[i].GetDataInstance(new Point(where.X - Offset.X / scaling - (OffsetsDocs?[i] ?? new Point()).X,
                         where.Y - Offset.Y / scaling - (OffsetsDocs?[i] ?? new Point()).Y)));
                 }
-            } 
+            }
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
@@ -149,7 +149,10 @@ namespace Dash
             }
             else if (LinkSourceViews != null)
             {
-                docs = GetLinkDocuments(where);
+                if (target?.GetFirstAncestorOfType<NewAnnotationOverlay>() == null) // don't want to create a link when dropping a link button onto an overlay
+                {
+                    docs = GetLinkDocuments(where);
+                }
             }
             else
             {
@@ -173,12 +176,12 @@ namespace Dash
         //TODO: this doesn't account for offsets
         private List<DocumentController> GetLinkDocuments(Point where)
         {
-            DocumentController anno = new RichTextNote(where: where).Document;
+            var anno = new RichTextNote(where: where).Document;
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
-                DocumentController dragDoc = DraggedDocuments[i];
-                DocumentView view = LinkSourceViews[i];
+                var dragDoc = DraggedDocuments[i];
+                var view = LinkSourceViews[i];
 
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
@@ -186,7 +189,7 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
                 }
 
-                dragDoc.Link(anno, LinkTargetPlacement.Default, annotation: true);
+                dragDoc.Link(anno, LinkBehavior.Annotate);
             }
             return new List<DocumentController>{ anno };
         }

@@ -663,7 +663,15 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument(bool addTextBox = false)
         {
-            if (ParentCollection != null)
+            if (this.GetFirstAncestorOfType<NewAnnotationOverlay>() != null)
+            {
+                // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
+                //      but it would still be in the list of pinned annotations.  That means the document would reappear
+                //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
+                //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
+                this.ViewModel.DocumentController.SetHidden(true);
+            }
+            else if (ParentCollection != null)
             {
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
@@ -969,7 +977,7 @@ namespace Dash
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                         dragDoc = creatorFunc(dm.LinkSourceViews[index]);
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
-                    var linkDoc = dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.LinkType);
                     MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
@@ -980,6 +988,7 @@ namespace Dash
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
+            e.Handled = true;
         }
 
         void drop(bool footer, DocumentController newFieldDoc)

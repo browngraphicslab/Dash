@@ -25,78 +25,122 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        public PinAnnotation(NewAnnotationOverlay parent, Point point, DocumentController target = null) : base(parent)
+        public PinAnnotation(NewAnnotationOverlay parent, Point? point=null, DocumentController target = null) : base(parent)
         {
             this.InitializeComponent();
 
-            if (target == null)
+            if (point != null)
             {
-                Initialize(point);
-            }
-            else
-            {
-                InitializeWithTarget(point, target);
+                if (target == null)
+                {
+                    Initialize(point.Value);
+                }
+                else
+                {
+                    InitializeWithTarget(point.Value, target);
+                }
             }
 
             AnnotationType = AnnotationType.Pin;
-        }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Call with just a target and no point when you intend to use the target's information to render a pin.
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="target"></param>
-        public PinAnnotation(NewAnnotationOverlay parent) : base(parent)
-        {
-            this.InitializeComponent();
-            AnnotationType = AnnotationType.Pin;
+            var xToolTip = new ToolTip();
+            ToolTipService.SetToolTip(this, xToolTip);
+
+            PointerExited += (s, e) => xToolTip.IsOpen = false;
+            PointerEntered += (s, e) =>
+            {
+                if (!xToolTip.IsOpen)
+                    xToolTip.IsOpen = true;
+                //update tag content based on current tags of region
+                var tags = new List<string>();
+
+                foreach (var link in DocumentController.GetDataDocument().GetLinks(null))
+                {
+                    var currTag = link.GetDataDocument().GetLinkTag();
+                    if (currTag != null)
+                    {
+                        tags.Add(currTag.Data);
+                    }
+                }
+
+                var content = tags.Count == 0 ? "" : tags[0];
+                if (tags.Count > 0)
+                    tags.Remove(tags[0]);
+                foreach (var str in tags)
+                {
+                    content = content + ", " + str;
+                }
+                xToolTip.Content = content;
+            };
+
+            PointerPressed += (s, e) => e.Handled = true;
+
+            //handlers for moving pin
+            ManipulationMode = ManipulationModes.All;
+            ManipulationStarted += (s, e) =>
+            {
+                ManipulationMode = ManipulationModes.All;
+                e.Handled = true;
+            };
+            ManipulationDelta += (s, e) =>
+            {
+                DocumentController.SetPosition(new Point(Canvas.GetLeft(this) + e.Delta.Translation.X, Canvas.GetTop(this) + e.Delta.Translation.Y));
+                var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
+                Canvas.SetLeft(this, Canvas.GetLeft(this) + p.X);
+                Canvas.SetTop(this, Canvas.GetTop(this) + p.Y);
+                e.Handled = true;
+            };
+
+            Tapped += (sender, args) =>
+            {
+                if (this.IsCtrlPressed() && this.IsAltPressed())
+                {
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(this);
+                    ParentOverlay.RegionDocsList.Remove(DocumentController);
+                }
+                SelectRegionFromParent(ViewModel, args.GetPosition(this));
+                args.Handled = true;
+            };
+            //formatting bindings
+            xShape.SetBinding(Shape.FillProperty, new Binding
+            {
+                Path = new PropertyPath(nameof(ViewModel.SelectionColor)),
+                Mode = BindingMode.OneWay
+            });
         }
 
         public async void Initialize(Point point)
         {
-            foreach (var region in ParentOverlay.XAnnotationCanvas.Children)
-            {
-                if (region is Ellipse existingPin && existingPin.GetBoundingRect(ParentOverlay).Contains(point))
-                {
-                    return;
-                }
-            }
-
             DocumentController annotationController;
 
-            // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
-            if (this.IsCtrlPressed())
+            if (!ParentOverlay.XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => pin.GetBoundingRect(ParentOverlay).Contains(point)).Any())
             {
-                var pushpinType = await MainPage.Instance.GetPushpinType();
-                switch (pushpinType)
+                // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
+                if (this.IsCtrlPressed())
                 {
-                    case PushpinType.Text:
-                        annotationController = CreateTextPin(point);
-                        break;
-                    case PushpinType.Video:
-                        annotationController = await CreateVideoPin(point);
-                        break;
-                    case PushpinType.Image:
-                        annotationController = await CreateImagePin(point);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    switch (await MainPage.Instance.GetPushpinType())
+                    {
+                        case PushpinType.Text:  annotationController = CreateTextPin(point);
+                            break;
+                        case PushpinType.Video: annotationController = await CreateVideoPin(point);
+                            break;
+                        case PushpinType.Image: annotationController = await CreateImagePin(point);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else
+                {
+                    annotationController = CreateTextPin(point);  // by default the pushpin will create a text note
+                }
+
+                // if the user presses back or cancel, return null
+                if (annotationController != null)
+                {
+                    InitializeWithTarget(point, annotationController);
                 }
             }
-            else
-            {
-                // by default the pushpin will create a text note
-                annotationController = CreateTextPin(point);
-            }
-
-            // if the user presses back or cancel, return null
-            if (annotationController == null)
-            {
-                return;
-            }
-
-            InitializeWithTarget(point, annotationController);
         }
 
         private void InitializeWithTarget(Point point, DocumentController target)
@@ -176,8 +220,7 @@ namespace Dash
             }
 
             if (videoNote == null) return null;
-
-            videoNote.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
+            
             videoNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
             videoNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
             videoNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
@@ -191,7 +234,6 @@ namespace Dash
             if (file == null) return null;
 
             var imageNote = await new ImageToDashUtil().ParseFileAsync(file);
-            imageNote.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
             imageNote.SetField(KeyStore.WidthFieldKey, new NumberController(250), true);
             imageNote.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
             imageNote.SetField(KeyStore.PositionFieldKey, new PointController(point.X + 10, point.Y + 10), true);
@@ -205,114 +247,25 @@ namespace Dash
         /// <param name="point"></param>
         private DocumentController CreateTextPin(Point point)
         {
-            var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10),
-                new Size(150, 75));
+            var richText = new RichTextNote("<annotation>", new Point(point.X + 10, point.Y + 10), new Size(150, 75));
             richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-            richText.Document.SetField(KeyStore.LinkTargetPlacement, new TextController(nameof(LinkTargetPlacement.Overlay)), true);
 
             return richText.Document;
         }
 
+        SelectionViewModel ViewModel => DataContext as SelectionViewModel;
 
         public override void Render(SelectionViewModel vm)
         {
-            var point = DocumentController.GetPosition() ?? new Point(0, 0);
-            point.X -= 10;
-            point.Y -= 10;
-            var pin = new Ellipse
-            {
-                Width = 10,
-                Height = 10,
-                Fill = new SolidColorBrush(Colors.OrangeRed),
-                IsDoubleTapEnabled = false
-            };
-
-            InitializeAnnotationObject(pin, point, PlacementMode.Bottom, vm);
-        }
-
-        protected override void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
-        {
-            shape.DataContext = vm;
-            Canvas.SetLeft(shape, pos.X - shape.Width / 2);
-            Canvas.SetTop(shape, pos.Y - shape.Height / 2);
-            ParentOverlay.XAnnotationCanvas.Children.Add(shape);
-            var tip = new ToolTip
-            {
-                Placement = mode
-            };
-            ToolTipService.SetToolTip(shape, tip);
-
-            shape.PointerExited += (s, e) => tip.IsOpen = false;
-            shape.PointerEntered += (s, e) =>
-            {
-                tip.IsOpen = true;
-                //update tag content based on current tags of region
-                var tags = new List<string>();
-
-                foreach (var link in DocumentController.GetDataDocument().GetLinks(null))
-                {
-                    var currTag = link.GetDataDocument().GetLinkTag();
-                    if (currTag != null)
-                    {
-                        tags.Add(currTag.Data);
-                    }
-                }
-
-                var content = tags.Count == 0 ? "" : tags[0];
-                if (tags.Count > 0)
-                    tags.Remove(tags[0]);
-                foreach (var str in tags)
-                {
-                    content = content + ", " + str;
-                }
-                tip.Content = content;
-            };
-            shape.Tapped += (sender, args) =>
-            {
-                if (this.IsCtrlPressed() && this.IsAltPressed())
-                {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
-                    ParentOverlay.RegionDocsList.Remove(DocumentController);
-                }
-                SelectRegionFromParent(vm, args.GetPosition(this));
-                args.Handled = true;
-            };
-
-            shape.PointerPressed += (s, e) => e.Handled = true;
-
-            //handlers for moving pin
-            shape.ManipulationMode = ManipulationModes.All;
-            shape.ManipulationStarted += (s, e) =>
-            {
-                shape.ManipulationMode = ManipulationModes.All;
-                e.Handled = true;
-            };
-            shape.ManipulationDelta += (s, e) =>
-            {
-                DocumentController.SetPosition(new Point(Canvas.GetLeft(shape) + e.Delta.Translation.X, Canvas.GetTop(shape) + e.Delta.Translation.Y));
-                var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
-                Canvas.SetLeft(shape, Canvas.GetLeft(shape) + p.X);
-                Canvas.SetTop(shape, Canvas.GetTop(shape) + p.Y);
-                e.Handled = true;
-            };
-
-            FormatRegionOptionsFlyout(DocumentController, shape);
-
-            //formatting bindings
-            shape.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(vm.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
-            shape.SetBinding(VisibilityProperty, new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
-                Converter = new BoolToVisibilityConverter(),
-                Mode = BindingMode.OneWay
-            });
+            DataContext = vm;
+            var pos = DocumentController.GetPosition() ?? new Point();
+            Canvas.SetLeft(this, pos.X - xShape.Width / 2);
+            Canvas.SetTop(this,  pos.Y - xShape.Height / 2);
+            
+            FormatRegionOptionsFlyout(DocumentController, this);
 
             ParentOverlay.Regions.Add(vm);
+            ParentOverlay.XAnnotationCanvas.Children.Add(this);
         }
 
         #region Unimplemented Methods

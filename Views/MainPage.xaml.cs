@@ -1061,6 +1061,11 @@ namespace Dash
 
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
+            var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
+                v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+            if (onScreenView != null)
+                return;
+
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
             docCopy.SetWidth(size?.X ?? 150);
@@ -1103,7 +1108,7 @@ namespace Dash
             }
             var onScreenView = GetTargetDocumentView(xDockFrame, target);
 
-            if (target.GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data.Equals(nameof(LinkTargetPlacement.Overlay)) ?? false)
+            if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;

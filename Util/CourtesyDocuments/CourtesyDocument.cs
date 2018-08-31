@@ -241,8 +241,27 @@ namespace Dash
         #endregion
     }
 
+    public enum LinkBehavior {
+        Zoom,
+        Annotate,
+        Dock,
+        Float,
+        Overlay
+    }
+
     public static class CourtesyDocumentExtensions
     {
+        public static void SetLinkBehavior(this DocumentController document, LinkBehavior behavior)
+        {
+            document.SetField<TextController>(KeyStore.LinkBehaviorKey, behavior.ToString(), true);
+        }
+        public static LinkBehavior GetLinkBehavior(this DocumentController document)
+        {
+            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
+        }
+
+
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
             document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);

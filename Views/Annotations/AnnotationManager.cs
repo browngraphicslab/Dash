@@ -10,7 +10,7 @@ namespace Dash
 {
     public enum LinkTargetPlacement
     {
-        Docked, Default, Overlay, Floating
+       Default, Overlay
     }
     public class AnnotationManager
 	{
@@ -133,15 +133,14 @@ namespace Dash
 	        {
 	            MainPage.Instance.AddFloatingDoc(link);
             }
-
-            var linkBehav = link.GetDataDocument().GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null)?.Data;
+            
             var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
 
             var document = link.GetLinkedDocument(direction);
 
-            switch (linkBehav)
-	        {
-                case "Z":
+            switch (link.GetDataDocument().GetLinkBehavior())
+            {
+                case LinkBehavior.Zoom:
                     //navigate to link
                     if (linkContext)
                     {
@@ -165,11 +164,12 @@ namespace Dash
                     }
 
                     break;
-                case "A":
+                case LinkBehavior.Overlay:
+                case LinkBehavior.Annotate:
                     //default behavior of highlighting and toggling link visibility and docking when off screen
-                    foreach (ILinkHandler linkHandler in linkHandlers)
+                    foreach (var linkHandler in linkHandlers)
                     {
-                        LinkHandledResult status = linkHandler.HandleLink(link, direction);
+                        var status = linkHandler.HandleLink(link, direction);
 
                         if (status == LinkHandledResult.HandledClose) break;
                         if (status == LinkHandledResult.HandledRemainOpen)
@@ -184,10 +184,10 @@ namespace Dash
                         }
                     }
                     break;
-                case "D":
+                case LinkBehavior.Dock:
                     MainPage.Instance.Dock_Link(link, direction, linkContext);
                     break;
-                case "F":
+                case LinkBehavior.Float:
                     MainPage.Instance.AddFloatingDoc(document);
                     break;
                 default:
