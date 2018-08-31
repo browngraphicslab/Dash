@@ -1007,8 +1007,9 @@ namespace Dash
 		}
         
 		public void RenderPreviewTextbox(Point where)
-		{
-			if (previewTextbox != null)
+        {
+            previewTextBuffer = "";
+            if (previewTextbox != null)
 			{
 				Canvas.SetLeft(previewTextbox, where.X);
 				Canvas.SetTop(previewTextbox, where.Y);
@@ -1364,8 +1365,6 @@ namespace Dash
 						editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
 						editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
 					}
-
-                    previewTextBuffer = "";
                 }
 			}
 
