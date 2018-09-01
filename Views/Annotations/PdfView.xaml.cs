@@ -69,9 +69,9 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        public DataVirtualizationSource<ImageSource> TopPages { get; set; }
+        public DataVirtualizationSource TopPages { get; set; }
 
-        public DataVirtualizationSource<ImageSource> BottomPages { get; set; }
+        public DataVirtualizationSource BottomPages { get; set; }
 
         private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
@@ -246,8 +246,8 @@ namespace Dash
             SetUpToolTips();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            TopPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
-            BottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
+            TopPages = new DataVirtualizationSource(this, TopScrollViewer, TopPageItemsControl);
+            BottomPages = new DataVirtualizationSource(this, BottomScrollViewer, BottomPageItemsControl);
 
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
@@ -950,7 +950,7 @@ namespace Dash
 
         private void PagePrev(ScrollViewer scroller)
         {
-            DataVirtualizationSource<ImageSource> pages;
+            DataVirtualizationSource pages;
             double annoWidth = 0;
             if (scroller.Equals(TopScrollViewer))
             {
@@ -991,7 +991,7 @@ namespace Dash
 
         private void PageNext(ScrollViewer scroller)
         {
-            DataVirtualizationSource<ImageSource> pages;
+            DataVirtualizationSource pages;
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {

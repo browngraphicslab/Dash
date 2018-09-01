@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Web;
 using Windows.ApplicationModel.DataTransfer;
@@ -19,6 +20,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash;
 using Dash.Annotations;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.Geometry;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using MyToolkit.Multimedia;
 using static Dash.DataTransferTypeInfo;
 
@@ -517,39 +521,95 @@ namespace Dash
                 if (clipRect == null || clipRect == Rect.Empty || 
                     clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
                 {
+                    var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
+                                      ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
+                    var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
+                    if (closeEnough && similarSize || true)
+                    {
+                        var left = Canvas.GetLeft(_selectedRectangles[index]);
+                        var right = Canvas.GetLeft(_selectedRectangles[index]) + _selectedRectangles[index].Width;
+                        if (ele.Bounds.Left - left < ele.Bounds.Width)
+                        {
+                            Canvas.SetLeft(_selectedRectangles[index], TextSelectableElements[index + 1].Bounds.Left);
+                            _selectedRectangles[index].Width = Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
+                        }
+                        else if (ele.Bounds.Right - right < ele.Bounds.Width)
+                        {
+                            _selectedRectangles[index].Width = Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
+                        }
+                        else
+                        {
 
-                    //XSelectionCanvas.Children.Remove(_selectedRectangles[index]);
-                    _selectedRectangles[index].Visibility = Visibility.Collapsed;
-                    // _selectedRectangles.Remove(index);
+                        }
+                    }
                 }
             }
         }
 
         private readonly SolidColorBrush _selectionBrush = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
+        private Rectangle _currRect;
 
         private void SelectIndex(int index, Rect? clipRect = null)
         {
+            
             var ele = TextSelectableElements[index];
             if (clipRect == null || clipRect == Rect.Empty ||
                 clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
             {
-                if (!_selectedRectangles.ContainsKey(index))
+                if (_selectedRectangles.ContainsKey(index))
                 {
-                    var rect = new Rectangle
+                    _currRect = _selectedRectangles[index];
+                }
+
+                if (_currRect == null)
+                {
+                    _currRect = new Rectangle
                     {
                         Width = ele.Bounds.Width,
-                        Height = ele.Bounds.Height
+                        Height = ele.Bounds.Height,
+                        Fill = _selectionBrush
                     };
-                    Canvas.SetLeft(rect, ele.Bounds.Left);
-                    Canvas.SetTop(rect, ele.Bounds.Top);
-                    rect.Fill = _selectionBrush;
+                    Canvas.SetLeft(_currRect, ele.Bounds.Left);
+                    Canvas.SetTop(_currRect, ele.Bounds.Top);
+                    XSelectionCanvas.Children.Add(_currRect);
+                }
 
-                    XSelectionCanvas.Children.Add(rect);
-
-                    _selectedRectangles[index] = rect;
+                var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
+                                  ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
+                var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
+                if (closeEnough && similarSize)
+                {
+                    Canvas.SetLeft(_currRect, Math.Min(Canvas.GetLeft(_currRect), ele.Bounds.Left));
+                    _currRect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(_currRect));
+                    Canvas.SetTop(_currRect, Math.Min(Canvas.GetTop(_currRect), ele.Bounds.Top));
+                    _currRect.Height = Math.Max(_currRect.Height, ele.Bounds.Bottom - Canvas.GetTop(_currRect));
                 }
                 else
-                    _selectedRectangles[index].Visibility = Visibility.Visible;
+                {
+                    _currRect = new Rectangle
+                    {
+                        Width = ele.Bounds.Width,
+                        Height = ele.Bounds.Height,
+                        Fill = _selectionBrush
+                    };
+                    Canvas.SetLeft(_currRect, ele.Bounds.Left);
+                    Canvas.SetTop(_currRect, ele.Bounds.Top);
+                    XSelectionCanvas.Children.Add(_currRect);
+                }
+
+                _selectedRectangles[index] = _currRect;
+                //var rect = new Rectangle
+                //{
+                //    Width = ele.Bounds.Width,
+                //    Height = ele.Bounds.Height
+                //};
+                //Canvas.SetLeft(rect, ele.Bounds.Left);
+                //Canvas.SetTop(rect, ele.Bounds.Top);
+                //rect.Fill = _selectionBrush;
+
+                //XSelectionCanvas.Children.Add(rect);
+
+                //_selectedRectangles[index] = rect;
             }
         }
 

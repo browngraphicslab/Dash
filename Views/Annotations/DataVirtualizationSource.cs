@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
-    public class DataVirtualizationSource<T>
+    public class DataVirtualizationSource
     {
         private const double MaxPageWidth = 1500; // maximum width to render a page.  avoids generating oversized (memory-wise) Bitmaps
         private readonly ObservableCollection<Image> _visibleElements = new ObservableCollection<Image>();
@@ -81,10 +81,10 @@ namespace Dash
             if (_scrollViewer.ActualHeight != 0)
             {
                 var endIndex   = GetIndex(_scrollViewer.ActualHeight + scrollOffset) + 1;
-                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight));
+                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
                 var pageBuffer = (endIndex - startIndex) / 2;
                 startIndex = Math.Max(startIndex - pageBuffer, 0);
-                endIndex   = Math.Min(endIndex   + pageBuffer, _visibleElements.Count - 1);
+                endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
                 for (var i = 0; i < _visibleElements.Count; i++)
                 {
                     var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
