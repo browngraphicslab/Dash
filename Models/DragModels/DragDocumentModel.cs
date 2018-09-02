@@ -20,7 +20,7 @@ namespace Dash
         * The XAML view that originated the drag operation - not required
         */
         public List<DocumentView> LinkSourceViews;
-        public List<CollectionView> SourceCollectionViews;
+        public List<CollectionView> DraggedDocCollectionView;
 
         public List<DocumentView> DraggedDocumentViews;
         public List<DocumentController> DraggedDocuments;
@@ -158,7 +158,8 @@ namespace Dash
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    if (DraggedDocumentViews[i].GetFirstAncestorOfType<NewAnnotationOverlay>() == // bcz: this is hacky -- better to make NewAnnotationOverlay's be Collections?  
+                    if (DraggedDocumentViews == null ||
+                        DraggedDocumentViews[i].GetFirstAncestorOfType<NewAnnotationOverlay>() == // bcz: this is hacky -- better to make NewAnnotationOverlay's be Collections?  
                         target?.GetFirstAncestorOfType<NewAnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
                     {
                         DraggedDocuments[i].SetPosition(new Point(where.X - Offset.X / scaling - (OffsetsDocs?[i] ?? new Point()).X,

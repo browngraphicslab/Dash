@@ -721,25 +721,30 @@ namespace Dash
                 //adds all docs in the group, if applicable
                 var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-                adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
+                adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
+
+                var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+
 
                 //SelectionManager.DeselectAll();
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
 
-                var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
                 if (!MainPage.Instance.IsShiftPressed())
                 {
-                    foreach (var d in dragDocs)
+                    foreach (var d in dragDocModels)
                     {
-                        for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                        for (var i = 0; i < d.DraggedDocCollectionView?.Count; i++)
                         {
-                            if (d.SourceCollectionViews[i]?.ViewModel == this)
+                            if (d.DraggedDocCollectionView[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
+                                if (d.DraggedDocumentViews[i] != null) {
+                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                                }
                             }
                             else
                             {
-                                d.SourceCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                                d.DraggedDocCollectionView[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
                             }
                         }
                     }
