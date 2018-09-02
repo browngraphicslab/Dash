@@ -183,7 +183,6 @@ namespace Dash
                 SelectionManager.Deselect(this);
                 ViewModel?.UnLoad();
                 DataContext = null;
-                GC.Collect();
             };
 
             PointerPressed += (sender, e) =>
