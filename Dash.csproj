@@ -224,8 +224,8 @@
     <Compile Include="LinkActivationManager.cs" />
     <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
     <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
-    <Compile Include="Views\Annotations\NewAnnotationOverlay.xaml.cs">
-      <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
+    <Compile Include="Views\Annotations\AnnotationOverlay.xaml.cs">
+      <DependentUpon>AnnotationOverlay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\DashPopup.cs" />
     <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
@@ -1033,7 +1033,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Views\Annotations\NewAnnotationOverlay.xaml">
+    <Page Include="Views\Annotations\AnnotationOverlay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
