@@ -112,8 +112,8 @@ namespace Dash
 
         public override void EndAnnotation(Point p)
         {
-            Canvas.SetLeft(this, XPos);
-            Canvas.SetTop(this, YPos);
+            Canvas.SetLeft(this, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Left);
+            Canvas.SetTop(this, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Top);
             Width = ParentOverlay.XPreviewRect.Width;
             Height = ParentOverlay.XPreviewRect.Height;
 
