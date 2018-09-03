@@ -177,7 +177,7 @@ namespace Dash
                     newAnnotations.Add(new PinAnnotation(this));
                     newAnnotations.ForEach(i => i.DocumentController = documentController);
                     var pvm = new AnchorableAnnotation.SelectionViewModel(documentController,
-                        new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new SolidColorBrush(Colors.OrangeRed));
+                          new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
                     newAnnotations.ForEach(i => i.Render(pvm));
                     break;
                 default:
@@ -188,12 +188,12 @@ namespace Dash
         public DocumentController MakeAnnotationPinDoc(Point point, DocumentController linkedDoc = null)
         {
             var annotation = GetRegion(AnnotationType.Pin);
-            annotation.SetPosition(new Point(point.X + 10, point.Y + 10));
+            annotation.SetPosition(new Point(point.X, point.Y ));
             if (this.GetFirstAncestorOfType<PdfView>() != null)
                 annotation.SetField(KeyStore.PDFSubregionKey,
                     new ListController<NumberController>
                     {
-                        new NumberController((point.Y + 10) / this.GetFirstAncestorOfType<PdfView>().PdfTotalHeight)
+                        new NumberController(point.Y / this.GetFirstAncestorOfType<PdfView>().PdfTotalHeight)
                     }, true);
             annotation.SetWidth(10);
             annotation.SetHeight(10);
@@ -201,7 +201,7 @@ namespace Dash
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
             if (linkedDoc != null)
             {
-                annotation.Link(linkedDoc, LinkTargetPlacement.Overlay);
+                annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
             }
 
             RegionDocsList.Add(annotation);
@@ -354,8 +354,8 @@ namespace Dash
                 : targetDoc;
 
             if (linkTag != null)
-                linkSource.Link(linkTarget, LinkTargetPlacement.Default, linkTag);
-            else linkSource.Link(linkTarget, LinkTargetPlacement.Default);
+                linkSource.Link(linkTarget, LinkBehavior.Zoom, linkTag);
+            else linkSource.Link(linkTarget, LinkBehavior.Zoom);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -648,7 +648,7 @@ namespace Dash
         private Point? _selectionStartPoint;
         private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
-        public void SelectElements(int startIndex, int endIndex, Point start, Point end)
+        public void SelectElements(int startIndex, int endIndex, Point start, Point end) 
         {
             if (_currentAnnotation is TextAnnotation textAnnotation)
             {
@@ -731,7 +731,7 @@ namespace Dash
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (linkDoc.GetDataDocument().GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data == nameof(LinkTargetPlacement.Overlay) &&
+            if (linkDoc.GetDataDocument().GetLinkBehavior() == LinkBehavior.Overlay  &&
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
@@ -759,10 +759,11 @@ namespace Dash
             {
                 if (!this.IsShiftPressed())
                 {
-                    // if we're assuming that we're only moving annotations, we can just call this method as it will set the positions correctly
-                    await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    e.AcceptedOperation = DataPackageOperation.None;
-                    e.Handled = true;
+                    // if docs are being moved within the overlay, then they will be placed appropriately and returned from this call.
+                    // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
+                    var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                    e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
+                    e.Handled = e.AcceptedOperation != DataPackageOperation.None;
                 }
                 else
                 {

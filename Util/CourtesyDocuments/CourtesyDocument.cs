@@ -241,8 +241,27 @@ namespace Dash
         #endregion
     }
 
+    public enum LinkBehavior {
+        Zoom,
+        Annotate,
+        Dock,
+        Float,
+        Overlay
+    }
+
     public static class CourtesyDocumentExtensions
     {
+        public static void SetLinkBehavior(this DocumentController document, LinkBehavior behavior)
+        {
+            document.SetField<TextController>(KeyStore.LinkBehaviorKey, behavior.ToString(), true);
+        }
+        public static LinkBehavior GetLinkBehavior(this DocumentController document)
+        {
+            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
+        }
+
+
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
             document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);
@@ -346,9 +365,9 @@ namespace Dash
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
         }
 
-        public static ListController<TextController> GetLinkTags(this DocumentController document)
+        public static TextController GetLinkTag(this DocumentController document)
         {
-            return document.GetDereferencedField<ListController<TextController>>(KeyStore.LinkTagKey, null);
+            return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
         }
 
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)

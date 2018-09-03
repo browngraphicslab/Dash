@@ -131,7 +131,7 @@ namespace Dash
             var dragModels = packageView.GetDragModels();
             var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
 
-            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where)).ToList();
+            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where, sender)).ToList();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)

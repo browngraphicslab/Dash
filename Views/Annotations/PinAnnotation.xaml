@@ -8,5 +8,6 @@
     mc:Ignorable="d"
     IsDoubleTapEnabled="false">
 
-    <Grid></Grid>
+    <Ellipse x:Name="xShape" Width="10" Height="10"/>
+
 </local:AnchorableAnnotation>

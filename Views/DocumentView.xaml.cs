@@ -160,9 +160,12 @@ namespace Dash
                 updateBindings();
                 DataContextChanged += (s, a) =>
                 {
-                    _oldViewModel?.UnLoad();
-                    updateBindings();
-                    _oldViewModel = ViewModel;
+                    if (a.NewValue != _oldViewModel)
+                    {
+                        _oldViewModel?.UnLoad();
+                        updateBindings();
+                        _oldViewModel = ViewModel;
+                    }
                 };
 
                 SizeChanged += sizeChangedHandler;
@@ -180,7 +183,6 @@ namespace Dash
                 SelectionManager.Deselect(this);
                 ViewModel?.UnLoad();
                 DataContext = null;
-                GC.Collect();
             };
 
             PointerPressed += (sender, e) =>
@@ -242,12 +244,11 @@ namespace Dash
 
             ToFront();
         }
-
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;
 
-            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
 
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
 
@@ -263,7 +264,7 @@ namespace Dash
 
         private void XMenuFlyout_OnOpening(object sender, object e)
         {
-            var linkDocs = MainPage.Instance.XDocumentDecorations.tagMap.Values;
+            var linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
             bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
             xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
@@ -661,7 +662,15 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument(bool addTextBox = false)
         {
-            if (ParentCollection != null)
+            if (this.GetFirstAncestorOfType<NewAnnotationOverlay>() != null)
+            {
+                // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
+                //      but it would still be in the list of pinned annotations.  That means the document would reappear
+                //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
+                //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
+                this.ViewModel.DocumentController.SetHidden(true);
+            }
+            else if (ParentCollection != null)
             {
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
@@ -963,20 +972,22 @@ namespace Dash
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
-                    DocumentController dragDoc = dragDocs[index];
+                    var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                         dragDoc = creatorFunc(dm.LinkSourceViews[index]);
-                    dragDoc.Link(dropDoc, LinkTargetPlacement.Default, dm.LinkType);
+                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.LinkType);
+                    MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
-                    dragDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
             }
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
+            e.Handled = true;
         }
 
         void drop(bool footer, DocumentController newFieldDoc)
@@ -1051,14 +1062,6 @@ namespace Dash
         private void This_DragOver(object sender, DragEventArgs e)
         {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
-
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                ? DataPackageOperation.Copy
-                : e.DataView.RequestedOperation;
-
-            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
-
-            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)
@@ -1075,7 +1078,7 @@ namespace Dash
                     MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
                     if (ViewModel.LayoutDocument == null)
                     {
-                        Debug.WriteLine("uh oh");
+                        Debug.WriteLine("uh-oh");
                     }
                 }
         }

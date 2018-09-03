@@ -4,6 +4,7 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -19,8 +20,9 @@ namespace Dash
         * The XAML view that originated the drag operation - not required
         */
         public List<DocumentView> LinkSourceViews;
-        public List<CollectionView> SourceCollectionViews;
+        public List<CollectionView> DraggedDocCollectionView;
 
+        public List<DocumentView> DraggedDocumentViews;
         public List<DocumentController> DraggedDocuments;
         public List<Point> OffsetsDocs;
 
@@ -32,6 +34,14 @@ namespace Dash
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
 
+        public DragDocumentModel(DocumentView draggedDocumentView, bool showView, DocumentView sourceView = null)
+        {
+            DraggedDocuments = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
+            DraggedDocumentViews = new List<DocumentView>(new DocumentView[] { draggedDocumentView } );
+            ShowViewCopy = showView;
+            if (sourceView != null) LinkSourceViews = new List<DocumentView>() { sourceView };
+            MakeCollection = false;
+        }
         public DragDocumentModel(DocumentController draggedDocument, bool showView, DocumentView sourceView = null)
         {
             DraggedDocuments = new List<DocumentController> { draggedDocument };
@@ -40,6 +50,18 @@ namespace Dash
             MakeCollection = false;
         }
 
+        public DragDocumentModel(List<DocumentView> draggedDocumentViews, bool showView,
+            List<DocumentView> sourceViews = null, List<Point> off = null)
+        {
+            DraggedDocuments = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            DraggedDocumentViews = draggedDocumentViews;
+            ShowViewCopy = showView;
+            OffsetsDocs = off;
+            if (sourceViews != null) LinkSourceViews = sourceViews;
+            MakeCollection = false;
+
+            Debug.Assert(LinkSourceViews == null || DraggedDocuments.Count == LinkSourceViews.Count);
+        }
         public DragDocumentModel(List<DocumentController> draggedDocuments, bool showView, 
             List<DocumentView> sourceViews = null, List<Point> off = null)
         {
@@ -77,7 +99,7 @@ namespace Dash
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override List<DocumentController> GetDropDocuments(Point where, bool forceShowViewCopy = false)
+        public override List<DocumentController> GetDropDocuments(Point where, FrameworkElement target)
         {
             // For each dragged document...
             var docs = new List<DocumentController>();
@@ -91,7 +113,7 @@ namespace Dash
                     docs.Add(DraggedDocuments[i].GetDataInstance(new Point(where.X - Offset.X / scaling - (OffsetsDocs?[i] ?? new Point()).X,
                         where.Y - Offset.Y / scaling - (OffsetsDocs?[i] ?? new Point()).Y)));
                 }
-            } 
+            }
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
@@ -127,17 +149,24 @@ namespace Dash
             }
             else if (LinkSourceViews != null)
             {
-                docs = GetLinkDocuments(where);
+                if (target?.GetFirstAncestorOfType<NewAnnotationOverlay>() == null) // don't want to create a link when dropping a link button onto an overlay
+                {
+                    docs = GetLinkDocuments(where);
+                }
             }
             else
             {
-                for(int i = 0; i < DraggedDocuments.Count; i++)
+                for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    DraggedDocuments[i].SetPosition(new Point(where.X - Offset.X / scaling - (OffsetsDocs?[i] ?? new Point()).X,
-                        where.Y - Offset.Y / scaling - (OffsetsDocs?[i] ?? new Point()).Y));
+                    if (DraggedDocumentViews == null ||
+                        DraggedDocumentViews[i].GetFirstAncestorOfType<NewAnnotationOverlay>() == // bcz: this is hacky -- better to make NewAnnotationOverlay's be Collections?  
+                        target?.GetFirstAncestorOfType<NewAnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
+                    {
+                        DraggedDocuments[i].SetPosition(new Point(where.X - Offset.X / scaling - (OffsetsDocs?[i] ?? new Point()).X,
+                            where.Y - Offset.Y / scaling - (OffsetsDocs?[i] ?? new Point()).Y));
+                        docs.Add(DraggedDocuments[i]);
+                    }
                 }
-
-                docs = DraggedDocuments;
             }
 
             return MakeCollection ? new List<DocumentController>{ new CollectionNote(where, ViewType, collectedDocuments: docs).Document } : docs;
@@ -148,12 +177,12 @@ namespace Dash
         //TODO: this doesn't account for offsets
         private List<DocumentController> GetLinkDocuments(Point where)
         {
-            DocumentController anno = new RichTextNote(where: where).Document;
+            var anno = new RichTextNote(where: where).Document;
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
-                DocumentController dragDoc = DraggedDocuments[i];
-                DocumentView view = LinkSourceViews[i];
+                var dragDoc = DraggedDocuments[i];
+                var view = LinkSourceViews[i];
 
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
@@ -161,7 +190,7 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
                 }
 
-                dragDoc.Link(anno, LinkTargetPlacement.Default);
+                dragDoc.Link(anno, LinkBehavior.Annotate);
             }
             return new List<DocumentController>{ anno };
         }

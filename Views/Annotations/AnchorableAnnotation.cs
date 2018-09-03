@@ -52,9 +52,9 @@ namespace Dash
         {
             // context menu that toggles whether annotations should be show/ hidden on scroll
 
-            MenuFlyout flyout = new MenuFlyout();
-            MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
-            MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
+            var flyout = new MenuFlyout();
+            var visOnScrollON = new MenuFlyoutItem();
+            var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
             visOnScrollOFF.Text = "Pin Annotation";
 
@@ -63,7 +63,7 @@ namespace Dash
                 var allLinks = region.GetDataDocument().GetLinks(null);
                 var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
-                foreach (DocumentController link in allLinks)
+                foreach (var link in allLinks)
                 {
                     link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
                 }
@@ -92,7 +92,7 @@ namespace Dash
             ParentOverlay.AnnotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
-            if (ParentOverlay.SelectedRegion != selectable)
+            if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
                 foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
                 foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
@@ -136,8 +136,8 @@ namespace Dash
                      regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
                      regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
                 };
-                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
-                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTag()));
+                var allTags = regionDoc.GetLinks(null).Select((l) => l.GetDataDocument().GetLinkTag().Data);
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);

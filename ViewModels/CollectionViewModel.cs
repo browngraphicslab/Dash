@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 
@@ -638,7 +639,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkTargetPlacement.Default);
+                                region.Link(sourceDoc, LinkBehavior.Annotate);
 
                             }
                             else
@@ -720,25 +721,31 @@ namespace Dash
                 //adds all docs in the group, if applicable
                 var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-                adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
+                adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
+
+                var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+
 
                 //SelectionManager.DeselectAll();
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                docsToAdd.ForEach(d => d.SetHidden(false));
 
-                var dragDocs = e.DataView.GetDragModels().OfType<DragDocumentModel>();
-                if (!(sender as FrameworkElement).IsShiftPressed())
+                if (!MainPage.Instance.IsShiftPressed())
                 {
-                    foreach (var d in dragDocs)
+                    foreach (var d in dragDocModels)
                     {
-                        for (var i = 0; i < d.SourceCollectionViews?.Count; i++)
+                        for (var i = 0; i < d.DraggedDocCollectionView?.Count; i++)
                         {
-                            if (d.SourceCollectionViews[i].ViewModel == this)
+                            if (d.DraggedDocCollectionView[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
-                                continue;
+                                if (d.DraggedDocumentViews[i] != null) {
+                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                                }
                             }
-                            d.SourceCollectionViews[i].ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            else
+                            {
+                                d.DraggedDocCollectionView[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            }
                         }
                     }
                 }
@@ -790,8 +797,6 @@ namespace Dash
 
                 e.DragUIOverride.IsContentVisible = true;
             }
-
-            e.Handled = true;
         }
 
         /// <summary>
