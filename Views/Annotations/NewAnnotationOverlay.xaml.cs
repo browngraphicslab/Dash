@@ -513,35 +513,66 @@ namespace Dash
 
         #region Selection Logic
 
-        private void DeselectIndex(int index, Rect? clipRect = null)
+        private void DeselectIndex(int index, Rect? clipRect = null, int endIndex = -1)
         {
             if (_selectedRectangles.ContainsKey(index))
             {
                 var ele = TextSelectableElements[index];
-                if (clipRect == null || clipRect == Rect.Empty || 
-                    clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2, ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
+                if (clipRect == null || clipRect == Rect.Empty || clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+                        ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
                 {
-                    var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                                      ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
-                    var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
-                    if (closeEnough && similarSize || true)
+                    //var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
+                    //                  ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
+                    //var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
+                    //if (closeEnough && similarSize || true)
+                    //{
+
+                    var left = Canvas.GetLeft(_selectedRectangles[index]);
+                    var right = Canvas.GetLeft(_selectedRectangles[index]) + _selectedRectangles[index].Width;
+                    //if (endIndex != -1)
+                    //{
+                    //    if (_selectedRectangles[index] != _selectedRectangles[endIndex])
+                    //    {
+                    //        if (_selectedRectangles[index].Width != 0)
+                    //        {
+                    //            _selectedRectangles[index].Width = 0;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //    }
+                    //}
+                    // if we're deselecting text backwards
+                    /*else*/ if (ele.Bounds.Left - left < ele.Bounds.Width)
                     {
-                        var left = Canvas.GetLeft(_selectedRectangles[index]);
-                        var right = Canvas.GetLeft(_selectedRectangles[index]) + _selectedRectangles[index].Width;
-                        if (ele.Bounds.Left - left < ele.Bounds.Width)
+                        // if we've reached a different line
+                        if (Canvas.GetTop(_selectedRectangles[index]) -
+                            TextSelectableElements[index + 1].Bounds.Top < 0)
                         {
-                            Canvas.SetLeft(_selectedRectangles[index], TextSelectableElements[index + 1].Bounds.Left);
-                            _selectedRectangles[index].Width = Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
-                        }
-                        else if (ele.Bounds.Right - right < ele.Bounds.Width)
-                        {
-                            _selectedRectangles[index].Width = Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
+                            _selectedRectangles[index].Width = 0;
                         }
                         else
                         {
-
+                            Canvas.SetLeft(_selectedRectangles[index], TextSelectableElements[index + 1].Bounds.Left);
+                            _selectedRectangles[index].Width =
+                                Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
                         }
                     }
+                    // if we're deselecting text forwards
+                    else if (ele.Bounds.Right - right < ele.Bounds.Width)
+                    {
+                        _selectedRectangles[index].Width =
+                            Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
+                    }
+
+                    if (_selectedRectangles[index].Width == 0)
+                    {
+                        XAnnotationCanvas.Children.Remove(_selectedRectangles[index]);
+                    }
+
+                    _selectedRectangles.Remove(index);
+
+                    //}
                 }
             }
         }
@@ -621,7 +652,6 @@ namespace Dash
         {
             if (_currentAnnotation is TextAnnotation textAnnotation)
             {
-                // if control isn't pressed, reset the selection
                 if (this.IsAltPressed())
                 {
                     var bounds = new Rect(new Point(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y)),
@@ -675,7 +705,7 @@ namespace Dash
 
                         for (var i = currentSelectionStart; i < startIndex; ++i)
                         {
-                            DeselectIndex(i);
+                            DeselectIndex(i, null, startIndex - 1);
                         }
 
                         for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
@@ -685,7 +715,7 @@ namespace Dash
 
                         for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
                         {
-                            DeselectIndex(i);
+                            DeselectIndex(i, null, currentSelectionEnd);
                         }
                     }
                 }
