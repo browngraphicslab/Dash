@@ -9,7 +9,6 @@
     mc:Ignorable="d"
     >
     <Grid x:Name="LayoutRoot">
-        
     </Grid>
 
 </local:AnchorableAnnotation>

@@ -26,10 +26,12 @@ namespace Dash
     public sealed partial class PinAnnotation
     {
         
-        public PinAnnotation(NewAnnotationOverlay parent, DocumentController regionDocumentController) : 
-            base(parent, regionDocumentController)
+        public PinAnnotation(NewAnnotationOverlay parent, SelectionViewModel selectionViewModel) : 
+            base(parent, selectionViewModel.RegionDocument)
         {
             this.InitializeComponent();
+
+            DataContext = selectionViewModel;
 
             AnnotationType = AnnotationType.Pin;
 
@@ -146,12 +148,12 @@ namespace Dash
 
             return richText.Document;
         }
-        
+
+
+        #region Unimplemented Methods
         public override void Render(SelectionViewModel vm)
         {
         }
-
-        #region Unimplemented Methods
         public override void StartAnnotation(Point p)
         {
         }

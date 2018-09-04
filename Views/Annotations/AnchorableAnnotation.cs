@@ -144,12 +144,6 @@ namespace Dash
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
             };
-            shape.SetBinding(VisibilityProperty, new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
-                Converter = new BoolToVisibilityConverter()
-            });
             //formatting bindings
             shape.SetBinding(Shape.FillProperty, new Binding
             {
@@ -159,6 +153,7 @@ namespace Dash
 
             if (pos != null)
             {
+                System.Diagnostics.Debug.WriteLine(" rende " + pos.Value.X + " " + pos.Value.Y);
                 shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
                 //Canvas.SetLeft(shape, pos.Value.X);
                 //Canvas.SetTop(shape, pos.Value.Y);
@@ -181,11 +176,11 @@ namespace Dash
                     Converter = new PositionToCanvasPositionConverter(true, shape)
                 };
                 this.AddFieldBinding(Canvas.TopProperty, bindingY);
+            }
 
-                if (RegionDocumentController != null)
-                {
-                    FormatRegionOptionsFlyout(RegionDocumentController, this);
-                }
+            if (RegionDocumentController != null)
+            {
+                FormatRegionOptionsFlyout(RegionDocumentController, this);
             }
         }
 
@@ -229,8 +224,8 @@ namespace Dash
             public SolidColorBrush UnselectedBrush { get; set; }
 
             public SelectionViewModel(DocumentController region,
-                SolidColorBrush selectedBrush,
-                SolidColorBrush unselectedBrush)
+                SolidColorBrush selectedBrush=null,
+                SolidColorBrush unselectedBrush=null)
             {
                 RegionDocument = region;
                 UnselectedBrush = unselectedBrush;

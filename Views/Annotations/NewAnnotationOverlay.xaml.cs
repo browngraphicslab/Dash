@@ -152,39 +152,31 @@ namespace Dash
 
         private void RenderAnnotation(DocumentController regionDocumentController)
         {
-            var newAnnotations = new List<AnchorableAnnotation>();
+            AnchorableAnnotation annotation = null;
+            var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
+                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
+                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
             switch (regionDocumentController.GetAnnotationType())
             {
-                // regions and selectons follow the same functionality
-                case AnnotationType.Region:
-                    var rvm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
-                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
-                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
-                    var rgn = new RegionAnnotation(this, regionDocumentController) { DataContext = rvm };
-                    rgn.Render(rvm);
-                    Regions.Add(rvm);
-                    XAnnotationCanvas.Children.Add(rgn);
-                    break;
-                case AnnotationType.Selection:
-                    var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
-                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
-                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
-                    newAnnotations.Add(new TextAnnotation(this, regionDocumentController) { DataContext = svm });
-                    newAnnotations.ForEach(i => i.Render(svm));
-                    newAnnotations.ForEach(i => Regions.Add(svm));
-                    break;
-                case AnnotationType.Ink:
-                    break;
-                case AnnotationType.Pin:
-                    //render pin will be called with specific doc controller if in process of making pin
-                    var pvm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
-                          new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
-                    Regions.Add(pvm);
-                    XAnnotationCanvas.Children.Add(new PinAnnotation(this, regionDocumentController) { DataContext = pvm });
-                    break;
+                case AnnotationType.Pin:       svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
+                                                     new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
+                                               annotation = new PinAnnotation(this, svm); break;
+                case AnnotationType.Region:    annotation = new RegionAnnotation(this, svm); break;
+                case AnnotationType.Selection: annotation = new TextAnnotation(this, svm); break;
+                case AnnotationType.Ink: return;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            annotation.Render(svm);
+            Regions.Add(svm);
+            annotation.SetBinding(VisibilityProperty, new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
+                Converter = new BoolToVisibilityConverter()
+            });
+            XAnnotationCanvas.Children.Add(annotation);
         }
 
         public DocumentController MakeAnnotationRegionPinDocument(Point point, DocumentController linkedDoc = null)
@@ -296,49 +288,40 @@ namespace Dash
             {
                 case AnnotationType.Region:
                 case AnnotationType.Selection:
-                    if (!CurrentAnchorableAnnotations.Any() || CurrentAnchorableAnnotations.Any(i =>
-                            (i as RegionAnnotation)?.Width < 10 && (i as RegionAnnotation)?.Height < 10))
+                    if (CurrentAnchorableAnnotations.Any() &&
+                        !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                     {
-                        ClearSelection(true);
-                        goto case AnnotationType.None;
+                        annotation = GetRegion(CurrentAnnotationType);
+
+                        var subRegionsOffsets = CurrentAnchorableAnnotations.Select((item) => item.AddSubregionToRegion(annotation)).ToList();
+                        subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
+
+                        if (this.GetFirstAncestorOfType<PdfView>() != null)
+                        {
+                            annotation.SetField(KeyStore.PDFSubregionKey,
+                                new ListController<NumberController>(
+                                    subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
+                        }
+
+                        annotation.GetDataDocument().SetPosition(new Point(0, subRegionsOffsets.FirstOrDefault()));
                     }
-
-                    annotation = GetRegion(CurrentAnnotationType);
-
-                    var subRegionsOffsets = new List<double>();
-                    double minRegionY = double.PositiveInfinity;
-                    foreach (var item in CurrentAnchorableAnnotations)
-                    {
-                        var vOffset = item.AddSubregionToRegion(annotation);
-                        subRegionsOffsets.Add(vOffset);
-                        minRegionY = Math.Min(minRegionY, vOffset);
-                    }
-
-                    subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
-
-                    if (this.GetFirstAncestorOfType<PdfView>() != null)
-                    {
-                        annotation.SetField(KeyStore.PDFSubregionKey,
-                            new ListController<NumberController>(
-                                subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                    }
-
-                    annotation.GetDataDocument().SetPosition(new Point(0, minRegionY));
                     ClearSelection(true);
                     break;
                 case AnnotationType.Ink:
                 case AnnotationType.None:
-                    return null;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            Debug.Assert(annotation != null, "Annotation must be assigned in the switch statement");
-            Debug.Assert(!annotation.Equals(MainDocument),
-                "If returning the main document, return it immediately, don't fall through to here");
-            annotation.SetRegionDefinition(MainDocument);
-            annotation.SetAnnotationType(CurrentAnnotationType);
-            RegionDocsList.Add(annotation);
+            if (annotation != null)
+            {
+                Debug.Assert(!annotation.Equals(MainDocument),
+                    "If returning the main document, return it immediately, don't fall through to here");
+                annotation.SetRegionDefinition(MainDocument);
+                annotation.SetAnnotationType(CurrentAnnotationType);
+                RegionDocsList.Add(annotation);
+            }
 
             return annotation;
         }
@@ -402,15 +385,11 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
-            //ClearPreviewRegion();
+            ClearPreviewRegion();
             switch (CurrentAnnotationType)
             {
-                case AnnotationType.Region:
-                    _currentAnnotation = new RegionAnnotation(this, null);
-                    break;
-                case AnnotationType.Selection:
-                    _currentAnnotation = new TextAnnotation(this, null);
-                    break;
+                case AnnotationType.Region:    _currentAnnotation = new RegionAnnotation(this, null); break;
+                case AnnotationType.Selection: _currentAnnotation = new TextAnnotation(this, null); break;
                 default:
                     return;
             }
@@ -467,12 +446,16 @@ namespace Dash
         /// <param name="point"></param>
         public async void CreatePin(Point point, DocumentController target = null)
         {
-            var existingPin = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => pin.GetBoundingRect(this).Contains(point)).FirstOrDefault();
-            if (target == null && existingPin == null)
+            _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => pin.GetBoundingRect(this).Contains(point)).FirstOrDefault();
+            if (_currentAnnotation == null)
             {
-                target = await PinAnnotation.CreateTarget(this, point);
+                if (target == null)
+                {
+                    target = await PinAnnotation.CreateTarget(this, point);
+                }
+                _currentAnnotation =
+                    new PinAnnotation(this, new AnchorableAnnotation.SelectionViewModel(createPinRegion(point, target), null, null));
             }
-            _currentAnnotation = existingPin ?? new PinAnnotation(this, createPinRegion(point, target));
         }
         DocumentController createPinRegion(Point point, DocumentController targetAnnotation)
         {
