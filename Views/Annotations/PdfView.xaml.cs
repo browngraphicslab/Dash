@@ -458,7 +458,7 @@ namespace Dash
             var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint ?? new Point(), this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
             var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
-            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
+            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationRegionPinDocument(newPoint);
             return makeAnnotationPinDoc;
         }
 
@@ -770,8 +770,8 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
+                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
             }
             else
             {

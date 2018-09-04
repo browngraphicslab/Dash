@@ -25,7 +25,7 @@ namespace Dash
     {
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent) : base(parent)
+        public RegionAnnotation(NewAnnotationOverlay parent, DocumentController documentController) : base(parent, documentController)
         {
             this.InitializeComponent();
 
@@ -34,8 +34,8 @@ namespace Dash
 
         public override void Render(SelectionViewModel vm)
         {
-            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+            var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
 
             Debug.Assert(posList.Count == sizeList.Count);
 
@@ -51,8 +51,6 @@ namespace Dash
                 };
                 RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
             }
-
-            ParentOverlay.Regions.Add(vm);
         }
 
         private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
@@ -60,7 +58,7 @@ namespace Dash
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
-            InitializeAnnotationObject(r, pos, mode, vm);
+            InitializeAnnotationObject(r, pos, mode);
         }
 
         public override void StartAnnotation(Point p)

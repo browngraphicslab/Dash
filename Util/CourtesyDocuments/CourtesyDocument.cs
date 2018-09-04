@@ -425,20 +425,17 @@ namespace Dash
             return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
 
-        public static void GotoRegion(this DocumentController document, DocumentController region,
-            DocumentController link = null)
+        public static void GotoRegion(this DocumentController document, DocumentController region, DocumentController link = null)
         {
-            if (document.Equals(region))
+            if (!document.Equals(region))
             {
-                return;
+                document.RemoveField(KeyStore.GoToRegionLinkKey);
+                document.RemoveField(KeyStore.GoToRegionKey);
+                document.SetFields(new[] {
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
+                }, true);
             }
-            document.RemoveField(KeyStore.GoToRegionLinkKey);
-            document.RemoveField(KeyStore.GoToRegionKey);
-            document.SetFields(new []
-            {
-                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
-                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
-            }, true);
         }
 
         public static bool GetTransient(this DocumentController document)

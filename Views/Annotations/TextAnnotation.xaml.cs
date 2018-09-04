@@ -26,7 +26,7 @@ namespace Dash
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
 
-        public TextAnnotation(NewAnnotationOverlay parent) : base(parent)
+        public TextAnnotation(NewAnnotationOverlay parent, DocumentController documentController) : base(parent, documentController)
         {
             this.InitializeComponent();
 
@@ -35,9 +35,9 @@ namespace Dash
 
         public override void Render(SelectionViewModel vm)
         {
-            if (DocumentController.GetField(KeyStore.PDFSubregionKey) == null)
+            if (RegionDocumentController.GetField(KeyStore.PDFSubregionKey) == null)
             {
-                var currentSelections = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+                var currentSelections = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
                 var indices = new List<int>();
                 double minRegionY = double.PositiveInfinity;
@@ -64,7 +64,7 @@ namespace Dash
 
                 if (this.GetFirstAncestorOfType<PdfView>() != null)
                 {
-                    DocumentController.SetField(KeyStore.PDFSubregionKey,
+                    RegionDocumentController.SetField(KeyStore.PDFSubregionKey,
                         new ListController<NumberController>(
                             subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
                 }
@@ -160,9 +160,9 @@ namespace Dash
 
         private void HelpRenderRegion(SelectionViewModel vm)
         {
-            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+            var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+            var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             //Debug.Assert(posList.Count == sizeList.Count);
 
@@ -210,7 +210,7 @@ namespace Dash
                     IsDoubleTapEnabled = false,
                     Fill = vm.UnselectedBrush
                 };
-                InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse, vm);
+                InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
             }
 
             ParentOverlay.Regions.Add(vm);

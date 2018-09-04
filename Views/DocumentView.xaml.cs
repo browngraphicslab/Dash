@@ -432,7 +432,7 @@ namespace Dash
 
         private async void UpdateView()
         {
-            if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
+            if (ViewModel == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:

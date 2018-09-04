@@ -400,7 +400,7 @@ namespace Dash
         private void ChangeOpacity(float opacity)
         {
             _bgOpacity = opacity;
-            _backgroundCanvas.Invalidate();
+            _backgroundCanvas?.Invalidate();
         }
         #endregion
 

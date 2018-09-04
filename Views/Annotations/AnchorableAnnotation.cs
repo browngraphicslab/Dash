@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using System;
 
 namespace Dash
 {
@@ -31,15 +32,17 @@ namespace Dash
 
     public abstract class AnchorableAnnotation : UserControl
     {
-        public DocumentController DocumentController;
+        public DocumentController RegionDocumentController;
         public AnnotationType AnnotationType = AnnotationType.None;
         protected readonly NewAnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
+        protected SelectionViewModel ViewModel => DataContext as SelectionViewModel;
 
-        protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay)
+        protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
+            RegionDocumentController = regionDocumentController;
         }
 
         public abstract void Render(SelectionViewModel vm);
@@ -104,22 +107,21 @@ namespace Dash
             }
         }
 
-        protected virtual void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
+        protected virtual void InitializeAnnotationObject(Shape shape, Point? pos, PlacementMode mode)
         {
             shape.SetBinding(Shape.FillProperty, new Binding
             {
-                Path = new PropertyPath(nameof(vm.SelectionColor)),
+                Path = new PropertyPath(nameof(ViewModel.SelectionColor)),
                 Mode = BindingMode.OneWay
             });
-            Canvas.SetLeft(shape, pos.X);
-            Canvas.SetTop(shape, pos.Y);
             shape.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
                     ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
+                    ParentOverlay.RegionDocsList.Remove(RegionDocumentController);
                 }
-                SelectRegionFromParent(vm, args.GetPosition(this));
+                SelectRegionFromParent(ViewModel, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
@@ -129,7 +131,7 @@ namespace Dash
             shape.PointerEntered += (s, e) =>
             {
                 tip.IsOpen = true;
-                var regionDoc = vm.RegionDocument.GetDataDocument();
+                var regionDoc = ViewModel.RegionDocument.GetDataDocument();
 
                 var allLinkSets = new List<IEnumerable<DocumentController>>
                 {
@@ -148,9 +150,59 @@ namespace Dash
                 Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
                 Converter = new BoolToVisibilityConverter()
             });
+            //formatting bindings
+            shape.SetBinding(Shape.FillProperty, new Binding
+            {
+                Path = new PropertyPath(nameof(ViewModel.SelectionColor)),
+                Mode = BindingMode.OneWay
+            });
 
-            FormatRegionOptionsFlyout(vm.RegionDocument, shape);
-            ParentOverlay.XAnnotationCanvas.Children.Add(shape);
+            if (pos != null)
+            {
+                Canvas.SetLeft(shape, pos.Value.X);
+                Canvas.SetTop(shape, pos.Value.Y);
+            }
+            else
+            {
+                var bindingX = new FieldBinding<PointController>()
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = RegionDocumentController,
+                    Key = KeyStore.PositionFieldKey,
+                    Converter = new PositionToCanvasPositionConverter(false, shape)
+                };
+                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
+                var bindingY = new FieldBinding<PointController>()
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = RegionDocumentController,
+                    Key = KeyStore.PositionFieldKey,
+                    Converter = new PositionToCanvasPositionConverter(true, shape)
+                };
+                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+
+                if (RegionDocumentController != null)
+                {
+                    FormatRegionOptionsFlyout(RegionDocumentController, this);
+                }
+            }
+            if (!(this is PinAnnotation))
+                ParentOverlay.XAnnotationCanvas.Children.Add(shape);
+        }
+
+        public class PositionToCanvasPositionConverter : SafeDataToXamlConverter<Point, double>
+        {
+            bool _y;
+            Shape _xShape;
+            public PositionToCanvasPositionConverter(bool y, Shape xShape) { _y = y; _xShape = xShape; }
+            public override double ConvertDataToXaml(Point data, object parameter = null)
+            {
+                return _y ? data.Y - _xShape.Height / 2 : data.X - _xShape.Width / 2;
+            }
+            public override Point ConvertXamlToData(double xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
