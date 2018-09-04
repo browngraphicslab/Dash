@@ -451,7 +451,7 @@ namespace Dash
                     var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
                     var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
-                    regionDoc = _bottomAnnotationOverlay.CreatePinRegion(docViewPoint.Value);
+                    regionDoc = _bottomAnnotationOverlay.CreatePinRegion(newPoint);
                 } else
                     regionDoc = LayoutDocument;
             }
