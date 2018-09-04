@@ -59,6 +59,7 @@ namespace Dash
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
             InitializeAnnotationObject(r, pos, mode);
+            LayoutRoot.Children.Add(r);
         }
 
         public override void StartAnnotation(Point p)
@@ -125,12 +126,11 @@ namespace Dash
             ParentOverlay.XAnnotationCanvas.Children.Add(this);
             ParentOverlay.CurrentAnchorableAnnotations.Add(this);
         }
-
+        public Size XRegionRect;
         public override double AddSubregionToRegion(DocumentController region)
         {
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
-            region.AddToListField(KeyStore.SelectionRegionSizeKey,
-                new PointController(XRegionRect.Width, XRegionRect.Height));
+            region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
 
             return YPos;
         }

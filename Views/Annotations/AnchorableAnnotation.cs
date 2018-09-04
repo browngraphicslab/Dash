@@ -159,8 +159,9 @@ namespace Dash
 
             if (pos != null)
             {
-                Canvas.SetLeft(shape, pos.Value.X);
-                Canvas.SetTop(shape, pos.Value.Y);
+                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+                //Canvas.SetLeft(shape, pos.Value.X);
+                //Canvas.SetTop(shape, pos.Value.Y);
             }
             else
             {
@@ -186,8 +187,6 @@ namespace Dash
                     FormatRegionOptionsFlyout(RegionDocumentController, this);
                 }
             }
-            if (!(this is PinAnnotation))
-                ParentOverlay.XAnnotationCanvas.Children.Add(shape);
         }
 
         public class PositionToCanvasPositionConverter : SafeDataToXamlConverter<Point, double>

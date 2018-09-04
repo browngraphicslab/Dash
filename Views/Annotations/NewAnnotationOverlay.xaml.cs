@@ -157,14 +157,21 @@ namespace Dash
             {
                 // regions and selectons follow the same functionality
                 case AnnotationType.Region:
-                case AnnotationType.Selection:
-                    newAnnotations.Add(new RegionAnnotation(this, regionDocumentController));
-                    newAnnotations.Add(new TextAnnotation(this, regionDocumentController));
                     var rvm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
                         new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
                         new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
-                    newAnnotations.ForEach(i => i.Render(rvm));
-                    newAnnotations.ForEach(i => Regions.Add(rvm));
+                    var rgn = new RegionAnnotation(this, regionDocumentController) { DataContext = rvm };
+                    rgn.Render(rvm);
+                    Regions.Add(rvm);
+                    XAnnotationCanvas.Children.Add(rgn);
+                    break;
+                case AnnotationType.Selection:
+                    var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
+                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
+                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+                    newAnnotations.Add(new TextAnnotation(this, regionDocumentController) { DataContext = svm });
+                    newAnnotations.ForEach(i => i.Render(svm));
+                    newAnnotations.ForEach(i => Regions.Add(svm));
                     break;
                 case AnnotationType.Ink:
                     break;
@@ -242,8 +249,8 @@ namespace Dash
         private void RegionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase,
             FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
-            if (!(fieldUpdatedEventArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
-            ) return;
+            if (!(fieldUpdatedEventArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs))
+                return;
 
             switch (listArgs.ListAction)
             {
@@ -395,7 +402,7 @@ namespace Dash
 
         public void StartAnnotation(Point p)
         {
-            ClearPreviewRegion();
+            //ClearPreviewRegion();
             switch (CurrentAnnotationType)
             {
                 case AnnotationType.Region:
