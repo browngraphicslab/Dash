@@ -134,11 +134,8 @@ namespace Dash
 
             AnnotationManager = new AnnotationManager(this);
 
-            RegionDocsList =
-                MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
-            _inkController = MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
-
+            RegionDocsList = MainDocument.GetDataDocument().GetRegions();
+            _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;

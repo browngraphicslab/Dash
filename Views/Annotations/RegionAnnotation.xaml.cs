@@ -30,6 +30,8 @@ namespace Dash
         {
             this.InitializeComponent();
 
+            DataContext = selectionViewModel;
+
             AnnotationType = AnnotationType.Region;
         }
 

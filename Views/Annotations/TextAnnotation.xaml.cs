@@ -214,9 +214,8 @@ namespace Dash
                     Fill = vm.UnselectedBrush
                 };
                 InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
+                LayoutRoot.Children.Add(path);
             }
-
-            ParentOverlay.Regions.Add(vm);
         }
 
         public override double AddSubregionToRegion(DocumentController region)

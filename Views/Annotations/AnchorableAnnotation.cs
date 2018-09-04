@@ -155,8 +155,6 @@ namespace Dash
             {
                 System.Diagnostics.Debug.WriteLine(" rende " + pos.Value.X + " " + pos.Value.Y);
                 shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
-                //Canvas.SetLeft(shape, pos.Value.X);
-                //Canvas.SetTop(shape, pos.Value.Y);
             }
             else
             {
