@@ -121,8 +121,6 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             this.KeyDown += CustomPdfView_KeyDown;
-            _bottomAnnotationOverlay.LoadPinAnnotations(this);
-            _topAnnotationOverlay.LoadPinAnnotations(this);
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
         }
 
@@ -445,21 +443,19 @@ namespace Dash
         /// <returns></returns>
         public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
-            if (docViewPoint == null)
-                return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
-
-            //if point !null & region is selected, return region 
             var regionDoc = _bottomAnnotationOverlay.GetRegionDoc();
+            if (regionDoc == null) {
+                if (docViewPoint != null) {
 
-            if (regionDoc != null)
-                return regionDoc;
+                    //else, make a new push pin region closest to given point
+                    var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
+                    var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
-            //else, make a new push pin region closest to given point
-            var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint ?? new Point(), this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
-            var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
-
-            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationRegionPinDocument(newPoint);
-            return makeAnnotationPinDoc;
+                    regionDoc = _bottomAnnotationOverlay.CreatePinRegion(docViewPoint.Value);
+                } else
+                    regionDoc = LayoutDocument;
+            }
+            return regionDoc;
         }
 
         private Point calculateClosestPointOnPDF(Point p)
@@ -546,8 +542,8 @@ namespace Dash
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
 
-            _bottomAnnotationOverlay.LoadPinAnnotations(this);
-            _topAnnotationOverlay.LoadPinAnnotations(this);
+            _bottomAnnotationOverlay.LoadEmbeddedAnnotations();
+            _topAnnotationOverlay.LoadEmbeddedAnnotations();
             MainPage.Instance.ClosePopup();
         }
 
@@ -576,7 +572,7 @@ namespace Dash
                 using (UndoManager.GetBatchHandle())
                 {
                     var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                    overlay.CreatePin(e.GetPosition(overlay));
+                    overlay.EmbedDocumentWithPin(e.GetPosition(overlay));
                 }
             }
 
@@ -634,7 +630,7 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
+                overlay.StartAnnotation(CurrentAnnotationType, e.GetCurrentPoint(overlay).Position);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }

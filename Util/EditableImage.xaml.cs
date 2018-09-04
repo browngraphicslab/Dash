@@ -457,14 +457,14 @@ namespace Dash
 
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                _annotationOverlay.StartAnnotation(point.Position);
+                _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
         }
 
         public DocumentController GetRegionDocument()
         {
-            return _annotationOverlay.GetRegionDoc() ?? _docCtrl;
+            return _annotationOverlay.GetRegionDoc(null) ?? _docCtrl;
         }
 
         public void ShowRegions()

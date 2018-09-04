@@ -33,26 +33,26 @@ namespace Dash
             DataContext = selectionViewModel;
 
             AnnotationType = AnnotationType.Region;
-        }
 
-        public override void Render(SelectionViewModel vm)
-        {
-            var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-
-            Debug.Assert(posList.Count == sizeList.Count);
-
-            for (var i = 0; i < posList.Count; ++i)
+            if (selectionViewModel != null)
             {
-                var r = new Rectangle
+                var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
+
+                Debug.Assert(posList.Count == sizeList.Count);
+
+                for (var i = 0; i < posList.Count; ++i)
                 {
-                    Width = sizeList[i].Data.X,
-                    Height = sizeList[i].Data.Y,
-                    Fill = vm.UnselectedBrush,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false
-                };
-                RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
+                    var r = new Rectangle
+                    {
+                        Width = sizeList[i].Data.X,
+                        Height = sizeList[i].Data.Y,
+                        Fill = selectionViewModel.UnselectedBrush,
+                        DataContext = selectionViewModel,
+                        IsDoubleTapEnabled = false
+                    };
+                    RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, selectionViewModel);
+                }
             }
         }
 

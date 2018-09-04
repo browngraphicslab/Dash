@@ -44,8 +44,6 @@ namespace Dash
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
         }
-
-        public abstract void Render(SelectionViewModel vm);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);

@@ -34,46 +34,47 @@ namespace Dash
             DataContext = selectionViewModel;
 
             AnnotationType = AnnotationType.Selection;
-        }
 
-        public override void Render(SelectionViewModel vm)
-        {
-            if (RegionDocumentController.GetField(KeyStore.PDFSubregionKey) == null)
+            if (selectionViewModel != null)
             {
-                var currentSelections = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-
-                var indices = new List<int>();
-                double minRegionY = double.PositiveInfinity;
-                foreach (PointController selection in currentSelections)
+                if (RegionDocumentController.GetField(KeyStore.PDFSubregionKey) == null)
                 {
-                    for (double i = selection.Data.X; i <= selection.Data.Y; i++)
+                    var currentSelections = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+
+                    var indices = new List<int>();
+                    double minRegionY = double.PositiveInfinity;
+                    foreach (var selection in currentSelections)
                     {
-                        if (!indices.Contains((int)i)) indices.Add((int)i);
+                        for (var i = selection.Data.X; i <= selection.Data.Y; i++)
+                        {
+                            if (!indices.Contains((int)i))
+                                indices.Add((int)i);
+                        }
+                    }
+
+                    var subRegionsOffsets = new List<double>();
+                    int prevIndex = -1;
+                    foreach (int index in indices)
+                    {
+                        var elem = ParentOverlay.TextSelectableElements[index];
+                        if (prevIndex + 1 != index)
+                        {
+                            subRegionsOffsets.Add(elem.Bounds.Y);
+                        }
+                        minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
+                        prevIndex = index;
+                    }
+
+                    if (this.GetFirstAncestorOfType<PdfView>() != null)
+                    {
+                        RegionDocumentController.SetField(KeyStore.PDFSubregionKey,
+                            new ListController<NumberController>(
+                                subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
                     }
                 }
 
-                var subRegionsOffsets = new List<double>();
-                int prevIndex = -1;
-                foreach (int index in indices)
-                {
-                    SelectableElement elem = ParentOverlay.TextSelectableElements[index];
-                    if (prevIndex + 1 != index)
-                    {
-                        subRegionsOffsets.Add(elem.Bounds.Y);
-                    }
-                    minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
-                    prevIndex = index;
-                }
-
-                if (this.GetFirstAncestorOfType<PdfView>() != null)
-                {
-                    RegionDocumentController.SetField(KeyStore.PDFSubregionKey,
-                        new ListController<NumberController>(
-                            subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                }
+                HelpRenderRegion(selectionViewModel);
             }
-
-            HelpRenderRegion(vm);
         }
 
         public override void StartAnnotation(Point p)

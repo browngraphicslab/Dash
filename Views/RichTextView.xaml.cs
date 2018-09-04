@@ -426,6 +426,8 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
+            if (this.xRichEditBox == sender)
+                return;
             if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
                 if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
