@@ -668,7 +668,6 @@ namespace Dash
 		Point _marqueeAnchor;
 		bool _isMarqueeActive;
 		private MarqueeInfo mInfo;
-		object _marqueeKeyHandler = null;
 
 		protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
