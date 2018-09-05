@@ -47,7 +47,6 @@ namespace Dash
                     {
                         Width = sizeList[i].Data.X,
                         Height = sizeList[i].Data.Y,
-                        Fill = selectionViewModel.UnselectedBrush,
                         DataContext = selectionViewModel,
                         IsDoubleTapEnabled = false
                     };

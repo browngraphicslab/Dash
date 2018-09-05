@@ -31,10 +31,7 @@ namespace Dash
 
     public interface ISelectable
     {
-        void Select();
-        void Deselect();
-
-        bool Selected { get; }
+        bool IsSelected { get; set;  }
 
         DocumentController RegionDocument { get; }
     }
@@ -61,7 +58,6 @@ namespace Dash
         public readonly RegionGetter         GetRegion;
         public readonly AnnotationManager    AnnotationManager;
         public ISelectable                   SelectedRegion;
-        public readonly List<ISelectable>    Regions = new List<ISelectable>();
         public readonly ListController<DocumentController> RegionDocsList;
 
         public delegate DocumentController RegionGetter(AnnotationType type);
@@ -100,20 +96,22 @@ namespace Dash
             Unloaded += onUnloaded;
         }
 
+        public IEnumerable<ISelectable>     SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a)=>a.ViewModel);
+
         public void SelectRegion(DocumentController region)
         {
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.Visibility = Visibility.Visible;
 
-            var deselect = SelectedRegion?.Selected == true;
-            var selectable = Regions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
+            var deselect = SelectedRegion?.IsSelected == true;
+            var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
+                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
-                    nvo.SelectedRegion?.Deselect();
+                    nvo.SelectedRegion.IsSelected = false;
                     nvo.SelectedRegion = deselect ? null : r;
-                    if (!deselect) { 
-                        r.Select();
+                    if (!deselect) {
+                        r.IsSelected = true;
                     }
                     if (documentView.ViewModel != null)
                     {
@@ -126,9 +124,9 @@ namespace Dash
             var selectedRegion = SelectedRegion;
             if (selectedRegion != null)
                 foreach (var nvo in this.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                    foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
+                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
-                        nvo.SelectedRegion?.Deselect();
+                        nvo.SelectedRegion.IsSelected = false;
                         nvo.SelectedRegion = null;
                     }
         }
@@ -150,13 +148,6 @@ namespace Dash
                     var subRegionsOffsets = CurrentAnchorableAnnotations.Select((item) => item.AddSubregionToRegion(annotation)).ToList();
                     subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
 
-                    if (this.GetFirstAncestorOfType<PdfView>() != null)
-                    {
-                        annotation.SetField(KeyStore.PDFSubregionKey,
-                            new ListController<NumberController>(
-                                subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                    }
-
                     annotation.GetDataDocument().SetPosition(new Point(0, subRegionsOffsets.FirstOrDefault()));
                     annotation.SetRegionDefinition(MainDocument);
                     annotation.SetAnnotationType(CurrentAnnotationType);
@@ -171,13 +162,9 @@ namespace Dash
         {
             var annotation = GetRegion(AnnotationType.Pin);
             annotation.SetPosition(point);
-            if (this.GetFirstAncestorOfType<PdfView>() != null)
-            {
-                annotation.SetField(KeyStore.PDFSubregionKey, new ListController<NumberController> { new NumberController(point.Y) }, true);
-            }
             annotation.SetWidth(10);
             annotation.SetHeight(10);
-            annotation.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, nameof(AnnotationType.Pin), true);
+            annotation.GetDataDocument().SetAnnotationType(AnnotationType.Pin);
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
             if (linkedDoc != null)
             {
@@ -195,34 +182,13 @@ namespace Dash
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
             foreach (var doc in pinAnnotations)
             {
-                var dvm = new DocumentViewModel(doc)
-                {
-                    Undecorated = true,
-                    ResizersVisible = true,
-                    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
-                };
-                ViewModel.ViewModels.Add(dvm);
+                ViewModel.ViewModels.Add(new DocumentViewModel(doc)
+                    {
+                        Undecorated = true,
+                        ResizersVisible = true,
+                        DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
+                    });
             }
-        }
-
-        /// <summary>
-        /// Creates an appropriate AnchoredAnnotation to display a region based on its type (Pin/Region/Selection)
-        /// </summary>
-        /// <param name="regionDocumentController"></param>
-        void displayRegionAnchor(DocumentController regionDocumentController)
-        {
-            var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController);
-            switch (regionDocumentController.GetAnnotationType())
-            {
-                case AnnotationType.Pin:       svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
-                                                     new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
-                                               XAnnotationCanvas.Children.Add(new PinAnnotation(this, svm)); break;
-                case AnnotationType.Region:    XAnnotationCanvas.Children.Add(new RegionAnnotation(this, svm)); break;
-                case AnnotationType.Selection: XAnnotationCanvas.Children.Add(new TextAnnotation(this, svm)); break;
-                default: svm = null; break;
-            }
-            if (svm != null)
-                Regions.Add(svm);
         }
 
         void onUnloaded(object o, RoutedEventArgs routedEventArgs)
@@ -242,7 +208,7 @@ namespace Dash
         {
             if ((args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs) &&
                  listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
-                listArgs.NewItems.ForEach((doc) => displayRegionAnchor(doc));
+                listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(AnchorableAnnotation.CreateAnnotation(this, reg)));
         }
         void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
@@ -435,10 +401,8 @@ namespace Dash
         {
             TextSelectableElements = selectableElements.ToList();
 
-            foreach (var documentController in RegionDocsList)
-            {
-                displayRegionAnchor(documentController);
-            }
+            RegionDocsList.ToList().ForEach((reg) =>
+               XAnnotationCanvas.Children.Add(AnchorableAnnotation.CreateAnnotation(this, reg)));
         }
 
         public void ClearSelection(bool hardReset = false)

@@ -689,10 +689,10 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target, DocumentController source = null)
         {
-            var absoluteOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets == null) return;
 
-            var relativeOffsets = absoluteOffsets.TypedData.Select(i => i.Data * (ActualWidth / PdfMaxWidth)).ToList();
+            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (ActualWidth / PdfMaxWidth)).ToList();
 
             var currOffset = relativeOffsets.First();
             var firstOffset = relativeOffsets.First();
@@ -712,7 +712,7 @@ namespace Dash
                     }
                 }
 
-                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data *
+                var off = source.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey)[0].Data.Y *
                           BottomScrollViewer.ExtentHeight;
                 splits.Insert(1, off);
                 relativeOffsets.Insert(1, off);

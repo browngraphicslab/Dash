@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using System;
+using Windows.Foundation;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -24,6 +25,19 @@ namespace Dash
         static PointToTranslateTransformConverter()
         {
             Instance = new PointToTranslateTransformConverter();
+        }
+    }
+    public class PointToCoordinateConverter : SafeDataToXamlConverter<Point, double>
+    {
+        bool _y;
+        public PointToCoordinateConverter(bool y) { _y = y;  }
+        public override double ConvertDataToXaml(Point data, object parameter = null)
+        {
+            return _y ? data.Y : data.X;
+        }
+        public override Point ConvertXamlToData(double xaml, object parameter = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

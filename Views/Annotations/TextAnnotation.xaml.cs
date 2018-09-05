@@ -37,42 +37,6 @@ namespace Dash
 
             if (selectionViewModel != null)
             {
-                if (RegionDocumentController.GetField(KeyStore.PDFSubregionKey) == null)
-                {
-                    var currentSelections = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-
-                    var indices = new List<int>();
-                    double minRegionY = double.PositiveInfinity;
-                    foreach (var selection in currentSelections)
-                    {
-                        for (var i = selection.Data.X; i <= selection.Data.Y; i++)
-                        {
-                            if (!indices.Contains((int)i))
-                                indices.Add((int)i);
-                        }
-                    }
-
-                    var subRegionsOffsets = new List<double>();
-                    int prevIndex = -1;
-                    foreach (int index in indices)
-                    {
-                        var elem = ParentOverlay.TextSelectableElements[index];
-                        if (prevIndex + 1 != index)
-                        {
-                            subRegionsOffsets.Add(elem.Bounds.Y);
-                        }
-                        minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
-                        prevIndex = index;
-                    }
-
-                    if (this.GetFirstAncestorOfType<PdfView>() != null)
-                    {
-                        RegionDocumentController.SetField(KeyStore.PDFSubregionKey,
-                            new ListController<NumberController>(
-                                subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                    }
-                }
-
                 HelpRenderRegion(selectionViewModel);
             }
         }
@@ -168,22 +132,6 @@ namespace Dash
             var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            //Debug.Assert(posList.Count == sizeList.Count);
-
-            //for (var i = 0; i < posList.Count; ++i)
-            //{
-            //    var r = new Rectangle
-            //    {
-            //        Width = sizeList[i].Data.X,
-            //        Height = sizeList[i].Data.Y,
-            //        Fill = vm.UnselectedBrush,
-            //        DataContext = vm,
-            //        IsDoubleTapEnabled = false
-            //    };
-
-            //    InitializeAnnotationObject(r, posList[i].Data, PlacementMode.Bottom, vm);
-            //}
-
             if (ParentOverlay.TextSelectableElements != null && indexList.Any())
             {
                 var geometryGroup = new GeometryGroup();
@@ -211,8 +159,7 @@ namespace Dash
                 {
                     Data = geometryGroup,
                     DataContext = vm,
-                    IsDoubleTapEnabled = false,
-                    Fill = vm.UnselectedBrush
+                    IsDoubleTapEnabled = false
                 };
                 InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
                 LayoutRoot.Children.Add(path);

@@ -49,8 +49,23 @@ namespace Dash
         protected readonly NewAnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
-        protected SelectionViewModel ViewModel => DataContext as SelectionViewModel;
-
+        public SelectionViewModel ViewModel => DataContext as SelectionViewModel;
+        public static AnchorableAnnotation CreateAnnotation(NewAnnotationOverlay parent, 
+            DocumentController regionDocumentController)
+        {
+            var svm = new SelectionViewModel(regionDocumentController);
+            AnchorableAnnotation annotation = null;
+            switch (regionDocumentController.GetAnnotationType())
+            {
+                case AnnotationType.Pin:       svm = new SelectionViewModel(regionDocumentController,
+                                                      new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
+                                               annotation = new PinAnnotation(parent, svm); break;
+                case AnnotationType.Region:    annotation = new RegionAnnotation(parent, svm); break;
+                case AnnotationType.Selection: annotation = new TextAnnotation(parent, svm); break;
+                default:  break;
+            }
+            return annotation;
+        }
         protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
@@ -108,22 +123,19 @@ namespace Dash
             if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
                 foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
-                {
-                    nvo.SelectedRegion?.Deselect();
+                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
+                { 
+                    if (nvo.SelectedRegion != null)
+                        nvo.SelectedRegion.IsSelected = false;
                     nvo.SelectedRegion = r;
-                    r.Select();
+                    r.IsSelected = true;
                 }
             }
         }
 
         protected virtual void InitializeAnnotationObject(Shape shape, Point? pos, PlacementMode mode)
         {
-            shape.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(ViewModel.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
+            shape.SetBinding(Shape.FillProperty, ViewModel.GetFillBinding());
             shape.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
@@ -154,16 +166,9 @@ namespace Dash
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
             };
-            //formatting bindings
-            shape.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(ViewModel.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
 
             if (pos != null)
             {
-                System.Diagnostics.Debug.WriteLine(" rende " + pos.Value.X + " " + pos.Value.Y);
                 shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
             }
             else
@@ -173,7 +178,7 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PositionToCanvasPositionConverter(false, shape)
+                    Converter = new PointToCoordinateConverter(false)
                 };
                 this.AddFieldBinding(Canvas.LeftProperty, bindingX);
                 var bindingY = new FieldBinding<PointController>()
@@ -181,7 +186,7 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PositionToCanvasPositionConverter(true, shape)
+                    Converter = new PointToCoordinateConverter(true)
                 };
                 this.AddFieldBinding(Canvas.TopProperty, bindingY);
             }
@@ -192,70 +197,46 @@ namespace Dash
             }
         }
 
-        public class PositionToCanvasPositionConverter : SafeDataToXamlConverter<Point, double>
-        {
-            bool _y;
-            Shape _xShape;
-            public PositionToCanvasPositionConverter(bool y, Shape xShape) { _y = y; _xShape = xShape; }
-            public override double ConvertDataToXaml(Point data, object parameter = null)
-            {
-                return _y ? data.Y - _xShape.Height / 2 : data.X - _xShape.Width / 2;
-            }
-            public override Point ConvertXamlToData(double xaml, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
         {
-            private SolidColorBrush _selectionColor;
-            public SolidColorBrush SelectionColor
+            SolidColorBrush _selectedBrush, _unselectedBrush;
+            bool _isSelected = false;
+            public bool IsSelected
             {
                 [UsedImplicitly]
-                get => _selectionColor;
-                private set
+                get => _isSelected;
+                set
                 {
-                    if (_selectionColor == value)
+                    if (_isSelected != value)
                     {
-                        return;
+                        _isSelected = value;
+                        OnPropertyChanged();
                     }
-                    _selectionColor = value;
-                    OnPropertyChanged();
                 }
             }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
-            public SolidColorBrush SelectedBrush { get; set; }
-
-            public SolidColorBrush UnselectedBrush { get; set; }
+            public Binding GetFillBinding()
+            {
+                return new Binding
+                {
+                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
+                    Mode = BindingMode.OneWay,
+                    Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
+                };
+            }
 
             public SelectionViewModel(DocumentController region,
                 SolidColorBrush selectedBrush=null,
                 SolidColorBrush unselectedBrush=null)
             {
                 RegionDocument = region;
-                UnselectedBrush = unselectedBrush ?? new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0));
-                SelectedBrush   = selectedBrush ?? new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0));
-                _selectionColor = UnselectedBrush;
+                _unselectedBrush = unselectedBrush ?? new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0));
+                _selectedBrush   = selectedBrush   ?? new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0));
             }
-
-            public bool Selected { get; private set; }
 
             public DocumentController RegionDocument { get; }
-
-            public void Select()
-            {
-                SelectionColor = SelectedBrush;
-                Selected = true;
-            }
-
-            public void Deselect()
-            {
-                SelectionColor = UnselectedBrush;
-                Selected = false;
-            }
 
             [NotifyPropertyChangedInvocator]
             private void OnPropertyChanged([CallerMemberName] string propertyName = null)

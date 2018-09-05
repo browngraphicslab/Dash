@@ -8,6 +8,6 @@
     mc:Ignorable="d"
     IsDoubleTapEnabled="false">
 
-    <Ellipse x:Name="xShape" Width="10" Height="10"/>
+    <Ellipse x:Name="xShape" Width="10" Height="10" Margin="-5 -5 0 0"/>
 
 </local:AnchorableAnnotation>
