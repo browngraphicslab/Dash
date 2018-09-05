@@ -26,7 +26,7 @@ namespace Dash
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
 
-        public TextAnnotation(NewAnnotationOverlay parent, SelectionViewModel selectionViewModel) :
+        public TextAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
@@ -43,14 +43,6 @@ namespace Dash
 
         public override void StartAnnotation(Point p)
         {
-            if (!this.IsCtrlPressed())
-            {
-                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
-                {
-                    ParentOverlay.ClearSelection();
-                }
-            }
-
             _selectionStartPoint = p;
         }
 
@@ -121,15 +113,15 @@ namespace Dash
 
         public override void EndAnnotation(Point p)
         {
-            if (StartIndex == -1 || EndIndex == -1) return;//Not currently selecting anything
             _selectionStartPoint = null;
-            ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            if (StartIndex != -1 && EndIndex != -1)
+            {
+                ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            }
         }
 
-        private void HelpRenderRegion(SelectionViewModel vm)
+        private void HelpRenderRegion(Selection vm)
         {
-            var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             if (ParentOverlay.TextSelectableElements != null && indexList.Any())
@@ -166,7 +158,7 @@ namespace Dash
             }
         }
 
-        public override double AddSubregionToRegion(DocumentController region)
+        public override double AddToRegion(DocumentController region)
         {
             var prevUsedIndex = -1;
             var prevStartIndex = StartIndex;
@@ -197,6 +189,8 @@ namespace Dash
             if (ClipRect == Rect.Empty)
                 region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
 
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));
+            
             return YPos;
         }
     }

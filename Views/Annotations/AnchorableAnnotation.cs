@@ -49,7 +49,7 @@ namespace Dash
         protected readonly NewAnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
-        public SelectionViewModel ViewModel => DataContext as SelectionViewModel;
+        public Selection ViewModel => DataContext as Selection;
         
         protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
@@ -59,7 +59,7 @@ namespace Dash
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
-        public abstract double AddSubregionToRegion(DocumentController region);
+        public abstract double AddToRegion(DocumentController region);
 
         public void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
         {
@@ -96,7 +96,7 @@ namespace Dash
             };
         }
 
-        public void SelectRegionFromParent(ISelectable selectable, Point? mousePos)
+        public void SelectRegionFromParent(Selection selectable, Point? mousePos)
         {
             // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = ParentOverlay.GetAncestorsOfType<ILinkHandler>().ToList();
@@ -181,11 +181,11 @@ namespace Dash
                 FormatRegionOptionsFlyout(RegionDocumentController, this);
             }
         }
-
-        public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
+        
+        public sealed class Selection : INotifyPropertyChanged
         {
             SolidColorBrush _selectedBrush, _unselectedBrush;
-            bool _isSelected = false;
+            bool            _isSelected = false;
             public bool IsSelected
             {
                 [UsedImplicitly]
@@ -212,7 +212,7 @@ namespace Dash
                 };
             }
 
-            public SelectionViewModel(DocumentController region,
+            public Selection(DocumentController region,
                 SolidColorBrush selectedBrush=null,
                 SolidColorBrush unselectedBrush=null)
             {

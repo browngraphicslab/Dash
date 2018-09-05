@@ -25,7 +25,7 @@ namespace Dash
     {
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent, SelectionViewModel selectionViewModel) :
+        public RegionAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
@@ -55,7 +55,7 @@ namespace Dash
             }
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
+        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
         {
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
@@ -66,13 +66,6 @@ namespace Dash
 
         public override void StartAnnotation(Point p)
         {
-            if (!this.IsCtrlPressed())
-            {
-                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
-                {
-                    ParentOverlay.ClearSelection();
-                }
-            }
             _previewStartPoint = p;
             Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
             Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
@@ -123,20 +116,18 @@ namespace Dash
             XRegionRect.Fill = ParentOverlay.XPreviewRect.Fill;
             XRegionRect.Opacity = ParentOverlay.XPreviewRect.Opacity;
             XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
+            XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
+            XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
             Canvas.SetLeft(XRegionRect, XPos);
             Canvas.SetTop(XRegionRect, YPos);
-            Debug.WriteLine("end" + XPos + " " + YPos);
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {
-
-                XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
-                XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
                 ParentOverlay.XAnnotationCanvas.Children.Add(XRegionRect);
                 ParentOverlay.CurrentAnchorableAnnotations.Add(this);
             }
         }
-        public override double AddSubregionToRegion(DocumentController region)
+        public override double AddToRegion(DocumentController region)
         {
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(XRegionRect), Canvas.GetTop(XRegionRect)));
             region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));

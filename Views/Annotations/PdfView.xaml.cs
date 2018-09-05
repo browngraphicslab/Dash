@@ -138,13 +138,10 @@ namespace Dash
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
             if (this.IsCtrlPressed())
             {
-                var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.Where(i => i is TextAnnotation)
-                    .Cast<TextAnnotation>();
-                var bottomSelections =
-                    bottomTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
+                var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
+                var bottomSelections = bottomTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
                 var bottomClipRects = bottomTextAnnos.Select(i => i.ClipRect);
-                var topTextAnnos = _topAnnotationOverlay.CurrentAnchorableAnnotations.Where(i => i is TextAnnotation)
-                    .Cast<TextAnnotation>();
+                var topTextAnnos = _topAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
                 var topSelections = topTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
                 var topClipRects = topTextAnnos.Select(i => i.ClipRect);
 
@@ -250,16 +247,8 @@ namespace Dash
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
 
-            _bottomAnnotationOverlay =
-                new NewAnnotationOverlay(LayoutDocument, RegionGetter)
-                {
-                    DataContext = new NewAnnotationOverlayViewModel()
-                };
-            _topAnnotationOverlay =
-                new NewAnnotationOverlay(LayoutDocument, RegionGetter)
-                {
-                    DataContext = new NewAnnotationOverlayViewModel()
-                };
+            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
@@ -365,7 +354,7 @@ namespace Dash
                 foreach (var child in _bottomAnnotationOverlay.XAnnotationCanvas.Children.OfType<FrameworkElement>())
                 {
                     //get linked annotations
-                    var regionDoc = (child.DataContext as AnchorableAnnotation.SelectionViewModel)?.RegionDocument;
+                    var regionDoc = (child.DataContext as AnchorableAnnotation.Selection)?.RegionDocument;
 
                     if (regionDoc == null)
                         continue;
@@ -532,8 +521,8 @@ namespace Dash
             });
 
             var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
-            _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
+            _topAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
+            _bottomAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
 
@@ -541,9 +530,7 @@ namespace Dash
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
-
-            _bottomAnnotationOverlay.LoadEmbeddedAnnotations();
-            _topAnnotationOverlay.LoadEmbeddedAnnotations();
+            
             MainPage.Instance.ClosePopup();
         }
 
@@ -1320,7 +1307,7 @@ namespace Dash
             foreach (var child in allChildren.OfType<FrameworkElement>())
             {
                 //get linked annotations
-                if ((child.DataContext as AnchorableAnnotation.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
+                if ((child.DataContext as AnchorableAnnotation.Selection)?.RegionDocument is DocumentController regionDoc)
                 {
                     var allLinks = regionDoc.GetDataDocument().GetLinks(null);
 

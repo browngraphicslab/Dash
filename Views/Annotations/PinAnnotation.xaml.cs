@@ -25,7 +25,7 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        public PinAnnotation(NewAnnotationOverlay parent, SelectionViewModel selectionViewModel) : 
+        public PinAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) : 
             base(parent, selectionViewModel.RegionDocument)
         {
             this.InitializeComponent();
@@ -68,7 +68,7 @@ namespace Dash
         {
         }
 
-        public override double AddSubregionToRegion(DocumentController region)
+        public override double AddToRegion(DocumentController region)
         {
             throw new NotImplementedException();
         }
