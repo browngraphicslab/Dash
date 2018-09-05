@@ -1094,6 +1094,7 @@ namespace Dash
             var docCopy = doc.GetViewCopy();
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetHeight(size?.Y ?? 100);
+            docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
             docCopy.SetPosition(position ?? defaultPt);
