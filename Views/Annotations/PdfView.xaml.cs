@@ -443,7 +443,7 @@ namespace Dash
         /// <returns></returns>
         public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
-            var regionDoc = _bottomAnnotationOverlay.GetRegionDoc();
+            var regionDoc = _bottomAnnotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null) {
                 if (docViewPoint != null) {
 

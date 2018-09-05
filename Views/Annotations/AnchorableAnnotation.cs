@@ -50,22 +50,7 @@ namespace Dash
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
         public SelectionViewModel ViewModel => DataContext as SelectionViewModel;
-        public static AnchorableAnnotation CreateAnnotation(NewAnnotationOverlay parent, 
-            DocumentController regionDocumentController)
-        {
-            var svm = new SelectionViewModel(regionDocumentController);
-            AnchorableAnnotation annotation = null;
-            switch (regionDocumentController.GetAnnotationType())
-            {
-                case AnnotationType.Pin:       svm = new SelectionViewModel(regionDocumentController,
-                                                      new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
-                                               annotation = new PinAnnotation(parent, svm); break;
-                case AnnotationType.Region:    annotation = new RegionAnnotation(parent, svm); break;
-                case AnnotationType.Selection: annotation = new TextAnnotation(parent, svm); break;
-                default:  break;
-            }
-            return annotation;
-        }
+        
         protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;

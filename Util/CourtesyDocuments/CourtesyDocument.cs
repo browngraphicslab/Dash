@@ -9,6 +9,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
 using DashShared;
+using static Dash.AnchorableAnnotation;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -411,12 +413,21 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static AnnotationType GetAnnotationType(this DocumentController document)
+        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, NewAnnotationOverlay overlay)
         {
-            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
-            return t == null
+            var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            var annoType = t == null
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);
+
+            switch (annoType) { 
+            
+                case AnnotationType.Pin:       return new PinAnnotation(overlay, new SelectionViewModel(regionDocumentController,
+                                                             new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
+                case AnnotationType.Region:    return new RegionAnnotation(overlay, new SelectionViewModel(regionDocumentController));
+                case AnnotationType.Selection: return new TextAnnotation(overlay, new SelectionViewModel(regionDocumentController));
+            }
+            return null;
         }
 
         public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)

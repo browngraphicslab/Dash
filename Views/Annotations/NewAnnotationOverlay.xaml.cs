@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Dash.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
@@ -12,14 +12,8 @@ using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
-using Dash.Annotations;
-using MyToolkit.Multimedia;
 using static Dash.DataTransferTypeInfo;
 
 
@@ -40,11 +34,11 @@ namespace Dash
 
     public class NewAnnotationOverlayViewModel : ViewModelBase
     {
-        public ObservableCollection<DocumentViewModel> ViewModels { get; set; }
+        public ObservableCollection<DocumentViewModel> EmbeddedViewModels { get; set; }
         // should also add all of the annotations in here as their own view model...
         public NewAnnotationOverlayViewModel()
         {
-            ViewModels = new ObservableCollection<DocumentViewModel>();
+            EmbeddedViewModels = new ObservableCollection<DocumentViewModel>();
         }
     }
 
@@ -58,10 +52,10 @@ namespace Dash
         public readonly RegionGetter         GetRegion;
         public readonly AnnotationManager    AnnotationManager;
         public ISelectable                   SelectedRegion;
-        public readonly ListController<DocumentController> RegionDocsList;
-
-        public delegate DocumentController RegionGetter(AnnotationType type);
-
+        public delegate DocumentController   RegionGetter(AnnotationType type);
+        public readonly ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
+        public readonly ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
+        public IEnumerable<ISelectable>      SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a) => a.ViewModel);
         public NewAnnotationOverlayViewModel ViewModel => DataContext as NewAnnotationOverlayViewModel;
         public AnnotationType                CurrentAnnotationType
         {
@@ -83,8 +77,9 @@ namespace Dash
 
             AnnotationManager = new AnnotationManager(this);
 
-            RegionDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
-            _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
+            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
+            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
@@ -95,8 +90,6 @@ namespace Dash
             Loaded += onLoaded;
             Unloaded += onUnloaded;
         }
-
-        public IEnumerable<ISelectable>     SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a)=>a.ViewModel);
 
         public void SelectRegion(DocumentController region)
         {
@@ -131,10 +124,10 @@ namespace Dash
                     }
         }
         /// <summary>
-        /// Returns any active (selected or preview) region document
+        /// Creates a region document from a preview, or returns an already selected region
         /// </summary>
         /// <returns></returns>
-        public DocumentController GetRegionDoc()
+        public DocumentController CreateRegionFromPreviewOrSelection()
         {
             var annotation = SelectedRegion?.RegionDocument;
             if (annotation == null &&
@@ -151,7 +144,7 @@ namespace Dash
                     annotation.GetDataDocument().SetPosition(new Point(0, subRegionsOffsets.FirstOrDefault()));
                     annotation.SetRegionDefinition(MainDocument);
                     annotation.SetAnnotationType(CurrentAnnotationType);
-                    RegionDocsList.Add(annotation);
+                    RegionDocsList.Add(annotation); // this actually adds the region to the parent document's Regions list
                 }
                 ClearSelection(true);
             }
@@ -176,13 +169,11 @@ namespace Dash
         }
         public void LoadEmbeddedAnnotations()
         {
-            ViewModel.ViewModels.Clear();
-
-            var pinAnnotations = MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey);
-            foreach (var doc in pinAnnotations)
+            ViewModel.EmbeddedViewModels.Clear();
+            
+            foreach (var doc in EmbeddedDocsList)
             {
-                ViewModel.ViewModels.Add(new DocumentViewModel(doc)
+                ViewModel.EmbeddedViewModels.Add(new DocumentViewModel(doc)
                     {
                         Undecorated = true,
                         ResizersVisible = true,
@@ -196,19 +187,18 @@ namespace Dash
             RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
             _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
         }
-
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
             _inkController.FieldModelUpdated += inkController_FieldModelUpdated;
             RegionDocsList.FieldModelUpdated += regionDocsListOnFieldModelUpdated;
-            xItemsControl.ItemsSource = ViewModel.ViewModels;
+            xItemsControl.ItemsSource = ViewModel.EmbeddedViewModels;
         }
 
         void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
             if ((args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs) &&
                  listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
-                listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(AnchorableAnnotation.CreateAnnotation(this, reg)));
+                listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
         }
         void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
@@ -281,30 +271,20 @@ namespace Dash
         /// Pass in a target to create a pushpin annotation with a document controller intended as the target.
         /// </summary>
         /// <param name="point"></param>
-        public async void EmbedDocumentWithPin(Point point, DocumentController target = null)
+        public async void EmbedDocumentWithPin(Point point, DocumentController embeddedDocument = null)
         {
             _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => pin.GetBoundingRect(this).Contains(point)).FirstOrDefault();
             if (_currentAnnotation == null)
             {
-                var targetAnnotation = target ?? await createTarget(this, point);
-                embedDocument(targetAnnotation);
-                StartAnnotation(AnnotationType.Pin, point, new AnchorableAnnotation.SelectionViewModel(CreatePinRegion(point, targetAnnotation)));
-            }
-
-            void embedDocument(DocumentController targetAnnotation)
-            { 
-                ViewModel.ViewModels.Add(
-                    new DocumentViewModel(targetAnnotation)
+                embeddedDocument = embeddedDocument ?? await createEmbeddedTextNote(this, point);
+                ViewModel.EmbeddedViewModels.Add(new DocumentViewModel(embeddedDocument)
                     {
                         Undecorated = true,
                         ResizersVisible = true,
                         DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
-                    }
-                );
-
-                MainDocument.GetDataDocument()
-                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.PinAnnotationsKey)
-                    .Add(targetAnnotation);
+                    });
+                EmbeddedDocsList.Add(embeddedDocument);
+                StartAnnotation(AnnotationType.Pin, point, new AnchorableAnnotation.SelectionViewModel(CreatePinRegion(point, embeddedDocument)));
             }
         }
         public void StartAnnotation(AnnotationType type, Point p, AnchorableAnnotation.SelectionViewModel svm = null)
@@ -341,7 +321,7 @@ namespace Dash
         /// <param name="parent"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        static async Task<DocumentController> createTarget(NewAnnotationOverlay parent, Point where)
+        static async Task<DocumentController> createEmbeddedTextNote(NewAnnotationOverlay parent, Point where)
         {
             DocumentController target = null;
             // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
@@ -401,8 +381,7 @@ namespace Dash
         {
             TextSelectableElements = selectableElements.ToList();
 
-            RegionDocsList.ToList().ForEach((reg) =>
-               XAnnotationCanvas.Children.Add(AnchorableAnnotation.CreateAnnotation(this, reg)));
+            RegionDocsList.ToList().ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
         }
 
         public void ClearSelection(bool hardReset = false)
