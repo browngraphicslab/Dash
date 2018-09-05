@@ -211,23 +211,18 @@ namespace Dash
         /// <param name="regionDocumentController"></param>
         void displayRegionAnchor(DocumentController regionDocumentController)
         {
-            AnchorableAnnotation annotation = null;
-            var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
-                        new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0)),
-                        new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0)));
+            var svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController);
             switch (regionDocumentController.GetAnnotationType())
             {
                 case AnnotationType.Pin:       svm = new AnchorableAnnotation.SelectionViewModel(regionDocumentController,
                                                      new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red));
-                                               annotation = new PinAnnotation(this, svm); break;
-                case AnnotationType.Region:    annotation = new RegionAnnotation(this, svm); break;
-                case AnnotationType.Selection: annotation = new TextAnnotation(this, svm); break;
+                                               XAnnotationCanvas.Children.Add(new PinAnnotation(this, svm)); break;
+                case AnnotationType.Region:    XAnnotationCanvas.Children.Add(new RegionAnnotation(this, svm)); break;
+                case AnnotationType.Selection: XAnnotationCanvas.Children.Add(new TextAnnotation(this, svm)); break;
+                default: svm = null; break;
             }
-            if (annotation != null)
-            {
-                XAnnotationCanvas.Children.Add(annotation);
+            if (svm != null)
                 Regions.Add(svm);
-            }
         }
 
         void onUnloaded(object o, RoutedEventArgs routedEventArgs)
