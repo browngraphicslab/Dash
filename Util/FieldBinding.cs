@@ -269,6 +269,7 @@ namespace Dash
                     }
                 };
 
+            int id = ID++;
             int refCount = 0;
             bool mask = false;
 
@@ -281,6 +282,7 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 refCount++;
+                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -290,9 +292,13 @@ namespace Dash
                 {
                     binding.Remove(handler);
                 }
-                Debug.WriteLine("RefCount = " + refCount);
+                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
-                //Debug.Assert(refCount >= 0);
+                //tfs: the assert fails because Loaded and Unloaded can get called out of order
+                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
+                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
+                //     but it does kinda mess with how the reference counting should work...
+                Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
@@ -308,6 +314,7 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
+                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
             }
 
             void RemoveBinding()
@@ -321,9 +328,11 @@ namespace Dash
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
+        private static int ID = 0;
         private static void AddTwoWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding)
             where T : FrameworkElement
         {
+            int id = ID++;
             bool updateUI = true;
             DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
@@ -366,6 +375,7 @@ namespace Dash
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
                 refCount++;
+                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -383,8 +393,12 @@ namespace Dash
                     token = -1;
                 }
 
-                Debug.WriteLine("RefCount = " + refCount);
+                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
+                //tfs: the assert fails because Loaded and Unloaded can get called out of order
+                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
+                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
+                //     but it does kinda mess with how the reference counting should work...
                 //Debug.Assert(refCount >= 0);
             }
 
@@ -397,6 +411,7 @@ namespace Dash
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
                 }
+                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
             }
 
             void RemoveBinding()

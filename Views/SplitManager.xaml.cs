@@ -96,22 +96,22 @@ namespace Dash
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);
                         newManager._allowedSplits = SplitMode.Horizontal;
-                            var height = 0.0;
-                            if (args.AutoSize)
+                        var height = 0.0;
+                        if (args.AutoSize)
+                        {
+                            var count = 0;
+                            foreach (var child in XContentGrid.Children)
                             {
-                                var count = 0;
-                                foreach (var child in XContentGrid.Children)
+                                if (child is SplitManager || child is SplitFrame)
                                 {
-                                    if (child is SplitManager || child is SplitFrame)
-                                    {
-                                        height += XContentGrid.RowDefinitions[Grid.GetRow(child as FrameworkElement)]
-                                            .Height.Value;
-                                        count++;
-                                    }
+                                    height += XContentGrid.RowDefinitions[Grid.GetRow(child as FrameworkElement)]
+                                        .Height.Value;
+                                    count++;
                                 }
-
-                                height /= count;
                             }
+
+                            height /= count;
+                        }
                         if (up)
                         {
                             XContentGrid.RowDefinitions.Insert(row + 1,
@@ -168,21 +168,21 @@ namespace Dash
                         newManager.SetContent(newPane);
                         newManager._allowedSplits = SplitMode.Vertical;
                         var width = 0.0;
-                            if (args.AutoSize)
+                        if (args.AutoSize)
+                        {
+                            var count = 0;
+                            foreach (var child in XContentGrid.Children)
                             {
-                                var count = 0;
-                                foreach (var child in XContentGrid.Children)
+                                if (child is SplitManager || child is SplitFrame)
                                 {
-                                    if (child is SplitManager || child is SplitFrame)
-                                    {
-                                        width += XContentGrid.ColumnDefinitions[Grid.GetColumn(child as FrameworkElement)]
-                                            .Width.Value;
-                                        count++;
-                                    }
+                                    width += XContentGrid.ColumnDefinitions[Grid.GetColumn(child as FrameworkElement)]
+                                        .Width.Value;
+                                    count++;
                                 }
-
-                                width /= count;
                             }
+
+                            width /= count;
+                        }
                         if (left)
                         {
                             XContentGrid.ColumnDefinitions.Insert(col + 1,
@@ -336,8 +336,14 @@ namespace Dash
                 {
                     XContentGrid.RowDefinitions.Add(new RowDefinition { Height = rowDefinition.Height });
                 }
-                CurSplitMode = manager.CurSplitMode;
-                _allowedSplits = manager._allowedSplits;
+                if (manager.CurSplitMode == SplitMode.Content)
+                {
+                    CurSplitMode = SplitMode.Content;
+                }
+                else
+                {
+                    //TODO Merge children with parents children because they must have the same CurSplitMode
+                }
             }
         }
     }
