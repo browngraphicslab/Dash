@@ -47,6 +47,8 @@ namespace Dash
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
+        public static DocumentDecorations currentDocDec;
+
         private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn == SettingsView.MouseFuncMode.Scroll; 
 
         /// <summary>
@@ -95,11 +97,6 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
-
-                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
-                {
-                    view.UpdateResizers();
-                }
             }
         }
 
@@ -107,18 +104,26 @@ namespace Dash
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
             {
-                e.Complete();
+                //e.Complete();
                 _processManipulation = false;
-            } else
+            }
+            else
+            {
                 _processManipulation = true;
-            e.Handled = true;
+                e.Handled = true;
+
+                //make red selection border no longer visible
+                if (currentDocDec != null)
+                {
+                    currentDocDec.VisibilityState = Visibility.Collapsed;
+                }
+            }
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-           
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

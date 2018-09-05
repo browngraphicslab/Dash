@@ -43,6 +43,9 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
+        //if this or any of its children are selected, it can move
+        public bool selectedCollection;
+
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
@@ -74,25 +77,17 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-            if (parentFreeform != null && rightBtn)
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection ||
+                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel())
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                }
-                else
-                    if (parentParentFreeform != null)
-                        CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+                //selected, so pan 
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             }
-            
-
+            else
+            {
+                //don't pan
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+            }
         }
 
         private int count = 0;
@@ -103,6 +98,7 @@ namespace Dash
             //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
+			RemoveViewTypeHandler();
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
@@ -110,6 +106,7 @@ namespace Dash
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
+			AddViewTypeHandler();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocumentView == null)
@@ -117,8 +114,6 @@ namespace Dash
                 SetView(_viewType);
                 return;
             }
-
-            ParentDocumentView.StyleCollection(this);
 
             #region CollectionView context menu 
 
@@ -245,7 +240,22 @@ namespace Dash
 
         #endregion
 
-        #region Menu
+	    private void AddViewTypeHandler()
+	    {
+			ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+	    }
+
+	    private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+	    {
+		    SetView(ViewModel.ViewType);
+	    }
+
+	    private void RemoveViewTypeHandler()
+	    {
+		    ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+		}
+
+	    #region Menu
         public void SetView(CollectionViewType viewType)
         {
             if (_viewType == viewType) return;

@@ -92,12 +92,10 @@ namespace Dash
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm != null)
-            {
-                var drag = new DragDocumentModel(dvm.DocumentController, true);
-                e.Data.Properties[nameof(DragDocumentModel)] = drag;
-            }
+            DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm == null) return;
+
+            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController, true));
         }
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

@@ -65,12 +65,11 @@ namespace Dash
 
         private void CollectionTreeView_DragOver(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
             }
-            else
-                e.AcceptedOperation = DataPackageOperation.None;
+            else e.AcceptedOperation = DataPackageOperation.None;
             e.Handled = true;
         }
 

@@ -29,6 +29,9 @@ namespace Dash
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
             "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
 
+        private bool noCollapse = false;
+        private bool replace = false;
+
         int _prevQueryLength;// The length of the previous search query
         int _nextMatch;// Index of the next highlighted search result
 
@@ -45,10 +48,9 @@ namespace Dash
 
         private Dictionary<ITextSelection, DocumentController> _selectionDocControllers = new Dictionary<ITextSelection, DocumentController>();
         private bool _everFocused;
+        private ManipulationControlHelper _manipulator;
         private AnnotationManager _annotationManager;
         private string _target;
-        public Action OnManipulatorHelperStarted;
-        public Action OnManipulatorHelperCompleted;
         public static bool _searchHighlight = false;
         public bool wasInit = false;
 
@@ -63,17 +65,13 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
-                {
-                    OnManipulatorHelperStarted?.Invoke();
-                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                }
-                else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
-
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => _manipulator?.PointerMoved(s,e)), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler((s,e) => _manipulator = null), true);
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -98,6 +96,7 @@ namespace Dash
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;
+
             xRichEditBox.GotFocus += (s, e) =>
             {
                 var docView = getDocView();
@@ -113,36 +112,41 @@ namespace Dash
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
-                    ClearSearchHighlights();
-                    //SetSelected("");
-                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    
+                    //if (!noCollapse)
+                    //{
+                        ClearSearchHighlights();
+                        //SetSelected("");
+                        xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+                        
+                    //}
+                    //noCollapse = false;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
                     //CursorToEnd();
                 }
             };
 
-            xSearchBox.GotFocus += (s, e) =>
-            {
-                MatchQuery(getSelected());
-            };
-
-            xRichEditBox.LostFocus += delegate
-            {
-                if (getDocView() != null) getDocView().CacheMode = new BitmapCache();
-            };
+            xSearchBox.GotFocus += (s, e) =>  MatchQuery(getSelected());
 
             xSearchBox.LostFocus += (s, e) =>
             {
-                ClearSearchHighlights();
-                //SetSelected("");
-                xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                //if (!noCollapse)
+                //{
+                    ClearSearchHighlights();
+                    //SetSelected("");
+                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+                //    noCollapse = false;
+                //}
             };
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
-
             xRichEditBox.LostFocus += (s, e) =>
             {
+                if (getDocView() != null)
+                    getDocView().CacheMode = new BitmapCache();
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
@@ -181,6 +185,7 @@ namespace Dash
                 }
             };
         }
+
         ~RichTextView()
         {
             Debug.WriteLine("Finalized RichTextView");
@@ -294,11 +299,10 @@ namespace Dash
         string _lastXamlRTFText = "";
         static void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (_searchHighlight)
+            if (!_searchHighlight)
             {
-                return;
+                (sender as RichTextView).xRichTextView_TextChangedCallback2(sender, dp);
             }
-            (sender as RichTextView).xRichTextView_TextChangedCallback2(sender, dp);
         }
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
@@ -422,20 +426,25 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
+            if (this.xRichEditBox == sender)
+                return;
             if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
-                if (view != null && !MainPage.Instance.IsShiftPressed())
+                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
                 {
                     e.Handled = false;
                     return;
                 }
-                    
+
                 //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 //{
                 //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 //}
 
-                linkDocumentToSelection(dragDoc, true);
+                var dropRegion = dragDoc;
+                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                linkDocumentToSelection(dropRegion, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
@@ -467,13 +476,6 @@ namespace Dash
                 getDocView().HandleShiftEnter();
                 e.Handled = true;
             }
-            else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
-            {
-                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                getDocView().HandleCtrlEnter();
-                e.Handled = true;
-            }
 
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -486,26 +488,6 @@ namespace Dash
                 //SetSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             }
-
-            /**
-			else if (this.IsAltPressed()) // opens the format options flyout 
-            {
-				if (xFormattingMenuView == null)
-                {
-                    xFormattingMenuView = new FormattingMenuView();
-                    // store a clone of character format after initialization as default format
-                    xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-                    // store a clone of paragraph format after initialization as default format
-                    xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-                    xFormattingMenuView.richTextView = this;
-                    xFormattingMenuView.xRichEditBox = xRichEditBox;
-                    xAttachedFlyout.Children.Add(xFormattingMenuView);
-                }
-                FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
-                FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
-                e.Handled = true;
-            }
-	*/
 
             else if (this.IsTabPressed())
             {
@@ -545,6 +527,10 @@ namespace Dash
                             e.Handled = true;
                         }
                         break;
+                    //case VirtualKey.R:
+                    //    xReplaceBox.Visibility = Visibility.Visible;
+                    //    xReplaceBoxPanel.Visibility = Visibility.Visible;
+                    //    break;
                 }
             }
             else
@@ -558,7 +544,7 @@ namespace Dash
             DataPackageView clipboardContent = Clipboard.GetContent();
             dataPackage.SetText(await clipboardContent.GetTextAsync());
             //set RichTextView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = this.LayoutDocument;
+            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
             Clipboard.SetContent(dataPackage);
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
@@ -572,7 +558,7 @@ namespace Dash
         {
             _searchHighlight = true;
             MatchQuery(getSelected());
-           // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
         }
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
@@ -608,8 +594,6 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
             {
-                documentView.ResizeManipulationStarted += delegate { documentView.CacheMode = null; };
-                documentView.ResizeManipulationCompleted += delegate { documentView.CacheMode = new BitmapCache(); };
                 this.xRichEditBox.Document.Selection.FindText(HyperlinkText, this.getRtfText().Length, FindOptions.Case);
                 if (this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition)
                 {
@@ -628,8 +612,6 @@ namespace Dash
                     this.xRichEditBox.Document.Selection.EndPosition = this.xRichEditBox.Document.Selection.StartPosition;
                 }
             }
-
-
         }
 
         #endregion
@@ -664,7 +646,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.Link = link;
                 }
                 else
-                    return theDoc;
+                    return theDoc  ?? LayoutDocument;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
@@ -701,17 +683,21 @@ namespace Dash
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
 
-            if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+            using (UndoManager.GetBatchHandle())
             {
-                if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+                if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+                {
+                    if (theDoc != null && s1 == s2) xRichEditBox.Document.Selection.Text = theDoc.Title;
+                }
+
+
+                var region = GetRegionDocument();
+                region.Link(theDoc, LinkBehavior.Annotate);
+
+                convertTextFromXamlRTF();
+
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
             }
-
-            var region = GetRegionDocument();
-            region.Link(theDoc, LinkTargetPlacement.Default);
-
-            convertTextFromXamlRTF();
-
-            xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
         DocumentController createRTFHyperlink()
@@ -1177,6 +1163,7 @@ namespace Dash
         /// <param name="e"></param>
         private void XReplaceBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            noCollapse = true;
             if (e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
@@ -1306,11 +1293,24 @@ namespace Dash
         //        xFormatTipText.Inlines.Add(lineBreak);
         //    }
         //}
+
         #endregion
 
-        public void CompletedManipulation()
+
+        private void XReplaceModeButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OnManipulatorHelperCompleted?.Invoke();
+            //    noCollapse = true;
+            //    replace = xReplaceBoxPanel.Visibility == Visibility.Collapsed;
+            //    if (replace)
+            //    {
+            //        xReplaceBoxPanel.Visibility = Visibility.Visible;
+            //        xReplaceModeButton.Content = "▲";
+
+            //    } else
+            //    {
+            //        xReplaceBoxPanel.Visibility = Visibility.Collapsed;
+            //        xReplaceModeButton.Content = "▼";
+            //    }
         }
     }
 }

@@ -22,6 +22,8 @@ using Windows.Storage;
 using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
+using System.Web;
+using MyToolkit.Multimedia;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -33,6 +35,8 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
+        static public Windows.UI.Input.PointerPoint PointerCaptureHack;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
+
         public enum PresentationViewState
         {
             Expanded,
@@ -70,6 +74,7 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -77,7 +82,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
-
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => PointerRoutedArgsHack = e), true); 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
@@ -184,7 +189,7 @@ namespace Dash
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
-                //setupMapView(lastWorkspace);
+                setupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
             }
@@ -428,6 +433,7 @@ namespace Dash
 
         public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
+            //TODO Splitting: This should loop through a known list of all split frames
             foreach (var dockedView in this.GetDescendantsOfType<SplitFrame>())
             {
                 highlightDoc(dockedView.ViewModel, document, flag, search, animate);
@@ -687,14 +693,19 @@ namespace Dash
             e.Handled = true;
         }
 
+        public void CollapseSearch()
+        {
+            xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+        }
+
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
             {
                 if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
                 {
-                    xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                    xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
+                    CollapseSearch();
                 }
                 return;
             }
@@ -811,7 +822,6 @@ namespace Dash
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xMapDocumentView.RemoveResizeHandlers();
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 
@@ -970,18 +980,40 @@ namespace Dash
 			return mode;
         }
 
-	    public async Task<VideoWrapper> GetVideoFile()
+	    public async Task<DocumentController> GetVideoFile()
 	    {
 		    var videoPopup = new ImportVideoPopup();
 		    SetUpPopup(videoPopup);
 
 		    var video = await videoPopup.GetVideoFile();
-			UnsetPopup();
+			UnsetPopup();// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
 
-		    return video;
+            if (video != null)
+                switch (video.Type)
+                {
+                    case VideoType.StorageFile:
+                        return await new VideoToDashUtil().ParseFileAsync(video.File);
+                    case VideoType.Uri:
+                        var query = HttpUtility.ParseQueryString(video.Uri.Query);
+                        var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
+
+                        try
+                        {
+                            var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+                            return VideoToDashUtil.CreateVideoBoxFromUri(url.Uri);
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: display error video not found
+                        }
+
+                        break;
+                }
+
+            return null;
 	    }
 
-	    public async Task<StorageFile> GetImageFile()
+	    public async Task<DocumentController> GetImageFile()
 	    {
 		    var imagePopup = new ImportImagePopup();
 			SetUpPopup(imagePopup);
@@ -989,7 +1021,7 @@ namespace Dash
 		    var image = await imagePopup.GetImageFile();
 		    UnsetPopup();
 
-		    return image;
+            return image != null ? await new ImageToDashUtil().ParseFileAsync(image) : null;
 	    }
 
 		/// <summary>
@@ -1051,6 +1083,42 @@ namespace Dash
             }
         }
 
+        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
+        {
+            //TODO Splitting
+            //var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
+            //    v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+            //if (onScreenView != null)
+            //    return;
+
+            //make doc view out of doc controller
+            var docCopy = doc.GetViewCopy();
+            docCopy.SetWidth(size?.X ?? 150);
+            docCopy.SetHeight(size?.Y ?? 100);
+            //put popup slightly left of center, so its not covered centered doc
+            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
+            docCopy.SetPosition(position ?? defaultPt);
+            
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(docCopy),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                BindRenderTransform = true
+            };
+
+            docView.DocumentDeselected += DocView_DocumentDeselected;
+            xCanvas.Children.Add(docView);
+
+            SelectionManager.Select(docView, false);
+        }
+
+        private void DocView_DocumentDeselected(DocumentView sender)
+        {
+            sender.DocumentDeselected -= DocView_DocumentDeselected;
+            xCanvas.Children.Remove(sender);
+        }
+
         #region Annotation logic
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
@@ -1065,7 +1133,7 @@ namespace Dash
             }
             var onScreenView = GetTargetDocumentView(target);
 
-            if (target.GetField<TextController>(KeyStore.LinkTargetPlacement)?.Data.Equals(nameof(LinkTargetPlacement.Overlay)) ?? false)
+            if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
                 SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
@@ -1095,62 +1163,7 @@ namespace Dash
             }
             else
             {
-                //TODO Splitting
-                //DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
-                //if (docked != null)
-                //{
-                //    DockManager.Undock(docked);
-                //}
-                //else  // otherwise, we have to show the document in a docked view
-                //{
-                //    var tree = DocumentTree.MainPageTree;
-                //    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
-                //    var collection = node?.Parent.ViewDocument;
-
-                //    if (collection == null)       // if the document doesn't exist in any collection, then just dock it by itself
-                //    {
-                //        var docview = DockManager.Dock(target, DockDirection.Right);
-                //    }
-                //    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
-                //    {
-
-                //        DockedView dockedCollection = DockManager.GetDockedView(collection);
-                //        if (dockedCollection != null)
-                //        {
-                //            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
-                //                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-                //            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
-                //                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                //            else DockManager.Undock(dockedCollection);
-                //        }
-                //        else
-                //        {
-
-                //            target.SetHidden(false);
-                //            var docView = DockManager.Dock(collection, DockDirection.Right);
-                //            var cview = docView.ViewModel.Content;
-                //            cview.Tag = target;
-                //            cview.Loaded += Docview_Loaded;
-                //            var col = docView.ViewModel.DocumentController;
-
-                //            var pos = node.ViewDocument.GetPosition() ?? new Point();
-                //            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-                //            double YZoom = MainDocView.ActualHeight /
-                //                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-                //            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-                //            //col.SetField<PointController>(KeyStore.PanPositionKey,
-                //            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-                //            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-                //            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-                //            double xrat = 500 / (double) (node.ViewDocument.GetActualSize()?.X);
-                //            col.SetField<PointController>(KeyStore.PanPositionKey,
-                //                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
-
-                //            col.SetField<PointController>(KeyStore.PanZoomKey,
-                //                new Point(zoom, zoom), true);
-                //        }
-                //    }
-                //}
+                DockLink(linkDoc, direction);
             }
 
             target.GotoRegion(region, linkDoc);
@@ -1162,6 +1175,70 @@ namespace Dash
             }
 
             return LinkHandledResult.HandledRemainOpen;
+        }
+
+        public void DockLink(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
+        {
+            //TODO Splitting
+            //var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            //var target = region.GetRegionDefinition() ?? region;
+            //var onScreenView = GetTargetDocumentView(xDockFrame, target);
+
+            //DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
+            //if (docked != null)
+            //{
+            //    DockManager.Undock(docked);
+            //}
+            //else  // otherwise, we have to show the document in a docked view
+            //{
+            //    var tree = DocumentTree.MainPageTree;
+            //    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
+            //    var collection = node?.Parent.ViewDocument;
+
+            //    if (collection == null || !inContext)       // if the document doesn't exist in any collection, then just dock it by itself
+            //    {
+            //        var docview = DockManager.Dock(target, DockDirection.Right);
+            //    }
+            //    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
+            //    {
+
+            //        DockedView dockedCollection = DockManager.GetDockedView(collection);
+            //        if (dockedCollection != null)
+            //        {
+            //            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
+            //                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
+            //            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
+            //                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+            //            else DockManager.Undock(dockedCollection);
+            //        }
+            //        else
+            //        {
+
+            //            target.SetHidden(false);
+            //            var docView = DockManager.Dock(collection, DockDirection.Right);
+            //            var cview = docView.ViewModel.Content;
+            //            cview.Tag = target;
+            //            cview.Loaded += Docview_Loaded;
+            //            var col = docView.ViewModel.DocumentController;
+
+            //            var pos = node.ViewDocument.GetPosition() ?? new Point();
+            //            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
+            //            double YZoom = MainDocView.ActualHeight /
+            //                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
+            //            var zoom = Math.Min(xZoom, YZoom) * 0.7;
+            //            //col.SetField<PointController>(KeyStore.PanPositionKey,
+            //            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
+            //            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
+            //            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
+            //            double xrat = 500 / (double)(node.ViewDocument.GetActualSize()?.X);
+            //            col.SetField<PointController>(KeyStore.PanPositionKey,
+            //                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
+
+            //            col.SetField<PointController>(KeyStore.PanZoomKey,
+            //                new Point(zoom, zoom), true);
+            //        }
+            //    }
+            //}
         }
 
         private void Docview_Loaded(object sender, RoutedEventArgs e)

@@ -10,7 +10,7 @@ namespace Dash
 {
     public enum LinkTargetPlacement
     {
-        Docked, Default, Overlay, Floating
+       Default, Overlay
     }
     public class AnnotationManager
 	{
@@ -49,7 +49,7 @@ namespace Dash
 	        if (linkCount == 1)
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
-                if (linkType == null || (link.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                if (linkType == null || (link.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else if (!MainPage.Instance.IsShiftPressed())
@@ -57,7 +57,7 @@ namespace Dash
                 if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
                         }
@@ -68,7 +68,7 @@ namespace Dash
                 if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                        if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
                             FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
                         }
@@ -77,11 +77,10 @@ namespace Dash
 	        else // There are multiple links, so we need to show a flyout to determine which link to follow
 	        {
                 RoutedEventHandler defaultHdlr = null;
-				ObservableCollection<string> addedNames = new ObservableCollection<string>();
 	            if (linksTo != null)
                 {
                     foreach (DocumentController linkTo in linksTo)
-                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
 	                    {
 		                    var targetTitle = linkTo.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination)
 			                    .Title;
@@ -95,17 +94,6 @@ namespace Dash
 		                    item.Click += itemHdlr;
 		                    defaultHdlr = itemHdlr;
 		                    _linkFlyout.Items?.Add(item);
-
-							/*
-		                    foreach (string name in linkNames)
-		                    {
-			                    if (!addedNames.Contains(name))
-			                    {
-				                    addedNames.Add(name);
-				                    
-								}
-		                    }
-                        */
 						}
                 }
 
@@ -114,7 +102,7 @@ namespace Dash
 	            if (linksFrom != null)
                 {
                     foreach (var linkFrom in linksFrom)
-                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTags()?.Select(tc => tc.Data).Contains(linkType) ?? false))
+                    if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                     {
 	                    var targetTitle = linkFrom.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)
 		                    .Title;
@@ -129,36 +117,85 @@ namespace Dash
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
                     }
-
-					
                 }
-
 
                 if (_linkFlyout.Items.Count == 2)
                     defaultHdlr(null, null);
                 else _linkFlyout.ShowAt(_element, flyoutPosition);
-            }
+			}
 	    }
 
 	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
-	        foreach (ILinkHandler linkHandler in linkHandlers)
+            //show link description floating doc if operator output is true
+	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
+	        if (linkOperator?.Data ?? false)
 	        {
-	            LinkHandledResult status = linkHandler.HandleLink(link, direction);
+	            MainPage.Instance.AddFloatingDoc(link);
+            }
+            
+            var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
 
-	            if (status == LinkHandledResult.HandledClose) break;
-	            if (status == LinkHandledResult.HandledRemainOpen)
-	            {
-	                void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
-	                {
-	                    args.Cancel = true;
-                        _linkFlyout.Closing -= LinkFlyoutOnClosing;
-	                }
+            var document = link.GetLinkedDocument(direction);
 
-                    _linkFlyout.Closing += LinkFlyoutOnClosing; 
-	            }
+            switch (link.GetDataDocument().GetLinkBehavior())
+            {
+                case LinkBehavior.Zoom:
+                    //navigate to link
+                    if (linkContext)
+                    {
+                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        {
+                            var tree = DocumentTree.MainPageTree;
+                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            {
+                                var docNode = tree.Nodes[document];
+                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                            }
+                            else
+                            {
+                                MainPage.Instance.SetCurrentWorkspace(document);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MainPage.Instance.SetCurrentWorkspace(document);
+                    }
+
+                    break;
+                case LinkBehavior.Overlay:
+                case LinkBehavior.Annotate:
+                    //default behavior of highlighting and toggling link visibility and docking when off screen
+                    foreach (var linkHandler in linkHandlers)
+                    {
+                        var status = linkHandler.HandleLink(link, direction);
+
+                        if (status == LinkHandledResult.HandledClose) break;
+                        if (status == LinkHandledResult.HandledRemainOpen)
+                        {
+                            void LinkFlyoutOnClosing(FlyoutBase flyoutBase, FlyoutBaseClosingEventArgs args)
+                            {
+                                args.Cancel = true;
+                                _linkFlyout.Closing -= LinkFlyoutOnClosing;
+                            }
+
+                            _linkFlyout.Closing += LinkFlyoutOnClosing;
+                        }
+                    }
+                    break;
+                case LinkBehavior.Dock:
+                    MainPage.Instance.DockLink(link, direction, linkContext);
+                    break;
+                case LinkBehavior.Float:
+                    MainPage.Instance.AddFloatingDoc(document);
+                    break;
+                default:
+                    break;
+
 	        }
-	    }
+
+        }
 
 	    #region Old annotation stuff
 
@@ -170,7 +207,7 @@ namespace Dash
         //		// navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
         //		// I think chosenDC is only not-null when it's selected from the LinkFlyoutMenu, which only triggers under ctrl anyways.
         //              FollowDocument(chosenDC, pos);
-        //           SelectionManager.SelectRegion(chosenDC);
+        //           SelectionManager.SelectRegionFromParent(chosenDC);
         //          }
         //          else
         //	{
@@ -185,7 +222,7 @@ namespace Dash
         //               if (toLinks?.Count + fromLinks?.Count == 1)
         //			{
         //				var dc = toLinks.Count > 0 ? toLinks.First() : fromLinks.First();
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //				dc = dc.GetDataDocument()
         //	                .GetDereferencedField<ListController<DocumentController>>(
         //		                toLinks.Count > 0 ? KeyStore.LinkToKey : KeyStore.LinkFromKey, null).TypedData.First();
@@ -211,7 +248,7 @@ namespace Dash
         //			}
         //			else
         //			{
-        //				SelectionManager.SelectRegion(theDoc);
+        //				SelectionManager.SelectRegionFromParent(theDoc);
         //			}
         //		}
 
@@ -272,8 +309,8 @@ namespace Dash
         //    }
 
         //    var va = toFollow.GetFirstDescendantOfType<IVisualAnnotatable>();
-        //    va?.GetAnnotationManager().SelectRegion(target);
-        //    //if (va is CustomPdfView pdf)
+        //    va?.GetAnnotationManager().SelectRegionFromParent(target);
+        //    //if (va is PdfView pdf)
         //    //{
         //	   // pdf.ScrollToRegion(target);
         //    //}

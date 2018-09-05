@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Dash.Annotations;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -86,7 +88,7 @@ namespace Dash
             return true;
         }
 
-        void UserControl_Drop(object sender, DragEventArgs e)
+        private async void UserControl_Drop(object sender, DragEventArgs e)
         {
             //if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             //{
@@ -94,6 +96,15 @@ namespace Dash
             //    ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
             //    e.Handled = true;
             //}
+
+            //TODO: IS THE CODE BELOW FUNCTIONAL / REPRESENTATIVE OF CODE ABOVE ??
+
+            if (ViewModel == null || !e.DataView.HasDataOfType(Internal)) return;
+
+            var docsToStore = (await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement)).Select(d => d.GetViewCopy()).ToList();
+            ViewModel?.Reference.GetDocumentController(null).SetField<ListController<DocumentController>>(ViewModel?.Reference.FieldKey, docsToStore, true);
+
+            e.Handled = true;
         }
 
         private string GetRootExpression()

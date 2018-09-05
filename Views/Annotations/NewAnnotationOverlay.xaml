@@ -5,21 +5,19 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DataContext="{d:DesignInstance local:NewAnnotationOverlayViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-        <Grid Background="Transparent"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
-                <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
+    <Grid DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" x:Name="LayoutRoot" x:FieldModifier="public">
+            <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
 
             <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
-                      ItemsSource="{Binding ViewModels}">
+                      ItemsSource="{Binding EmbeddedViewModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas 
-                            Background="Transparent"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Top"
                            Width="0"
@@ -37,7 +35,8 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"></Rectangle>
+            <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
+                       x:FieldModifier="public"></Rectangle>
           
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />

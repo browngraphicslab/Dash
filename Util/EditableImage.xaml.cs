@@ -28,7 +28,7 @@ namespace Dash
     public partial class EditableImage : INotifyPropertyChanged
     {
         private readonly Context _context;
-        private readonly DocumentController _docCtrl;
+        private readonly DocumentController LayoutDocument;
         private StateCropControl _cropControl;
         private ImageController _imgctrl;
         public bool IsCropping;
@@ -42,10 +42,10 @@ namespace Dash
 
         private NewAnnotationOverlay _annotationOverlay;
 
-        public EditableImage(DocumentController docCtrl, Context context)
+        public EditableImage(DocumentController document, Context context)
         {
             InitializeComponent();
-            _docCtrl = docCtrl;
+            LayoutDocument = document.GetActiveLayout() ?? document;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.Unloaded += Image_Unloaded;
@@ -56,9 +56,9 @@ namespace Dash
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
             };
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
-            _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+            _imgctrl = document.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-            _annotationOverlay = new NewAnnotationOverlay(_docCtrl, RegionGetter) { DataContext = new NewAnnotationOverlayViewModel() };
+            _annotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
             _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
             XAnnotationGrid.Children.Add(_annotationOverlay);
 
@@ -68,22 +68,23 @@ namespace Dash
 
         private void EditableImage_Loaded(object sender, RoutedEventArgs e)
         {
-            _docCtrl.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
 
         private void Image_Unloaded(object sender, RoutedEventArgs e)
         {
-            _docCtrl.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
         }
 
         private DocumentController RegionGetter(AnnotationType type)
         {
+            return new RichTextNote().Document;
             return new ImageNote(_imgctrl.ImageSource).Document;
         }
 
         public async Task ReplaceImage()
         {
-            _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
             // get the file from the current image controller
             var file = await GetImageFile();
@@ -94,8 +95,8 @@ namespace Dash
             Image.Width = fileProperties.Width;
 
             // on replace image, change the original image value for revert
-            var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-            _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
         }
 
         private async Task<StorageFile> GetImageFile(bool originalImage = false)
@@ -105,7 +106,7 @@ namespace Dash
             Uri src;
             if (originalImage)
             {
-                src = _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
+                src = LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
             }
             else
             {
@@ -137,16 +138,16 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 // make sure if we have an original image stored (which we always should)
-                if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+                if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
                 {
                     // get the storagefile of the original image so we can revert
                     var file = await GetImageFile(true);
                     var fileProperties = await file.Properties.GetImagePropertiesAsync();
                     Image.Width = fileProperties.Width;
 
-                    _docCtrl.SetField<ImageController>(KeyStore.DataKey,
-                        _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
-                    _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                    LayoutDocument.SetField<ImageController>(KeyStore.DataKey,
+                        LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
+                    _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
                 }
             }
         }
@@ -156,19 +157,17 @@ namespace Dash
             // initialize values that rely on the image
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             Focus(FocusState.Keyboard);
-            _cropControl = new StateCropControl(_docCtrl, this);
+            _cropControl = new StateCropControl(LayoutDocument, this);
         }
 
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            if (args.NewValue == null)
+            if (args.NewValue != null)
             {
-                return;
+                _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
+
+                sender.RemoveField(KeyStore.GoToRegionKey);
             }
-
-            _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
-
-            sender.RemoveField(KeyStore.GoToRegionKey);
         }
 
         public async Task Rotate()
@@ -235,10 +234,10 @@ namespace Dash
 
             ImageProperties fileProperties = await file.Properties.GetImagePropertiesAsync();
 
-            if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
+            if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
-                var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-                _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+                var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
             }
 
             //_originalWidth is original width of owl, not replaced image
@@ -348,22 +347,22 @@ namespace Dash
                 // retrieve the uri from the file to update the image controller
                 var path = "ms-appdata:///local/" + newFile.Name;
                 var uri = new Uri(path);
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
+                LayoutDocument.SetField<ImageController>(KeyStore.DataKey, uri, true);
 
                 // update the image source, width, and positions
                 Image.Source = cropBmp;
                 Image.Width = width;
 
                 // store new image information so that multiple crops can be made
-                _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
+                _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
 
-                var oldpoint = _docCtrl.GetPosition() ?? new Point();
-                var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
+                var oldpoint = LayoutDocument.GetPosition() ?? new Point();
+                var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
                 Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
                     oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
-                _docCtrl.SetPosition(point);
-                _cropControl = new StateCropControl(_docCtrl, this);
+                LayoutDocument.SetPosition(point);
+                _cropControl = new StateCropControl(LayoutDocument, this);
 
                 // TODO: Test that replace button works with cropping when merged with master
             }
@@ -424,7 +423,7 @@ namespace Dash
                 }
                 else if(point.Properties.IsLeftButtonPressed)
                 {
-                    _annotationOverlay.UpdateRegion(point.Position);
+                    _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;
                 }
             }
@@ -457,31 +456,57 @@ namespace Dash
 
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                _annotationOverlay.StartAnnotation(point.Position);
-                e.Handled = true;
+                _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
         }
 
-        public DocumentController GetRegionDocument()
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            return _annotationOverlay.GetRegionDoc() ?? _docCtrl;
+            using (UndoManager.GetBatchHandle())
+            {
+                _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+            }
+        }
+
+        public DocumentController GetRegionDocument(Point? docViewPoint)
+        {
+            var regionDoc = _annotationOverlay.CreateRegionFromPreviewOrSelection();
+            if (regionDoc == null)
+            {
+                if (docViewPoint != null)
+                {
+                    //else, make a new push pin region closest to given point
+                    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _annotationOverlay);
+                    var newPoint = calculateClosestPointOnImage(overlayPoint);
+
+                    regionDoc = _annotationOverlay.CreatePinRegion(newPoint);
+                }
+                else
+                    regionDoc = LayoutDocument;
+            }
+            return regionDoc;
+        }
+        private Point calculateClosestPointOnImage(Point p)
+        {
+            return new Point(p.X < 0 ? 30 : p.X > this._annotationOverlay.ActualWidth ? this._annotationOverlay.ActualWidth - 30 : p.X,
+                             p.Y < 0 ? 30 : p.Y > this._annotationOverlay.ActualHeight ? this._annotationOverlay.ActualHeight - 30 : p.Y);
         }
 
         public void ShowRegions()
         {
-            _annotationOverlay.AnnotationVisibility = true;
+            _annotationOverlay.Visibility = Visibility.Visible;
         }
 
         public void HideRegions()
         {
-            _annotationOverlay.AnnotationVisibility = false;
+            _annotationOverlay.Visibility = Visibility.Collapsed;
         }
 
 
         public bool AreAnnotationsVisible()
         {
-            return _annotationOverlay.AnnotationVisibility;
+            return _annotationOverlay.Visibility == Visibility.Visible;
         }
     }
 }

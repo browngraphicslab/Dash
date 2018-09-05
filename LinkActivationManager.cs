@@ -22,20 +22,33 @@ namespace Dash
 
 		public static void ActivateDoc(DocumentView view)
 		{
+			ActivateDocHelper(view, true);
+		}
+
+		private static void ActivateDocHelper(DocumentView view, bool shouldUndo)
+		{
 			if (IsActivated(view)) return;
 
 			ActivatedDocs.Add(view);
 			//add activation border 
 			view.SetLinkBorderColor();
+
+			if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => ActivateDocHelper(view, false), () => DeactivateDocHelper(view, false)));
 		}
 
 		public static void DeactivateDoc(DocumentView view)
+		{
+			DeactivateDocHelper(view, true);
+		}
+
+		public static void DeactivateDocHelper(DocumentView view, bool shouldUndo)
 		{
 			if (!IsActivated(view)) return;
 
 			ActivatedDocs.Remove(view);
 			//remove activation border 
 			view.RemoveLinkBorderColor();
+			if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => DeactivateDocHelper(view, false), () => ActivateDocHelper(view, false)));
 		}
 
 		public static bool IsActivated(DocumentView view)

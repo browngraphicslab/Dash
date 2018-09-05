@@ -713,7 +713,7 @@
 
             <AppBarSeparator Height="45" VerticalAlignment="Center" Foreground="White" Background="White"></AppBarSeparator>
 
-            <TextBox Name="xToPageBox" Style="{StaticResource TextBoxStyler}" Height="30" FontSize="12" Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Padding="5 5 0 0" Margin="0, 0, 6, 0"  BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown"/>
+            <TextBox Name="xToPageBox" Style="{StaticResource TextBoxStyler}" Height="30" FontSize="12" Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Padding="5 5 0 0" Margin="0, 0, 6, 0"  BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown" />
 
         </StackPanel>
     </Grid>

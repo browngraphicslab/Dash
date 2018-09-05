@@ -280,6 +280,7 @@ namespace Dash
             {
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
+	            subtoolbarElement = null;
                 docs = docs.ToList();
                 ToggleSelectOptions(docs.Any());
 
@@ -288,6 +289,8 @@ namespace Dash
                 {
                     DocumentView selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
+
+                    if (selection.ViewModel == null) return;
 
 					//Find the type of the selected node and update the subtoolbar binding appropriately.
 
@@ -737,8 +740,10 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-
-            }
+	            
+	            // get proper subtoolbar
+	            Update(SelectionManager.GetSelectedDocs());
+			}
             else
             {
                 //otherwise, it is about to expand. In this case, update visibility of separators before buttons

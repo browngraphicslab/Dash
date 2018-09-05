@@ -18,11 +18,11 @@ namespace Dash
         private readonly List<double> _visibleElementsTargetedWidth = new List<double>();
         private readonly List<bool>   _visibleElementsIsRendering = new List<bool>();
         private readonly ScrollViewer _scrollViewer;
-        private readonly CustomPdfView _view;
+        private readonly PdfView _view;
         private double  _verticalOffset;
         public List<Size> PageSizes;
 
-        public DataVirtualizationSource(CustomPdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
+        public DataVirtualizationSource(PdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
             _view = view;
             _scrollViewer = scrollviewer;

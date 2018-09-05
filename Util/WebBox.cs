@@ -187,17 +187,17 @@ namespace Dash
             var shiftState = web.IsShiftPressed();
             switch (e.Value as string)
             {
-                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState, true); break;  // "2" is the 2nd mouse button = "Right" button
-                case "move": (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
+                case "2":    web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
+                case "move": (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
+                              break;
                 case "leave": break;
                 case "up":    parent.ToFront();
-                                if (DocumentView.FocusedDocument != parent)
-                                {
-                                    DocumentView.FocusedDocument = parent;
-                                    parent.ForceLeftTapped();
-                                }
-                              (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
-                              web.Tag = null; break;
+                              if (DocumentView.FocusedDocument != parent)
+                              {
+                                 DocumentView.FocusedDocument = parent;
+                                 parent.ForceLeftTapped();
+                              }
+                              web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null; break;
             }
         }
 

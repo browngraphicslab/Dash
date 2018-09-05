@@ -332,7 +332,7 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((DataContext as DocumentViewModel).DocumentController, true);
+            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController, true));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 
@@ -502,16 +502,16 @@ namespace Dash
                 d.SetHeight(200);
             }
             DocumentViewModel dvm = ViewModel;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey));
+            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             if (e.Items.Count.Equals(0)) return;
-            var first = e.Items.First() as SnapshotView;
+            var first = (SnapshotView) e.Items.First();
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(snapshots[first.Index], true);
+            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index], true));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
