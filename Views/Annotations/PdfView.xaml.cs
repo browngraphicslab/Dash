@@ -1115,20 +1115,20 @@ namespace Dash
 
         public void ShowRegions()
         {
-            _topAnnotationOverlay.AnnotationVisibility = true;
-            _bottomAnnotationOverlay.AnnotationVisibility = true;
+            _topAnnotationOverlay.Visibility = Visibility.Visible;
+            _bottomAnnotationOverlay.Visibility = Visibility.Visible;
         }
 
         public void HideRegions()
         {
-            _topAnnotationOverlay.AnnotationVisibility = false;
-            _bottomAnnotationOverlay.AnnotationVisibility = false;
+            _topAnnotationOverlay.Visibility = Visibility.Collapsed;
+            _bottomAnnotationOverlay.Visibility = Visibility.Collapsed;
         }
 
         public bool AreAnnotationsVisible()
         {
             //This makes the assumption that both overlays are kept in sync
-            return _bottomAnnotationOverlay.AnnotationVisibility;
+            return _bottomAnnotationOverlay.Visibility == Visibility.Visible;
         }
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)

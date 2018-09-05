@@ -25,7 +25,6 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        
         public PinAnnotation(NewAnnotationOverlay parent, SelectionViewModel selectionViewModel) : 
             base(parent, selectionViewModel.RegionDocument)
         {

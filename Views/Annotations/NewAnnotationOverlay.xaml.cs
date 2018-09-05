@@ -65,19 +65,8 @@ namespace Dash
         public readonly ListController<DocumentController> RegionDocsList;
 
         public delegate DocumentController RegionGetter(AnnotationType type);
-        // we store section of selected text in this list of KVPs with the key and value as start and end index, respectively
-        //public readonly List<KeyValuePair<int, int>> CurrentSelections = new List<KeyValuePair<int, int>>();
-        //public readonly List<Rect>                   CurrentSelectionClipRects = new List<Rect>();
-        public static readonly DependencyProperty AnnotationVisibilityProperty = DependencyProperty.Register(
-            "AnnotationVisibility", typeof(bool), typeof(NewAnnotationOverlay), new PropertyMetadata(true));
 
         public NewAnnotationOverlayViewModel ViewModel => DataContext as NewAnnotationOverlayViewModel;
-        public bool                          AnnotationVisibility
-        {
-            get { return (bool) GetValue(AnnotationVisibilityProperty); }
-            set { SetValue(AnnotationVisibilityProperty, value); }
-        }
-
         public AnnotationType                CurrentAnnotationType
         {
             get =>_currAnnotationType;
@@ -236,11 +225,6 @@ namespace Dash
             }
             if (annotation != null)
             {
-                annotation.SetBinding(VisibilityProperty, new Binding {
-                        Source = this,
-                        Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
-                        Converter = new BoolToVisibilityConverter()
-                    });
                 XAnnotationCanvas.Children.Add(annotation);
                 Regions.Add(svm);
             }

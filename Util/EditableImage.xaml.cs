@@ -462,6 +462,14 @@ namespace Dash
             _downPt = e.GetCurrentPoint(this).Position;
         }
 
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+            }
+        }
+
         public DocumentController GetRegionDocument()
         {
             return _annotationOverlay.GetRegionDoc() ?? _docCtrl;
@@ -469,18 +477,18 @@ namespace Dash
 
         public void ShowRegions()
         {
-            _annotationOverlay.AnnotationVisibility = true;
+            _annotationOverlay.Visibility = Visibility.Visible;
         }
 
         public void HideRegions()
         {
-            _annotationOverlay.AnnotationVisibility = false;
+            _annotationOverlay.Visibility = Visibility.Collapsed;
         }
 
 
         public bool AreAnnotationsVisible()
         {
-            return _annotationOverlay.AnnotationVisibility;
+            return _annotationOverlay.Visibility == Visibility.Visible;
         }
     }
 }
