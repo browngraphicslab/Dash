@@ -298,7 +298,7 @@ namespace Dash
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
                 //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
                 //     but it does kinda mess with how the reference counting should work...
-                Debug.Assert(refCount >= 0);
+                //Debug.Assert(refCount >= 0);
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
