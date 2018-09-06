@@ -488,8 +488,8 @@ namespace Dash
                 XSelectionCanvas.Children.Add(_currRect);
             }
 
-            var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                              ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
+            var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(_currRect)) <
+                              ele.Bounds.Width + _currRect.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
                               ele.Bounds.Height / 2;
             var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
             if (closeEnough && similarSize)
@@ -615,11 +615,35 @@ namespace Dash
 
         private void SelectFromClipRect(Rect currentClipRect)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            var rectsToRemove = new List<Rectangle>();
+            foreach (var rect in _clipRectSelections)
+            {
+                var belowTopBound = Canvas.GetTop(rect) + rect.Height > currentClipRect.Top;
+                var belowBottomBound = Canvas.GetTop(rect) < currentClipRect.Bottom;
+                if (!(belowTopBound && belowBottomBound))
+                {
+                    rectsToRemove.Add(rect);
+                }
+            }
+
+            rectsToRemove.ForEach(r =>
+            {
+                _clipRectSelections.Remove(r);
+                XSelectionCanvas.Children.Remove(r);
+                var keys = new List<int>();
+                foreach (var key in _selectedRectangles.Where(kvp => kvp.Value.Equals(r)).Select(kvp => kvp.Key))
+                {
+                    keys.Add(key);
+                }
+
+                foreach (var key in keys)
+                {
+                    _selectedRectangles.Remove(key);
+                }
+            });
+
             foreach (var ele in TextSelectableElements)
             {
-                if (_selectedRectangles.ContainsKey(ele.Index)) continue;
                 if (currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                     currentClipRect.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom)))
                 {
@@ -627,16 +651,16 @@ namespace Dash
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(rect) + rect.Width)) <
-                                          ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
+                        var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect)) <
+                                          ele.Bounds.Width + rect.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
                                           ele.Bounds.Height / 2;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
                         if (closeEnough && similarSize)
                         {
                             Canvas.SetLeft(rect, Math.Min(Canvas.GetLeft(rect), ele.Bounds.Left));
-                            rect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(rect));
+                            rect.Width = Math.Max(rect.Width, ele.Bounds.Right - Canvas.GetLeft(rect));
                             Canvas.SetTop(rect, Math.Min(Canvas.GetTop(rect), ele.Bounds.Top));
-                            rect.Height = Math.Max(rect.Height, ele.Bounds.Bottom - Canvas.GetTop(rect));
+                            rect.Height = Math.Abs(ele.Bounds.Bottom - Canvas.GetTop(rect));
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
                         }
@@ -663,10 +687,21 @@ namespace Dash
                         _clipRectSelections.Add(newRect);
                     }
                 }
-
+                else if (_selectedRectangles.ContainsKey(ele.Index))
+                {
+                    foreach (var rect in _clipRectSelections)
+                    {
+                        if (rect.IsInVisualTree() &&
+                            (rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
+                             rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
+                        {
+                            Canvas.SetLeft(rect, Math.Min(Canvas.GetLeft(rect), ele.Bounds.Right));
+                            rect.Width = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect));
+                            _selectedRectangles.Remove(ele.Index);
+                        }
+                    }
+                }
             }
-            sw.Stop();
-            Debug.WriteLine("Elapsed Time: " + sw.ElapsedMilliseconds);
         }
 
         #endregion
