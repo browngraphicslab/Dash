@@ -78,6 +78,7 @@ namespace Dash
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
+            SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
@@ -1083,6 +1084,36 @@ namespace Dash
             }
         }
 
+        public void ToggleFloatingDoc(DocumentController doc)
+        {
+            var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
+                v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+            onScreenView = GetTargetDocumentView(xDockFrame, doc);
+
+            if (onScreenView != null)
+            {
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
+                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                if (highlighted)
+                    onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+            }
+            else
+            {
+                var floaty = xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+                if (floaty != null)
+                    xCanvas.Children.Remove(floaty);
+                else AddFloatingDoc(doc, null, new Point(xCanvas.PointerPos().X + 25, xCanvas.PointerPos().Y));
+            } 
+        }
+
+
+        void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.SearchHighlightState != new Thickness(0)).ToList().ForEach((dv) => dv.ViewModel?.RetractBorder());
+            ClearFloaty(null);
+        }
+
+
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
             var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
@@ -1094,31 +1125,37 @@ namespace Dash
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
             docCopy.SetWidth(size?.X ?? 150);
-            docCopy.SetHeight(size?.Y ?? 100);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
-            var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
-            Debug.WriteLine("P = " + position + " " + defaultPt);
-            docCopy.SetPosition(position ?? defaultPt);
-            
+            var defaultPt = position ?? new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
+           
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(docCopy),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
-                BindRenderTransform = true
+                BindRenderTransform = false
             };
-
-            docView.DocumentDeselected += DocView_DocumentDeselected;
-            xCanvas.Children.Add(docView);
-
-            SelectionManager.Select(docView, false);
+            
+            var Grid = new Grid();
+            Grid.RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y };
+            Grid.Children.Add(docView);
+            var btn = new Button() { Content = "X" };
+            btn.Width = btn.Height = 20;
+            btn.Background = new SolidColorBrush(Colors.Red);
+            btn.HorizontalAlignment = HorizontalAlignment.Left;
+            btn.VerticalAlignment = VerticalAlignment.Top;
+            btn.Margin = new Thickness(0, -10, -10, 10);
+            btn.Click += (s, e) => xCanvas.Children.Remove(Grid);
+            Grid.Children.Add(btn);
+            
+            xCanvas.Children.Add(Grid);
         }
 
-        private void DocView_DocumentDeselected(DocumentView sender)
+        public void ClearFloaty(DocumentView dragged)
         {
-            sender.DocumentDeselected -= DocView_DocumentDeselected;
-            xCanvas.Children.Remove(sender);
+            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
+                 xCanvas.Children.Remove(g));
         }
 
         #region Annotation logic
@@ -1138,44 +1175,33 @@ namespace Dash
             if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
-                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
-                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
                 if (onScreenView != null) onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 return LinkHandledResult.HandledRemainOpen;
             }
 
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
-                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
-                SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
-                        target.ToggleHidden();
+                        onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                     else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
                   
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
-                    target.SetHidden(false);
+                    onScreenView.ViewModel.LayoutDocument.SetHidden(false);
                 }
             }
             else
             {
-                AddFloatingDoc(target, null, this.xCanvas.PointerPos());
+                ToggleFloatingDoc(target);
                 //Dock_Link(linkDoc, direction);
             }
 
             target.GotoRegion(region, linkDoc);
-
-            void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
-            {
-                onScreenView?.ViewModel?.RetractBorder();
-                SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
-            }
 
             return LinkHandledResult.HandledRemainOpen;
         }
@@ -1266,7 +1292,7 @@ namespace Dash
         public DocumentView GetTargetDocumentView(DockingFrame frame, DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.LayoutDocument.Equals(target)).ToList();
+            var docViews = frame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.DataDocument.Equals(target.GetDataDocument())).ToList();
             if (!docViews.Any())
             {
                 return null;

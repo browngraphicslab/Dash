@@ -744,6 +744,7 @@ namespace Dash
                             }
                             else
                             {
+                                MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
                                 d.DraggedDocCollectionView[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
                             }
                         }
