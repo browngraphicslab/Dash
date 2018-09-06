@@ -35,7 +35,7 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
-        static public Windows.UI.Input.PointerPoint PointerCaptureHack;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
+        public static Windows.UI.Input.PointerPoint PointerCaptureHack;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
 
         public enum PresentationViewState
         {
@@ -433,8 +433,7 @@ namespace Dash
 
         public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
         {
-            //TODO Splitting: This should loop through a known list of all split frames
-            foreach (var dockedView in this.GetDescendantsOfType<SplitFrame>())
+            foreach (var dockedView in MainSplitter.GetChildFrames())
             {
                 highlightDoc(dockedView.ViewModel, document, flag, search, animate);
             }

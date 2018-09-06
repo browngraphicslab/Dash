@@ -9,6 +9,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Devices.Core;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -32,7 +33,37 @@ namespace Dash
 
         public static void OpenInActiveFrame(DocumentController doc)
         {
-            if (ActiveFrame.ViewModel.DataDocument.Equals(doc.GetDataDocument()))
+            ActiveFrame.OpenDocument(doc);
+        }
+
+        public static void OpenInInactiveFrame(DocumentController doc)
+        {
+            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
+            if (frames.Count == 0)
+            {
+                ActiveFrame.TrySplit(SplitDirection.Right, doc, true);
+            } else
+            {
+                var frame = frames[0];
+                var area = frame.ActualWidth * frame.ActualHeight;
+                for (var i = 1; i < frames.Count; ++i)
+                {
+                    var curFrame = frames[i];
+                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
+                    if (curArea > area)
+                    {
+                        area = curArea;
+                        frame = curFrame;
+                    }
+                }
+
+                frame.OpenDocument(doc);
+            }
+        }
+
+        public void OpenDocument(DocumentController doc)
+        {
+            if (ViewModel.DataDocument.Equals(doc.GetDataDocument()))
             {
                 return;
             }
@@ -43,12 +74,7 @@ namespace Dash
                 doc.SetHeight(double.NaN);
             }
 
-            ActiveFrame.DataContext = new DocumentViewModel(doc) { Undecorated = true };
-        }
-
-        public static void OpenInInactiveFrame(DocumentController doc, SplitFrame frame = null)
-        {
-            throw new NotImplementedException();
+            DataContext = new DocumentViewModel(doc) { Undecorated = true };
         }
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
@@ -91,6 +117,12 @@ namespace Dash
         public SplitFrame()
         {
             this.InitializeComponent();
+
+            if (ActiveFrame == null)
+            {
+                ActiveFrame = this;
+            }
+
             //XDocView.RemoveResizeHandlers();
             XTopRightResizer.Tapped += (sender, args) => SplitCompleted?.Invoke(this);
         }

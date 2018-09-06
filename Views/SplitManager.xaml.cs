@@ -38,6 +38,26 @@ namespace Dash
         public ColumnDefinitionCollection Columns => XContentGrid.ColumnDefinitions;
         public RowDefinitionCollection Rows => XContentGrid.RowDefinitions;
 
+        public IEnumerable<SplitFrame> GetChildFrames()
+        {
+            foreach (var child in XContentGrid.Children)
+            {
+                switch (child)
+                {
+                    case SplitFrame frame:
+                        yield return frame;
+                        break;
+                    case SplitManager manager:
+                        foreach (var childFrame in manager.GetChildFrames())
+                        {
+                            yield return childFrame;
+                        }
+
+                        break;
+                }
+            }
+        }
+
         public void SetContent(DocumentController document)
         {
             var viewCopy = document.GetViewCopy();
