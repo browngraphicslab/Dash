@@ -84,8 +84,6 @@ namespace Dash
 
         public override void UpdateAnnotation(Point p)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             if (_selectionStartPoint.HasValue)
             {
                 if (Math.Abs(_selectionStartPoint.Value.X - p.X) < 3 &&
@@ -111,8 +109,6 @@ namespace Dash
                 XPos = Math.Min(XPos, startEle.Bounds.X);
                 YPos = Math.Min(YPos, startEle.Bounds.Y);
             }
-            sw.Stop();
-            Debug.WriteLine("Total time " + sw.ElapsedMilliseconds);
         }
 
         public override void EndAnnotation(Point p)
