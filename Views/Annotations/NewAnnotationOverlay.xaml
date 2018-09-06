@@ -5,13 +5,13 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" x:Name="LayoutRoot" x:FieldModifier="public">
-            <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
-
+    <Grid x:Name="LayoutRoot" x:FieldModifier="public" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" >
+        <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
             <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{Binding EmbeddedViewModels}">
@@ -36,8 +36,8 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
-                       x:FieldModifier="public"></Rectangle>
-          
+                       x:FieldModifier="public"/>
+
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>

@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -14,11 +16,13 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 using static Dash.DataTransferTypeInfo;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
-    public sealed partial class NewAnnotationOverlay : UserControl, ILinkHandler
+    public partial class NewAnnotationOverlay : UserControl, ILinkHandler, INotifyPropertyChanged
     {
         readonly InkController                  _inkController;
         AnnotationType                          _currAnnotationType = AnnotationType.None;
@@ -42,6 +46,8 @@ namespace Dash
             set
             {
                 _currAnnotationType = value;
+                OnPropertyChanged();
+
                 XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
                 XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
             }
@@ -68,6 +74,32 @@ namespace Dash
             XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             Loaded += onLoaded;
             Unloaded += onUnloaded;
+            
+            var binding = new Binding()
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(CurrentAnnotationType)),
+                Mode = BindingMode.TwoWay,
+                Converter = new CursorConverter()
+            };
+            this.SetBinding(Mouse.CursorProperty, binding);
+
+        }
+        public class CursorConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                switch ((AnnotationType)value) {
+                    case AnnotationType.Selection: return CoreCursorType.IBeam;
+                    case AnnotationType.Region: return CoreCursorType.Cross;
+                }
+                return CoreCursorType.Arrow;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public void SelectRegion(DocumentController region)
@@ -199,6 +231,12 @@ namespace Dash
                 XInkCanvas.InkPresenter.StrokeContainer.Clear();
                 XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc,

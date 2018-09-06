@@ -50,25 +50,8 @@ namespace Dash
         }
         public MenuFlyout MenuFlyout => xMenuFlyout;
         public bool PreventManipulation { get; set; }
-        private ImageSource DocPreview
-        {
-            get => _docPreview;
-            set
-            {
-                _docPreview = value;
-                xToolTipPreview.Source = value;
-                // To document previews from being resized
-                //_docPreview.GetFirstAncestorOfType<DocumentView>().RemoveResizeHandlers();
-            }
-        }
         // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
         public static DocumentView FocusedDocument { get; set; }
-        public CollectionViewModel.StandardViewLevel StandardViewLevel
-        {
-            get => (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty);
-            set => SetValue(StandardViewLevelProperty, value);
-        }
-
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
 
@@ -87,9 +70,6 @@ namespace Dash
             set => SetValue(BindVisibilityProperty, value);
         }
 
-        public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
-            "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView),
-            new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
         public event Action<DocumentView> DocumentDeleted;
 
         public DocumentView()
@@ -330,130 +310,6 @@ namespace Dash
                 _templateEditor.SetHidden(!_templateEditor.GetHidden());
             }
         }
-
-        #region StandardCollectionView
-
-        private async void GetDocPreview()
-        {
-            xIconBorder.BorderThickness = new Thickness(1);
-            xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
-            {
-                Opacity = 0.5
-            };
-            var type = ViewModel.DocumentController.DocumentType;
-            xSmallIconImage.Visibility = Visibility.Visible;
-            xSmallIconImage.Source = GetTypeIcon();
-            if (DocPreview == null)
-                DocPreview = await GetPreview();
-            xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
-            OpenIcon();
-        }
-
-        public async Task<RenderTargetBitmap> GetPreview()
-        {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement, 1000, 1000);
-            xContentPresenter.Visibility = Visibility.Collapsed;
-            return bitmap;
-        }
-
-        private void CloseDocPreview()
-        {
-            xIconImage.Visibility = Visibility.Visible;
-            xSmallIconImage.Visibility = Visibility.Collapsed;
-            xIconBorder.BorderThickness = new Thickness(0);
-            xIconBorder.Background = new SolidColorBrush(Colors.Transparent);
-        }
-
-        private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            var view = obj as DocumentView;
-            view?.UpdateView();
-        }
-
-        private void OpenIcon()
-        {
-            xIcon.Visibility = Visibility.Visible;
-            xContentPresenter.Visibility = Visibility.Collapsed;
-        }
-
-        private void OpenFreeform()
-        {
-            xContentPresenter.Visibility = Visibility.Visible;
-            xIcon.Visibility = Visibility.Collapsed;
-        }
-
-        BitmapImage GetTypeIcon()
-        {
-            var type = ViewModel.DocumentController.DocumentType;
-            // TODO: make icons for different types
-            if (type.Equals(CollectionBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/col-icon.png"));
-            }
-            else if (type.Equals(PdfBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/pdf-icon.png"));
-            }
-            else if (type.Equals(RichTextBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/rtf-icon.png"));
-            }
-            else if (type.Equals(VideoBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/vid-icon.png"));
-            }
-            else if (type.Equals(ImageBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/img-icon.png"));
-            }
-            else if (type.Equals(WebBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/html-icon.png"));
-            }
-            else if (type.Equals(ApiOperatorBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/api-icon.png"));
-            }
-            else if (type.Equals(DataBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
-            }
-            else if (type.Equals(OperatorBox.DocumentType))
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
-            }
-            else
-            {
-                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/doc-icon.png"));
-            }
-        }
-
-        private async void UpdateView()
-        {
-            if (ViewModel == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
-            switch (StandardViewLevel)
-            {
-                case CollectionViewModel.StandardViewLevel.Detail:
-                    DocPreview = await GetPreview();
-                    CloseDocPreview();
-                    OpenFreeform();
-                    break;
-                case CollectionViewModel.StandardViewLevel.Region:
-                    xIconLabel.FontSize = 11;
-                    GetDocPreview();
-                    break;
-                case CollectionViewModel.StandardViewLevel.Overview:
-                    xIconLabel.FontSize = 25;
-                    CloseDocPreview();
-                    OpenIcon();
-                    xIconImage.Source = GetTypeIcon();
-                    break;
-            }
-        }
-
-        #endregion
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.

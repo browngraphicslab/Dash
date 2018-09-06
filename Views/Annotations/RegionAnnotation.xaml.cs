@@ -50,7 +50,7 @@ namespace Dash
                         DataContext = selectionViewModel,
                         IsDoubleTapEnabled = false
                     };
-                    RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, selectionViewModel);
+                    RenderSubRegion(posList[i].Data, PlacementMode.Top, r, selectionViewModel);
                 }
             }
         }
@@ -133,6 +133,11 @@ namespace Dash
             region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
 
             return YPos;
+        }
+
+        private void LayoutRoot_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+
         }
     }
 }
