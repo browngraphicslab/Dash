@@ -1109,6 +1109,12 @@ namespace Dash
 
         void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
+            if (args.SelectedViews.Count > 0)
+            {
+                if (xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocs().Contains(dv)).Any())
+                    return;
+            }
+
             MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.SearchHighlightState != new Thickness(0)).ToList().ForEach((dv) => dv.ViewModel?.RetractBorder());
             ClearFloaty(null);
         }
