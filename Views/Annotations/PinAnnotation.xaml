@@ -9,6 +9,6 @@
     mc:Ignorable="d"   uiControls:Mouse.Cursor="Arrow"
     IsDoubleTapEnabled="false">
 
-    <Ellipse x:Name="xShape" Width="10" Height="10" Margin="-5 -5 0 0"/>
+    <Ellipse x:Name="xShape" Width="10" Height="10" Margin="-5 -5 0 0" PointerMoved="xShape_PointerMoved"/>
 
 </local:AnchorableAnnotation>

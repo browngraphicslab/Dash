@@ -40,7 +40,7 @@ namespace Dash
         public readonly ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
         public readonly ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
         public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a) => a.ViewModel);
-        public AnnotationType                CurrentAnnotationType
+        public AnnotationType                 CurrentAnnotationType
         {
             get =>_currAnnotationType;
             set
@@ -82,7 +82,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Converter = new CursorConverter()
             };
-            this.SetBinding(Mouse.CursorProperty, binding);
+           // this.SetBinding(Mouse.CursorProperty, binding);
 
         }
         public class CursorConverter : IValueConverter
@@ -618,6 +618,13 @@ namespace Dash
                 }
             }
 
+        }
+
+        CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
+        CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
+        private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
         }
     }
 }

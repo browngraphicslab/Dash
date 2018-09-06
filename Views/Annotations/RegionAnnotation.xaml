@@ -9,7 +9,7 @@
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     >
-    <Grid x:Name="LayoutRoot"  uiControls:Mouse.Cursor="Arrow" />
+    <Grid x:Name="LayoutRoot" uiControls:Mouse.Cursor="Arrow" PointerMoved="LayoutRoot_PointerMoved"/>
 
 </local:AnchorableAnnotation>
 

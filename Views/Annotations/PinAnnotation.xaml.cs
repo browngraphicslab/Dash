@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
+using Windows.UI.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,7 +22,7 @@ namespace Dash
 {
     public sealed partial class PinAnnotation
     {
-        public PinAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) : 
+        public PinAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel.RegionDocument)
         {
             this.InitializeComponent();
@@ -45,9 +46,21 @@ namespace Dash
             {
                 var curPos = RegionDocumentController.GetPosition() ?? new Point();
                 var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
-                RegionDocumentController.SetPosition(new Point(curPos.X +p.X, curPos.Y + p.Y));
+                RegionDocumentController.SetPosition(new Point(curPos.X + p.X, curPos.Y + p.Y));
                 e.Handled = true;
             };
+        } 
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+
+        private void xShape_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
         }
 
 
