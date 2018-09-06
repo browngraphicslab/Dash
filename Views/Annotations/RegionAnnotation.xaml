@@ -8,8 +8,8 @@
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     >
+    <Grid x:Name="LayoutRoot">
+    </Grid>
 
-    <Rectangle x:Name="XRegionRect" StrokeDashArray="2" StrokeThickness="2" Stroke="Black"
-               Fill="{x:Bind ParentOverlay.XPreviewRect.Fill}" Opacity="{x:Bind ParentOverlay.XPreviewRect.Opacity}" />
 </local:AnchorableAnnotation>
 

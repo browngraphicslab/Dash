@@ -75,8 +75,7 @@ namespace Dash
 
 	    public static DocumentController MakeRegionDocument(DocumentView image, Point? point)
 	    {
-		    var im = image.GetFirstDescendantOfType<EditableImage>();
-		    return im.GetRegionDocument();
+		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }
 
 		

@@ -104,12 +104,6 @@
                 </Storyboard>
             </Border.Resources>
             <Grid>
-                <!--<Rectangle
-                    Fill="Gray"
-                    RadiusX="5"
-                    RadiusY="5"
-                    Opacity="0.5"
-                    Margin="0, 0, 0, 0"/>-->
                 <Grid Margin="0, 0, 0, 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -188,12 +182,9 @@
 
                     <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
                         <Grid>
-                            <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
-                                               Source="ms-appx:///Assets/Icons/doc-icon.png">
+                            <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center" Source="ms-appx:///Assets/Icons/doc-icon.png">
                                 <ToolTipService.ToolTip>
-                                    <Image x:Name="xToolTipPreview" Height="200"
-                                                       Source="ms-appx:///Assets/Icons/Unavailable.png">
-                                    </Image>
+                                    <Image x:Name="xToolTipPreview" Height="200" Source="ms-appx:///Assets/Icons/Unavailable.png"/>
                                 </ToolTipService.ToolTip>
                             </Image>
                             <Image x:Name="xSmallIconImage" Height="35" Width="35"

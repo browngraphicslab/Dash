@@ -86,6 +86,7 @@ namespace Dash
         {
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
+            KeyDown += _marquee_KeyDown;
         }
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
@@ -399,7 +400,7 @@ namespace Dash
         private void ChangeOpacity(float opacity)
         {
             _bgOpacity = opacity;
-            _backgroundCanvas.Invalidate();
+            _backgroundCanvas?.Invalidate();
         }
         #endregion
 
@@ -667,7 +668,6 @@ namespace Dash
 		Point _marqueeAnchor;
 		bool _isMarqueeActive;
 		private MarqueeInfo mInfo;
-		object _marqueeKeyHandler = null;
 
 		protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
@@ -677,7 +677,6 @@ namespace Dash
 					GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
 				SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
 				GetSelectionCanvas().Children.Remove(_marquee);
-				MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
 				_marquee = null;
 				_isMarqueeActive = false;
 				if (e != null) e.Handled = true;
@@ -720,10 +719,8 @@ namespace Dash
 						StrokeDashArray = new DoubleCollection { 4, 1 },
 						CompositeMode = ElementCompositeMode.SourceOver
 					};
-					if (_marqueeKeyHandler != null)
-						MainPage.Instance.RemoveHandler(KeyDownEvent, _marqueeKeyHandler);
-					_marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
-					MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
+                    this.IsTabStop = true;
+                    this.Focus(FocusState.Pointer);
 					_marquee.AllowFocusOnInteraction = true;
 					SelectionCanvas?.Children.Add(_marquee);
 
@@ -789,11 +786,11 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee == null || !MarqueeKeys.Contains(e.Key)) return;
-
-            TriggerActionFromSelection(e.Key, true);
-            MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-            e.Handled = true;
+            if (_marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive)
+            {
+                TriggerActionFromSelection(e.Key, true);
+                e.Handled = true;
+            }
         }
 
 		public bool IsMarqueeActive => _isMarqueeActive;

@@ -133,13 +133,11 @@ namespace Dash
 		public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
 		public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
 		public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
-		public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
-		public static KeyController PinAnnotationsKey = new KeyController("_Pin Annotations", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
+		public static KeyController EmbeddedDocumentsKey = new KeyController("_EmbeddedDocuments", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
 		public static KeyController AnonymousGroupsKey = new KeyController("Anonymous Groups", "A35F8DA4-5471-4EA7-90D1-8F76F501FFB5");
 		public static KeyController TitleMatchKey = new KeyController("Title Match", "FEBBA568-0DC5-4E8E-8FFE-339CC3E0B1D2");
 		public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
 		public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
-		public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController LinkTagKey =
 			new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
 		/// <summary>

@@ -22,6 +22,8 @@ using Windows.Storage;
 using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
+using System.Web;
+using MyToolkit.Multimedia;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -978,18 +980,40 @@ namespace Dash
 			return mode;
         }
 
-	    public async Task<VideoWrapper> GetVideoFile()
+	    public async Task<DocumentController> GetVideoFile()
 	    {
 		    var videoPopup = new ImportVideoPopup();
 		    SetUpPopup(videoPopup);
 
 		    var video = await videoPopup.GetVideoFile();
-			UnsetPopup();
+			UnsetPopup();// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
 
-		    return video;
+            if (video != null)
+                switch (video.Type)
+                {
+                    case VideoType.StorageFile:
+                        return await new VideoToDashUtil().ParseFileAsync(video.File);
+                    case VideoType.Uri:
+                        var query = HttpUtility.ParseQueryString(video.Uri.Query);
+                        var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
+
+                        try
+                        {
+                            var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+                            return VideoToDashUtil.CreateVideoBoxFromUri(url.Uri);
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: display error video not found
+                        }
+
+                        break;
+                }
+
+            return null;
 	    }
 
-	    public async Task<StorageFile> GetImageFile()
+	    public async Task<DocumentController> GetImageFile()
 	    {
 		    var imagePopup = new ImportImagePopup();
 			SetUpPopup(imagePopup);
@@ -997,7 +1021,7 @@ namespace Dash
 		    var image = await imagePopup.GetImageFile();
 		    UnsetPopup();
 
-		    return image;
+            return image != null ? await new ImageToDashUtil().ParseFileAsync(image) : null;
 	    }
 
 		/// <summary>
