@@ -124,7 +124,7 @@ namespace Dash
         /// <returns></returns>
         public static Point PointerPos(this UIElement dob)
         {
-            var threadPos = CoreWindow.GetForCurrentThread().PointerPosition;
+            var threadPos = dob.RootPointerPos();
             return MainPage.Instance.TransformToVisual(dob).TransformPoint(threadPos);
         }
         

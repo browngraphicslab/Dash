@@ -1087,6 +1087,7 @@ namespace Dash
         {
             var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
                 v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+            onScreenView = GetTargetDocumentView(xDockFrame, doc);
             if (onScreenView != null)
                 return;
 
@@ -1096,6 +1097,7 @@ namespace Dash
             docCopy.SetHeight(size?.Y ?? 100);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
+            Debug.WriteLine("P = " + position + " " + defaultPt);
             docCopy.SetPosition(position ?? defaultPt);
             
             var docView = new DocumentView
@@ -1162,7 +1164,8 @@ namespace Dash
             }
             else
             {
-                Dock_Link(linkDoc, direction);
+                AddFloatingDoc(target, null, this.xCanvas.PointerPos());
+                //Dock_Link(linkDoc, direction);
             }
 
             target.GotoRegion(region, linkDoc);
