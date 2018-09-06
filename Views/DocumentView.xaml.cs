@@ -37,7 +37,6 @@ namespace Dash
         DocumentController _templateEditor;
         bool               _isQuickEntryOpen;
         readonly Flyout    _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
-        ImageSource        _docPreview = null;
         DocumentViewModel  _oldViewModel = null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);

@@ -313,7 +313,7 @@ namespace Dash
                 var transformToVisual = doc.TransformToVisual(Window.Current.Content);
                 var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
                 s = new Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)Math.Ceiling(s.X), (int)Math.Ceiling(s.Y));
+                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
                 var buf = await rtb.GetPixelsAsync();
                 var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 var miniSBitmap = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
