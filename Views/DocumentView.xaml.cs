@@ -816,6 +816,8 @@ namespace Dash
         
         public void This_Drop(object sender, DragEventArgs e)
         {
+            if (this.ViewModel.IsAdornmentGroup)
+                return;
             var dropDoc = ViewModel.DocumentController;
             if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
@@ -839,7 +841,6 @@ namespace Dash
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
             }
-
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                 ? DataPackageOperation.Link
                 : e.DataView.RequestedOperation;
