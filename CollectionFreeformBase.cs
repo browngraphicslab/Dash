@@ -990,14 +990,11 @@ namespace Dash
 
 		protected void OnTapped(object sender, TappedRoutedEventArgs e)
 		{
-			if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//if (XInkCanvas.IsTopmost())
 			{
-				//if (XInkCanvas.IsTopmost())
-				{
-					_isMarqueeActive = false;
-					if (!this.IsShiftPressed())
-						RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
-				}
+				_isMarqueeActive = false;
+				if (!this.IsShiftPressed())
+					RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
 			}
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;

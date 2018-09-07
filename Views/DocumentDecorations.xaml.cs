@@ -197,7 +197,6 @@ namespace Dash
                 xLeftResizeControl, xRightResizeControl,
                 xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
             {
-                handle.Tag = handle.ManipulationMode;
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
                 handle.PointerReleased += (s, e) => {
                     handle.ReleasePointerCapture(e.Pointer);
@@ -206,14 +205,11 @@ namespace Dash
                 handle.PointerPressed += (s, e) =>
                 {
                     ManipulationMode = ManipulationModes.None;
-                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                    if (e.Handled)
+                    if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
                     {
                         handle.CapturePointer(e.Pointer);
-                        handle.ManipulationMode = (Windows.UI.Xaml.Input.ManipulationModes)handle.Tag;
+                        e.Handled = true;
                     }
-                    else
-                        handle.ManipulationMode = ManipulationModes.All;
                 };
             }
             SelectionManager.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;
@@ -268,28 +264,10 @@ namespace Dash
             CurrEditTag = null;
 
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
-            if (SelectedDocs.Count > 1)
-            {
-                ViewManipulationControls.currentDocDec = this;
-                xMultiSelectBorder.BorderThickness = new Thickness(2);
-            }
-            else
-            {
-                xMultiSelectBorder.BorderThickness = new Thickness(0);
-            }
-
+            xMultiSelectBorder.BorderThickness = new Thickness(SelectedDocs.Count > 1 ? 2 : 0);
             SetPositionAndSize();
-            if (SelectedDocs.Any() && !this.IsRightBtnPressed())
-            {
-                VisibilityState = Visibility.Visible;
-            }
-            else
-            {
-                VisibilityState = Visibility.Collapsed;
-
-            }
+            VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
-        
 
         public void SetPositionAndSize()
         {
@@ -318,103 +296,53 @@ namespace Dash
 
             rebuildMenuIfNeeded();
 
-            //TODO: DO WE NEED THIS STILL?
-            // update menu items to point to the currently selected document
-            foreach (var item in xButtonsPanel.Children.OfType<Grid>())
+            if (!double.IsPositiveInfinity(topLeft.X) && !double.IsPositiveInfinity(topLeft.Y) &&
+                !double.IsNegativeInfinity(botRight.X) && !double.IsNegativeInfinity(botRight.Y))
             {
-                var menuLinkName = (item.Tag as Tuple<DocumentView, string>).Item2;
+                if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                {
+                    botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+                }
+
+                RenderTransform = new TranslateTransform
+                {
+                    X = topLeft.X,
+                    Y = topLeft.Y
+                };
+
+                ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
+                ContentRow.Height = new GridLength(botRight.Y - topLeft.Y);
+
+                if (_recentTags.Count == 0)
+                {
+                    xRecentTagsDivider.Visibility = Visibility.Visible;
+                }
             }
-
-            if (double.IsPositiveInfinity(topLeft.X) || double.IsPositiveInfinity(topLeft.Y) ||
-                double.IsNegativeInfinity(botRight.X) || double.IsNegativeInfinity(botRight.Y))
-            {
-                return;
-            }
-            if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-                botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
-            this.RenderTransform = new TranslateTransform
-            {
-                X = topLeft.X,
-                Y = topLeft.Y
-            };
-
-            ContentColumn.Width = new GridLength(Math.Max(0,botRight.X - topLeft.X));
-            ContentRow.Height = new GridLength(botRight.Y - topLeft.Y);
-
-            if (_recentTags.Count == 0)
-                xRecentTagsDivider.Visibility = Visibility.Visible;
         }
 
         //adds a button for a link type to appear underneath the link button
         private void AddLinkTypeButton(string linkName)
         {
-           
             //set button color to tag color
             var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
             var btnColorFinal = btnColorOrig != null
                 ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                 : Color.FromArgb(255, 64, 123, 177);
 
-            ToolTip toolTip = new ToolTip
+            var toolTip = new ToolTip
             {
                 Content = linkName,
                 HorizontalOffset = 5,
                 Placement = PlacementMode.Right
             };
             
-            //button.Tag = new Tuple<DocumentView, string>(null, linkName);
             var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
             xButtonsPanel.Children.Add(button);
 
             //adds tooltip with link tag name inside
-
             ToolTipService.SetToolTip(button, toolTip);
         }
-
-        /*
-		private void LaunchLinkTypeInputBox(Point where)
-		{
-			ActionTextBox inputBox = MainPage.Instance.xLinkInputBox;
-			Storyboard fadeIn = MainPage.Instance.xLinkInputIn;
-			Storyboard fadeOut = MainPage.Instance.xLinkInputOut;
-
-			var moveTransform = new TranslateTransform {X = where.X, Y = where.Y};
-			inputBox.RenderTransform = moveTransform;
-
-			inputBox.AddKeyHandler(VirtualKey.Enter, args =>
-			{
-				string entry = inputBox.Text.Trim();
-				if (string.IsNullOrEmpty(entry)) return;
-
-				inputBox.ClearHandlers(VirtualKey.Enter);
-
-				fadeOut.Completed += FadeOutOnCompleted;
-				fadeOut.Begin();
-
-				args.Handled = true;
-
-				void FadeOutOnCompleted(object sender2, object o1)
-				{
-					fadeOut.Completed -= FadeOutOnCompleted;
-
-					LinkNames.Add(entry);
-					
-					var color = AddTag(entry);
-					//_tagNameDict.Add(entry)
-					//AddLinkTypeButton(, color);
-					//rebuildMenuIfNeeded();
-
-					//SELECT LINK TYPE 
-
-					inputBox.Visibility = Visibility.Collapsed;
-				}
-			});
-			
-			inputBox.Visibility = Visibility.Visible;
-			fadeIn.Begin();
-			inputBox.Focus(FocusState.Programmatic);
-		}
-		*/
+        
 
         //checks to see if a tag with the same name has already been created. if not, then a new tag is created
         public Tag AddTagIfUnique(string name)
@@ -849,7 +777,7 @@ namespace Dash
             {
                 var flyout = new MenuFlyout();
 
-                foreach (DocumentController link in TagMap[currTag.Text])
+                foreach (var link in TagMap[currTag.Text])
                 {
                     if (link.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data.Equals(currTag.Text) ?? false)
                     {

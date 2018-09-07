@@ -264,8 +264,6 @@ namespace Dash
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
-            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
 
            
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
@@ -343,6 +341,8 @@ namespace Dash
                 MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }
             def.Complete();
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
         static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);

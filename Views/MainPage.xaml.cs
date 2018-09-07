@@ -447,7 +447,6 @@ namespace Dash
 
         private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
         {
-            if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
             if (dm.DocumentController.Equals(document))
             {
                 //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
@@ -662,7 +661,7 @@ namespace Dash
 	        }
 
 	        //activateall selected docs
-	        if (e.VirtualKey == VirtualKey.A && this.IsShiftPressed())
+	        if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
 	        {
 		        var selected = SelectionManager.GetSelectedDocs();
 		        if (selected.Count > 0)

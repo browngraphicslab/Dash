@@ -508,9 +508,6 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
-    <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
-      <DependentUpon>CollectionStandardView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -1088,10 +1085,6 @@
     <Page Include="ViewModels\ReplLineNode.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Collection\CollectionStandardView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\EditableMarkdownBlock.xaml">
       <Generator>MSBuild:Compile</Generator>

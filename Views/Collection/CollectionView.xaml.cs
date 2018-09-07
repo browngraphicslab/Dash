@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
@@ -256,11 +256,6 @@ namespace Dash
 	    #region Menu
         public void SetView(CollectionViewType viewType)
         {
-            if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
-            {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            }
             _viewType = viewType;
             if (CurrentView?.UserControl != null)
                 CurrentView.UserControl.Loaded -= CurrentView_Loaded;
@@ -297,10 +292,6 @@ namespace Dash
                 case CollectionViewType.Graph:
                     if (CurrentView is CollectionGraphView) return;
                     CurrentView = new CollectionGraphView();
-                    break;
-                case CollectionViewType.Standard:
-                    if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
