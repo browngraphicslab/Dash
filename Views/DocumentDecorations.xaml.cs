@@ -364,18 +364,12 @@ namespace Dash
             };
             
             //button.Tag = new Tuple<DocumentView, string>(null, linkName);
-            LinkButton button = new LinkButton(this, btnColorFinal, linkName, toolTip);
-            button.Tag = new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), linkName);
+            var button = new LinkButton(this, btnColorFinal, linkName, toolTip, new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), linkName));
             xButtonsPanel.Children.Add(button);
 
             //adds tooltip with link tag name inside
 
             ToolTipService.SetToolTip(button, toolTip);
-
-           
-            
-
-          
         }
 
         /*
@@ -610,14 +604,14 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (DocumentView doc in SelectedDocs)
+            foreach (DocumentView docView in SelectedDocs)
             {
-                args.Data.AddDragModel(new DragDocumentModel(doc.ViewModel.DocumentController, false, doc));
+                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                doc.ViewModel.DecorationState = false;
+                docView.ViewModel.DecorationState = false;
             }
         }
 

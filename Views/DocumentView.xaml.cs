@@ -169,9 +169,7 @@ namespace Dash
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
-                        ? ManipulationModes.All
-                        : ManipulationModes.None;
+                ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = true;
                 if (parentParentFreeform != null && !this.IsShiftPressed())
@@ -822,18 +820,18 @@ namespace Dash
                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
             var dragModels = e.DataView.GetDragModels();
-            foreach (DragModelBase dragModel in dragModels)
+            foreach (var dragModel in dragModels)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.LinkSourceViews == null) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null) continue;
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
-                        dragDoc = creatorFunc(dm.LinkSourceViews[index]);
+                        dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
-                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.LinkType);
+                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
                     MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES

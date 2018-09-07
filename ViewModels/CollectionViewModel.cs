@@ -733,9 +733,9 @@ namespace Dash
                 {
                     foreach (var d in dragDocModels)
                     {
-                        for (var i = 0; i < d.DraggedDocCollectionView?.Count; i++)
+                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (d.DraggedDocCollectionView[i]?.ViewModel == this)
+                            if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
                                 if (d.DraggedDocumentViews[i] != null) {
@@ -745,7 +745,7 @@ namespace Dash
                             else
                             {
                                 MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                d.DraggedDocCollectionView[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                                d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
                             }
                         }
                     }

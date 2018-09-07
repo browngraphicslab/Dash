@@ -273,11 +273,9 @@ namespace Dash
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews, true, off: offsets.ToList())
-            {
-                Offset = args.GetPosition(docView),
-                DraggedDocCollectionView = _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null? dv.ParentCollection:null).ToList()
-            });
+            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
+                _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null ? dv.ParentCollection : null).ToList(),
+                offsets.ToList(), args.GetPosition(docView)));
 
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 

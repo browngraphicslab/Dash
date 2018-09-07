@@ -37,11 +37,13 @@ namespace Dash
         private Color _color;
         private DocumentDecorations _docdecs;
         private ToolTip _tooltip;
+        private Tuple<DocumentView, string> _tuple;
 
-        public LinkButton(DocumentDecorations docdecs, Color color, String text, ToolTip tooltip)
+        public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, Tuple<DocumentView, string>  tuple)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             _text = text;
+            _tuple = tuple;
             _docdecs = docdecs;
             _color = color;
             _tooltip = tooltip;
@@ -49,14 +51,14 @@ namespace Dash
             xLinkType.Text = text.Substring(0, 1);
         }
 
-        private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
+        private async void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
         {
             foreach (var doc in _docdecs.SelectedDocs)
             {
                 doc.ManipulationMode = ManipulationModes.None;
             }
         }
-
+        
         private void LinkButton_PointerExited(object sender, PointerRoutedEventArgs args)
         {
             _tooltip.IsOpen = false;
@@ -87,7 +89,6 @@ namespace Dash
         {
             e.Handled = true;
             _docdecs.CurrentLinks = _docdecs.TagMap[_text];
-            Tag tag = null;
 
             _docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
 
@@ -107,13 +108,14 @@ namespace Dash
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            DocumentView doq = ((sender as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
-            if (doq == null) return;
-
-            args.Data.AddDragModel(new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = _text });
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            doq.ViewModel.DecorationState = false;
+            var docView = _tuple.Item1;
+            if (docView != null)
+            {
+                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggedLinkType = _text, DraggingLinkButton = true });
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                docView.ViewModel.DecorationState = false;
+            }
         }
     }
 }

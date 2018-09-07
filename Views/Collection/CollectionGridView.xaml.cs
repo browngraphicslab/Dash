@@ -95,7 +95,7 @@ namespace Dash
             DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm == null) return;
 
-            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController, true));
+            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController));
         }
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
