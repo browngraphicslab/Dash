@@ -22,7 +22,7 @@ using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
-    public partial class NewAnnotationOverlay : UserControl, ILinkHandler, INotifyPropertyChanged
+    public partial class AnnotationOverlay : UserControl, ILinkHandler, INotifyPropertyChanged
     {
         readonly InkController                  _inkController;
         AnnotationType                          _currAnnotationType = AnnotationType.None;
@@ -53,7 +53,7 @@ namespace Dash
             }
         }
 
-        public NewAnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
+        public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
             InitializeComponent();
 
@@ -109,7 +109,7 @@ namespace Dash
 
             var deselect = SelectedRegion?.IsSelected == true;
             var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            foreach (var nvo in documentView.GetDescendantsOfType<NewAnnotationOverlay>())
+            foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
                 foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
                     if (nvo.SelectedRegion != null)
@@ -129,7 +129,7 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             var selectedRegion = SelectedRegion;
             if (selectedRegion != null)
-                foreach (var nvo in documentView.GetDescendantsOfType<NewAnnotationOverlay>())
+                foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
                     foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
                         nvo.SelectedRegion.IsSelected = false;
@@ -349,7 +349,7 @@ namespace Dash
         /// <param name="parent"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        static async Task<DocumentController> createEmbeddedTextNote(NewAnnotationOverlay parent, Point where)
+        static async Task<DocumentController> createEmbeddedTextNote(AnnotationOverlay parent, Point where)
         {
             DocumentController target = null;
             // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
@@ -524,8 +524,8 @@ namespace Dash
                 XSelectionCanvas.Children.Add(_currRect);
             }
 
-            var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(_currRect)) <
-                              ele.Bounds.Width + _currRect.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
+            var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
+                              ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
                               ele.Bounds.Height / 2;
             var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
             if (closeEnough && similarSize)
@@ -688,7 +688,8 @@ namespace Dash
                     foreach (var rect in _clipRectSelections)
                     {
                         var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect)) <
-                                          ele.Bounds.Width + rect.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
+                                          ele.Bounds.Width + rect.Width &&
+                                          Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
                                           ele.Bounds.Height / 2;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
                         if (closeEnough && similarSize)
@@ -700,16 +701,15 @@ namespace Dash
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
                         }
-                        else if (rect.IsInVisualTree() && (rect.GetBoundingRect(this)
-                                     .Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) || rect.GetBoundingRect(this)
-                                     .Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
+                        else if (rect.IsInVisualTree() && (rect.GetBoundingRect(this).Contains(ele.Bounds)))
                         {
                             found = true;
+                            _selectedRectangles[ele.Index] = rect;
                         }
                     }
                     _clipRectSelections.AddRange(newRects);
 
-                    if (!found)
+                    if (!found && !_selectedRectangles.ContainsKey(ele.Index))
                     {
                         var newRect = new Rectangle
                         {
@@ -721,6 +721,7 @@ namespace Dash
                         Canvas.SetTop(newRect, ele.Bounds.Top);
                         XSelectionCanvas.Children.Add(newRect);
                         _clipRectSelections.Add(newRect);
+                        _selectedRectangles[ele.Index] = newRect;
                     }
                 }
                 else if (_selectedRectangles.ContainsKey(ele.Index))
@@ -731,8 +732,14 @@ namespace Dash
                             (rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                              rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
                         {
-                            Canvas.SetLeft(rect, Math.Min(Canvas.GetLeft(rect), ele.Bounds.Right));
-                            rect.Width = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect));
+                            if (ele.Bounds.Left - Canvas.GetLeft(rect) > ele.Bounds.Width)
+                            {
+                                rect.Width = ele.Bounds.Left - Canvas.GetLeft(rect);
+                            } else
+                            {
+                                rect.Width = Canvas.GetLeft(rect) + rect.Width - ele.Bounds.Right;
+                                Canvas.SetLeft(rect, ele.Bounds.Right);
+                            }
                             _selectedRectangles.Remove(ele.Index);
                         }
                     }

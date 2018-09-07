@@ -26,7 +26,7 @@ namespace Dash
     {
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
+        public RegionAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();

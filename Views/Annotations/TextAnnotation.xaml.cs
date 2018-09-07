@@ -27,7 +27,7 @@ namespace Dash
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
 
-        public TextAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
+        public TextAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();

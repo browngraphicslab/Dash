@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -40,7 +40,7 @@ namespace Dash
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private NewAnnotationOverlay _annotationOverlay;
+        private AnnotationOverlay _annotationOverlay;
 
         public EditableImage(DocumentController document, Context context)
         {
@@ -58,7 +58,7 @@ namespace Dash
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = document.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-            _annotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
             _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
             XAnnotationGrid.Children.Add(_annotationOverlay);
 

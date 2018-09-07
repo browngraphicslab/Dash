@@ -232,8 +232,8 @@ namespace Dash
             SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
         }
 
-        private readonly NewAnnotationOverlay _topAnnotationOverlay;
-        private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
+        private readonly AnnotationOverlay _topAnnotationOverlay;
+        private readonly AnnotationOverlay _bottomAnnotationOverlay;
 
         public PdfView(DocumentController document)
         {
@@ -247,8 +247,8 @@ namespace Dash
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
 
-            _bottomAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new NewAnnotationOverlay(LayoutDocument, RegionGetter);
+            _bottomAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+            _topAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 

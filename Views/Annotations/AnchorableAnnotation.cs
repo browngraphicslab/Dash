@@ -46,12 +46,12 @@ namespace Dash
     {
         public DocumentController RegionDocumentController;
         public AnnotationType AnnotationType = AnnotationType.None;
-        protected readonly NewAnnotationOverlay ParentOverlay;
+        protected readonly AnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
         public Selection ViewModel => DataContext as Selection;
         
-        protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
+        protected AnchorableAnnotation(AnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
@@ -100,14 +100,14 @@ namespace Dash
         {
             // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = ParentOverlay.GetAncestorsOfType<ILinkHandler>().ToList();
-            // NewAnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
+            // AnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, ParentOverlay);
             ParentOverlay.AnnotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
             if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
-                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<AnnotationOverlay>())
                 foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                 { 
                     if (nvo.SelectedRegion != null)
