@@ -37,13 +37,13 @@ namespace Dash
         private Color _color;
         private DocumentDecorations _docdecs;
         private ToolTip _tooltip;
-        private Tuple<DocumentView, string> _tuple;
+        private DocumentView _documentView;
 
-        public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, Tuple<DocumentView, string>  tuple)
+        public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, DocumentView documentView)
         {
             InitializeComponent();
             _text = text;
-            _tuple = tuple;
+            _documentView = documentView;
             _docdecs = docdecs;
             _color = color;
             _tooltip = tooltip;
@@ -51,7 +51,7 @@ namespace Dash
             xLinkType.Text = text.Substring(0, 1);
         }
 
-        private async void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
+        private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
         {
             foreach (var doc in _docdecs.SelectedDocs)
             {
@@ -76,12 +76,11 @@ namespace Dash
             {
                 _tooltip.IsOpen = false;
             }
-
-            var doq = ((sender as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-            if (doq != null)
+            
+            if (_documentView != null)
             {
-                new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
-                    doq.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(doq), _text);
+                new AnnotationManager(_documentView).FollowRegion(_documentView.ViewModel.DocumentController,
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
             }
         }
 
@@ -92,9 +91,8 @@ namespace Dash
 
             _docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
 
-            foreach (var child in _docdecs.XTagContainer.Children)
+            foreach (var actualchild in _docdecs.XTagContainer.Children.OfType<Tag>())
             {
-                var actualchild = child as Tag;
                 if (actualchild.Text == _text)
                 {
                     actualchild.Select();
@@ -108,13 +106,12 @@ namespace Dash
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var docView = _tuple.Item1;
-            if (docView != null)
+            if (_documentView != null)
             {
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggedLinkType = _text, DraggingLinkButton = true });
+                args.Data.AddDragModel(new DragDocumentModel(_documentView) { DraggedLinkType = _text, DraggingLinkButton = true });
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                docView.ViewModel.DecorationState = false;
+                _documentView.ViewModel.DecorationState = false;
             }
         }
     }

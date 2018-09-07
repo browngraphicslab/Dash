@@ -30,7 +30,6 @@ namespace Dash
         private Visibility _resizerVisibilityState = Visibility.Collapsed;
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
-        private bool _isMoving;
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
@@ -364,7 +363,7 @@ namespace Dash
             };
             
             //button.Tag = new Tuple<DocumentView, string>(null, linkName);
-            var button = new LinkButton(this, btnColorFinal, linkName, toolTip, new Tuple<DocumentView, string>(SelectedDocs.FirstOrDefault(), linkName));
+            var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
             xButtonsPanel.Children.Add(button);
 
             //adds tooltip with link tag name inside

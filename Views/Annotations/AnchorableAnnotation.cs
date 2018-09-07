@@ -125,10 +125,10 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(this);
                     ParentOverlay.RegionDocsList.Remove(RegionDocumentController);
                 }
-                SelectRegionFromParent(ViewModel, args.GetPosition(this));
+                else SelectRegionFromParent(ViewModel, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
