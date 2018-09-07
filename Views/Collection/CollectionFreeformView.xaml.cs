@@ -32,14 +32,6 @@ namespace Dash
 
         private void OnLoad(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.PrevScale != 0)
-                ViewManipulationControls.ElementScale = ViewModel.PrevScale;
-            ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            if (this.GetFirstAncestorOfType<DocumentView>() != null)
-            {
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            }
         }
 
         public override Panel GetCanvas()

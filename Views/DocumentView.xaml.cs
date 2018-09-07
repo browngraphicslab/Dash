@@ -161,7 +161,7 @@ namespace Dash
                 DataContextChanged += ContextChanged;
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                
+
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
                 var maxZ = parentCanvas.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg));
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
@@ -182,9 +182,7 @@ namespace Dash
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
-                ManipulationMode = right && (this.IsShiftPressed() || !ViewModel.Undecorated)
-                    ? ManipulationModes.All
-                    : ManipulationModes.None;
+                ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = true;
                 if (parentParentFreeform != null && !this.IsShiftPressed())
@@ -206,8 +204,7 @@ namespace Dash
 
                     ToggleQuickEntry();
                     args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                } else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
                 {
                     if (xKeyBox.FocusState != FocusState.Unfocused)
                     {
@@ -222,11 +219,11 @@ namespace Dash
             };
 
             ManipulationMode = ManipulationModes.All;
-            ManipulationStarted   += (s,e) => SelectionManager.InitiateDragDrop(this, null, e);
-            DragStarting          += (s,e) => SelectionManager.DragStarting(this, s, e);
-            DropCompleted         += (s,e) => SelectionManager.DropCompleted(this, s, e);
-            RightTapped           += (s,e) => e.Handled = TappedHandler(e.Handled);
-            Tapped                += (s,e) => e.Handled = TappedHandler(e.Handled);
+            ManipulationStarted += (s, e) => SelectionManager.InitiateDragDrop(this, null, e);
+            DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
+            DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
+            RightTapped += (s, e) => e.Handled = TappedHandler(e.Handled);
+            Tapped += (s, e) => e.Handled = TappedHandler(e.Handled);
 
             xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
             xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
@@ -255,7 +252,7 @@ namespace Dash
 
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
-            
+
             MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
@@ -299,8 +296,7 @@ namespace Dash
                 if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
                 {
                     e.Cancel = true;
-                }
-                else
+                } else
                 {
                     if (string.IsNullOrEmpty(e.NewText))
                     {
@@ -309,8 +305,7 @@ namespace Dash
                         xKeyBox.Focus(FocusState.Keyboard);
                     }
                 }
-            }
-            else
+            } else
             {
                 if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
             }
@@ -345,8 +340,7 @@ namespace Dash
                 ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                 //creates a doc controller for the image(s)
                 Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-            }
-            else
+            } else
             {
                 _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
                 ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
@@ -458,8 +452,7 @@ namespace Dash
             {
 
                 useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
-            }
-            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            } else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
             {
                 useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
             }
@@ -474,8 +467,7 @@ namespace Dash
                 diffY = proportional
                     ? aspect * diffX
                     : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
-            }
-            else
+            } else
             {
                 diffY = cursorYDirection * delta.Y;
                 diffX = proportional
@@ -570,8 +562,7 @@ namespace Dash
                 //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
                 //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
                 this.ViewModel.DocumentController.SetHidden(true);
-            }
-            else if (ParentCollection != null)
+            } else if (ParentCollection != null)
             {
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
@@ -851,7 +842,7 @@ namespace Dash
         }
 
         #endregion
-        
+
         public void This_Drop(object sender, DragEventArgs e)
         {
             if (this.ViewModel.IsAdornmentGroup)
@@ -861,18 +852,18 @@ namespace Dash
                 dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
             var dragModels = e.DataView.GetDragModels();
-            foreach (DragModelBase dragModel in dragModels)
+            foreach (var dragModel in dragModels)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.LinkSourceViews == null) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null) continue;
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
-                        dragDoc = creatorFunc(dm.LinkSourceViews[index]);
+                        dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
-                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.LinkType);
+                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
                     MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
@@ -904,8 +895,7 @@ namespace Dash
                         fields.Insert(0, newFieldDoc);
                     else fields.Add(newFieldDoc);
                     activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                }
-                else
+                } else
                 {
                     var listCtrl =
                         activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
@@ -913,8 +903,7 @@ namespace Dash
                         listCtrl.Insert(0, newFieldDoc);
                     else listCtrl.Add(newFieldDoc);
                 }
-            }
-            else
+            } else
             {
                 var curLayout = activeLayout;
                 if (ViewModel.DocumentController?.GetActiveLayout() != null
@@ -924,8 +913,7 @@ namespace Dash
                     curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
                     curLayout.SetWidth(double.NaN);
                     curLayout.SetHeight(double.NaN);
-                }
-                else // need to create a stackPanel activeLayout and add the document to it
+                } else // need to create a stackPanel activeLayout and add the document to it
                 {
                     curLayout =
                         activeLayout
@@ -1004,8 +992,7 @@ namespace Dash
             if (_flyout.IsInVisualTree())
             {
                 _flyout.Hide();
-            }
-            else
+            } else
             {
                 _flyout.ShowAt(this);
             }
@@ -1049,8 +1036,7 @@ namespace Dash
                 {
                     xKeyValueBorder.Width = 0;
                     Focus(FocusState.Programmatic);
-                }
-                else
+                } else
                 {
                     xKeyBox.Focus(FocusState.Programmatic);
                 }
@@ -1113,8 +1099,7 @@ namespace Dash
                 xValueBox.Text = "=" + xValueBox.Text;
                 xValueBox.SelectionStart = 1;
                 xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            }
-            else
+            } else
             {
                 xValueBox.SelectAll();
             }
@@ -1126,8 +1111,7 @@ namespace Dash
             {
                 xValueBox.SelectionStart = 1;
                 xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            }
-            else
+            } else
             {
                 xValueBox.SelectAll();
             }
@@ -1196,10 +1180,15 @@ namespace Dash
                 ViewModel.LayoutDocument.SetHidden(true);
             }
         }
-        
+
         public void SetLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
+        }
+
+        public void SetActivationMode(bool onoff)
+        {
+            this.xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void RemoveLinkBorderColor()
@@ -1210,6 +1199,11 @@ namespace Dash
         ~DocumentView()
         {
             //Debug.Write("dispose DocumentView");
+        }
+
+        private void xActivationMode_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            SetActivationMode(this.xActivationMode.Visibility == Visibility.Collapsed);
         }
     }
 }

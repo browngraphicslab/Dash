@@ -185,7 +185,7 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.AddDragModel(dragModel);
 
@@ -285,7 +285,7 @@ namespace Dash
 
             var note = new DishScriptBox(0, 0, 300, 400, script);
 
-            args.Data.AddDragModel(new DragDocumentModel(note.Document, true));
+            args.Data.AddDragModel(new DragDocumentModel(note.Document));
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;

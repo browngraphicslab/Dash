@@ -264,8 +264,6 @@ namespace Dash
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
-            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
 
            
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
@@ -273,11 +271,9 @@ namespace Dash
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews, true, off: offsets.ToList())
-            {
-                Offset = args.GetPosition(docView),
-                DraggedDocCollectionView = _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null? dv.ParentCollection:null).ToList()
-            });
+            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
+                _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null ? dv.ParentCollection : null).ToList(),
+                offsets.ToList(), args.GetPosition(docView)));
 
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
@@ -345,6 +341,8 @@ namespace Dash
                 MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }
             def.Complete();
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
         static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);

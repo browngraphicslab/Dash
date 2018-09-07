@@ -110,7 +110,7 @@ namespace Dash
         /// </summary>
         public void FitContents(CollectionView cview)
         {
-            if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
+            if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
                 var realPar = cview?.CurrentView?.UserControl;
                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
@@ -311,8 +311,6 @@ namespace Dash
 
                     ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                 }
-                if (ViewLevel.Equals(StandardViewLevel.Overview) || ViewLevel.Equals(StandardViewLevel.Region))
-                    UpdateViewLevel();
             }
         }
 
@@ -349,42 +347,7 @@ namespace Dash
         }
 
         #endregion
-
-        #region StandardView
-        public enum StandardViewLevel
-        {
-            None = 0,
-            Overview = 1,
-            Region = 2,
-            Detail = 3
-        }
-
-        private StandardViewLevel _viewLevel = StandardViewLevel.None;
-        public StandardViewLevel ViewLevel
-        {
-            get => _viewLevel;
-            set
-            {
-                SetProperty(ref _viewLevel, value);
-                UpdateViewLevel();
-            }
-        }
-        private double _prevScale = 1;
-        public double PrevScale
-        {
-            get => _prevScale;
-            set => SetProperty(ref _prevScale, value);
-        }
-        private void UpdateViewLevel()
-        {
-            foreach (var dvm in DocumentViewModels)
-            {
-                dvm.ViewLevel = ViewLevel;
-                dvm.DecorationState = false;
-            }
-        }
-        #endregion
-
+        
         #region DragAndDrop
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
@@ -731,9 +694,9 @@ namespace Dash
                 {
                     foreach (var d in dragDocModels)
                     {
-                        for (var i = 0; i < d.DraggedDocCollectionView?.Count; i++)
+                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (d.DraggedDocCollectionView[i]?.ViewModel == this)
+                            if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
                                 if (d.DraggedDocumentViews[i] != null) {
@@ -743,7 +706,7 @@ namespace Dash
                             else
                             {
                                 MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                d.DraggedDocCollectionView[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                                d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
                             }
                         }
                     }

@@ -37,11 +37,13 @@ namespace Dash
         private Color _color;
         private DocumentDecorations _docdecs;
         private ToolTip _tooltip;
+        private DocumentView _documentView;
 
-        public LinkButton(DocumentDecorations docdecs, Color color, String text, ToolTip tooltip)
+        public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, DocumentView documentView)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             _text = text;
+            _documentView = documentView;
             _docdecs = docdecs;
             _color = color;
             _tooltip = tooltip;
@@ -56,7 +58,7 @@ namespace Dash
                 doc.ManipulationMode = ManipulationModes.None;
             }
         }
-
+        
         private void LinkButton_PointerExited(object sender, PointerRoutedEventArgs args)
         {
             _tooltip.IsOpen = false;
@@ -74,46 +76,43 @@ namespace Dash
             {
                 _tooltip.IsOpen = false;
             }
-
-            var doq = ((sender as FrameworkElement).Tag as Tuple<DocumentView, string>).Item1;
-            if (doq != null)
+            
+            if (_documentView != null)
             {
-                new AnnotationManager(doq).FollowRegion(doq.ViewModel.DocumentController,
-                    doq.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(doq), _text);
+                new AnnotationManager(_documentView).FollowRegion(_documentView.ViewModel.DocumentController,
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
             }
         }
 
         private void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            _tooltip.IsOpen = false;
             e.Handled = true;
             _docdecs.CurrentLinks = _docdecs.TagMap[_text];
-            Tag tag = null;
 
             _docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
-
-            foreach (var child in _docdecs.XTagContainer.Children)
-            {
-                var actualchild = child as Tag;
-                if (actualchild.Text == _text)
+            if (_docdecs.CurrentLinks.Count == 1)
+                foreach (var actualchild in _docdecs.XTagContainer.Children.OfType<Tag>())
                 {
-                    actualchild.Select();
+                    if (actualchild.Text == _text)
+                    {
+                        actualchild.Select();
+                    } else
+                    {
+                        actualchild.Deselect();
+                    }
                 }
-                else
-                {
-                    actualchild.Deselect();
-                }
-            }
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            DocumentView doq = ((sender as FrameworkElement)?.Tag as Tuple<DocumentView, string>)?.Item1;
-            if (doq == null) return;
-
-            args.Data.AddDragModel(new DragDocumentModel(doq.ViewModel.DocumentController, false, doq) { LinkType = _text });
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            doq.ViewModel.DecorationState = false;
+            if (_documentView != null)
+            {
+                args.Data.AddDragModel(new DragDocumentModel(_documentView) { DraggedLinkType = _text, DraggingLinkButton = true });
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                _documentView.ViewModel.DecorationState = false;
+            }
         }
     }
 }

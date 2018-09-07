@@ -303,7 +303,7 @@ namespace Dash
             foreach (object m in args.Items)
             {
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel)?.Key);
-                args.Data.AddDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField, true) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
+                args.Data.AddDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;

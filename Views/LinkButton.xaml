@@ -8,23 +8,18 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    Background="Transparent"
     CanDrag="True" 
+    PointerExited="LinkButton_PointerExited" PointerEntered="LinkButton_PointerEntered"  PointerPressed="LinkButton_PointerPressed" 
+    DragStarting="LinkButton_DragStarting" Tapped="LinkButton_Tapped" RightTapped="LinkButton_RightTapped"
     Width="22" 
-    Height="22"
-    PointerExited="LinkButton_PointerExited" PointerEntered="LinkButton_PointerEntered"  PointerPressed="LinkButton_PointerPressed" DragStarting="LinkButton_DragStarting" Tapped="LinkButton_Tapped" RightTapped="LinkButton_RightTapped">
+    Height="22">
 
     <Grid Background="Transparent"
-          CanDrag="True" 
           Width="22" 
           Height="22">
-        <Ellipse x:Name="xEllipse" Width="22" Height="22" CanDrag="True" HorizontalAlignment="Center">
+        <Ellipse x:Name="xEllipse" Width="22" Height="22" CanDrag="True" HorizontalAlignment="Center" />
 
-        </Ellipse>
-
-        <TextBlock x:Name="xLinkType" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White">
-
-        </TextBlock>
+        <TextBlock x:Name="xLinkType" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" />
 
     </Grid>
 </UserControl>

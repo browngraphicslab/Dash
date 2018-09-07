@@ -124,8 +124,7 @@ namespace Dash
             {
                 var storedPath = settingsView.CustomImagePath;
                 if (storedPath != null) _background = storedPath;
-            }
-            else
+            } else
             {
                 _background = settingsView.EnumToPathDict[settingsView.ImageState];
             }
@@ -482,8 +481,7 @@ namespace Dash
             {
                 // If the image failed to load in time, simply display a blank white background
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
-            }
-            else
+            } else
             {
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
                 _bgBrush.Image = _bgImage;
@@ -507,13 +505,11 @@ namespace Dash
             {
                 // As _background task was set to LoadBackgroundAsync, should have already completed. Wait will be moot. 
                 _backgroundTask.Wait();
-            }
-            catch (AggregateException ae)
+            } catch (AggregateException ae)
             {
                 // Catch any task-related errors along the way
                 ae.Handle(ex => throw ex);
-            }
-            finally
+            } finally
             {
                 // _backgroundTask will be set to null, so that CreateResourcesAsync won't be concerned with phantom existing tasks
                 _backgroundTask = null;
@@ -646,8 +642,7 @@ namespace Dash
             if (args.ChosenSuggestion != null)
             {
                 TagKey = (KeyController)args.ChosenSuggestion;
-            }
-            else
+            } else
             {
                 var keys = ContentController<FieldModel>.GetControllers<KeyController>();
                 var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
@@ -655,8 +650,7 @@ namespace Dash
                 if (key == null)
                 {
                     TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
-                }
-                else
+                } else
                 {
                     TagKey = key;
                 }
@@ -873,8 +867,7 @@ namespace Dash
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                     OnPointerReleased(null, null);
-                }
-                else
+                } else
                 {
                     var bounds = GetBoundingRectFromSelection();
 
@@ -902,78 +895,77 @@ namespace Dash
             {
                 switch (modifier)
                 {
-                    //create a viewcopy of everything selected
-                    case VirtualKey.A:
-                        DoAction((dvs, where, size) =>
+                //create a viewcopy of everything selected
+                case VirtualKey.A:
+                    DoAction((dvs, where, size) =>
+                    {
+                        var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                        ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
+                    });
+                    deselect = true;
+                    break;
+                case VirtualKey.T:
+                    type = CollectionView.CollectionViewType.Schema;
+                    goto case VirtualKey.C;
+                case VirtualKey.C:
+                    DoAction((views, where, size) =>
                         {
-                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
-                        });
-                        deselect = true;
-                        break;
-                    case VirtualKey.T:
-                        type = CollectionView.CollectionViewType.Schema;
-                        goto case VirtualKey.C;
-                    case VirtualKey.C:
-                        DoAction((views, where, size) =>
-                            {
-                                var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                                DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
-                                ViewModel.AddDocument(newCollection);
+                            var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                            DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            ViewModel.AddDocument(newCollection);
 
-                                foreach (DocumentView v in views)
-                                {
-                                    v.ViewModel.LayoutDocument.IsMovingCollections = true;
-                                    v.DeleteDocument();
-                                }
-                            });
-                        deselect = true;
-                        break;
-                    case VirtualKey.Back:
-                    case VirtualKey.Delete:
-                        DoAction((views, where, size) =>
-                        {
                             foreach (DocumentView v in views)
                             {
+                                v.ViewModel.LayoutDocument.IsMovingCollections = true;
                                 v.DeleteDocument();
                             }
                         });
+                    deselect = true;
+                    break;
+                case VirtualKey.Back:
+                case VirtualKey.Delete:
+                    DoAction((views, where, size) =>
+                    {
+                        foreach (DocumentView v in views)
+                        {
+                            v.DeleteDocument();
+                        }
+                    });
 
-                        deselect = true;
-                        break;
-                    case VirtualKey.G:
-                        DoAction((views, where, size) =>
+                    deselect = true;
+                    break;
+                case VirtualKey.G:
+                    DoAction((views, where, size) =>
+                    {
+                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height));
+                    });
+                    deselect = true;
+                    break;
+                case VirtualKey.R:
+                    DoAction((views, where, size) =>
+                    {
+                        if (size.Width >= 215 && size.Height >= 200)
                         {
-                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height));
-                        });
-                        deselect = true;
-                        break;
-                    case VirtualKey.R:
-                        DoAction((views, where, size) =>
-                        {
-                            if (size.Width >= 215 && size.Height >= 200)
-                            {
-                                ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
-                            }
-                        });
-                        deselect = true;
-                        break;
+                            ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
+                        }
+                    });
+                    deselect = true;
+                    break;
                 }
-            }
-            else if (this.IsShiftPressed())
+            } else if (this.IsShiftPressed())
             {
                 switch (modifier)
                 {
-                    case VirtualKey.R:
-                        DoAction((views, where, size) =>
+                case VirtualKey.R:
+                    DoAction((views, where, size) =>
+                    {
+                        if (size.Width >= 215 && size.Height >= 200)
                         {
-                            if (size.Width >= 215 && size.Height >= 200)
-                            {
-                                ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
-                            }
-                        });
-                        deselect = true;
-                        break;
+                            ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
+                        }
+                    });
+                    deselect = true;
+                    break;
                 }
             }
 
@@ -996,14 +988,11 @@ namespace Dash
 
         protected void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+            //if (XInkCanvas.IsTopmost())
             {
-                //if (XInkCanvas.IsTopmost())
-                {
-                    _isMarqueeActive = false;
-                    if (!this.IsShiftPressed())
-                        RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
-                }
+                _isMarqueeActive = false;
+                if (!this.IsShiftPressed())
+                    RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
             foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
                 rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
@@ -1147,8 +1136,7 @@ namespace Dash
 
                             previewTextbox.Visibility = Visibility.Collapsed;
                         }
-                    }
-                    else
+                    } else
                     {
                         LoadNewActiveTextBox("", where);
                     }
@@ -1183,8 +1171,7 @@ namespace Dash
                     {
                         var postitNote = new MarkdownNote(text: text).Document;
                         Actions.DisplayDocument(ViewModel, postitNote, where);
-                    }
-                    else
+                    } else
                     {
                         var postitNote = new RichTextNote(text: text).Document;
                         Actions.DisplayDocument(ViewModel, postitNote, where);
@@ -1195,16 +1182,13 @@ namespace Dash
                         {
                             foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
                             {
-                                //make this rich text an annotation for activated  doc
-                                if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
-                                    .DocumentType))
+                                if (KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
                                 {
-                                    var region =
-                                        KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](
-                                            activated,
-                                            Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
+                                    //make this rich text an annotation for activated  doc
+                                    var region = func( activated,
+                                                       Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
 
-                                    //link region to this text 
+                                    //link region to this text  
                                     region.Link(postitNote, LinkBehavior.Annotate);
                                 }
                             }
@@ -1258,8 +1242,7 @@ namespace Dash
                 if ((!shiftState && !capState) || (shiftState && capState))
                 {
                     character = key.ToString().ToLower();
-                }
-                else
+                } else
                 {
                     character = key.ToString();
                 }
@@ -1274,17 +1257,17 @@ namespace Dash
                 {
                     switch ((virtualKeyCode - 48))
                     {
-                        case 1: character = "!"; break;
-                        case 2: character = "@"; break;
-                        case 3: character = "#"; break;
-                        case 4: character = "$"; break;
-                        case 5: character = "%"; break;
-                        case 6: character = "^"; break;
-                        case 7: character = "&"; break;
-                        case 8: character = "*"; break;
-                        case 9: character = "("; break;
-                        case 0: character = ")"; break;
-                        default: break;
+                    case 1: character = "!"; break;
+                    case 2: character = "@"; break;
+                    case 3: character = "#"; break;
+                    case 4: character = "$"; break;
+                    case 5: character = "%"; break;
+                    case 6: character = "^"; break;
+                    case 7: character = "&"; break;
+                    case 8: character = "*"; break;
+                    case 9: character = "("; break;
+                    case 0: character = ")"; break;
+                    default: break;
                     }
                 }
             }
@@ -1295,17 +1278,17 @@ namespace Dash
                     (!shiftState || !capState));
                 switch (virtualKeyCode)
                 {
-                    case 186: character = shifted ? ":" : ";"; break;
-                    case 187: character = shifted ? "=" : "+"; break;
-                    case 188: character = shifted ? "<" : ","; break;
-                    case 189: character = shifted ? "_" : "-"; break;
-                    case 190: character = shifted ? ">" : "."; break;
-                    case 191: character = shifted ? "?" : "/"; break;
-                    case 192: character = shifted ? "~" : "`"; break;
-                    case 219: character = shifted ? "{" : "["; break;
-                    case 220: character = shifted ? "|" : "\\"; break;
-                    case 221: character = shifted ? "}" : "]"; break;
-                    case 222: character = shifted ? "\"" : "'"; break;
+                case 186: character = shifted ? ":" : ";"; break;
+                case 187: character = shifted ? "=" : "+"; break;
+                case 188: character = shifted ? "<" : ","; break;
+                case 189: character = shifted ? "_" : "-"; break;
+                case 190: character = shifted ? ">" : "."; break;
+                case 191: character = shifted ? "?" : "/"; break;
+                case 192: character = shifted ? "~" : "`"; break;
+                case 219: character = shifted ? "{" : "["; break;
+                case 220: character = shifted ? "|" : "\\"; break;
+                case 221: character = shifted ? "}" : "]"; break;
+                case 222: character = shifted ? "\"" : "'"; break;
                 }
 
             }

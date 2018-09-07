@@ -17,21 +17,18 @@ namespace Dash
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
         // == MEMBERS, GETTERS, SETTERS ==
-        DocumentController _lastLayout = null;
-        TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
-        bool _showLocalContext;
-        bool _decorationState = false;
-        public bool _isDeletedTemplate;
-        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
-        Thickness _searchHighlightState = new Thickness(0);
-        FrameworkElement _content = null;
+        private DocumentController _lastLayout = null;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
+        private bool               _showLocalContext;
+        private bool               _decorationState = false;
+        private Thickness          _searchHighlightState = new Thickness(0);
+        private FrameworkElement   _content = null;
 
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
             _lastLayout = LayoutDocument;
-            _isDeletedTemplate = false;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
             IsSearchHighlighted = false;
@@ -161,11 +158,6 @@ namespace Dash
             set => SetProperty(ref _searchHighlightBrush, value);
         }
 
-        public CollectionViewModel.StandardViewLevel ViewLevel
-        {
-            get => _standardViewLevel;
-            set => SetProperty(ref _standardViewLevel, value);
-        }
 
         public async void ExpandBorder()
         {
