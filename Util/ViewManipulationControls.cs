@@ -34,11 +34,7 @@ namespace Dash
         public double ElementScale
         {
             get => _elementScale;
-            set
-            {
-                _elementScale = value;
-                _freeformView.ViewModel.PrevScale = value;
-            }
+            set =>_elementScale = value;
         }
 
         public PointerDeviceType BlockedInputType { get; set; }
@@ -46,8 +42,6 @@ namespace Dash
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
-
-        public static DocumentDecorations currentDocDec;
 
         private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn == SettingsView.MouseFuncMode.Scroll; 
 
@@ -111,12 +105,6 @@ namespace Dash
             {
                 _processManipulation = true;
                 e.Handled = true;
-
-                //make red selection border no longer visible
-                if (currentDocDec != null)
-                {
-                    currentDocDec.VisibilityState = Visibility.Collapsed;
-                }
             }
         }
         /// <summary>

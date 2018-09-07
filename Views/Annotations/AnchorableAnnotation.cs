@@ -125,15 +125,16 @@ namespace Dash
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(this);
                     ParentOverlay.RegionDocsList.Remove(RegionDocumentController);
                 }
-                SelectRegionFromParent(ViewModel, args.GetPosition(this));
+                else SelectRegionFromParent(ViewModel, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip { Placement = mode };
+            var tip = new ToolTip { Placement = mode  };
             ToolTipService.SetToolTip(shape, tip);
+            tip.IsHitTestVisible = false;
             shape.PointerExited += (s, e) => tip.IsOpen = false;
             shape.PointerEntered += (s, e) =>
             {

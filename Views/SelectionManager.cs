@@ -224,20 +224,20 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
-        public static void InitiateDragDrop(DocumentView draggedDoc, PointerPoint p, ManipulationStartedRoutedEventArgs e)
+        public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null)
             {
                 e.Handled = true;
                 e.Complete();
             }
+            _dragViews = SelectionManager.GetSelectedDocs().Contains(draggedView) ? SelectionManager.GetSelectedDocs().ToList() : new List<DocumentView>(new DocumentView[] { draggedView });
 
-            if (draggedDoc.ViewModel.DocumentController.GetIsAdornment())
+            if (draggedView.ViewModel.DocumentController.GetIsAdornment())
             {
-                var rect = new Rect(draggedDoc.ViewModel.XPos, draggedDoc.ViewModel.YPos,
-                    draggedDoc.ViewModel.ActualSize.X, draggedDoc.ViewModel.ActualSize.Y);
-                var docs = new List<DocumentView>();
-                foreach (var cp in draggedDoc.GetFirstAncestorOfType<Canvas>()?.Children)
+                var rect = new Rect(draggedView.ViewModel.XPos, draggedView.ViewModel.YPos,
+                    draggedView.ViewModel.ActualSize.X, draggedView.ViewModel.ActualSize.Y);
+                foreach (var cp in draggedView.GetFirstAncestorOfType<Canvas>()?.Children)
                 {
                     if (cp.GetFirstDescendantOfType<DocumentView>() != null)
                     {
@@ -246,14 +246,12 @@ namespace Dash
                             dv.ViewModel.ActualSize.Y);
                         if (rect.Intersects(dvmRect))
                         {
-                            docs.Add(dv);
+                            _dragViews.Add(dv);
                         }
                     }
                 }
-
-                SelectDocuments(docs, false);
             }
-            draggedDoc.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedDoc));
+            draggedView.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
@@ -266,20 +264,16 @@ namespace Dash
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
-            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
 
-            _dragViews = SelectionManager.GetSelectedDocs().Contains(docView) ? SelectionManager.GetSelectedDocs().ToList() : new List<DocumentView>(new DocumentView[] { docView });
+           
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews, true, off: offsets.ToList())
-            {
-                Offset = args.GetPosition(docView),
-                DraggedDocCollectionView = _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null? dv.ParentCollection:null).ToList()
-            });
+            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
+                _dragViews.Select(dv => dv.GetFirstAncestorOfType<NewAnnotationOverlay>() == null ? dv.ParentCollection : null).ToList(),
+                offsets.ToList(), args.GetPosition(docView)));
 
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
@@ -315,7 +309,7 @@ namespace Dash
                 var transformToVisual = doc.TransformToVisual(Window.Current.Content);
                 var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
                 s = new Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)Math.Ceiling(s.X), (int)Math.Ceiling(s.Y));
+                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
                 var buf = await rtb.GetPixelsAsync();
                 var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                 var miniSBitmap = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
@@ -347,6 +341,8 @@ namespace Dash
                 MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }
             def.Complete();
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
         static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);

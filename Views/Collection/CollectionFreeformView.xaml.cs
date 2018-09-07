@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graphics.Canvas.UI.Xaml;
 using System.Diagnostics;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
@@ -31,14 +32,6 @@ namespace Dash
 
         private void OnLoad(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.PrevScale != 0)
-                ViewManipulationControls.ElementScale = ViewModel.PrevScale;
-            ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            if (this.GetFirstAncestorOfType<DocumentView>() != null)
-            {
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            }
         }
 
         public override Panel GetCanvas()
@@ -86,6 +79,18 @@ namespace Dash
         public override Canvas GetInkHostCanvas()
         {
             return InkHostCanvas;
-        }                
+        }
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
+        }
     }
 }

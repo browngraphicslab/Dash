@@ -148,12 +148,12 @@ namespace Dash
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
         }
 
 		protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+			//Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
 		}
 
 		protected void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -990,14 +990,11 @@ namespace Dash
 
 		protected void OnTapped(object sender, TappedRoutedEventArgs e)
 		{
-			if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//if (XInkCanvas.IsTopmost())
 			{
-				//if (XInkCanvas.IsTopmost())
-				{
-					_isMarqueeActive = false;
-					if (!this.IsShiftPressed())
-						RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
-				}
+				_isMarqueeActive = false;
+				if (!this.IsShiftPressed())
+					RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
 			}
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
@@ -1189,16 +1186,14 @@ namespace Dash
 						{
 							foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
 							{
-								//make this rich text an annotation for activated  doc
-								if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
-									.DocumentType))
+                                KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func);
+                                //make this rich text an annotation for activated  doc
+                                if (func != null)
 								{
-									var region =
-										KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](
-											activated,
-											Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
+									var region = func( activated,
+											           Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
 
-									//link region to this text 
+									//link region to this text  
 									region.Link(postitNote, LinkBehavior.Annotate);
 								}
 							}

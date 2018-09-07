@@ -64,43 +64,43 @@
             <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-            <Grid x:Name="xAnnotationButtonsStack" Grid.Column="1" Height="Auto" Background="#108bbbe5" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="26"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
-                    PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
-                    DragStarting="XAnnotateEllipseBorder_OnDragStarting" RightTapped="XAnnotateEllipseBorder_OnRightTapped">
-                <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
-                <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
-                <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
-                </ToolTipService.ToolTip>
-            </Grid>
-
-            <StackPanel x:Name="xButtonsPanel"  VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-
-            <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
-                <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
-                    PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
-                HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
-                    <Grid HorizontalAlignment="Left">
-                        <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight" />
-                        <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"
-                     Visibility="Collapsed"/>
-                        <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
-
+            <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
+                <Grid x:Name="xAnnotationButtonsStack" Background="#108bbbe5" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
+                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
+                            DragStarting="XAnnotateEllipseBorder_OnDragStarting" RightTapped="XAnnotateEllipseBorder_OnRightTapped">
+                        <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
+                        <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
+                        <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
-                       />
+                            <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
                         </ToolTipService.ToolTip>
-
                     </Grid>
-                </Border>
-            </Grid>
-        </Grid>
+                    <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
+                    <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
+                        <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
+                            PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
+                            <Grid HorizontalAlignment="Left">
+                                <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight" />
+                                <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"
+                             Visibility="Collapsed"/>
+                                <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
+
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
+                               />
+                                </ToolTipService.ToolTip>
+
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Canvas>
 
         <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="2" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">
 
