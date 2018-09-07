@@ -131,7 +131,7 @@ namespace Dash
 	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
 	        if (linkOperator?.Data ?? false)
 	        {
-	            MainPage.Instance.AddFloatingDoc(link);
+	            MainPage.Instance.ToggleFloatingDoc(link);
             }
             
             var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;

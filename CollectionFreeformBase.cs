@@ -154,12 +154,12 @@ namespace Dash
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
         }
 
         protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
 
         protected void OnSizeChanged(object sender, SizeChangedEventArgs e)

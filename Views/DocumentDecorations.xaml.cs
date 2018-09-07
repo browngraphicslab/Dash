@@ -563,58 +563,20 @@ namespace Dash
             var doc = sender as DocumentView;
             if (doc.ViewModel != null)
             {
-                if ((doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                     doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) &&
-                    doc.ViewModel != null &&
-                    !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed &&
-                    !e.GetCurrentPoint(doc).Properties.IsRightButtonPressed)
-                {
-                    VisibilityState = Visibility.Visible;
-                }
-
+                VisibilityState = Visibility.Visible;
                 MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
-            }
-
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            if (VisualTreeHelper.GetParent(doc) is SplitFrame && doc.ViewModel != null)
-            {
-                var level = doc.ViewModel.ViewLevel;
-                if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-                    level.Equals(CollectionViewModel.StandardViewLevel.Region))
-                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-                else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
             }
         }
 
         private void SelectedDocView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) ||
-                doc.StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-            {
-                if (e == null ||
-                    (!e.GetCurrentPoint(doc).Properties.IsRightButtonPressed &&
-                     !e.GetCurrentPoint(doc).Properties.IsLeftButtonPressed) && doc.ViewModel != null)
-                    VisibilityState = Visibility.Collapsed;
-                //xAddLinkTypeBorder.Visibility = Visibility.Collapsed;
-                SuggestGrid.Visibility = Visibility.Collapsed;
-            }
+            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
+                VisibilityState = Visibility.Collapsed;
+            SuggestGrid.Visibility = Visibility.Collapsed;
 
             if (doc.ViewModel != null)
-            {
                 MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
-                //tfs - this was the equivalent of !(VisualTreeHelper.GetParent(doc) is SplitFrame), but I think that was wrong
-                if (doc.IsTopLevel())
-                {
-                    var viewlevel = doc.ViewModel.ViewLevel;
-                    if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) ||
-                        viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
-                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
-                    else if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
-                }
-            }
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -192,6 +193,17 @@ namespace Dash
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));
             
             return YPos;
+        }
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
         }
     }
 }

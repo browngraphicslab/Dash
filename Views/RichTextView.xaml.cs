@@ -426,8 +426,6 @@ namespace Dash
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
-            if (this.xRichEditBox == sender)
-                return;
             if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
                 if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(xRichEditBox.Document.Selection.Text))
@@ -435,11 +433,6 @@ namespace Dash
                     e.Handled = false;
                     return;
                 }
-
-                //if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                //{
-                //    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
-                //}
 
                 var dropRegion = dragDoc;
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)

@@ -91,7 +91,6 @@ namespace Dash
                 }
                 web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
             };
-            
 
             web.LoadCompleted += Web_LoadCompleted;
 

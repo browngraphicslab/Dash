@@ -132,8 +132,9 @@ namespace Dash
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip { Placement = mode };
+            var tip = new ToolTip { Placement = mode  };
             ToolTipService.SetToolTip(shape, tip);
+            tip.IsHitTestVisible = false;
             shape.PointerExited += (s, e) => tip.IsOpen = false;
             shape.PointerEntered += (s, e) =>
             {

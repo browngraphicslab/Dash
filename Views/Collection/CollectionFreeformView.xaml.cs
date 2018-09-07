@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graphics.Canvas.UI.Xaml;
 using System.Diagnostics;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
@@ -86,6 +87,18 @@ namespace Dash
         public override Canvas GetInkHostCanvas()
         {
             return InkHostCanvas;
-        }                
+        }
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
+        }
     }
 }

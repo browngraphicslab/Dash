@@ -78,7 +78,7 @@ namespace Dash
 
         private DocumentController RegionGetter(AnnotationType type)
         {
-            return new RichTextNote().Document;
+            return new RichTextNote("Image Region").Document;
             return new ImageNote(_imgctrl.ImageSource).Document;
         }
 
