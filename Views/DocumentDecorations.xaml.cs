@@ -427,15 +427,13 @@ namespace Dash
         {
             xButtonsPanel.Children.Clear();
             //check each relevant tag name & create the tag graphic & button for it
-            foreach (var name in TagMap.Keys)
+            foreach (var name in TagMap.Keys.Where((k) => k != null))
             {
-                if (name != "")
-                {
                     //adds the tag box & link button that connects the name of the tag to all link docs included in the list
-                    AddLinkTypeButton(name);
-                    AddTag(name, TagMap[name]);
-                }
+                AddLinkTypeButton(name);
+                AddTag(name, TagMap[name]);
             }
+            xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
         }
 
         private Dictionary<string, List<DocumentController>> UpdateTags()
