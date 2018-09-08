@@ -156,6 +156,7 @@ namespace Dash
                             XContentGrid.Children.Add(splitter);
                             XContentGrid.Children.Add(newManager);
                         }
+
                     }
 
                     break;
@@ -283,8 +284,28 @@ namespace Dash
             }
         }
 
+        public void DeleteFrame(SplitManager childManager)
+        {
+            if (!XContentGrid.Children.Contains(childManager))
+            {
+                return;
+            }
+
+            if (CurSplitMode == SplitMode.Horizontal)
+            {
+                int index = Grid.GetColumn(childManager);
+                DeleteFrame(index);
+            }
+            else if (CurSplitMode == SplitMode.Vertical)
+            {
+                int index = Grid.GetRow(childManager);
+                DeleteFrame(index);
+            }
+        }
+
         public void DeleteFrame(int index)
         {
+            bool updateActiveFrame = false;
             if (CurSplitMode == SplitMode.Horizontal)
             {
                 var splitterIndex = index == XContentGrid.ColumnDefinitions.Count - 1 ? index - 1 : index + 1;
@@ -295,6 +316,7 @@ namespace Dash
                 }).ToList();
                 foreach (var uiElement in eles)
                 {
+                    updateActiveFrame |= uiElement is SplitManager sm && sm.GetChildFrames().Contains(SplitFrame.ActiveFrame);
                     XContentGrid.Children.Remove(uiElement);
                 }
 
@@ -308,6 +330,7 @@ namespace Dash
                     XContentGrid.ColumnDefinitions.RemoveAt(index + 1);
                     XContentGrid.ColumnDefinitions.RemoveAt(index);
                 }
+                UpdateCols(-2, index);
             }
             else if (CurSplitMode == SplitMode.Vertical)
             {
@@ -319,6 +342,7 @@ namespace Dash
                 }).ToList();
                 foreach (var uiElement in eles)
                 {
+                    updateActiveFrame |= uiElement is SplitManager sm && sm.GetChildFrames().Contains(SplitFrame.ActiveFrame);
                     XContentGrid.Children.Remove(uiElement);
                 }
 
@@ -332,6 +356,12 @@ namespace Dash
                     XContentGrid.RowDefinitions.RemoveAt(index + 1);
                     XContentGrid.RowDefinitions.RemoveAt(index);
                 }
+                UpdateRows(-2, index);
+            }
+
+            if (updateActiveFrame)
+            {
+                SplitFrame.ActiveFrame = GetChildFrames().First();
             }
 
             //If there is only one child left after removing one, unwrap is from the SplitManager that it is in

@@ -276,7 +276,7 @@ namespace Dash
 
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(SplitFrame.ActiveFrame).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
                 topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);

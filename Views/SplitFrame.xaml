@@ -16,8 +16,7 @@
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopRightOnManipulationStarted"
                  ManipulationDelta="TopRightOnManipulationDelta"
-                 ManipulationCompleted="OnManipulationCompleted"
-                 Tapped="XTopRightResizer_OnTapped"/>
+                 ManipulationCompleted="OnManipulationCompleted"/>
         <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                  Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"

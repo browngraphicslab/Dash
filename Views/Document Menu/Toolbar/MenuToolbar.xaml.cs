@@ -1095,5 +1095,20 @@ namespace Dash
         {
            MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
         }
+
+        private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Left, SplitFrame.ActiveFrame.DocumentController, true);
+        }
+
+        private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Down, SplitFrame.ActiveFrame.DocumentController, true);
+        }
+
+        private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.Delete();
+        }
     }
 }

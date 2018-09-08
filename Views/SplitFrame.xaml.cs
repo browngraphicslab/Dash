@@ -140,10 +140,9 @@ namespace Dash
             }
 
             //XDocView.RemoveResizeHandlers();
-            XTopRightResizer.Tapped += (sender, args) => SplitCompleted?.Invoke(this);
         }
 
-        private void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
+        public void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
             splitDoc = splitDoc.GetViewCopy();
             splitDoc.SetWidth(double.NaN);
@@ -154,6 +153,11 @@ namespace Dash
                 {
                     break;
                 }
+            }
+
+            if (autoSize)
+            {
+                SplitCompleted?.Invoke(this);
             }
 
             CurrentSplitMode = (direction == SplitDirection.Left || direction == SplitDirection.Right) ? SplitMode.HorizontalSplit : SplitMode.VerticalSplit;
@@ -323,27 +327,12 @@ namespace Dash
         {
             var parent = this.GetFirstAncestorOfType<SplitManager>();
             var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-            if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
-            {
-                int index = Grid.GetColumn(parent);
-                splitManager.DeleteFrame(index);
-            }
-            else if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
-            {
-                int index = Grid.GetColumn(parent);
-                splitManager.DeleteFrame(index);
-            }
+            splitManager?.DeleteFrame(parent);
         }
 
         private void XDocView_DocumentSelected(DocumentView obj)
         {
             ActiveFrame = this;
-        }
-
-        private void XTopRightResizer_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            Grid.Children.Remove(XDocView);
-            Grid.Children.Add(XDocView);
         }
 
         private SolidColorBrush Yellow = new SolidColorBrush(Color.FromArgb(127, 255, 215, 0));
@@ -389,7 +378,6 @@ namespace Dash
                     collectedDocuments: docs).Document;
             }
             TrySplit(dir, doc, true);
-            SplitCompleted?.Invoke(this);
         }
 
         private async void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
