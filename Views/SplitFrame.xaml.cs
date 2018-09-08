@@ -42,7 +42,8 @@ namespace Dash
             if (frames.Count == 0)
             {
                 ActiveFrame.TrySplit(SplitDirection.Right, doc, true);
-            } else
+            }
+            else
             {
                 var frame = frames[0];
                 var area = frame.ActualWidth * frame.ActualHeight;
@@ -75,6 +76,21 @@ namespace Dash
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
+        }
+
+        public static SplitFrame GetFrameWithDoc(DocumentController doc, bool matchDataDoc)
+        {
+            if (matchDataDoc)
+            {
+                var dataDoc = doc.GetDataDocument();
+                return MainPage.Instance.MainSplitter.GetChildFrames()
+                    .FirstOrDefault(sf => sf.ViewModel.DataDocument.Equals(dataDoc));
+            }
+            else
+            {
+                return MainPage.Instance.MainSplitter.GetChildFrames()
+                    .FirstOrDefault(sf => sf.ViewModel.LayoutDocument.Equals(doc));
+            }
         }
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
@@ -245,62 +261,78 @@ namespace Dash
         {
             switch (CurrentSplitMode)
             {
-                case SplitMode.VerticalSplit:
-                case SplitMode.HorizontalSplit:
-                    SplitCompleted?.Invoke(this);
+            case SplitMode.VerticalSplit:
+            case SplitMode.HorizontalSplit:
+                SplitCompleted?.Invoke(this);
+                break;
+            case SplitMode.VerticalCollapsePrevious:
+                {
+                    var parent = this.GetFirstAncestorOfType<SplitManager>();
+                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
+                    {
+                        int index = Grid.GetRow(parent);
+                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index - 2 : index);
+                    }
+
                     break;
-                case SplitMode.VerticalCollapsePrevious:
+                }
+            case SplitMode.HorizontalCollapsePrevious:
+                {
+                    var parent = this.GetFirstAncestorOfType<SplitManager>();
+                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
                     {
-                        var parent = this.GetFirstAncestorOfType<SplitManager>();
-                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
-                        {
-                            int index = Grid.GetRow(parent);
-                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index - 2 : index);
-                        }
-
-                        break;
+                        int index = Grid.GetColumn(parent);
+                        splitManager.DeleteFrame(e.Cumulative.Translation.X < 0 ? index - 2 : index);
                     }
-                case SplitMode.HorizontalCollapsePrevious:
+
+                    break;
+                }
+            case SplitMode.VerticalCollapseNext:
+                {
+                    var parent = this.GetFirstAncestorOfType<SplitManager>();
+                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
                     {
-                        var parent = this.GetFirstAncestorOfType<SplitManager>();
-                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
-                        {
-                            int index = Grid.GetColumn(parent);
-                            splitManager.DeleteFrame(e.Cumulative.Translation.X < 0 ? index - 2 : index);
-                        }
-
-                        break;
+                        int index = Grid.GetRow(parent);
+                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
                     }
-                case SplitMode.VerticalCollapseNext:
+
+                    break;
+                }
+            case SplitMode.HorizontalCollapseNext:
+                {
+                    var parent = this.GetFirstAncestorOfType<SplitManager>();
+                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
                     {
-                        var parent = this.GetFirstAncestorOfType<SplitManager>();
-                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
-                        {
-                            int index = Grid.GetRow(parent);
-                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
-                        }
-
-                        break;
+                        int index = Grid.GetColumn(parent);
+                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
                     }
-                case SplitMode.HorizontalCollapseNext:
-                    {
-                        var parent = this.GetFirstAncestorOfType<SplitManager>();
-                        var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                        if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
-                        {
-                            int index = Grid.GetColumn(parent);
-                            splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
-                        }
 
-                        break;
-                    }
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    break;
+                }
+            default:
+                throw new ArgumentOutOfRangeException();
             }
             CurrentSplitMode = SplitMode.None;
+        }
+
+        public void Delete()
+        {
+            var parent = this.GetFirstAncestorOfType<SplitManager>();
+            var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
+            if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
+            {
+                int index = Grid.GetColumn(parent);
+                splitManager.DeleteFrame(index);
+            }
+            else if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
+            {
+                int index = Grid.GetColumn(parent);
+                splitManager.DeleteFrame(index);
+            }
         }
 
         private void XDocView_DocumentSelected(DocumentView obj)

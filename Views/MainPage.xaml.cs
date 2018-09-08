@@ -54,7 +54,7 @@ namespace Dash
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-		
+
         public PresentationViewState CurrPresViewState
         {
             get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
@@ -83,7 +83,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
-            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => PointerRoutedArgsHack = e), true); 
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
@@ -111,11 +111,11 @@ namespace Dash
             {
                 double newHeight = e.Size.Height;
                 double newWidth = e.Size.Width;
-	            if (ActivePopup != null)
-	            {
-		            ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-		            ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
-				}
+                if (ActivePopup != null)
+                {
+                    ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+                    ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                }
             };
 
             xToolbar.SetValue(Canvas.ZIndexProperty, 20);
@@ -508,7 +508,7 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, 
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection,
             DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
@@ -543,8 +543,8 @@ namespace Dash
 
                     //get zoom changes
                     var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
-                    
-                   //get less zoom, so x and y are zoomed by same amt
+
+                    //get less zoom, so x and y are zoomed by same amt
                     var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
                     if (!zoom)
                     {
@@ -556,7 +556,7 @@ namespace Dash
                         //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
                         root.SetTransformAnimated(
                             new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
-                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom } 
+                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom }
                         );
                     }
                     else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
@@ -569,25 +569,6 @@ namespace Dash
                 }
             }
             return false;
-        }
-
-        public Point GetDistanceFromMainDocCenter(DocumentController dc)
-        {
-            //TODO Splitting this should be more sophisticated logic 
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-
-            var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-            var center = new Point((SplitFrame.ActiveFrame.ActualWidth - xMainTreeView.ActualWidth) / 2, SplitFrame.ActiveFrame.ActualHeight / 2);
-            var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
-            var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
-            var shift = canvas.TransformToVisual(SplitFrame.ActiveFrame).TransformPoint(new Point(
-                dcPoint.X + dcSize.X / 2,
-                dcPoint.Y + dcSize.Y / 2
-            ));
-
-            Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
-            return new Point(center.X - shift.X, center.Y - shift.Y);
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -649,32 +630,32 @@ namespace Dash
                 }
             }
 
-			//deactivate all docs if esc was pressed
-	        if (e.VirtualKey == VirtualKey.Escape )
-	        {
-		        using (UndoManager.GetBatchHandle())
-		        {
-			        LinkActivationManager.DeactivateAll();
-				}
-				
-	        }
+            //deactivate all docs if esc was pressed
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    LinkActivationManager.DeactivateAll();
+                }
 
-	        //activateall selected docs
-	        if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
-	        {
-		        var selected = SelectionManager.GetSelectedDocs();
-		        if (selected.Count > 0)
-		        {
-			        using (UndoManager.GetBatchHandle())
-			        {
-						foreach (var doc in SelectionManager.GetSelectedDocs())
-					        {
-						        LinkActivationManager.ActivateDoc(doc);
-					        }
-						}
-				        
-			        }
-			}
+            }
+
+            //activateall selected docs
+            if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
+            {
+                var selected = SelectionManager.GetSelectedDocs();
+                if (selected.Count > 0)
+                {
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        foreach (var doc in SelectionManager.GetSelectedDocs())
+                        {
+                            LinkActivationManager.ActivateDoc(doc);
+                        }
+                    }
+
+                }
+            }
 
             var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
@@ -820,7 +801,7 @@ namespace Dash
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) {Undecorated = true}, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true }, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 
@@ -890,7 +871,7 @@ namespace Dash
 
         public void SetPresentationState(bool expand, bool animate = true)
         {
-        //    TogglePresentationMode(expand);
+            //    TogglePresentationMode(expand);
 
             if (expand)
             {
@@ -907,7 +888,7 @@ namespace Dash
                     xPresentationView.xSettingsIn.Completed += (sender, o) =>
                     {
                         var isChecked = xPresentationView.xShowLinesButton.IsChecked;
-                        if (isChecked != null && (bool) isChecked) xPresentationView.ShowLines();
+                        if (isChecked != null && (bool)isChecked) xPresentationView.ShowLines();
                     };
                 }
                 else
@@ -916,7 +897,7 @@ namespace Dash
                     xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
-                
+
             }
             else
             {
@@ -955,100 +936,100 @@ namespace Dash
             }
             xPresentationView.DrawLinesWithNewDocs();
         }
-		
 
-	    public async Task<PushpinType> GetPushpinType()
-	    {
-		    var typePopup = new PushpinTypePopup();
-			SetUpPopup(typePopup);
 
-		    var mode = await typePopup.GetPushpinType();
-		    UnsetPopup();
+        public async Task<PushpinType> GetPushpinType()
+        {
+            var typePopup = new PushpinTypePopup();
+            SetUpPopup(typePopup);
 
-		    return mode;
-	    }
+            var mode = await typePopup.GetPushpinType();
+            UnsetPopup();
+
+            return mode;
+        }
 
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
-	        var importPopup = new HTMLRTFPopup();
-			SetUpPopup(importPopup);
+            var importPopup = new HTMLRTFPopup();
+            SetUpPopup(importPopup);
 
-	        var mode = await importPopup.GetLayoutMode();
-	        UnsetPopup();
+            var mode = await importPopup.GetLayoutMode();
+            UnsetPopup();
 
-			return mode;
+            return mode;
         }
 
-	    public async Task<DocumentController> GetVideoFile()
-	    {
-		    var videoPopup = new ImportVideoPopup();
-		    SetUpPopup(videoPopup);
+        public async Task<DocumentController> GetVideoFile()
+        {
+            var videoPopup = new ImportVideoPopup();
+            SetUpPopup(videoPopup);
 
-		    var video = await videoPopup.GetVideoFile();
-			UnsetPopup();// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
+            var video = await videoPopup.GetVideoFile();
+            UnsetPopup();// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
 
             if (video != null)
                 switch (video.Type)
                 {
-                    case VideoType.StorageFile:
-                        return await new VideoToDashUtil().ParseFileAsync(video.File);
-                    case VideoType.Uri:
-                        var query = HttpUtility.ParseQueryString(video.Uri.Query);
-                        var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
+                case VideoType.StorageFile:
+                    return await new VideoToDashUtil().ParseFileAsync(video.File);
+                case VideoType.Uri:
+                    var query = HttpUtility.ParseQueryString(video.Uri.Query);
+                    var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
 
-                        try
-                        {
-                            var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
-                            return VideoToDashUtil.CreateVideoBoxFromUri(url.Uri);
-                        }
-                        catch (Exception)
-                        {
-                            // TODO: display error video not found
-                        }
+                    try
+                    {
+                        var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+                        return VideoToDashUtil.CreateVideoBoxFromUri(url.Uri);
+                    }
+                    catch (Exception)
+                    {
+                        // TODO: display error video not found
+                    }
 
-                        break;
+                    break;
                 }
 
             return null;
-	    }
+        }
 
-	    public async Task<DocumentController> GetImageFile()
-	    {
-		    var imagePopup = new ImportImagePopup();
-			SetUpPopup(imagePopup);
+        public async Task<DocumentController> GetImageFile()
+        {
+            var imagePopup = new ImportImagePopup();
+            SetUpPopup(imagePopup);
 
-		    var image = await imagePopup.GetImageFile();
-		    UnsetPopup();
+            var image = await imagePopup.GetImageFile();
+            UnsetPopup();
 
             return image != null ? await new ImageToDashUtil().ParseFileAsync(image) : null;
-	    }
+        }
 
-		/// <summary>
-		/// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
-		/// </summary>
-		/// <param name="popup"></param>
-	    private void SetUpPopup(DashPopup popup)
-		{
-			ActivePopup = popup;
-			xOverlay.Visibility = Visibility.Visible;
-			popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
-			popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
-			Grid.SetColumn(popup.Self(), 2);
-			xOuterGrid.Children.Add(popup.Self());
-		}
+        /// <summary>
+        /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
+        /// </summary>
+        /// <param name="popup"></param>
+        private void SetUpPopup(DashPopup popup)
+        {
+            ActivePopup = popup;
+            xOverlay.Visibility = Visibility.Visible;
+            popup.SetHorizontalOffset(((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2));
+            popup.SetVerticalOffset(((Frame)Window.Current.Content).ActualHeight / 2 - 150);
+            Grid.SetColumn(popup.Self(), 2);
+            xOuterGrid.Children.Add(popup.Self());
+        }
 
-		/// <summary>
-		/// This method is called after a popup closes, to remove it from the page.
-		/// </summary>
-	    private void UnsetPopup()
-		{
-			xOverlay.Visibility = Visibility.Collapsed;
-			if (ActivePopup != null)
-		    {
-			    xOuterGrid.Children.Remove(ActivePopup.Self());
-			    ActivePopup = null;
-		    }
-	    }
+        /// <summary>
+        /// This method is called after a popup closes, to remove it from the page.
+        /// </summary>
+        private void UnsetPopup()
+        {
+            xOverlay.Visibility = Visibility.Collapsed;
+            if (ActivePopup != null)
+            {
+                xOuterGrid.Children.Remove(ActivePopup.Self());
+                ActivePopup = null;
+            }
+        }
 
         public void NavigateToDocument(DocumentController doc)//More options
         {
@@ -1084,32 +1065,37 @@ namespace Dash
 
         public void ToggleFloatingDoc(DocumentController doc)
         {
-            var onScreenView = MainSplitter.GetDescendantsOfType<DocumentView>().FirstOrDefault(v => v.ViewModel != null &&
-                v.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
-            onScreenView = GetTargetDocumentView(doc);
+            var onScreenView = GetTargetDocumentView(doc);
 
             if (onScreenView != null)
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
                 if (highlighted)
+                {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+                }
             }
             else
             {
-                var floaty = xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
+                var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
                 if (floaty != null)
+                {
                     xCanvas.Children.Remove(floaty);
-                else AddFloatingDoc(doc, null, new Point(xCanvas.PointerPos().X + 25, xCanvas.PointerPos().Y));
-            } 
+                }
+                else
+                {
+                    AddFloatingDoc(doc, null, new Point(xCanvas.PointerPos().X + 25, xCanvas.PointerPos().Y));
+                }
+            }
         }
 
 
-        void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+        private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             if (args.SelectedViews.Count > 0)
             {
-                if (xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocs().Contains(dv)).Any())
+                if (xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocs().Contains(dv)))
                     return;
             }
 
@@ -1120,18 +1106,11 @@ namespace Dash
 
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
-            //TODO Splitting
-            //var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
-            //    v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
-            //if (onScreenView != null)
-            //    return;
-
-            //MASTER
-            //var onScreenView = xDockFrame.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null &&
-            //    v.ViewModel.DataDocument.Equals(doc.GetDataDocument())).FirstOrDefault();
-            //onScreenView = GetTargetDocumentView(xDockFrame, doc);
-            //if (onScreenView != null)
-            //    return;
+            var onScreenView = GetTargetDocumentView(doc);
+            if (onScreenView != null)
+            {
+                return;
+            }
 
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
@@ -1139,7 +1118,7 @@ namespace Dash
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
-           
+
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(docCopy),
@@ -1147,20 +1126,22 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Top,
                 BindRenderTransform = false
             };
-            
-            var Grid = new Grid();
-            Grid.RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y };
-            Grid.Children.Add(docView);
+
+            var grid = new Grid
+            {
+                RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y }
+            };
+            grid.Children.Add(docView);
             var btn = new Button() { Content = "X" };
             btn.Width = btn.Height = 20;
             btn.Background = new SolidColorBrush(Colors.Red);
             btn.HorizontalAlignment = HorizontalAlignment.Left;
             btn.VerticalAlignment = VerticalAlignment.Top;
             btn.Margin = new Thickness(0, -10, -10, 10);
-            btn.Click += (s, e) => xCanvas.Children.Remove(Grid);
-            Grid.Children.Add(btn);
-            
-            xCanvas.Children.Add(Grid);
+            btn.Click += (s, e) => xCanvas.Children.Remove(grid);
+            grid.Children.Add(btn);
+
+            xCanvas.Children.Add(grid);
         }
 
         public void ClearFloaty(DocumentView dragged)
@@ -1175,7 +1156,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            
+
             if (this.IsCtrlPressed() && !this.IsAltPressed())
             {
                 NavigateToDocumentOrRegion(region, linkDoc);
@@ -1194,17 +1175,16 @@ namespace Dash
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
                 onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-                //TODO Splitting
-                //if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
-                //{
-                //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
-                        onScreenView.ViewModel.LayoutDocument.ToggleHidden();
-                //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
-                //}
-                //else // otherwise, it's a hidden region that we have to show
-                //{
-                //    onScreenView.ViewModel.LayoutDocument.SetHidden(false);
-                //}
+                if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
+                {
+                    //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
+                    onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+                    //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                }
+                else // otherwise, it's a hidden region that we have to show
+                {
+                    onScreenView.ViewModel.LayoutDocument.SetHidden(false);
+                }
             }
             else
             {
@@ -1219,66 +1199,18 @@ namespace Dash
 
         public void DockLink(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
         {
-            //TODO Splitting
-            //var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
-            //var target = region.GetRegionDefinition() ?? region;
-            //var onScreenView = GetTargetDocumentView(xDockFrame, target);
-
-            //DockedView docked = DockManager.GetDockedView(target); // if a document view matches this document's data document, then undock the view.
-            //if (docked != null)
-            //{
-            //    DockManager.Undock(docked);
-            //}
-            //else  // otherwise, we have to show the document in a docked view
-            //{
-            //    var tree = DocumentTree.MainPageTree;
-            //    var node = tree.Where(n => n.ViewDocument.Equals(target)).FirstOrDefault();
-            //    var collection = node?.Parent.ViewDocument;
-
-            //    if (collection == null || !inContext)       // if the document doesn't exist in any collection, then just dock it by itself
-            //    {
-            //        var docview = DockManager.Dock(target, DockDirection.Right);
-            //    }
-            //    else             // otherwise, find the collection that the document's in, and dock it.  It's possible the document was somewhere on the main view but not visible in which case this amounts to creating a split screen of the main view.
-            //    {
-
-            //        DockedView dockedCollection = DockManager.GetDockedView(collection);
-            //        if (dockedCollection != null)
-            //        {
-            //            onScreenView = dockedCollection.GetDescendantsOfType<DocumentView>()
-            //                .Where((dv) => dv.ViewModel.LayoutDocument.Equals(target)).FirstOrDefault();
-            //            if (onScreenView != null && onScreenView.ViewModel.SearchHighlightState != new Thickness(8))
-            //                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
-            //            else DockManager.Undock(dockedCollection);
-            //        }
-            //        else
-            //        {
-
-            //            target.SetHidden(false);
-            //            var docView = DockManager.Dock(collection, DockDirection.Right);
-            //            var cview = docView.ViewModel.Content;
-            //            cview.Tag = target;
-            //            cview.Loaded += Docview_Loaded;
-            //            var col = docView.ViewModel.DocumentController;
-
-            //            var pos = node.ViewDocument.GetPosition() ?? new Point();
-            //            double xZoom = 500 / (node.ViewDocument.GetActualSize()?.X ?? 500);
-            //            double YZoom = MainDocView.ActualHeight /
-            //                           (node.ViewDocument.GetActualSize()?.Y ?? MainDocView.ActualHeight);
-            //            var zoom = Math.Min(xZoom, YZoom) * 0.7;
-            //            //col.SetField<PointController>(KeyStore.PanPositionKey,
-            //            //    new Point((250 - pos.X - (node.ViewDocument.GetActualSize()?.X ?? 0) / 4) * zoom, (MainDocView.ActualHeight / 2 - (pos.Y - node.ViewDocument.GetActualSize()?.Y ?? 0) / 2) * zoom), true);
-            //            double xOff = 500 - (node.ViewDocument.GetActualSize()?.X ?? 0) * zoom;
-            //            double yOff = MainDocView.ActualHeight - (node.ViewDocument.GetActualSize()?.Y ?? 0) * zoom;
-            //            double xrat = 500 / (double)(node.ViewDocument.GetActualSize()?.X);
-            //            col.SetField<PointController>(KeyStore.PanPositionKey,
-            //                new Point(-pos.X * zoom + 0.3 * xrat * xOff, -pos.Y * zoom + 0.4 * yOff), true);
-
-            //            col.SetField<PointController>(KeyStore.PanZoomKey,
-            //                new Point(zoom, zoom), true);
-            //        }
-            //    }
-            //}
+            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
+            var target = region.GetRegionDefinition() ?? region;
+            var frame = SplitFrame.GetFrameWithDoc(target, true);
+            if (frame != null)
+            {
+                frame.Delete();
+            }
+            else
+            {
+                //TODO Splitting: Deal with inContext
+                SplitFrame.OpenInInactiveFrame(target);
+            }
         }
 
         private void Docview_Loaded(object sender, RoutedEventArgs e)
@@ -1343,7 +1275,7 @@ namespace Dash
         {
             xSnapshotOverlay.Visibility = Visibility.Collapsed;
         }
-        
+
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
@@ -1352,7 +1284,7 @@ namespace Dash
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-           // Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            // Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
@@ -1421,17 +1353,17 @@ namespace Dash
 
         private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.MakePdf_OnTapped(sender, e);
+            xMainTreeView.MakePdf_OnTapped(sender, e);
         }
 
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.TogglePresentationMode(sender, e);
+            xMainTreeView.TogglePresentationMode(sender, e);
         }
 
         private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-           xMainTreeView.Snapshot_OnTapped(sender, e);
+            xMainTreeView.Snapshot_OnTapped(sender, e);
         }
 
 

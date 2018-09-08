@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -114,7 +113,7 @@ namespace Dash
             {
                 var realPar = cview?.CurrentView?.UserControl;
                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
-                
+
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -150,8 +149,14 @@ namespace Dash
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
-                    DocumentViewModels.Clear();
-                    addViewModels(CollectionController.TypedData);
+                    var curDocs =
+                        new HashSet<DocumentController>(DocumentViewModels.Select(dvm => dvm.DocumentController));
+                    var colDocs =
+                        new HashSet<DocumentController>(CollectionController);
+                    var newDocs = colDocs.Where(dc => !curDocs.Contains(dc)).ToList();
+                    var deletedDocs = curDocs.Where(dc => !colDocs.Contains(dc)).ToList();
+                    addViewModels(newDocs);
+                    removeViewModels(deletedDocs);
                 }
                 ActualSizeFieldChanged(null, null, null);
 
@@ -205,31 +210,31 @@ namespace Dash
         {
             switch (args.ListAction)
             {
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
-                    // we only care about changes to the Hidden field of the contained documents.
-                    foreach (var d in args.NewItems)
-                    {
-                        //var visible = !d.GetHidden();
-                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
-                        //if (visible && !shown)
-                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        //if (!visible && shown)
-                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                    }
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(args.NewItems);
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
-                    DocumentViewModels.Clear();
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(args.OldItems);
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                    DocumentViewModels.Clear();
-                    addViewModels(args.NewItems);
-                    break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
+                // we only care about changes to the Hidden field of the contained documents.
+                foreach (var d in args.NewItems)
+                {
+                    //var visible = !d.GetHidden();
+                    //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                    //if (visible && !shown)
+                    //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                    //if (!visible && shown)
+                    //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                }
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                addViewModels(args.NewItems);
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
+                DocumentViewModels.Clear();
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                removeViewModels(args.OldItems);
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
+                DocumentViewModels.Clear();
+                addViewModels(args.NewItems);
+                break;
             }
         }
 
@@ -347,7 +352,7 @@ namespace Dash
         }
 
         #endregion
-        
+
         #region DragAndDrop
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
@@ -663,8 +668,8 @@ namespace Dash
                 // accept move, then copy, and finally accept whatever they requested (for now)
                 e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
                     ? DataPackageOperation.Move :
-                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ? 
-                        DataPackageOperation.Copy 
+                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ?
+                        DataPackageOperation.Copy
                         : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
@@ -699,7 +704,8 @@ namespace Dash
                             if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
-                                if (d.DraggedDocumentViews[i] != null) {
+                                if (d.DraggedDocumentViews[i] != null)
+                                {
                                     d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
                                 }
                             }

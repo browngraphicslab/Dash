@@ -71,10 +71,6 @@ namespace Dash
             set => SetValue(BindVisibilityProperty, value);
         }
 
-        //TODO Splitting
-        public event EventHandler ResizeManipulationStarted;
-        public event EventHandler ResizeManipulationCompleted;
-
         // == CONSTRUCTORs ==
         private static int DOCID = 0;
         public DocumentView()
@@ -645,14 +641,14 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = true);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.SelectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = false);
+            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.SelectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 
@@ -955,7 +951,7 @@ namespace Dash
 
         public bool IsTopLevel()
         {
-            return VisualTreeHelper.GetParent(this) is SplitFrame;
+            return this.GetFirstAncestorOfType<SplitFrame>().DataContext == DataContext;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
