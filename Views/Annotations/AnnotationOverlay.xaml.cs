@@ -737,7 +737,7 @@ namespace Dash
                                 rect.Width = ele.Bounds.Left - Canvas.GetLeft(rect);
                             } else
                             {
-                                rect.Width = Canvas.GetLeft(rect) + rect.Width - ele.Bounds.Right;
+                                rect.Width = Math.Abs(Canvas.GetLeft(rect) + rect.Width - ele.Bounds.Right);
                                 Canvas.SetLeft(rect, ele.Bounds.Right);
                             }
                             _selectedRectangles.Remove(ele.Index);
