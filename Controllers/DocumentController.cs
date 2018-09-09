@@ -281,6 +281,14 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
                             }
+                            else if (target.Value.Type == TypeInfo.Html)
+                            {
+                                opModel.SetField(target.Key, new HtmlController(a), true);
+                            }
+                            else if (target.Value.Type == TypeInfo.Pdf)
+                            {
+                                opModel.SetField(target.Key, new PdfController(new Uri(a)), true);
+                            }
                         }
                     }
                     SetField(key, new DocumentReferenceController(opModel, opFieldController.Outputs.First().Key), true, false);
@@ -315,6 +323,25 @@ namespace Dash
                         catch (Exception)
                         {
                             ic.Data = null;
+                        }
+                    }
+                    else if (curField is HtmlController hc)
+                    {
+                        if (copy)
+                            SetField(key, new HtmlController(textInput), true);
+                        else hc.Data = textInput;
+                    }
+                    else if (curField is PdfController pc)
+                    {
+                        try
+                        {
+                            if (copy)
+                                SetField(key, new PdfController(new Uri(textInput)), true);
+                            else pc.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            pc.Data = null;
                         }
                     }
                     else if (curField is DateTimeController)

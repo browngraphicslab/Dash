@@ -66,10 +66,16 @@ namespace Dash
                 case TypeInfo.RichText:
                     controller = new RichTextController(model as RichTextModel);
                     break;
+                case TypeInfo.Html:
+                    controller = new HtmlController(model as HtmlModel);
+                    break;
                 case TypeInfo.Image:
                     controller = new ImageController(model as ImageModel);
                     break;
-				case TypeInfo.Video:
+                case TypeInfo.Pdf:
+                    controller = new PdfController(model as PdfModel);
+                    break;
+                case TypeInfo.Video:
 					controller = new VideoController(model as VideoModel);
 					break;
                 case TypeInfo.Audio:
@@ -229,6 +235,12 @@ namespace Dash
 					break;
                 case TypeInfo.Audio:
                     controller = new AudioController(new Uri("ms - appx://Dash/Assets/DefaultAudio.mp3"));
+                    break;
+                case TypeInfo.Html:
+                    controller = new HtmlController("");
+                    break;
+                case TypeInfo.Pdf:
+                    controller = new PdfController(new Uri("DEFAULT URI"));
                     break;
                 case TypeInfo.None:
                 case TypeInfo.Reference:
