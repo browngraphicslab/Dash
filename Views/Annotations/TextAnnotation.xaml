@@ -1,5 +1,5 @@
-﻿<UserControl
-    x:Class="Dash.RegionAnnotation"
+﻿<local:AnchorableAnnotation
+    x:Class="Dash.TextAnnotation"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -9,5 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Rectangle x:Name="XRegionRect" StrokeDashArray="2" StrokeThickness="2" Stroke="Black" Fill="Transparent" />
-</UserControl>
+    <Grid x:Name="LayoutRoot" PointerMoved="LayoutRoot_PointerMoved">
+
+    </Grid>
+</local:AnchorableAnnotation>

@@ -34,11 +34,7 @@ namespace Dash
         public double ElementScale
         {
             get => _elementScale;
-            set
-            {
-                _elementScale = value;
-                _freeformView.ViewModel.PrevScale = value;
-            }
+            set =>_elementScale = value;
         }
 
         public PointerDeviceType BlockedInputType { get; set; }
@@ -95,11 +91,6 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
-
-                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
-                {
-                    view.UpdateResizers();
-                }
             }
         }
 
@@ -107,11 +98,14 @@ namespace Dash
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
             {
-                e.Complete();
+                //e.Complete();
                 _processManipulation = false;
-            } else
+            }
+            else
+            {
                 _processManipulation = true;
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -119,7 +113,6 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-           
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

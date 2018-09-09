@@ -50,8 +50,7 @@
                 <DataTemplate>
                     <dash:DocumentView
                         BindRenderTransform="True"
-                        Loaded="DocumentViewOnLoaded"
-                        StandardViewLevel="{Binding Path=ViewLevel, Mode=OneWay}"/>
+                        Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

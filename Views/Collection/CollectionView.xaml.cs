@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
@@ -42,6 +42,9 @@ namespace Dash
         public DocumentView ParentDocumentView => this.GetFirstAncestorOfType<DocumentView>();
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
+
+        //if this or any of its children are selected, it can move
+        public bool selectedCollection;
 
         public CollectionView(CollectionViewModel vm)
         {
@@ -73,25 +76,17 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-            if (parentFreeform != null && rightBtn)
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection ||
+                this.GetFirstAncestorOfType<DocumentView>() == MainPage.Instance.MainDocView)
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                }
-                else
-                    if (parentParentFreeform != null)
-                        CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+                //selected, so pan 
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
             }
-            
-
+            else
+            {
+                //don't pan
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+            }
         }
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -113,8 +108,6 @@ namespace Dash
                 SetView(_viewType);
                 return;
             }
-
-            ParentDocumentView.StyleCollection(this);
 
             #region CollectionView context menu 
 
@@ -263,11 +256,6 @@ namespace Dash
 	    #region Menu
         public void SetView(CollectionViewType viewType)
         {
-            if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
-            {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            }
             _viewType = viewType;
             if (CurrentView?.UserControl != null)
                 CurrentView.UserControl.Loaded -= CurrentView_Loaded;
@@ -304,10 +292,6 @@ namespace Dash
                 case CollectionViewType.Graph:
                     if (CurrentView is CollectionGraphView) return;
                     CurrentView = new CollectionGraphView();
-                    break;
-                case CollectionViewType.Standard:
-                    if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

@@ -86,6 +86,7 @@ namespace Dash
         {
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
+            KeyDown += _marquee_KeyDown;
         }
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
@@ -115,7 +116,7 @@ namespace Dash
 			if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
 			{
 				var storedPath = settingsView.CustomImagePath;
-				if (storedPath != null) _background = storedPath;
+				if (storedPath != null) _background = storedPath; 
 			}
 			else
 			{
@@ -127,7 +128,7 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.RemoveFromVisualTree();
+            _backgroundCanvas?.RemoveFromVisualTree();
             GetBackgroundContentPresenter().Content = null;
             _backgroundCanvas = null;
             if (_lastViewModel != null)
@@ -147,12 +148,12 @@ namespace Dash
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
         }
 
 		protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+			//Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
 		}
 
 		protected void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -199,7 +200,7 @@ namespace Dash
 			{
 				return;
 			}
-			_transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
+			_transformBeingAnimated = new MatrixTransform()  { Matrix = (Matrix)old };
 
 			Debug.Assert(_transformBeingAnimated != null);
 			var milliseconds = 1000;
@@ -369,6 +370,7 @@ namespace Dash
 			composite.Children.Add(scaleDelta); // add the new scaling
 			var matrix = composite.Value;
 			ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
 		}
 
 		#endregion
@@ -398,7 +400,7 @@ namespace Dash
         private void ChangeOpacity(float opacity)
         {
             _bgOpacity = opacity;
-            _backgroundCanvas.Invalidate();
+            _backgroundCanvas?.Invalidate();
         }
         #endregion
 
@@ -666,7 +668,6 @@ namespace Dash
 		Point _marqueeAnchor;
 		bool _isMarqueeActive;
 		private MarqueeInfo mInfo;
-		object _marqueeKeyHandler = null;
 
 		protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
@@ -676,7 +677,6 @@ namespace Dash
 					GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
 				SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
 				GetSelectionCanvas().Children.Remove(_marquee);
-				MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
 				_marquee = null;
 				_isMarqueeActive = false;
 				if (e != null) e.Handled = true;
@@ -719,10 +719,8 @@ namespace Dash
 						StrokeDashArray = new DoubleCollection { 4, 1 },
 						CompositeMode = ElementCompositeMode.SourceOver
 					};
-					if (_marqueeKeyHandler != null)
-						MainPage.Instance.RemoveHandler(KeyDownEvent, _marqueeKeyHandler);
-					_marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
-					MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
+                    this.IsTabStop = true;
+                    this.Focus(FocusState.Pointer);
 					_marquee.AllowFocusOnInteraction = true;
 					SelectionCanvas?.Children.Add(_marquee);
 
@@ -788,11 +786,11 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee == null || !MarqueeKeys.Contains(e.Key)) return;
-
-            TriggerActionFromSelection(e.Key, true);
-            MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-            e.Handled = true;
+            if (_marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive)
+            {
+                TriggerActionFromSelection(e.Key, true);
+                e.Handled = true;
+            }
         }
 
 		public bool IsMarqueeActive => _isMarqueeActive;
@@ -992,34 +990,26 @@ namespace Dash
 
 		protected void OnTapped(object sender, TappedRoutedEventArgs e)
 		{
-			if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+			//if (XInkCanvas.IsTopmost())
 			{
-				//if (XInkCanvas.IsTopmost())
-				{
-					_isMarqueeActive = false;
-					if (!this.IsShiftPressed())
-						RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
-				}
+				_isMarqueeActive = false;
+				if (!this.IsShiftPressed())
+					RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
 			}
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
 		}
-
-		DocumentController _linkDoc = null;
-		string _linkTypeString = "";
-		public void RenderPreviewTextbox(Point where, DocumentController linkDoc = null, string typeString = "", string defaultString = "")
-		{
-			_linkDoc = linkDoc;
-			_linkTypeString = typeString;
-
-			previewTextBuffer = defaultString;
-			if (previewTextbox != null)
+        
+		public void RenderPreviewTextbox(Point where)
+        {
+            previewTextBuffer = "";
+            if (previewTextbox != null)
 			{
 				Canvas.SetLeft(previewTextbox, where.X);
 				Canvas.SetTop(previewTextbox, where.Y);
 				previewTextbox.Visibility = Visibility.Visible;
 				AddHandler(KeyDownEvent, previewTextHandler, false);
-				previewTextbox.Text = defaultString;
+				previewTextbox.Text = "";
 				previewTextbox.SelectAll();
 				previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
 				previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -1091,7 +1081,6 @@ namespace Dash
 				RemoveHandler(KeyDownEvent, previewTextHandler);
 				previewTextbox.Visibility = Visibility.Collapsed;
 				previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-				_linkDoc = null;
 			}
 		}
 
@@ -1120,6 +1109,7 @@ namespace Dash
 			{
 				e.Handled = true;
 				var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+                Debug.WriteLine("Where = " + where);
 				if (this.IsCtrlPressed())
 				{
 					//deals with control V pasting
@@ -1128,13 +1118,6 @@ namespace Dash
 						using (UndoManager.GetBatchHandle())
 						{
 							var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
-
-							if (_linkDoc != null)
-							{
-
-                            postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-                            _linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-							 }
 
 							//check if a doc is currently in link activation mode
 							if (LinkActivationManager.ActivatedDocs.Count >= 1)
@@ -1148,7 +1131,7 @@ namespace Dash
 											postitNote.GetPosition());
 
                                     //link region to this text 
-                                    region.Link(postitNote, LinkTargetPlacement.Overlay);
+                                    region.Link(postitNote, LinkBehavior.Overlay);
                                 }
                             }
                         }
@@ -1160,7 +1143,6 @@ namespace Dash
 					{
 						LoadNewActiveTextBox("", where);
 					}
-					_linkDoc = null;
 				}
 				//else if (this.IsCtrlPressed())
 				//{
@@ -1192,41 +1174,27 @@ namespace Dash
 					{
 						var postitNote = new MarkdownNote(text: text).Document;
 						Actions.DisplayDocument(ViewModel, postitNote, where);
-						if (_linkDoc != null)
-						{
-							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-
-						}
 					}
 					else
 					{
 						var postitNote = new RichTextNote(text: text).Document;
 						Actions.DisplayDocument(ViewModel, postitNote, where);
-						if (_linkDoc != null)
-						{
-							postitNote.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, true, true);
-							_linkDoc.Link(postitNote, LinkTargetPlacement.Default, _linkTypeString);
-						}
 
 						//move link activation stuff here
 						//check if a doc is currently in link activation mode
 						if (LinkActivationManager.ActivatedDocs.Count >= 1)
 						{
-							foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+							foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
 							{
-								//make this rich text an annotation for activated  doc
-								if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
-									.DocumentType))
+                                KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func);
+                                //make this rich text an annotation for activated  doc
+                                if (func != null)
 								{
-									var region =
-										KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](
-											activated,
-											Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(),
-												this.GetFirstDescendantOfType<ContentPresenter>(), MainPage.Instance));
+									var region = func( activated,
+											           Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
 
-									//link region to this text 
-									region.Link(postitNote, LinkTargetPlacement.Overlay);
+									//link region to this text  
+									region.Link(postitNote, LinkBehavior.Annotate);
 								}
 							}
 						}
@@ -1389,7 +1357,7 @@ namespace Dash
 						editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
 						editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
 					}
-				}
+                }
 			}
 
 		}
@@ -1427,7 +1395,6 @@ namespace Dash
 		{
 			RemoveHandler(KeyDownEvent, previewTextHandler);
 			previewTextbox.Visibility = Visibility.Collapsed;
-			_linkDoc = null;
 			loadingPermanentTextbox = false;
 			var text = previewTextBuffer;
 			var richEditBox = sender as RichEditBox;
@@ -1444,7 +1411,6 @@ namespace Dash
 
 			RemoveHandler(KeyDownEvent, previewTextHandler);
 			previewTextbox.Visibility = Visibility.Collapsed;
-			_linkDoc = null;
 			loadingPermanentTextbox = false;
 			var text = previewTextBuffer;
 			textBox.GotFocus -= TextBox_GotFocus;

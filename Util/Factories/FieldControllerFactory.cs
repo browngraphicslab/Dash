@@ -41,10 +41,10 @@ namespace Dash
                     controller = MakeOperatorController(model as OperatorModel);
                     break;
                 case TypeInfo.List:
-                    controller = await MakeListFieldController(model as ListModel);
+                    controller = MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = await DocumentController.CreateFromServer(model as DocumentModel);
+                    controller = DocumentController.CreateFromServer(model as DocumentModel);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkController(model as InkModel);
@@ -53,10 +53,10 @@ namespace Dash
                     controller = new NumberController(model as NumberModel);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = await DocumentReferenceController.CreateFromServer(model as DocumentReferenceModel);
+                    controller = DocumentReferenceController.CreateFromServer(model as DocumentReferenceModel);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = await PointerReferenceController.CreateFromServer(model as PointerReferenceModel);
+                    controller = PointerReferenceController.CreateFromServer(model as PointerReferenceModel);
                     break;
                 case TypeInfo.Rectangle:
                     controller = new RectController(model as RectModel);
@@ -94,14 +94,18 @@ namespace Dash
                     throw new Exception("Shoudlnt get here");
                 case TypeInfo.Any:
                     throw new Exception("Shoudlnt get here");
+                default:
+                    throw new ArgumentException("Parameter doesn't match any known types", nameof(model));
             }
+
+            await controller.InitializeAsync();
 
             Debug.Assert(controller != null);
 
             return controller;
         }
 
-        private static async Task<FieldControllerBase> MakeListFieldController(ListModel model)
+        private static FieldControllerBase MakeListFieldController(ListModel model)
         {
             FieldControllerBase controller = null;
 
@@ -111,64 +115,64 @@ namespace Dash
                     Debug.Fail("this shouldnt happen????");
                     break;
                 case TypeInfo.Number:
-                    controller = await ListController<NumberController>.CreateFromServer(model);
+                    controller = ListController<NumberController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Text:
-                    controller = await ListController<TextController>.CreateFromServer(model);
+                    controller = ListController<TextController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Image:
-                    controller = await ListController<ImageController>.CreateFromServer(model);
+                    controller = ListController<ImageController>.CreateFromServer(model);
                     break;
 				case TypeInfo.Video:
-                    controller = await ListController<VideoController>.CreateFromServer(model);
+                    controller = ListController<VideoController>.CreateFromServer(model);
 					break;
                 case TypeInfo.Audio:
-                    controller = await ListController<AudioController>.CreateFromServer(model);
+                    controller = ListController<AudioController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Document:
-                    controller = await ListController<DocumentController>.CreateFromServer(model);
+                    controller = ListController<DocumentController>.CreateFromServer(model);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = await ListController<PointerReferenceController>.CreateFromServer(model);
+                    controller = ListController<PointerReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = await ListController<DocumentReferenceController>.CreateFromServer(model);
+                    controller = ListController<DocumentReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Operator:
-                    controller = await ListController<OperatorController>.CreateFromServer(model);
+                    controller = ListController<OperatorController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Point:
-                    controller = await ListController<PointController>.CreateFromServer(model);
+                    controller = ListController<PointController>.CreateFromServer(model);
                     break;
                 case TypeInfo.List:
-                    Debug.Fail("idk why you got here");
+                    Debug.Fail("Lists of lists are not currently supported");
                     break;
                 case TypeInfo.Ink:
-                    controller = await ListController<InkController>.CreateFromServer(model);
+                    controller = ListController<InkController>.CreateFromServer(model);
                     break;
                 case TypeInfo.RichText:
-                    controller = await ListController<RichTextController>.CreateFromServer(model);
+                    controller = ListController<RichTextController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Rectangle:
-                    controller = await ListController<RectController>.CreateFromServer(model);
+                    controller = ListController<RectController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Reference:
-                    controller = await ListController<ReferenceController>.CreateFromServer(model);
+                    controller = ListController<ReferenceController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Key:
-                    controller = await ListController<KeyController>.CreateFromServer(model);
+                    controller = ListController<KeyController>.CreateFromServer(model);
                     break;
                 case TypeInfo.DateTime:
-                    controller = await ListController<DateTimeController>.CreateFromServer(model);
+                    controller = ListController<DateTimeController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Bool:
-                    controller = await ListController<BoolController>.CreateFromServer(model);
+                    controller = ListController<BoolController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Color:
-                    controller = await ListController<ColorController>.CreateFromServer(model);
+                    controller = ListController<ColorController>.CreateFromServer(model);
                     break;
                 case TypeInfo.Any:
-                    //Debug.Fail("idk why you got here");
+                    controller = ListController<FieldControllerBase>.CreateFromServer(model);
                     break;
                 default:
                     break;

@@ -15,7 +15,9 @@ namespace Dash
         // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            var nodes = DocumentTree.MainPageTree.GetAllNodes();
+            var filteredNodes = new List<SearchResult>();
+            foreach (var node in nodes)
             {
                 var relatedFields = new List<string>();
                 var relatedStrings = new List<string>();
@@ -39,26 +41,58 @@ namespace Dash
                     numMatchedFields++;
                 }
 
-                return new SearchResult(node, relatedFields, relatedStrings, numMatchedFields);
-            }).OrderByDescending(res => res.Rank);
+                filteredNodes.Add(new SearchResult(node, relatedFields, relatedStrings, numMatchedFields));
+            }
+            filteredNodes.OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+
+            //var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            //{
+            //    var relatedFields = new List<string>();
+            //    var relatedStrings = new List<string>();
+
+            //    StringSearchModel dataStringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+            //    StringSearchModel layoutStringSearchModel = node.ViewDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+
+            //    var numMatchedFields = 0;
+
+            //    if (layoutStringSearchModel != null && layoutStringSearchModel != StringSearchModel.False)
+            //    {
+            //        relatedFields.Add($" >> v.{key}");
+            //        relatedStrings.Add($"\" {layoutStringSearchModel?.RelatedString} \"");
+            //        numMatchedFields++;
+            //    }
+
+            //    if (dataStringSearchModel != null && dataStringSearchModel != StringSearchModel.False)
+            //    {
+            //        relatedFields.Add($" >> d.{key}");
+            //        relatedStrings.Add($"\" {dataStringSearchModel?.RelatedString} \"");
+            //        numMatchedFields++;
+            //    }
+
+            //    return new SearchResult(node, relatedFields, relatedStrings, numMatchedFields);
+            //}).OrderByDescending(res => res.Rank);
+
+            //return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
         // Searches the ViewDocument and DataDocuments of all DocumentControllers in the Dash View for a given query string
         public static IEnumerable<SearchResult> SearchByQuery(string query, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            var nodes = DocumentTree.MainPageTree.GetAllNodes();
+            var filteredNodes = new List<SearchResult>();
+            foreach (var node in nodes)
             {
                 var relatedFields = new List<string>();
                 var relatedStrings = new List<string>();
-                
+
                 var numMatchedFields = 0;
                 foreach (var field in node.ViewDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+                    var ss = field.Value.DereferenceToRoot(null);
+                    var ssm = ss?.SearchForString(query);
                     if (ssm == null || ssm == StringSearchModel.False) continue;
-
                     relatedStrings.Add(ssm.RelatedString);
                     relatedFields.Add($" >> v.{field.Key}");
                     numMatchedFields++;
@@ -68,15 +102,47 @@ namespace Dash
                     var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
                     if (ssm == null || ssm == StringSearchModel.False) continue;
 
-                    relatedStrings.Add(ssm.RelatedString);
+                    relatedStrings.Add($" >> d.{field.Key}");
                     relatedFields.Add($" >> d.{field.Key}");
                     numMatchedFields++;
                 }
-                return new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields);
-            })
-                .OrderByDescending(res => res.Rank);
+                filteredNodes.Add(new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields));
+            }
+            filteredNodes.OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+
+            // the above code is faster than the below code by a huge margin
+
+            //var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            //{
+            //    var relatedFields = new List<string>();
+            //    var relatedStrings = new List<string>();
+                
+            //    var numMatchedFields = 0;
+            //    foreach (var field in node.ViewDocument.EnumDisplayableFields())
+            //    {
+            //        var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+            //        if (ssm == null || ssm == StringSearchModel.False) continue;
+
+            //        relatedStrings.Add(ssm.RelatedString);
+            //        relatedFields.Add($" >> v.{field.Key}");
+            //        numMatchedFields++;
+            //    }
+            //    foreach (var field in node.DataDocument.EnumDisplayableFields())
+            //    {
+            //        var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+            //        if (ssm == null || ssm == StringSearchModel.False) continue;
+
+            //        relatedStrings.Add(ssm.RelatedString);
+            //        relatedFields.Add($" >> d.{field.Key}");
+            //        numMatchedFields++;
+            //    }
+            //    return new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields);
+            //})
+            //    .OrderByDescending(res => res.Rank);
+
+            //return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
         // Shortens the helpful text so that the user is given a meaningful helptext string that can help
@@ -344,12 +410,7 @@ namespace Dash
             }
             else
             {
-                var searchResultsList = GetBasicSearchResults(modifiedSearchTerm).ToList();
-                foreach (var res in searchResultsList)
-                {
-                    res.RtfHighlight.Add(new SearchTerm(modifiedSearchTerm));
-                }
-                searchResults = searchResultsList.AsEnumerable();
+                searchResults = GetBasicSearchResults(modifiedSearchTerm).Select(res => res.AddRtfTerm(new SearchTerm(modifiedSearchTerm)));
             }
 
             if (negate >= 0 && negate % 2 == 1)

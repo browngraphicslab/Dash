@@ -115,32 +115,54 @@ namespace Dash
 
         #region // OVERLOADED CONSTRUCTORS, INITIALIZATION //
 
+        private bool _initialized = true;
+
         // Parameterless
-        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(false);
+        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            ConstructorHelper(false);
+        }
 
         // IEnumerable<T> (list of items)
-        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            ConstructorHelper(readOnly);
+        }
 
         // T (item)
-        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            ConstructorHelper(readOnly);
+        }
 
-        public static async Task<ListController<T>> CreateFromServer(ListModel model)
+        private ListController(ListModel model) : base(model)
+        {
+            _initialized = false;
+        }
+
+        public static ListController<T> CreateFromServer(ListModel model)
         {
             Debug.Assert(!model.SubTypeInfo.Equals(TypeInfo.None));
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+            return new ListController<T>(model);
 
-            var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(model.Data);
+
+        }
+
+        public override async Task InitializeAsync()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
+
+            var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(ListModel.Data);
             List<T> list = fields as List<T> ?? new List<T>(fields);
 
             // furthermore, confirms the type of the list in the model matches the type of this list controller
-            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
-
-            return new ListController<T>(list, model.IsReadOnly, model);
-        }
-
-        private ListController(List<T> fields, bool readOnly, ListModel model) : base(model)
-        {
-            TypedData = fields;
-            IsReadOnly = readOnly;
+            _typedData = list;
         }
 
         /*

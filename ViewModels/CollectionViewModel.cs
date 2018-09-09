@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -19,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 
@@ -105,10 +107,10 @@ namespace Dash
         /// </summary>
         public void FitContents(CollectionView cview)
         {
-            if (ContainerDocument.GetFitToParent() && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
+            if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
-                 var realPar = cview?.CurrentView.UserControl;
-                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                var realPar = cview?.CurrentView?.UserControl;
+                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
                 
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
@@ -146,13 +148,13 @@ namespace Dash
                 // force the view to refresh now that everything is loaded.  These changed handlers will cause the
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
-                ActualSizeFieldChanged(null, null, null);
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
                     DocumentViewModels.Clear();
                     addViewModels(CollectionController.TypedData);
                 }
+                ActualSizeFieldChanged(null, null, null);
 
                 _lastContainerDocument = ContainerDocument;
             }
@@ -311,8 +313,6 @@ namespace Dash
 
                     ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                 }
-                if (ViewLevel.Equals(StandardViewLevel.Overview) || ViewLevel.Equals(StandardViewLevel.Region))
-                    UpdateViewLevel();
             }
         }
 
@@ -349,42 +349,7 @@ namespace Dash
         }
 
         #endregion
-
-        #region StandardView
-        public enum StandardViewLevel
-        {
-            None = 0,
-            Overview = 1,
-            Region = 2,
-            Detail = 3
-        }
-
-        private StandardViewLevel _viewLevel = StandardViewLevel.None;
-        public StandardViewLevel ViewLevel
-        {
-            get => _viewLevel;
-            set
-            {
-                SetProperty(ref _viewLevel, value);
-                UpdateViewLevel();
-            }
-        }
-        private double _prevScale = 1;
-        public double PrevScale
-        {
-            get => _prevScale;
-            set => SetProperty(ref _prevScale, value);
-        }
-        private void UpdateViewLevel()
-        {
-            foreach (var dvm in DocumentViewModels)
-            {
-                dvm.ViewLevel = ViewLevel;
-                dvm.DecorationState = false;
-            }
-        }
-        #endregion
-
+        
         #region DragAndDrop
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
@@ -637,7 +602,7 @@ namespace Dash
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
-                                region.Link(sourceDoc, LinkTargetPlacement.Default);
+                                region.Link(sourceDoc, LinkBehavior.Annotate);
 
                             }
                             else
@@ -696,10 +661,13 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
+                var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move)
-                    ? DataPackageOperation.Move
-                    : e.DataView.RequestedOperation;
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
+                    ? DataPackageOperation.Move :
+                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ? 
+                        DataPackageOperation.Copy 
+                        : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
 
@@ -716,9 +684,37 @@ namespace Dash
                 //adds all docs in the group, if applicable
                 var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-                adornmentGroups.ForEach(dv => { AddDocument(dv.ViewModel.DataDocument); });
+                adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
 
-                AddDocuments(await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where));
+                var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+
+
+                //SelectionManager.DeselectAll();
+                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+
+                if (!MainPage.Instance.IsShiftPressed())
+                {
+                    foreach (var d in dragDocModels)
+                    {
+                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
+                        {
+                            if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
+                            {
+                                docsToAdd.Remove(d.DraggedDocuments[i]);
+                                if (d.DraggedDocumentViews[i] != null) {
+                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                                }
+                            }
+                            else
+                            {
+                                MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
+                                d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                            }
+                        }
+                    }
+                }
+                AddDocuments(docsToAdd);
+                e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
 
@@ -729,9 +725,17 @@ namespace Dash
         {
             HighlightPotentialDropTarget(sender as ICollectionView);
 
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            if (e.DragUIOverride != null)
+            {
+                e.DragUIOverride.IsGlyphVisible = false;
+                e.DragUIOverride.IsCaptionVisible = false;
 
-            e.DragUIOverride.IsContentVisible = true;
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                    ? DataPackageOperation.Copy
+                    : e.DataView.RequestedOperation;
+
+                e.DragUIOverride.IsContentVisible = true;
+            }
 
             e.Handled = true;
         }
@@ -743,14 +747,20 @@ namespace Dash
             MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
             HighlightPotentialDropTarget(sender as ICollectionView);
 
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            if (e.DragUIOverride != null)
+            {
+                e.DragUIOverride.IsGlyphVisible = false;
+                e.DragUIOverride.IsCaptionVisible = false;
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                    ? DataPackageOperation.Copy
+                    : e.DataView.RequestedOperation;
 
-            if (e.DataView.HasDataOfType(Internal) && !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
-                e.AcceptedOperation = DataPackageOperation.None;
+                if (e.DataView.HasDataOfType(Internal) &&
+                    !e.DataView.HasDroppableDragModels(sender as FrameworkElement))
+                    e.AcceptedOperation = DataPackageOperation.None;
 
-            if (e.DragUIOverride != null) e.DragUIOverride.IsContentVisible = true;
-
-            e.Handled = true;
+                e.DragUIOverride.IsContentVisible = true;
+            }
         }
 
         /// <summary>

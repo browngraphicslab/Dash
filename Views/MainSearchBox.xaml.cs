@@ -10,6 +10,7 @@ using System;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using System.Threading.Tasks;
 using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -19,6 +20,7 @@ namespace Dash
     public sealed partial class MainSearchBox
     {
         private int _selectedIndex = -1;
+        private bool _arrowBlock = false;
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -28,10 +30,21 @@ namespace Dash
         {
             InitializeComponent();
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+
+            _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+            _searchTimer.Tick += SearchTimerOnTick;
         }
+
+        private void SearchTimerOnTick(object sender, object o)
+        {
+            ExecuteDishSearch(xAutoSuggestBox);
+            _searchTimer.Stop();
+        }
+
         #endregion
 
         #region AutoSuggestBox Events
+        private DispatcherTimer _searchTimer = new DispatcherTimer();
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only get results when it was a user typing, 
@@ -42,7 +55,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+                _searchTimer.Start();
 
             }
         }
@@ -82,6 +95,11 @@ namespace Dash
             //xAutoSuggestBox.Text = "";
             UnHighlightAllDocs();
             _selectedIndex = -1;
+            if (!_arrowBlock)
+            {
+                MainPage.Instance.CollapseSearch();
+                _arrowBlock = false;
+            }
         }
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
@@ -114,7 +132,7 @@ namespace Dash
 
             foreach (object res in xAutoSuggestBox.Items)
             {
-                MainPage.Instance.HighlightDoc(((SearchResultViewModel) res).ViewDocument, false);
+                MainPage.Instance.HighlightDoc(((SearchResultViewModel)res).ViewDocument, false);
             }
 
             MainPage.Instance.HighlightDoc(docTapped, true);
@@ -126,7 +144,7 @@ namespace Dash
             DocumentController docTapped = viewModel?.ViewDocument;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
-        
+
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
             //var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController: thisController);
@@ -167,7 +185,7 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.AddDragModel(dragModel);
 
@@ -181,18 +199,19 @@ namespace Dash
             if (show)
             {
                 xCollectionDragBorder.Visibility = Visibility.Visible;
-                
+
             }
             else
             {
                 xCollectionDragBorder.Visibility = Visibility.Collapsed;
-                
+
             }
         }
 
 
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            _arrowBlock = true;
             if (xSearchCodeBox.Visibility == Visibility.Visible)
             {
                 var centX = (float)xArrow.ActualWidth / 2;
@@ -203,12 +222,12 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-               
+
             }
             else
             {
                 var centX = (float)xArrow.ActualWidth / 2 + 1;
-                var centY = (float) xArrow.ActualHeight / 2 + 1;
+                var centY = (float)xArrow.ActualHeight / 2 + 1;
                 //open search bar
                 xArrow.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
                     easingType: EasingType.Default).Start();
@@ -266,7 +285,7 @@ namespace Dash
 
             var note = new DishScriptBox(0, 0, 300, 400, script);
 
-            args.Data.AddDragModel(new DragDocumentModel(note.Document, true));
+            args.Data.AddDragModel(new DragDocumentModel(note.Document));
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -306,11 +325,11 @@ namespace Dash
             if (searchBox == null) return;
 
             UnHighlightAllDocs();
-            
+
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
 
-            var itemsSource = (ObservableCollection<SearchResultViewModel>) searchBox.ItemsSource;
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
@@ -355,7 +374,7 @@ namespace Dash
                 vmGroups.Add(newVm);
             }
 
-            var first = vmGroups 
+            var first = vmGroups
                 .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
@@ -407,7 +426,7 @@ namespace Dash
             if (colDocs != null)
                 foreach (DocumentController doc in colDocs)
                 {
-                   UnHighlightDocs(doc);
+                    UnHighlightDocs(doc);
                 }
         }
 
@@ -470,7 +489,7 @@ namespace Dash
 
         private void XAutoSuggestBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            
+
         }
 
         private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)

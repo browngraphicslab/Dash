@@ -32,7 +32,7 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid x:Name="xMasterStack" >
+    <Grid x:Name="xMasterStack">
         <Grid.RowDefinitions>
             <RowDefinition  Height="Auto"/>
             <RowDefinition  Height="*"/>
@@ -104,12 +104,6 @@
                 </Storyboard>
             </Border.Resources>
             <Grid>
-                <!--<Rectangle
-                    Fill="Gray"
-                    RadiusX="5"
-                    RadiusY="5"
-                    Opacity="0.5"
-                    Margin="0, 0, 0, 0"/>-->
                 <Grid Margin="0, 0, 0, 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -139,22 +133,9 @@
 
         </Border>
 
-        <Border x:Name="xTargetBorder" x:FieldModifier="public" Grid.Row="1">
+        <Border x:Name="xTargetBorder" x:FieldModifier="public" Grid.Row="1" >
             <Grid x:Name="LayoutRoot" BorderThickness="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="xLeftColumn" x:FieldModifier="public" Width="0" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition x:Name="xRightColumn" x:FieldModifier="public" Width="0" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition x:Name="xTopRow" x:FieldModifier="public" Height="0" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition x:Name="xBottomRow" x:FieldModifier="public" Height="0" />
-                </Grid.RowDefinitions>
-
-                <!--Main document view 
- 
-                     Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+                <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                 <Grid.ContextFlyout>
                     <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
 
@@ -190,72 +171,10 @@
                     </MenuFlyout>
                 </Grid.ContextFlyout>
 
-                <!--New resize handler controls-->
-
-                <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited" Visibility="Collapsed"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="0" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
-                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
-                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
-                               VerticalAlignment="Stretch" Grid.Row="0" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateX"
-                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="1" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateX"
-                               PointerEntered="X_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
-                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="0" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NESW_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               Grid.Row="2" PointerExited="AllResizers_PointerExited"  Visibility="Collapsed"
-                               Grid.Column="1" x:FieldModifier="public" ManipulationMode="TranslateY"
-                               PointerEntered="Y_Direction_PointerEntered" Fill="Transparent" />
-                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Stretch"  Visibility="Collapsed"
-                               VerticalAlignment="Stretch" Grid.Row="2" PointerExited="AllResizers_PointerExited"
-                               Grid.Column="2" x:FieldModifier="public" ManipulationMode="TranslateY, TranslateX"
-                               PointerEntered="NWSE_Direction_PointerEntered" Fill="Transparent" />
-
-                <Canvas x:Name="xShadowHost" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                <Rectangle x:Name="xDocumentBackground" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
-                <ContentPresenter x:Name="xContentPresenter" Grid.Row="1" Grid.Column="1" x:FieldModifier="public" Content="{Binding Content}" />
-                <Grid x:Name="xIcon" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                    </Grid.RowDefinitions>
-
-                    <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
-                        <Grid>
-                            <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"
-                                               Source="ms-appx:///Assets/Icons/doc-icon.png">
-                                <ToolTipService.ToolTip>
-                                    <Image x:Name="xToolTipPreview" Height="200"
-                                                       Source="ms-appx:///Assets/Icons/Unavailable.png">
-                                    </Image>
-                                </ToolTipService.ToolTip>
-                            </Image>
-                            <Image x:Name="xSmallIconImage" Height="35" Width="35"
-                                               HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                               Source="ms-appx:///Assets/Icons/doc-icon.png" />
-                        </Grid>
-                    </Border>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                        <TextBox x:Name="xIconLabel" FontSize="25" MaxWidth="86" MinHeight="5"
-                                             Padding="1,4,0,0" TextWrapping="Wrap" HorizontalAlignment="Center"
-                                             TextAlignment="Center" Background="Transparent"
-                                             Text="{Binding DocumentController.Title}" BorderThickness="0" />
-                    </StackPanel>
-                </Grid>
+                <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
+                <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
+                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
+                <Ellipse x:Name="xActivationMode" HorizontalAlignment="Right" VerticalAlignment="Top" Tapped="xActivationMode_Tapped" Visibility="Collapsed" Margin="0 -40 -40 0" Width="40" Height="40" Fill="Green" />
             </Grid>
         </Border>
 

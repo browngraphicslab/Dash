@@ -17,23 +17,18 @@ namespace Dash
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
         // == MEMBERS, GETTERS, SETTERS ==
-        DocumentController _lastLayout = null;
-        TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
-        bool _showLocalContext;
-        bool _decorationState = false;
-        public bool _isDeletedTemplate;
-        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
-        Thickness _searchHighlightState = new Thickness(0);
-        FrameworkElement _content = null;
+        private DocumentController _lastLayout = null;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
+        private bool               _showLocalContext;
+        private bool               _decorationState = false;
+        private Thickness          _searchHighlightState = new Thickness(0);
+        private FrameworkElement   _content = null;
 
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
             _lastLayout = LayoutDocument;
-            _isDeletedTemplate = false;
-            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
-            InteractiveManipulationScale = Scale;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
             IsSearchHighlighted = false;
@@ -71,17 +66,6 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
 
-        /// <summary>
-        /// The cached Position of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Position instead
-        /// </summary>
-        public Point InteractiveManipulationPosition;
-        /// <summary>
-        /// The cached Scale of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Scale instead
-        /// </summary>
-        public Point InteractiveManipulationScale;
-
         private SolidColorBrush _searchHighlightBrush;
 
         public bool IsAdornmentGroup
@@ -95,7 +79,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetPosition() ?? new Point();
-            set => LayoutDocument.SetPosition(InteractiveManipulationPosition = value);
+            set => LayoutDocument.SetPosition(value);
         }
         public double XPos
         {
@@ -120,7 +104,7 @@ namespace Dash
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
         public RectangleGeometry DragBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
@@ -176,11 +160,6 @@ namespace Dash
             set => SetProperty(ref _searchHighlightBrush, value);
         }
 
-        public CollectionViewModel.StandardViewLevel ViewLevel
-        {
-            get => _standardViewLevel;
-            set => SetProperty(ref _standardViewLevel, value);
-        }
 
         public async void ExpandBorder()
         {
