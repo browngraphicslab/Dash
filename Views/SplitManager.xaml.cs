@@ -392,7 +392,7 @@ namespace Dash
                 }
                 else
                 {
-                    //TODO Merge children with parents children because they must have the same CurSplitMode
+                    //TODO Splitting: Merge children with parents children because they must have the same CurSplitMode
                 }
             }
         }
