@@ -24,9 +24,10 @@ namespace DashShared
         Audio = 0x8000,
         Bool = 0x10000,
         Html = 0x20000,
+        Pdf = 0x40000,
         Reference = PointerReference | DocumentReference,
 
         Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle |
-              Key | Video | DateTime | Audio | Bool | Html
+              Key | Video | DateTime | Audio | Bool | Html | Pdf
     }
 }
