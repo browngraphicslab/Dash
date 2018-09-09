@@ -46,9 +46,11 @@ namespace Dash
 
             remove_first_exp,
             remove_exp,
+            replace,
 
             substring,
             index,
+            to_lower,
 
             // BINARY COMPARISONS
 
@@ -86,11 +88,15 @@ namespace Dash
 
             to_list,
             to_string,
+            parse_num,
+            contains,
 
             // DOCUMENTS
 
             data_document,
             data_doc,
+            link,
+            link_des_text,
 
                 // collections
                 coll,
@@ -103,6 +109,18 @@ namespace Dash
 
                 // lists
                 zip,
+                count,
+                len,
+
+                // templates
+                apply,
+                set_template,
+                templates,
+
+                // PDFs
+                references,
+                regex,
+                text,
 
             // COMMANDS
 

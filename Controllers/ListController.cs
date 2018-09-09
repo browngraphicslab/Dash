@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -15,9 +16,11 @@ namespace Dash
         public static bool Enabled = false;
     }
 
-    public class ListController<T> : BaseListController, IList<T> where T : FieldControllerBase
+    public class ListController<T> : BaseListController, /*/*INotifyCollectionChanged, */IList<T> where T : FieldControllerBase
     {
-        private const bool AvoidDuplicates = false; 
+        private const bool AvoidDuplicates = false;
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         #region // DATA //
 
@@ -28,8 +31,14 @@ namespace Dash
         public override List<FieldControllerBase> Data
         {
             get => TypedData.Cast<FieldControllerBase>().ToList();
-            set => TypedData = value.Cast<T>().ToList();
+            set
+            {
+                TypedData = value.Cast<T>().ToList();
+                //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace));
+            }
         }
+
+        //private void OnCollectionChanged(NotifyCollectionChangedEventArgs args) => CollectionChanged?.Invoke(this, args);
 
         /*
          * Wrapper to retrieve the list items stored in the ListController.
@@ -40,6 +49,8 @@ namespace Dash
             get => _typedData;
             set => SetTypedData(value);
         }
+
+        public bool IsEmpty => Count == 0;
 
         /*
          * Sets the data property and gives UpdateOnServer an UndoCommand 
@@ -66,7 +77,9 @@ namespace Dash
 
             var newEvent = new UndoCommand(() => SetTypedData(targetList, false), () => SetTypedData(prevList, false));
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, targetList, prevList, 0));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, targetList, prevList));
         }
 
         public void Set(IEnumerable<T> elements, bool withUndo = true)
@@ -91,7 +104,9 @@ namespace Dash
             }
 
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, enumerable, prevList, 0));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, enumerable, prevList));
         }
 
         #endregion
@@ -185,7 +200,9 @@ namespace Dash
 
             var newEvent = new UndoCommand(() => SetIndex(index, value, false), () => SetIndex(index, prevElement, false));
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, new List<T> { value }, new List<T> { prevElement }, index));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, new List<T> { value }, new List<T> { prevElement }));
         }
 
         //TODO: Remove this accessor - leverage new functionality to improve encapsulation
@@ -222,6 +239,10 @@ namespace Dash
          */
         public override StringSearchModel SearchForString(string searchString)
         {
+            if (string.IsNullOrEmpty(searchString))
+            {
+                return new StringSearchModel(true, ToString());
+            }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
             return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
@@ -240,8 +261,7 @@ namespace Dash
 
             string suffix = Count > cutoff ? $", ... +{Count - cutoff}" : "";
 
-            const string unindexed = "All available function calls...";
-            return Indexed ? $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]" : $"[{unindexed}]";
+            return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
         public override object GetValue(Context context) => TypedData.ToList();
@@ -250,7 +270,9 @@ namespace Dash
         {
             if (value is List<T> list)
             {
+                var prevList = TypedData;
                 TypedData = list;
+                //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, TypedData, prevList));
                 return true;
             }
             return false;
@@ -267,7 +289,7 @@ namespace Dash
             {
                 Debug.Assert(sender is T);
                 var fieldKey = dargs.Reference.FieldKey;
-                if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey) || fieldKey.Equals(KeyStore.HiddenKey))
+                if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey)/* || fieldKey.Equals(KeyStore.HiddenKey)*/)
                 {
                     OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }, null, 0), context);
                 }
@@ -309,6 +331,7 @@ namespace Dash
             UpdateOnServer(withUndo ? newEvent : null);
 
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, new List<T> { element }, prevList, prevList.Count - 1));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T> { element }));
         }
 
         private bool AddHelper(T element)
@@ -321,6 +344,11 @@ namespace Dash
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
             return true;
+        }
+        
+        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
+        {
+            throw new NotImplementedException();
         }
 
         public override void AddRange(IEnumerable<FieldControllerBase> elements)
@@ -370,6 +398,7 @@ namespace Dash
             UpdateOnServer(withUndo ? newEvent : null);
 
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count - 1));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, enumerable.ToList()));
         }
 
         // @IList<T> //
@@ -384,10 +413,13 @@ namespace Dash
             index = CheckedIndex(index, TypedData);
 
             TypedData.Insert(index, element);
+            ListModel.Data.Insert(index, element.Id);
 
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, new List<T> { element }, prevList, index));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T> { element }));
         }
 
         #endregion
@@ -412,7 +444,9 @@ namespace Dash
             var newEvent = new UndoCommand(() => RemoveManager(element, false), () => InsertManager(prevIndex, element, false));
 
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, TypedData, new List<T> { element }, prevIndex));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new List<T> { element }));
 
             return true;
         }
@@ -442,7 +476,9 @@ namespace Dash
             var newEvent = new UndoCommand(() => RemoveAtManager(index, false), () => InsertManager(index, element, false));
 
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, TypedData, new List<T> { element }, index));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new List<T> { element }));
         }
 
         private T RemoveAtHelper(int index)
@@ -472,14 +508,16 @@ namespace Dash
             foreach (var element in TypedData)
             {
                 element.FieldModelUpdated -= ContainedFieldUpdated;
-                ListModel.Data.Remove(element.Id);
             }
             TypedData.Clear();
+            ListModel.Data.Clear();
 
             var newEvent = new UndoCommand(() => ClearManager(false), () => SetTypedData(prevList, false));
 
             UpdateOnServer(withUndo ? newEvent : null);
+
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Clear, TypedData, prevList, 0));
+            //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         #endregion

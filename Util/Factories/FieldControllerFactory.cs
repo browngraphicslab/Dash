@@ -90,6 +90,9 @@ namespace Dash
                 case TypeInfo.Bool:
                     controller = new BoolController(model as BoolModel);
                     break;
+                case TypeInfo.Color:
+                    controller = new ColorController(model as ColorModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
                 case TypeInfo.Reference:
@@ -165,6 +168,9 @@ namespace Dash
                     break;
                 case TypeInfo.Bool:
                     controller = new ListController<BoolController>(model);
+                    break;
+                case TypeInfo.Color:
+                    controller = new ListController<ColorController>(model);
                     break;
                 case TypeInfo.Any:
                     //Debug.Fail("idk why you got here");
@@ -318,6 +324,42 @@ namespace Dash
                     break;
             }
             return controller;
+        }
+
+        private static Dictionary<Type, TypeInfo> _typeDictionary;
+
+        static FieldControllerFactory()
+        {
+            _typeDictionary = new Dictionary<Type, TypeInfo>
+            {
+                [typeof(TextController)] = TypeInfo.Text,
+                [typeof(ImageController)] = TypeInfo.Image,
+                [typeof(VideoController)] = TypeInfo.Video,
+                [typeof(AudioController)] = TypeInfo.Audio,
+                [typeof(RichTextController)] = TypeInfo.RichText,
+                [typeof(PointController)] = TypeInfo.Point,
+                [typeof(PointerReferenceController)] = TypeInfo.PointerReference,
+                [typeof(DocumentReferenceController)] = TypeInfo.DocumentReference,
+                [typeof(ReferenceController)] = TypeInfo.Reference,
+                [typeof(DocumentController)] = TypeInfo.Document,
+                [typeof(FieldControllerBase)] = TypeInfo.Any,
+                [typeof(RectController)] = TypeInfo.Rectangle,
+                [typeof(KeyController)] = TypeInfo.Key,
+                [typeof(BaseListController)] = TypeInfo.List,
+                [typeof(NumberController)] = TypeInfo.Number,
+                [typeof(BoolController)] = TypeInfo.Bool,
+            };
+        }
+
+        public static TypeInfo GetTypeInfo<T>() where T : FieldControllerBase
+        {
+            var type = typeof(T);
+            while (!_typeDictionary.ContainsKey(type))
+            {
+                type = type.BaseType;
+            }
+
+            return _typeDictionary[type];
         }
 
 

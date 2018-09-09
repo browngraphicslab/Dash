@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Syncfusion.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -83,6 +84,7 @@ namespace Dash
 
     public sealed partial class CollectionTimelineView : ICollectionView
     {
+        public UserControl UserControl => this;
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
@@ -110,7 +112,7 @@ namespace Dash
             };
 
             //Todo: make sortkey work for other keys
-            SortKey = KeyStore.ModifiedTimestampKey;
+            SortKey = KeyStore.DateModifiedKey;
 
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
@@ -172,6 +174,9 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        public void SetDropIndicationFill(Brush fill) { }
+
 
         #endregion
 
@@ -471,7 +476,6 @@ namespace Dash
         {
             UpdateTimeline();
         }
-
         #endregion
     }
 }

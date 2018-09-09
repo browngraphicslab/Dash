@@ -491,7 +491,7 @@ namespace Dash
                 case SyntaxKind.FunctionExpression:
                     var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
                    
-                    return new FunctionDeclarationExpression(funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
+                    return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
                     break;
                 case SyntaxKind.ArrowFunction:
                     break;
@@ -527,8 +527,8 @@ namespace Dash
                 case SyntaxKind.BinaryExpression:
                     var binaryExpr = node as BinaryExpression;
 
-                    var rightBinExpr = ParseToExpression(binaryExpr.Right);
-                    var leftBinExpr = ParseToExpression(binaryExpr.Left);
+                    ScriptExpression rightBinExpr = ParseToExpression(binaryExpr?.Right);
+                    ScriptExpression leftBinExpr = ParseToExpression(binaryExpr.Left);
 
                     switch (binaryExpr.OperatorToken.Kind)
                     {
@@ -623,16 +623,7 @@ namespace Dash
                                     rightBinExpr
                                 });
                                 case VariableExpression safeBinExpr:
-                                    if (!_undoVar)
-                                    {
-                                        return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
-                                        {
-                                            new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
-                                            rightBinExpr
-                                        });
-                                    }
-
-                                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
+                                    return new VariableAssignmentExpression(safeBinExpr.GetVariableName(), rightBinExpr, _undoVar);
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:
@@ -696,7 +687,8 @@ namespace Dash
                     return ParseToExpression(varStatement.DeclarationList);
                 case SyntaxKind.EmptyStatement:
                     //return empty string
-                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
+                    break;
+                    //return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                 case SyntaxKind.ExpressionStatement:
                     var exp = (node as ExpressionStatement).Expression;
                     return ParseToExpression(exp);
@@ -800,7 +792,7 @@ namespace Dash
                 case SyntaxKind.FunctionDeclaration:
                     var funDec = (node as FunctionDeclaration);
 
-                    return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None), _undoVar);
+                    return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Body.GetText(), funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None), _undoVar);
                 case SyntaxKind.ClassDeclaration:
                     break;
                 case SyntaxKind.InterfaceDeclaration:
@@ -978,7 +970,14 @@ namespace Dash
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
                     var parameters = new List<ScriptExpression>();
-                    var test = callExpr.Expression;
+                    INode callFunc = callExpr.Expression;
+                    var type = callExpr.Expression.Kind;
+
+                    if (type == SyntaxKind.PropertyAccessExpression)
+                    {
+                        parameters.Add(ParseToExpression(((PropertyAccessExpression)callFunc).First));
+                        callFunc = ((PropertyAccessExpression) callFunc).Last;
+                    }
 
 
                     foreach (var arg in callExpr.Arguments)
@@ -986,7 +985,7 @@ namespace Dash
                         parameters.Add(ParseToExpression(arg));
                     }
 
-                    var func = new FunctionExpression(parameters, callExpr?.IdentifierStr);
+                    var func = new FunctionExpression(parameters, ParseToExpression(callFunc));
                     return func;
 
                 default:
@@ -994,49 +993,5 @@ namespace Dash
             }
             return null;
         }
-
-        private class VariableDeclarationExpression : ScriptExpression
-        {
-            private readonly string _variableName;
-            private readonly ScriptExpression _value;
-            private readonly bool _unassignVar;
-
-            public VariableDeclarationExpression(string variableName, ScriptExpression value, bool unassignVar)
-            {
-                Debug.Assert(variableName != null);
-                _variableName = variableName;
-                _value = value;
-                _unassignVar = unassignVar;
-                if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
-            }
-
-            public override FieldControllerBase Execute(Scope scope)
-            {
-                if (_unassignVar)
-                {
-                    scope.DeleteVariable(_variableName);
-
-                    return new TextController("");
-                }
-
-                var value = scope.GetVariable(_variableName);
-                if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, value));
-                var val = _value.Execute(scope);
-                scope?.DeclareVariable(_variableName, val);
-
-                return val;
-            }
-
-            public override FieldControllerBase CreateReference(Scope scope)
-            {
-                throw new NotImplementedException();
-                //TODO tfs help with operator/doc stuff
-            }
-
-            //TODO tyler is this correct?
-            public override TypeInfo Type => TypeInfo.Any;
-        }
-
     }
-
 }

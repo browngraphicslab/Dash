@@ -104,12 +104,15 @@ namespace Dash
         {
             var bytes = JsonConvert.DeserializeObject<byte[]>(s);
             _strokeContainer.Clear();
-            MemoryStream stream = new MemoryStream(bytes);
-            using (var inputStream = stream.AsInputStream())
+            if (bytes != null)
             {
-                await _strokeContainer.LoadAsync(inputStream);
+                var stream = new MemoryStream(bytes);
+                using (var inputStream = stream.AsInputStream())
+                {
+                    await _strokeContainer.LoadAsync(inputStream);
+                }
+                stream.Dispose();
             }
-            stream.Dispose();
         }
 
         public override StringSearchModel SearchForString(string searchString)

@@ -27,7 +27,7 @@ namespace Dash
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
 
-        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200, RegionBox region = null)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
@@ -43,13 +43,15 @@ namespace Dash
            var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
+            
 
             // setup bindings on the image
-            SetupBindings(image, docController, context);
+            SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
-          
 
-            return editableImage;
+            var border = new Border();
+            border.Child = editableImage;
+            return border;
         }
 
 		protected static void SetupImageBinding(Image image, DocumentController controller,
@@ -71,10 +73,9 @@ namespace Dash
             image.AddFieldBinding(Image.SourceProperty, binding);
         }
 
-	    public static DocumentController MakeRegionDocument(DocumentView image)
+	    public static DocumentController MakeRegionDocument(DocumentView image, Point? point)
 	    {
-		    var im = image.GetFirstDescendantOfType<EditableImage>();
-		    return im.GetRegionDocument();
+		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }
 
 		

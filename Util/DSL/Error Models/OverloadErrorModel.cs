@@ -25,7 +25,7 @@ namespace Dash
             _validParamCounts.Sort();
         }
 
-        public override string GetHelpfulString() => "";
+        public override string GetHelpfulString() => _ambiguous ? "AmbiguousOverloadException" : "InvalidOverloadException";
 
         public override DocumentController BuildErrorDoc()
         {

@@ -11,27 +11,27 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    /// <summary>
-    /// Allows interactions with underlying DocumentModel.
-    /// </summary>
-	[DebuggerDisplay("DocumentController: {Tag}")]
+	/// <summary>
+	/// Allows interactions with underlying DocumentModel.
+	/// </summary>
+	//[DebuggerDisplay("DocumentController")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args,
-            Context context);
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
-        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary
-            = new Dictionary<KeyController, DocumentUpdatedHandler>();
+        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, DocumentUpdatedHandler>();
 
         public event EventHandler DocumentDeleted;
 
         public override string ToString()
         {
-            return "@"+Title;
+            string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";
+            return $"{prefix}{Title}";
         }
 
         /// <summary>
@@ -41,9 +41,11 @@ namespace Dash
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
+
         public DocumentController(DocumentModel model) : base(model)
         {
         }
+
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
@@ -60,7 +62,9 @@ namespace Dash
             Init();
         }
 
-        public override void Init()
+        public bool IsMovingCollections { get; set; }
+
+        public sealed override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
@@ -401,16 +405,29 @@ namespace Dash
             return true;
         }
 
-        public void Link(DocumentController target)
+		//links this => target
+        public DocumentController Link(DocumentController target, LinkBehavior behavior, string specTitle = null)
         {
-            var linkDocument = new RichTextNote("<link description>").Document;
-            
-            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
-            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { this }));
-            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { target }));
+			//document that represents the actual link
+            var linkDocument = new RichTextNote("New link description...").Document;
+
+	        if (specTitle == null)
+	        {
+                //create unique, default tag 
+                specTitle = "Annotation";
+	        }
+
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
+            linkDocument.GetDataDocument().SetLinkBehavior(behavior);
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle, true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
+            target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
+            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
+            return linkDocument;
         }
-        
+		
+
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
@@ -458,7 +475,7 @@ namespace Dash
         /// <param name="value">the value being added to the list</param>
         public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
-            GetDereferencedField<ListController<T>>(key, null)?.Add(value);
+            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
 
             foreach (var d in GetDelegates().TypedData)
             {
@@ -905,11 +922,25 @@ namespace Dash
             {
                 UpdateOnServer(withUndo ? newEvent : null);
             }
+
+            if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
+            {
+                if (doc.DocumentType.Equals(TemplateBox.DocumentType))
+                {
+                    // TODO: ask tyler about this next line? -sy
+                    //TypeInfo = TypeInfo.Template;
+                }
+            }
+
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
             where TDefault : FieldControllerBase, new()
         {
+            if (v is FieldControllerBase)
+            {
+                Debug.Fail("This method should be used when you have the data for a field, not a field itself. If you have a field, use the non-generic SetField, if you are passing in a field you just created, just pass the data into this instead of making a new field");
+            }
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
             {
@@ -936,6 +967,7 @@ namespace Dash
         /// </summary>
         public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
         {
+            //TODO this should delay field updates until all fields are set
             bool shouldSave = false;
             var oldFields = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var kv in fields)
@@ -964,10 +996,9 @@ namespace Dash
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             // TODO this should cause an operator to execute and return the proper value
-            var fieldController = GetField(key);
             context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
             context.AddDocumentContext(this);
-            return fieldController?.DereferenceToRoot(context ?? new Context(this));
+            return new DocumentFieldReference(this, key).DereferenceToRoot(context);
         }
 
         /// <summary>
@@ -1052,14 +1083,34 @@ namespace Dash
         public Context ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update=true)
         {
             context = context ?? new Context(this);
-            var opFields = GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
-            if (opFields != null)
-                foreach (var opField in opFields.TypedData)
+            HashSet<Type> usedOperators = new HashSet<Type>();
+            List<OperatorController> ops = new List<OperatorController>();
+            var proto = this;
+            while (proto != null)
+            {
+                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true);
+                if (opFields != null)
                 {
-                    var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
-                    if (exec)
-                        context = Execute(opField, context, update, args);
+                    foreach (var operatorController in opFields)
+                    {
+                        if (usedOperators.Contains(operatorController.GetType()))
+                        {
+                            continue;
+                        }
+
+                        ops.Add(operatorController);
+                    }
                 }
+
+                proto = proto.GetPrototype();
+            }
+
+            foreach (var opField in ops)
+            {
+                var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
+                if (exec)
+                    context = Execute(opField, context, update, args);
+            }
             return context;
         }
 
@@ -1265,7 +1316,7 @@ namespace Dash
             DocumentDeleted?.Invoke(this, EventArgs.Empty);
         }
 
-        public override TypeInfo TypeInfo { get; }
+        public override TypeInfo TypeInfo => TypeInfo.Document;
 
         public override bool TrySetValue(object value)
         {
@@ -1277,16 +1328,16 @@ namespace Dash
             return this;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new DocumentController();
-        }
+        public override FieldControllerBase GetDefaultController() => new DocumentController();
 
         public override StringSearchModel SearchForString(string searchString)
         {
+            //var positiveKeys = EnumDisplayableFields().Where(field => field.Key.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //var positiveVals = EnumDisplayableFields().Where(field => field.Value.SearchForString(searchString) != StringSearchModel.False).ToList();
+            //if (positiveVals.Any()) return new StringSearchModel(positiveVals[0].Value.ToString()); 
             return StringSearchModel.False;
-            //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
+
         #endregion
 
         // == OVERRIDEN FROM OBJECT ==
@@ -1379,6 +1430,7 @@ namespace Dash
 
 
         static string spaces = "";
+
         void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
@@ -1459,28 +1511,5 @@ namespace Dash
 
         #endregion
 
-		/// <summary>
-		/// Decides whether or not this pin should now be hidden or stay shown, and then reverses the setting
-		/// </summary>
-		/// <returns></returns>
-	    public void TogglePinUnpin()
-	    {
-		    var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
-
-		    // reverse the setting
-		    SetField(KeyStore.AnnotationVisibilityKey, new BoolController(!isCurrentlyPinned), true);
-		    this.SetHidden(!isCurrentlyPinned);
-	    }
-
-		/// <summary>
-		/// Sets the visibility based on pinned or unpinned.
-		/// </summary>
-	    public void ResetPinVisibility()
-		{
-			var isCurrentlyPinned = GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
-			this.SetHidden(!isCurrentlyPinned);
-		}
-
-		
     }
 }

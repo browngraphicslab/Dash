@@ -37,7 +37,7 @@ namespace Dash
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
 				AreTransportControlsEnabled = true,
-                MinWidth = 250,
+                MinWidth = 200,
                 MinHeight = 100
 			};
 
@@ -49,6 +49,11 @@ namespace Dash
 					video.IsFullWindow = false;
 				}
 			};
+
+			video.TransportControls.IsCompact = true;
+			video.PointerEntered += (s, e) => video.TransportControls.Show();
+			video.PointerExited += (s, e) => video.TransportControls.Hide();
+            video.Unloaded += (s, e) => video.MediaPlayer.Pause();
 
 			// setup bindings on the video
 			SetupBindings(video, docController, context);

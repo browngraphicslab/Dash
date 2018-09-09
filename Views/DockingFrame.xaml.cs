@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using static Dash.DataTransferTypeInfo;
 
 //The User Control item template is documented at https:
 //using Dash;
@@ -91,26 +85,25 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch,
                 ViewModel =
                         {
-                            Width = Double.NaN,
-                            Height = Double.NaN,
-                            DisableDecorations = true
+                            Width = double.NaN,
+                            Height = double.NaN,
+                            Undecorated = false
                         }
             };
 
             DockedView dockedView = new DockedView(dir, toDock);
-            dockedView.NestedLengthChanged += OnNestedLengthChanged;
             dockedView.ChangeView(copiedView);
-            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
-            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
 
             if (_firstDock[(int)dir])
             {
                 // make a new ListController
                 _dockControllers[(int)dir] = new ListController<DocumentController>(toDock);
-                double length = 300;
+                double length = 500;
 
                 if (toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null) == null)
+                {
                     toDock.SetField(KeyStore.DockedLength, new NumberController(length), true);
+                }
                 else
                     length = toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data;
 
@@ -166,8 +159,10 @@ namespace Dash
 
         private void OnNestedLengthChanged(object sender, GridSplitterEventArgs e)
         {
-            e.DocumentToUpdate.SetField(KeyStore.DockedLength, new NumberController(e.NewLength), true);
+            e.DocumentToUpdate.SetField<NumberController>(KeyStore.DockedLength, e.NewLength, true);
         }
+
+
 
         private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
         {
@@ -177,9 +172,15 @@ namespace Dash
             Grid.SetRowSpan(e, rowSpan);
         }
 
+        public void HighlightDock(Point pt)
+        {
+            HighlightDock(GetDockIntersection(new Rect(pt, new Size(10, 10))));
+        }
         public void HighlightDock(DockDirection dir)
         {
-            _highlightRecs[(int)dir].Opacity = 0.4;
+            if (dir != DockDirection.None)
+                _highlightRecs[(int)dir].Opacity = 0.4;
+            else UnhighlightDock();
         }
 
         public void UnhighlightDock()
@@ -193,6 +194,13 @@ namespace Dash
         public void Undock(DockedView undock)
         {
             _dockControllers[(int)undock.Direction].Remove(undock.ContainedDocumentController);
+
+            //If any rich text boxes have been set to wrap when docked, revert to previous unwrapped state
+            foreach (DocumentController doc in _dockControllers[(int)undock.Direction])
+            {
+                doc.SetField<NumberController>(KeyStore.TextWrappingKey, (int) TextWrapping.NoWrap, true);
+            }
+
             // means it's the last NestedView
             if (undock.NestedView == null)
             {
@@ -313,7 +321,7 @@ namespace Dash
 
         private void xRightSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[1].GetElements().First(), NewLength = xRightDockColumn.Width.Value });
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate =  _dockControllers[1].GetElements().First(), NewLength = xRightDockColumn.Width.Value });
         }
 
         private void xLeftSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -330,5 +338,78 @@ namespace Dash
         {
             OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[3].GetElements().First(), NewLength = xBottomDockRow.Height.Value });
         }
+
+        private void xDockLeft_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Left);
+        }
+
+        private async void HandleDrop(DragEventArgs e, DockDirection dir)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                e.Handled = true;
+                UnhighlightDock();
+                // accept move, then copy, and finally accept whatever they requested (for now)
+                if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+                    e.AcceptedOperation = DataPackageOperation.Move;
+                else e.AcceptedOperation = e.DataView.RequestedOperation;
+
+                //if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                //{
+                //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                //    Dock(dragModel.GetDropDocument(new Point()), dir);
+                //}
+                // if we drag from the file system
+                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+                {
+                    try
+                    {
+                        var droppedDoc = await FileDropHelper.HandleDrop(e.DataView, new Point());
+                        Dock(droppedDoc, dir);
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.WriteLine(exception);
+                    }
+                }
+            }
+        }
+
+        private void xDockRight_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Right);
+        }
+
+        private void xDockTop_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Top);
+        }
+
+        private void xDockBottom_Drop(object sender, DragEventArgs e)
+        {
+            HandleDrop(e, DockDirection.Bottom);
+        }
+
+        private void xDockLeft_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.HasDataOfType(Internal))
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            }
+
+            if (e.DataView?.Properties.ToList().Count == 0)
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+        }
+
+        private void xDockLeft_DragLeave(object sender, DragEventArgs e)
+        {
+
+        }
+
+       
     }
 }

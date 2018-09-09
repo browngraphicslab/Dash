@@ -35,7 +35,7 @@ namespace Dash
             {
                 if (!catchErrors) throw e;
 
-                if (e is ScriptExecutionException doc) return doc.Error.GetErrorDoc(); 
+                if (e is ScriptExecutionException exception) return exception.Error.GetErrorDoc(); 
                 return new TextController(e.GetHelpfulString());
             }
         }

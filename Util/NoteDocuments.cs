@@ -44,8 +44,14 @@ namespace Dash
         /// <returns></returns>
         protected DocumentController makeDataDelegate(FieldControllerBase controller)
         {
-            var dataDocument = _prototype.MakeDelegate();
+            DocumentController dataDocument = _prototype.MakeDelegate();
+            
             dataDocument.SetField(KeyStore.DataKey, controller, true);
+            dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
+            dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
+            dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, dataDocument.DocumentType.Type, true);
+            dataDocument.SetField<TextController>(KeyStore.AuthorKey, "avd", true);
+            
             return dataDocument;
         }
 

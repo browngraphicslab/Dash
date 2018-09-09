@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
-using Dash.Models.DragModels;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -50,10 +49,11 @@ namespace Dash
                 //Recursive cases
                 case DocumentController doc:
                     bool isError = doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType);
+                    bool isFieldNote = doc.DocumentType.Equals(DashConstants.TypeStore.FieldContentNote);
                     var fields = ViewModel.DisplayableOnly ? doc.EnumDisplayableFields() : doc.EnumFields(); 
                     foreach (var field in fields)
                     {
-                        if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height") || isError && field.Key.Name.ToLower().Equals("title")) continue;
+                        if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height") || (isError || isFieldNote) && field.Key.Name.ToLower().Equals("title")) continue;
                         string indentOffset = field.Value is BaseListController list && list.Count == 0 ? "   " : "";
                         xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                         {
@@ -140,7 +140,7 @@ namespace Dash
             xChildren.Visibility = _arrowState == ArrowState.Open ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController) && !(value is ReferenceController);
+        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController list && !list.ToString().Equals("[<empty>]")) && !(value is ReferenceController);
 
         private void XSnapshotArrowBlock_OnRightTapped(object sender, RightTappedRoutedEventArgs e) => CollapseAllChildren();
 
@@ -194,9 +194,9 @@ namespace Dash
 
         private void XNode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
-            var outputData = output.Value;
-            if (outputData.GetType().BaseType.FullName == "Dash.BaseListController")
+            var output = (sender as FrameworkElement)?.DataContext as ReplLineViewModel;
+            FieldControllerBase outputData = output?.Value;
+            if (outputData?.GetType().BaseType.FullName == "Dash.BaseListController")
             {
                 //make list output readable
                 outputData = new TextController(outputData.ToString());
@@ -204,7 +204,7 @@ namespace Dash
             }
             DocumentController dataBox = new DataBox(outputData).Document;
             dataBox.SetWidth(80.0);
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
+            args.Data.AddDragModel(new DragDocumentModel(dataBox));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

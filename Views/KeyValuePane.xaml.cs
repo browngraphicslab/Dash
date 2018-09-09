@@ -1,11 +1,8 @@
-﻿using Dash.Models.DragModels;
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -37,7 +34,7 @@ namespace Dash
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
-        public KeyValuePane()
+        public KeyValuePane(bool AllowClose = false)
         {
             InitializeComponent();
 
@@ -46,6 +43,11 @@ namespace Dash
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+
+            if (AllowClose)
+            {
+                xCloseButton.Visibility = Visibility.Collapsed;
+            }
 
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
@@ -66,15 +68,11 @@ namespace Dash
 
         private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView?.StyleKeyValuePane();
-
-
-            var currPageBinding = new FieldBinding<TextController>()
+            var currPageBinding = new FieldBinding<TextController>
             {
                 Mode = BindingMode.TwoWay,
-                Document = docView.ViewModel.DataDocument,
-                Key = KeyStore.TitleKey,
+                Document = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument,
+                Key = KeyStore.TitleKey
             };
             xTitleBlock.AddFieldBinding(TextBlock.TextProperty, currPageBinding);
         }
@@ -169,37 +167,37 @@ namespace Dash
         /// </summary>
         private void AddKeyValuePair()
         {
-            UndoManager.StartBatch();
-            var key = new KeyController(xNewKeyText.Text);
-            var stringValue = xNewValueText.Text;
-
-            FieldControllerBase fmController;
-
-            try
+            using (UndoManager.GetBatchHandle())
             {
-                //fmController = DSL.InterpretUserInput(stringValue, true);
-                fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
-            }
-            catch (DSLException e)
-            {
-                fmController = new TextController(e.GetHelpfulString());
-            }
+                var key = new KeyController(xNewKeyText.Text);
+                var stringValue = xNewValueText.Text;
 
-            activeContextDoc.SetField(key, fmController, true);
-            
-            // reset the fields to the empty values
-            xNewKeyText.Text = "";
-            xNewValueText.Text = "";
-            xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
+                FieldControllerBase fmController;
 
-            UndoManager.EndBatch();
-            return;
+                try
+                {
+                    //fmController = DSL.InterpretUserInput(stringValue, true);
+                    fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
+                }
+                catch (DSLException e)
+                {
+                    fmController = new TextController(e.GetHelpfulString());
+                }
+
+                activeContextDoc.SetField(key, fmController, true);
+
+                // reset the fields to the empty values
+                xNewKeyText.Text = "";
+                xNewValueText.Text = "";
+                xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
+            }
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.DeleteDocument();
+            using (UndoManager.GetBatchHandle())
+                docView.DeleteDocument();
             e.Handled = true;
         }
 
@@ -258,13 +256,16 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                // check key field is filled in
-                if (xNewKeyText.Text != "")
-                {
-                    AddKeyValuePair();
-                    xNewKeyText.Focus(FocusState.Programmatic);
-                }
-                xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
+	            using (UndoManager.GetBatchHandle())
+	            {
+		            // check key field is filled in
+		            if (xNewKeyText.Text != "")
+		            {
+			            AddKeyValuePair();
+			            xNewKeyText.Focus(FocusState.Programmatic);
+		            }
+		            xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
+				}
             }
         }
 
@@ -285,8 +286,7 @@ namespace Dash
         {
             var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
-            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            if (key != null)
+            if (xKeyListView.ContainerFromIndex(index) is ListViewItem key)
                 key.Style = Resources["ExpandBox"] as Style;
         }
 
@@ -294,17 +294,16 @@ namespace Dash
         {
             var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
-            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            if (key != null)
+            if (xKeyListView.ContainerFromIndex(index) is ListViewItem key)
                 key.Style = Resources["CollapseBox"] as Style;
         }
         
-        private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        private void XFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
-            foreach (var m in args.Items)
+            foreach (object m in args.Items)
             {
-                var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
-                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
+                var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel)?.Key);
+                args.Data.AddDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -320,7 +319,7 @@ namespace Dash
         {
             foreach (var m in args.Items)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
+                args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -330,15 +329,31 @@ namespace Dash
         private void SwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _showDataDoc = !_showDataDoc;
-            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
-            this.SetListItemSourceToCurrentDataContext();
+            xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+
+            OffsetMarginOnToggle();
+
+            SetListItemSourceToCurrentDataContext();
         }
 
         private void xDocBlock_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _showDataDoc = !_showDataDoc;
-            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
-            this.SetListItemSourceToCurrentDataContext();
+            xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+
+            OffsetMarginOnToggle();
+
+            SetListItemSourceToCurrentDataContext();
+        }
+
+        private void OffsetMarginOnToggle()
+        {
+            var margin = new Thickness
+            {
+                Top = -4,
+                Left = xDocBlock.Text.Equals("Data") ? -12 : -30
+            };
+            xDocBlock.Margin = margin;
         }
     }
 }

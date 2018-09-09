@@ -5,7 +5,7 @@ var loadBarTo = function () {
     var loadingBar = document.getElementById("loadingBar");
 
     if (loadingBarWidth >= loadToPercentage) {
-        if (loadingBarWidth == 100) {
+        if (loadingBarWidth === 100) {
             setTimeout(function() {
                     loadingBar.style.width = 0;
                     loadingBarWidth = 0;
@@ -27,9 +27,10 @@ document.addEventListener('DOMContentLoaded',
             function (tab) {
                 //tab.url can now be used to get url
                 let url = tab.url;
-                if (url.includes("docs.google.com") || url.includes(".pdf") || url.includes(".PDF")) {
+                //TODO: if local files are fixed, removed the check for not file in url
+                if (url.includes("docs.google.com") || ((url.includes(".pdf") || url.includes(".PDF")) && !url.includes("file"))) {
                     //google doc is open
-                    document.getElementById("addDoc").style.visibility = "visible";
+                    document.getElementById("addDocButton").style.visibility = "visible";
                 } 
             });
 
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded',
                                         xhr.onload = function() {
                                             //only continue if successful
                                             console.log(xhr.status);
+                                            console.log(xhr);
                                             if (xhr.status === 200) {
                                                 var res = xhr.response;
 
@@ -86,11 +88,13 @@ document.addEventListener('DOMContentLoaded',
                                                 var data = btoa(pdf);
                                                 var request = {
                                                     "$type": "Dash.GSuiteImportRequest, Dash",
-                                                    "data": data
+                                                    "data": data,
+                                                    "url": tab.url
                                                 }
+                                                console.log(request);
                                                 chrome.runtime.sendMessage({ type: "sendRequest", data: request });
 
-                                            }
+                                            } 
 
                                             loadToPercentage = 100;
                                             loadBarTo();

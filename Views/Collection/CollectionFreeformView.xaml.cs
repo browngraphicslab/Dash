@@ -1,36 +1,9 @@
-﻿using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using Microsoft.Graphics.Canvas.UI.Xaml;
 using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI;
-using Windows.UI.Text;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Xaml.Media.Animation;
-using Dash.Annotations;
-using Dash.Views.Collection;
-using DashShared;
-using NewControls.Geometry;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -38,35 +11,32 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView
     {
-        public CollectionFreeformView(): base()
+        public CollectionFreeformView()
         {
             InitializeComponent();
+
             DataContextChanged += OnDataContextChanged;
             Loaded += OnLoad;
-            Unloaded += OnUnload;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
-            xOuterGrid.PointerPressed  += OnPointerPressed;
+            xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
-
-        protected override void OnLoad(object sender, RoutedEventArgs e)
+        ~CollectionFreeformView()
         {
-            base.OnLoad(sender, e);
-            if (ViewModel.PrevScale != 0)
-                ViewManipulationControls.ElementScale = ViewModel.PrevScale;
-            ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            SelectionManager.RefreshSelected(this.GetDescendantsOfType<DocumentView>());
+            Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
-        public override Canvas GetCanvas()
+        private void OnLoad(object sender, RoutedEventArgs e)
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+        }
+
+        public override Panel GetCanvas()
+        {
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
@@ -81,9 +51,9 @@ namespace Dash
             return xItemsControl;
         }
 
-        public override CanvasControl GetBackgroundCanvas()
+        public override ContentPresenter GetBackgroundContentPresenter()
         {
-            return xBackgroundCanvas;
+            return xBackgroundContentPresenter;
         }
 
         public override Grid GetOuterGrid()
@@ -109,6 +79,18 @@ namespace Dash
         public override Canvas GetInkHostCanvas()
         {
             return InkHostCanvas;
-        }                
+        }
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
+        }
     }
 }

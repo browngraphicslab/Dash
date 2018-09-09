@@ -47,7 +47,8 @@ namespace Dash
             //SetupBindings(pdfView, docController, context);
             //SetupPdfBinding(pdf, docController, context);
 
-            var pdfView = new CustomPdfView(docController);
+            MainPage.Instance.TogglePopup();
+            var pdfView = new PdfView(docController);
             SetupBindings(pdfView, docController, context);
             SetupPdfBinding(pdfView, docController, context);
             
@@ -59,12 +60,12 @@ namespace Dash
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
-        public static DocumentController MakeRegionDocument(DocumentView documentView)
+        public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
-            var pdf = documentView.GetFirstDescendantOfType<CustomPdfView>();
-            return pdf.GetRegionDocument();
+            return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
-        protected static void SetupPdfBinding(CustomPdfView pdf, DocumentController controller,
+
+        protected static void SetupPdfBinding(PdfView pdf, DocumentController controller,
             Context context)
         {
 
@@ -83,7 +84,7 @@ namespace Dash
             BindPdfSource(pdf, controller, context);
         }
 
-        protected static void BindPdfSource(CustomPdfView pdf, DocumentController docController, Context context)
+        protected static void BindPdfSource(PdfView pdf, DocumentController docController, Context context)
         {
             var binding = new FieldBinding<PdfController>()
             {
@@ -93,7 +94,7 @@ namespace Dash
                 Context = context,
                 //Converter = UriToStreamConverter.Instance
             };
-            pdf.AddFieldBinding(CustomPdfView.PdfUriProperty, binding);
+            pdf.AddFieldBinding(PdfView.PdfUriProperty, binding);
         }
     }
 }

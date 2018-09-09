@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -35,6 +36,7 @@ namespace Dash
             {
                 return scope[_variableName];
             }
+
             throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
         }
 

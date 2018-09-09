@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -21,8 +22,8 @@ namespace Dash
     {
         #region instance variables
 
-        public RichTextView richTextView { get; set; }
-        public RichEditBox xRichEditBox { get; set; }
+        private RichTextView richTextView { get; set; }
+        private RichEditBox xRichEditBox { get; set; }
 
         /// <summary>
         /// Default rich text paragraph format (text alignment, list, spacing... ect.)
@@ -39,34 +40,48 @@ namespace Dash
         /// </summary>
         public WordCount WC;
 
-        ObservableCollection<FontFamily> FontFamilyNames = new ObservableCollection<FontFamily>();
+        public ObservableCollection<TextBlock> FontFamilyNames { get; } = new ObservableCollection<TextBlock>();
+
+        private bool _fontSizeChanged = false;
+        private bool _fontSizeTextChanged = false;
+        private bool _fontFamilyChanged = false;
 
         #endregion
-
-	    private TextSubtoolbar _textToolbar;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public FormattingMenuView(TextSubtoolbar textToolbar)
+        public FormattingMenuView()
         {
             this.InitializeComponent();
-	        _textToolbar = textToolbar;
             Loaded += FormattingMenuView_Loaded;
-        }
-
-
-        private void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
-        {  
-            WC = new WordCount(xRichEditBox);
-	        xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
-	        xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
             SetUpFontFamilyComboBox();
             SetUpFontSizeComboBox();
+            Loading += (sender, args) =>
+            {
+                UpdateFontFamilyDisplay();
+                UpdateFontSizeDisplay();
+            };
         }
 
-	    private List<double> _sizes;
-	    private List<string> _fontNames;
+
+        public void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
+        {
+            WC = new WordCount(xRichEditBox);
+            //xBackgroundColorPicker.ParentFlyout = xBackgroundColorFlyout;
+            //xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
+        }
+
+        public void SetRichTextBinding(RichTextView view)
+        {
+            richTextView = view;
+            xRichEditBox = view.xRichEditBox;
+            UpdateFontFamilyDisplay();
+            UpdateFontSizeDisplay();
+        }
+
+        private List<double> _sizes;
+        private List<string> _fontNames;
 
         #region set up ComboBoxes
 
@@ -75,58 +90,70 @@ namespace Dash
         /// </summary>
         private void SetUpFontFamilyComboBox()
         {
+            //people like lots of fancy and pretty fonts
             _fontNames = new List<string>()
             {
                 "Arial",
+                "Bahnschrift",
+                "Bauhaus 93",
+                "Bodoni MT",
+                "Broadway",
+                "Brush Script MT",
                 "Calibri",
                 "Cambria",
-                "Cambria Math",
+                "Castellar",
+                "Century Gothic",
                 "Comic Sans MS",
                 "Courier New",
-                "Ebrima",
-                "Gadugi",
+                "Elephant",
+                "French Script MT",
+                "Futura",
+                "Garamond",
                 "Georgia",
-                "Javanese Text Regular Fallback font for Javanese script",
-                "Leelawadee UI",
+                "Impact",
+                "Ink Free",
                 "Lucida Console",
-                "Malgun Gothic",
-                "Microsoft Himalaya",
-                "Microsoft JhengHei",
-                "Microsoft JhengHei UI",
-                "Microsoft New Tai Lue",
-                "Microsoft PhagsPa",
-                "Microsoft Tai Le",
-                "Microsoft YaHei",
-                "Microsoft YaHei UI",
-                "Microsoft Yi Baiti",
-                "Mongolian Baiti",
+                "Monotype Corsiva",
                 "MV Boli",
-                "Myanmar Text",
-                "Nirmala UI",
-                "Segoe MDL2 Assets",
+                "Old English Text MT",
+                "Papyrus",
+                "Rockwell",
                 "Segoe Print",
                 "Segoe UI",
-                "Segoe UI Emoji",
-                "Segoe UI Historic",
-                "Segoe UI Symbol",
                 "SimSun",
+                "Stencil",
                 "Times New Roman",
                 "Trebuchet MS",
                 "Verdana",
-                "Webdings",
-                "Wingdings",
-                "Yu Gothic",
-                "Yu Gothic UI"
+                "Yu Gothic UI",
+                "Webdings"
             };
 
             foreach (var font in _fontNames)
             {
-                FontFamilyNames.Add(new FontFamily(font));
+                var newBlock = new TextBlock
+                {
+                    Text = font,
+                    FontFamily = new FontFamily(font)
+                };
 
+                FontFamilyNames.Add(newBlock);
             }
+        }
 
-            var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
-            xFontFamilyComboBox.SelectedIndex = _fontNames.IndexOf(currentFontStyle);
+        private void UpdateFontFamilyDisplay()
+        {
+
+            if (xFontFamilyComboBox.Items.Count > 0)
+            {
+                var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
+                var index = _fontNames.IndexOf(currentFontStyle);
+                if (xFontFamilyComboBox.SelectedIndex != index)
+                {
+                    _fontFamilyChanged = true;
+                    xFontFamilyComboBox.SelectedIndex = index;
+                }
+            }
         }
 
 
@@ -168,8 +195,19 @@ namespace Dash
                 xFontSizeComboBox.Items.Add(num);
             }
 
+        }
+
+        private void UpdateFontSizeDisplay()
+        {
             var currentFontSize = xRichEditBox.Document.Selection.CharacterFormat.Size;
-            xFontSizeComboBox.SelectedIndex = _sizes.IndexOf(currentFontSize);
+            var index = _sizes.IndexOf(currentFontSize);
+            if (index != xFontSizeComboBox.SelectedIndex)
+            {
+                _fontSizeChanged = true;
+                _fontSizeTextChanged = true;
+                xFontSizeComboBox.SelectedIndex = index;
+                xFontSizeTextBox.Text = currentFontSize.ToString();
+            }
         }
 
         #endregion
@@ -209,14 +247,16 @@ namespace Dash
             richTextView.SmallCaps(true);
         }
 
-        private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Superscript(true);
+            using (UndoManager.GetBatchHandle())
+                richTextView.Superscript(true);
         }
 
-        private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Subscript(true);
+            using (UndoManager.GetBatchHandle())
+                richTextView.Subscript(true);
         }
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -262,74 +302,148 @@ namespace Dash
                 richTextView.Marker(MarkerType.UnicodeSequence, true);
             }
         }
-        
+
         #endregion
 
         #region ComboBox
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-			var comboBox = sender as ComboBox;
-            var selectedFontFamily = comboBox.SelectedValue as FontFamily;
-	        
-	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-	        {
-		        xRichEditBox.Focus(FocusState.Pointer);
-				xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
-			}
+            if (!_fontFamilyChanged)
+            {
+                var comboBox = sender as ComboBox;
+                var selectedFontFamily = (comboBox.SelectedValue as TextBlock).FontFamily;
 
-	        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-			
+                using (UndoManager.GetBatchHandle())
+                {
+                    //select all if nothing is selected
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                        xRichEditBox.Document.Selection.SetRange(end, end);
+                    }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+                    }
+
+                    richTextView.UpdateDocumentFromXaml();
+                }
+            }
+            else
+            {
+                _fontFamilyChanged = false;
+            }
         }
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = sender as ComboBox;
             var selectedFontSize = comboBox?.SelectedValue;
-	        if (selectedFontSize != null)
-	        {
-		        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-		        {
-			        //xRichEditBox.Document.CaretPosition.MoveToPosition(this.radRichTextBox.Document.Selection.Ranges.First.EndPosition);
-					xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
-		        }
-		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
-			}
-               
+            if (selectedFontSize == null)
+            {
+                return;
+            }
+            _fontSizeTextChanged = true;
+            xFontSizeTextBox.Text = selectedFontSize.ToString();
+            if (!_fontSizeChanged)
+            {
+                if (selectedFontSize != null)
+                {
+                    //select all if nothing is selected
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                            xRichEditBox.Document.Selection.EndPosition)
+                        {
+                            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                            var end = text.Length;
+                            xRichEditBox.Document.Selection.SetRange(0, end);
+                            xRichEditBox.Document.Selection.CharacterFormat.Size =
+                                (float)Convert.ToDouble(selectedFontSize.ToString());
+                            xRichEditBox.Document.Selection.SetRange(end, end);
+                        }
+                        else
+                        {
+                            xRichEditBox.Document.Selection.CharacterFormat.Size =
+                                (float)Convert.ToDouble(selectedFontSize.ToString());
+                        }
+
+                        richTextView.UpdateDocumentFromXaml();
+                    }
+                }
+            }
+            else
+            {
+                _fontSizeChanged = false;
+            }
         }
 
+
+        private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_fontSizeTextChanged)
+            {
+                var selectedFontSize = xFontSizeTextBox.Text;
+
+                if (!double.TryParse(selectedFontSize, out double fontSize))
+                {
+                    return;
+                }
+                if (fontSize > 1600)
+                {
+                    return;
+                }
+                using (UndoManager.GetBatchHandle())
+                {
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+                        xRichEditBox.Document.Selection.SetRange(end, end);
+                    }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
+                    }
+
+                    richTextView.UpdateDocumentFromXaml();
+                }
+            }
+            else
+            {
+                _fontSizeTextChanged = false;
+            }
+        }
         #endregion
 
-        private void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
+        public void xForegroundColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as DashColorPicker;
-            if(colorPicker != null)
+            if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
                 richTextView.Foreground(color, true);
             }
         }
 
-        private void xBackgroundColorPicker_SelectedColorChanged(object sender, Color e)
+        public void xHighlightColorPicker_SelectedColorChanged(object sender, Color e)
         {
-            var colorPicker = sender as DashColorPicker;
-            if (colorPicker != null)
+            if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
-				richTextView.Highlight(color, true);
+                richTextView.Highlight(color, true);
             }
         }
 
         #endregion
 
-		/**
-		 * Calls the toolbar to switch sub-menus when the back button is tapped.
-		 */
-	    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)
-	    {
-		    _textToolbar.CloseSubMenu();
-	    }
-
-		/*
+        /*
 	    public void UpdateDropDowns()
 	    {
 			//set font size and font combo boxes
@@ -343,7 +457,9 @@ namespace Dash
 
 	    }
 		*/
-	}
+
+
+    }
 
 
 }

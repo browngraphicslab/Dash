@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -236,15 +236,7 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
-            CollectionNote cnote;
-            if (FreeformInkControl.FreeformView is CollectionFreeformView)
-            {
-                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
-            }
-            else
-            {
-                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Standard);
-            }
+            var cnote  = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,
@@ -306,7 +298,7 @@ namespace Dash
                         }
                         var textBox = new TextingBox(new DocumentReferenceController(doc, key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
-                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
+                        (textBox.Document.GetField(KeyStore.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
                         layoutDocs.Add(textBox.Document);
                     }

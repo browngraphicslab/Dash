@@ -57,7 +57,26 @@ namespace Dash
                 computedTitle = regex.Replace(computedTitle, "");
             }
 
-            outputs[ComputedTitle] = new TextController(computedTitle ?? "");
+            int maxTitleLength = 35;
+            if (computedTitle?.Length > maxTitleLength)
+            {
+                var shortenedTitle = "";
+                foreach (var word in computedTitle.Split(' '))
+                {
+                    if ((shortenedTitle + word).Length < maxTitleLength)
+                    {
+                        shortenedTitle += " " + word;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                computedTitle = shortenedTitle.Length <= 1 ? computedTitle.Substring(0, maxTitleLength) + "..." : shortenedTitle.Substring(1) + "...";
+            }
+
+            computedTitle = (computedTitle ?? "").Replace((char)160, ' ');
+            outputs[ComputedTitle] = new TextController(computedTitle);
         }
 
         public override FieldControllerBase GetDefaultController()

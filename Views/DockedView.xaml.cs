@@ -42,24 +42,41 @@ namespace Dash
             this.InitializeComponent();
             Direction = direction;
             ContainedDocumentController = dc;
+            NestedLengthChanged += (s, e) => e.DocumentToUpdate.SetField<NumberController>(KeyStore.DockedLength, e.NewLength, true);
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             MainPage.Instance.DockManager.Undock(this);
         }
-
         public void ChangeView(DocumentView view)
         {
-            Grid.SetColumn(view, 0);
-            Grid.SetColumnSpan(view, 2);
-            Grid.SetRow(view, 1);
-            view.Margin = new Thickness(5);
-	        ContainedDocumentView = view;
+            var toDock = view.ViewModel.DocumentController;
 
+            if (toDock.DocumentType.Equals(RichTextBox.DocumentType)) toDock.SetField<NumberController>(KeyStore.TextWrappingKey, (int)TextWrapping.Wrap, true);
+
+            Grid.SetColumn(view, 0);
+            Grid.SetColumnSpan(view, 1);
+            Grid.SetRow(view, 0);
+
+	        ContainedDocumentView = view;
             xMainDockedView.Children.Clear();
-            xMainDockedView.Children.Add(view);
-            xMainDockedView.Children.Add(xCloseButton);
+	        xContentGrid.Children.Clear();
+            view.Loaded += View_Loaded;
+            xContentGrid.Children.Add(view);
+			//re-add close button
+			xMainDockedView.Children.Add(xCloseButton);
+
+        }
+
+        private void View_Loaded(object sender, RoutedEventArgs e)
+        {
+            //var view = sender as DocumentView;
+            //if (view.GetFirstDescendantOfType<WebView>() != null)
+            //{
+            //    var webBoxView = view.GetFirstDescendantOfType<WebBoxView>();
+            //    webBoxView.GetFirstDescendantOfType<WebView>().Height = 1008 - webBoxView.TextBlock.ActualHeight;
+            //}
         }
 
         public void SetNestedViewSize(double dim)
@@ -132,7 +149,7 @@ namespace Dash
             }
             else
             {
-                xContentGrid.Children.Remove(NestedView);
+                xMasterGrid.Children.Remove(NestedView);
             }
 
             switch (view.Direction)
@@ -162,7 +179,7 @@ namespace Dash
             NestedView = view;
             NestedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             NestedView.VerticalAlignment = VerticalAlignment.Stretch;
-            xContentGrid.Children.Add(NestedView);
+            xMasterGrid.Children.Add(NestedView);
         }
 
         public DockedView ClearNestedView()
@@ -189,7 +206,7 @@ namespace Dash
                         break;
                 }
 
-                xContentGrid.Children.Remove(NestedView);
+                xMasterGrid.Children.Remove(NestedView);
             }
 
             var toReturn = NestedView;

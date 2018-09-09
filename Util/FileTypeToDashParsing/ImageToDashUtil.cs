@@ -27,7 +27,7 @@ namespace Dash
 
             var title = file.DisplayName;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
 
@@ -41,7 +41,7 @@ namespace Dash
 
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         public static async Task<Uri> GetLocalURI(StorageFile file)
@@ -56,7 +56,7 @@ namespace Dash
         {
             var localFile = await CopyBitmapToLocal(bitmap, title);
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         /// <summary>
@@ -166,26 +166,29 @@ namespace Dash
         /// <summary>
         /// Convert a local file which stores an image into an ImageBox, if the title is null the ImageBox doesn't have a Title
         /// </summary>
-        public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
+        public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, string title, Point where = new Point())
         {
-            var imgWidth = await GetImageWidth(localFile);
+            Point size = await GetImageSize(localFile);
+            double imgWidth = size.X;
+            double imgHeight = size.Y;
 
-            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgWidth, double.NaN), title).Document;
+            return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }
 
         /// <summary>
         /// Return the height and width of an image stored in a randomaccess stream
         /// </summary>
-        private static async Task<double> GetImageWidth(IRandomAccessStreamReference streamRef)
+        private static async Task<Point> GetImageSize(IRandomAccessStreamReference streamRef)
         {
+           
             const double maxDim = 250;
-            double pictureHeight;
-            double pictureWidth;
+            double pictureHeight = 0;
+            double pictureWidth = 0;
             using (var stream = await streamRef.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-                pictureHeight = (double)Convert.ToInt32(decoder.OrientedPixelHeight);
-                pictureWidth = (double)Convert.ToInt32(decoder.OrientedPixelWidth);
+                pictureHeight = (double) Convert.ToInt32(decoder.OrientedPixelHeight);
+                pictureWidth = (double) Convert.ToInt32(decoder.OrientedPixelWidth);
 
                 if (pictureHeight > pictureWidth && pictureHeight > maxDim)
                 {
@@ -198,7 +201,10 @@ namespace Dash
                     pictureWidth = maxDim;
                 }
             }
-            return pictureWidth;
+            Point size = new Point(pictureWidth, pictureHeight);
+            return size;
         }
+
+       
     }
 }

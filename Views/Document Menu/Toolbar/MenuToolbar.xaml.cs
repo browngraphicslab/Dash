@@ -1,27 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using CsvHelper.Configuration.Attributes;
-using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
-using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
 using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -31,15 +24,15 @@ namespace Dash
     /// <summary>
     /// The top level toolbar in Dash, which will always be present on screen. Subtoolbars are added below the main toolbar according to the type of data that was selected. 
     /// </summary>
-    public sealed partial class MenuToolbar : UserControl
+    public sealed partial class MenuToolbar
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
             "Orientation", typeof(Orientation), typeof(MenuToolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {
-            get { return (Orientation)GetValue(OrientationProperty); }
-            set { SetValue(OrientationProperty, value); }
+            get => (Orientation)GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         public static readonly DependencyProperty ExpandColorProperty = DependencyProperty.Register(
@@ -47,8 +40,8 @@ namespace Dash
 
         public SolidColorBrush ExpandColor
         {
-            get { return (SolidColorBrush)GetValue(ExpandColorProperty); }
-            set { SetValue(ExpandColorProperty, value); }
+            get => (SolidColorBrush)GetValue(ExpandColorProperty);
+            set => SetValue(ExpandColorProperty, value);
         }
 
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
@@ -70,35 +63,21 @@ namespace Dash
 
         public SolidColorBrush CollapseColor
         {
-            get { return (SolidColorBrush)GetValue(CollapseColorProperty); }
-            set { SetValue(CollapseColorProperty, value); }
+            get => (SolidColorBrush)GetValue(CollapseColorProperty);
+            set => SetValue(CollapseColorProperty, value);
         }
 
 
         public void SetUndoEnabled(bool enabled)
         {
             xUndo.IsEnabled = enabled;
-            if (enabled)
-            {
-                xUndo.Opacity = 1.0;
-            }
-            else
-            {
-                xUndo.Opacity = 0.5;
-            }
+            xUndo.Opacity = enabled ? 1.0 : 0.5;
         }
 
         public void SetRedoEnabled(bool enabled)
         {
             xRedo.IsEnabled = enabled;
-            if (enabled)
-            {
-                xRedo.Opacity = 1.0;
-            }
-            else
-            {
-                xRedo.Opacity = 0.5;
-            }
+            xRedo.Opacity = enabled ? 1.0 : 0.5;
         }
 
         // == STATIC ==
@@ -125,8 +104,6 @@ namespace Dash
             Unpinned
         }
 
-	   
-
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private UIElement baseLevelContentToolbar;
@@ -139,6 +116,7 @@ namespace Dash
         private BitmapImage unpinnedIcon;
         private BitmapImage pinnedIcon;
         private bool containsInternalContent;
+
 	    private DocumentType _selectedType = null;
 
 		// == CONSTRUCTORS ==
@@ -150,12 +128,14 @@ namespace Dash
         {
             InitializeComponent();
 
+            SetUpToolTips();
+
             MenuToolbar.Instance = this;
             //set enum defaults
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             pinned = Pinned.Unpinned;
-            checkedButton = xTouch;
+            _checkedButton = xTouch;
 
             pinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/pinned.png"));
             unpinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/unpinned.png"));
@@ -164,7 +144,7 @@ namespace Dash
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
-            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.SelectedDocs); };
+            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.GetSelectedDocs()); };
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
@@ -193,7 +173,9 @@ namespace Dash
                 xGroup,
                 xInk,
                 xTouch,
-                xPin
+                xPin,
+                xUndo,
+                xRedo
             };
             allButtons = tempButtons;
 
@@ -228,7 +210,7 @@ namespace Dash
             {
                 toOpen.CommandBarOpen(true);
             }
-            else if (subtoolbarElement is TextSubtoolbar txt)
+            else if (subtoolbarElement is RichTextSubtoolbar txt)
             {
                 var margin = txt.Margin;
                 margin.Top = 0;
@@ -265,28 +247,22 @@ namespace Dash
         /// Gets the current MouseMode set by the toolbar.
         /// </summary>
         /// <returns></returns>
-        public MouseMode GetMouseMode()
-        {
-            return mode;
-        }
+        public MouseMode GetMouseMode() => mode;
 
         /// <summary>
         /// Gets the current State of the toolbar.
         /// </summary>
-        public State GetState()
-        {
-            return state;
-        }
+        public State GetState() => state;
 
         /// <summary>
         /// Disables or enables toolbar level document specific icons.
         /// </summary>
         /// <param name="hasDocuments"></param>
-        private void ToggleSelectOptions(Boolean hasDocuments)
+        private void ToggleSelectOptions(bool hasDocuments)
         {
             var o = .5;
             if (hasDocuments) o = 1;
-            foreach (var b in docSpecificButtons)
+            foreach (AppBarButton b in docSpecificButtons)
             {
                 b.IsEnabled = hasDocuments;
                 b.Opacity = o;
@@ -304,13 +280,17 @@ namespace Dash
             {
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-                ToggleSelectOptions(docs.Count() > 0);
+	            subtoolbarElement = null;
+                docs = docs.ToList();
+                ToggleSelectOptions(docs.Any());
 
                 // just single select
-                if (docs.Count() == 1)
+                if (docs.Count() == 1 )
                 {
-                    var selection = docs.First();
+                    DocumentView selection = docs.First();
 	                //_selectedType = selection.ViewModel.DocumentController.DocumentType;
+
+                    if (selection.ViewModel == null) return;
 
 					//Find the type of the selected node and update the subtoolbar binding appropriately.
 
@@ -328,14 +308,14 @@ namespace Dash
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
                     {
                         containsInternalContent = true;
-                        baseLevelContentToolbar = xTextToolbar;
+                        baseLevelContentToolbar = xRichTextToolbar;
                         if (FocusManager.GetFocusedElement() is RichEditBox reb)
                         {
-                            xTextToolbar.SetMenuToolBarBinding(reb);
+                            xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xTextToolbar.SetCurrTextBox(reb);
-                            xTextToolbar.SetDocs(selection);
-                            subtoolbarElement = xTextToolbar;
+                            xRichTextToolbar.SetCurrTextBox(reb);
+                            xRichTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
                     }
@@ -351,6 +331,69 @@ namespace Dash
                         subtoolbarElement = xGroupToolbar;
                     }
 
+                    // Data box controls
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(DataBox.DocumentType))
+                    {
+                        DocumentController documentController = selection.ViewModel.DocumentController;
+                        var context = new Context(documentController);
+                        var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
+                        //switch statement for type of data
+                        if (data is ImageController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xImageToolbar;
+                            subtoolbarElement = xImageToolbar;
+                            xImageToolbar.SetImageBinding(selection);
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is ListController<DocumentController>)
+                        {
+                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            {
+                                if (!containsInternalContent)
+                                {
+                                    var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
+                                    xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
+                                    subtoolbarElement = xCollectionToolbar;
+                                }
+                                else
+                                {
+                                    subtoolbarElement = baseLevelContentToolbar;
+                                }
+                            }
+                            else
+                            {
+                                var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
+                                subtoolbarElement = xCollectionToolbar;
+                            }
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is RichTextController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xRichTextToolbar;
+                            xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
+                            //give toolbar access to the most recently selected text box for editing purposes
+                            xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+                            xRichTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xRichTextToolbar;
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is TextController || data is DateTimeController || data is NumberController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xPlainTextToolbar;
+                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<TextBox>());
+                            //give toolbar access to the most recently selected text box for editing purposes
+                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xPlainTextToolbar;
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                    }
+                    
+                    // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
                     {
                         containsInternalContent = true;
@@ -359,8 +402,7 @@ namespace Dash
                         subtoolbarElement = xPdfToolbar;
                         xGroupToolbar.TryMakeGroupEditable(true);
                     }
-
-
+                    
 					// <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
 					// TODO Revisit this when selection is refactored
@@ -371,8 +413,8 @@ namespace Dash
                         {
                             if (!containsInternalContent)
                             {
-                                var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
+                                xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                                 subtoolbarElement = xCollectionToolbar;
                             }
                             else
@@ -382,28 +424,42 @@ namespace Dash
                         }
                         else
                         {
-                            var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                            xCollectionToolbar.SetCollectionBinding(thisCollection);
+                            var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
+                            xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
                             subtoolbarElement = xCollectionToolbar;
                         }
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     //Annnotation controls
-                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
-                    if (annot != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+                    //var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<RegionBox>(selection);
+                    //if (annot != null)
+                    //{
+                    //    System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
-                    }
+                    //}
+
+                    
 
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
-						// xToolbar.IsOpen = false;
-						//update margin
-						var margin = xSubtoolbarStackPanel.Margin;
+                        xToolbar.IsOpen = false;
+                        //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
+                          //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                            Thickness margin = xSubtoolbarStackPanel.Margin;
+                            margin.Top = 7;
+                          xSubtoolbarStackPanel.Margin = margin;
+                         //xPadding.Visibility = Visibility.Collapsed;
+                     
+                    }
+                    else
+                    {
+                        //If nothing is selected, open/label the main menu toolbar
+                        xToolbar.IsOpen = false;
+                        //update margin
+                        Thickness margin = xSubtoolbarStackPanel.Margin;
 	                    margin.Top = 7;
 	                    xSubtoolbarStackPanel.Margin = margin;
                     }
@@ -411,8 +467,9 @@ namespace Dash
                 }
                 else if (docs.Count<DocumentView>() > 1)
                 {
-                    // TODO: multi select
-                }
+					// TODO: multi select
+					subtoolbarElement = null;
+				}
                 else
                 {
                     subtoolbarElement = null;
@@ -425,6 +482,7 @@ namespace Dash
             else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
+	            subtoolbarElement = null;
             }
             else
             {
@@ -452,7 +510,7 @@ namespace Dash
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
+            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
             {
                 d.CopyDocument();
             }
@@ -461,29 +519,29 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in SelectionManager.SelectedDocs)
+            using (UndoManager.GetBatchHandle())
+            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
             {
                 d.DeleteDocument();
             }
         }
-
-
+        
         // controls which MouseMode is currently activated
-        AppBarToggleButton checkedButton = null;
+        private AppBarToggleButton _checkedButton;
 
         private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
         {
 	        //bool isReadyForOpen = (subtoolbarElement == null && !_selectedType.Equals(PdfBox.DocumentType) &&
 	        //                       !_selectedType.Equals(WebBox.DocumentType));
 			//xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
-            if (checkedButton != sender as AppBarToggleButton)
+            if (_checkedButton != sender as AppBarToggleButton)
             {
-                AppBarToggleButton temp = checkedButton;
-                checkedButton = sender as AppBarToggleButton;
+                AppBarToggleButton temp = _checkedButton;
+                _checkedButton = sender as AppBarToggleButton;
                 temp.IsChecked = false;
-                if (checkedButton == xTouch) mode = MouseMode.TakeNote;
-                else if (checkedButton == xInk) mode = MouseMode.Ink;
-                else if (checkedButton == xGroup) mode = MouseMode.PanFast;
+                if (_checkedButton == xTouch) mode = MouseMode.TakeNote;
+                else if (_checkedButton == xInk) mode = MouseMode.Ink;
+                else if (_checkedButton == xGroup) mode = MouseMode.PanFast;
             }
 
 	        xToolbar.IsOpen = true;
@@ -496,10 +554,10 @@ namespace Dash
 	       // xToolbar.IsOpen = isReadyForOpen ? true : IsAtTop();
 		
 			AppBarToggleButton toggle = sender as AppBarToggleButton;
-            if (toggle == checkedButton)
+            if (toggle == _checkedButton)
             {
-                checkedButton = xTouch;
-                checkedButton.IsChecked = true;
+                _checkedButton = xTouch;
+                _checkedButton.IsChecked = true;
                 mode = MouseMode.TakeNote;
             }
 
@@ -588,6 +646,7 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
+                    docController.GetDataDocument().SetTitle(file.Name);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
 
@@ -625,6 +684,7 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
+                    docController.GetDataDocument().SetTitle(file.Name);
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
                 //add error message for null file?
@@ -633,10 +693,21 @@ namespace Dash
 	        xToolbar.IsOpen = true;
 		}
 
-        /// <summary>
-        /// Rotates the internal stack panel of the command bar. Currently inactive.
-        /// </summary>
-        private void RotateToolbar()
+	    private void Add_Group_On_Click(object sender, RoutedEventArgs e)
+	    {
+			//create and add group to workspace
+		    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+
+			MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
+		}
+
+
+
+		/// <summary>
+		/// Rotates the internal stack panel of the command bar. Currently inactive.
+		/// </summary>
+		private void RotateToolbar()
         {
             Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
@@ -656,7 +727,7 @@ namespace Dash
             if (state == State.Expanded)
             {
 				
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -669,8 +740,10 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-				
-            }
+	            
+	            // get proper subtoolbar
+	            Update(SelectionManager.GetSelectedDocs());
+			}
             else
             {
                 //otherwise, it is about to expand. In this case, update visibility of separators before buttons
@@ -678,7 +751,7 @@ namespace Dash
                 {
                     s.Visibility = status;
                 }
-                foreach (var b in allButtons)
+                foreach (var b in allButtons.Except(new List<FrameworkElement>{ xTouch, xInk, xGroup, xAddGroup, xAddVideo, xAddAudio}))
                 {
                     if (b != xPin)
                     {
@@ -719,6 +792,22 @@ namespace Dash
         /// </summary>
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            if (state == State.Expanded && IsAtTop())
+            {
+                xToolbar.IsOpen = true;
+                //if subtoolbar is a command bar, open it normally
+                if (subtoolbarElement is ICommandBarBased toClose)
+                {
+                    toClose.CommandBarOpen(false);
+                }
+                //else, if it is a text toolbar (which doesn't expand), update margins accordingly
+                else if (subtoolbarElement is RichTextSubtoolbar txt)
+                {
+                    var margin = txt.Margin;
+                    margin.Top = 13;
+                    txt.Margin = margin;
+                }
+            }
 			xToolbar.IsOpen = true;
         }
 
@@ -727,6 +816,22 @@ namespace Dash
         /// </summary>
         private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
+            if (state == State.Expanded && IsAtTop())
+            {
+                //main toolbar should only be open when there is no currently active subtoolbar present
+                xToolbar.IsOpen = subtoolbarElement == null;
+                //close any command bar - based toolbar, and update margins for texttoolbar accordingly
+                if (subtoolbarElement is ICommandBarBased toClose)
+                {
+                    toClose.CommandBarOpen(true);
+                }
+                else if (subtoolbarElement is RichTextSubtoolbar txt)
+                {
+                    var margin = txt.Margin;
+                    margin.Top = 0;
+                    txt.Margin = margin;
+                }
+            }
 	        xToolbar.IsOpen = false;
         }
 
@@ -737,10 +842,22 @@ namespace Dash
         {
             //toggle state enum and update label & icon
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
-            xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
-            xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
+            //xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
+            //xCollapseIcon.Text = (state == State.Expanded) ? "&#xE1D8;" : "&#xE1D9;";
 
-            //
+            if (xOpenIcon.Visibility == Visibility.Visible)
+            {
+                xOpenIcon.Visibility = Visibility.Collapsed;
+                xCollapseIcon.Visibility = Visibility.Visible;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Collapse Toolbar";
+            }
+            else
+            {
+                xOpenIcon.Visibility = Visibility.Visible;
+                xCollapseIcon.Visibility = Visibility.Collapsed;
+                if (ToolTipService.GetToolTip(xCollapse) is ToolTip tip) tip.Content = "Expand Toolbar";
+            }
+            
             var backgroundBinding = new Binding
             {
                 Source = this,
@@ -755,7 +872,7 @@ namespace Dash
             ToggleVisibilityAsync(visibility);
 
             //set subtoolbar element to null if collapsing toolbar
-            if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
+            if (subtoolbarElement == xRichTextToolbar) xRichTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
             //adjust toolbar's position to account for the change in size
             xFloating.AdjustPositionForExpansion(0, ToolbarConstants.ToolbarExpandedWidth - xToolbar.ActualWidth);
@@ -769,7 +886,7 @@ namespace Dash
         public void SwitchTheme(bool nightModeOn)
         {
             //toggle night mode styles
-            xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
+            //xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
         }
 
@@ -782,12 +899,170 @@ namespace Dash
             //disables movement by updating Floating's boolean
             xFloating.ShouldManipulateChild = (pinned == Pinned.Unpinned);
             //update label & icon accordingly
-            xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
-            xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
-           // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+            //xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
+            
+            // xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
+
+            if (pinned == Pinned.Pinned)
+            {
+                var centX = (float) xLockIcon.ActualWidth / 2;
+                var centY = (float) xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: -45.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
+            else
+            {
+                var centX = (float)xLockIcon.ActualWidth / 2;
+                var centY = (float)xLockIcon.ActualHeight / 2;
+                xLockIcon.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+                    easingType: EasingType.Default).Start();
+            }
+            xToolbar.IsOpen = true;
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
+
+        private ToolTip _pin;
+        private ToolTip _collapse;
+        private ToolTip _select;
+        private ToolTip _ink;
+        private ToolTip _quickPan;
+        private ToolTip _addGroup;
+        private ToolTip _addImage;
+        private ToolTip _addVideo;
+        private ToolTip _addAudio;
+        private ToolTip _copy;
+        private ToolTip _delete;
+        private ToolTip _undo;
+        private ToolTip _redo;
+        private ToolTip _presentation;
+        private ToolTip _export;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Top;
+            const int offset = 5;
+
+            _pin = new ToolTip()
+            {
+                Content = "Pin Toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPin, _pin);
+
+            _collapse = new ToolTip()
+            {
+                Content = "Collapse Toolbar",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCollapse, _collapse);
+
+            _select = new ToolTip()
+            {
+                Content = "Select",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xTouch, _select);
+
+            _ink = new ToolTip()
+            {
+                Content = "Ink",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xInk, _ink);
+
+            _quickPan = new ToolTip()
+            {
+                Content = "Quick Pan",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _quickPan);
+
+            _addGroup = new ToolTip()
+            {
+                Content = "Add Group",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddGroup, _addGroup);
+
+            _addImage = new ToolTip()
+            {
+                Content = "Add Image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddImage, _addImage);
+
+            _addVideo = new ToolTip()
+            {
+                Content = "Add Video",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddVideo, _addVideo);
+
+            _addAudio = new ToolTip()
+            {
+                Content = "Add Audio",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddAudio, _addAudio);
+
+            _copy = new ToolTip()
+            {
+                Content = "Copy",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCopy, _copy);
+
+            _delete = new ToolTip()
+            {
+                Content = "Delete",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xDelete, _delete);
+
+            _undo = new ToolTip()
+            {
+                Content = "Undo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUndo, _undo);
+
+            _redo = new ToolTip()
+            {
+                Content = "Redo",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRedo, _redo);
+
+            _export = new ToolTip()
+            {
+                Content = "Export Workspace",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xExport, _export);
+
+            _presentation = new ToolTip()
+            {
+                Content = "Presentation Mode",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xPresentationMode, _presentation);
+        }
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
         {
@@ -797,6 +1072,28 @@ namespace Dash
         private void xUndo_Click(object sender, RoutedEventArgs e)
         {
             UndoManager.UndoOccured();
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+        private void XExport_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.MakePdf_OnTapped(sender, null);
+        }
+
+        private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
+        {
+           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
         }
     }
 }

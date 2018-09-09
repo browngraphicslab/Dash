@@ -53,6 +53,8 @@ namespace Dash
             //intialize lists to save data
             _currentText = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
             xTextBox.Text = _currentText ?? "";
+
+            ResetLineNums();
         }
         #endregion
 
@@ -69,7 +71,10 @@ namespace Dash
                 if (i == letters.Length - 1 && letter != '\r')
                 {
                     //last char
-                    output.Add(new TextController(newText));
+                    if (newText != " ")
+                    {
+                        output.Add(new TextController(newText));
+                    }
                 } else if (letter == '"' || letter == '\'')
                 {
                     inQuotes = !inQuotes;
@@ -78,16 +83,16 @@ namespace Dash
                 else if ((letter == ';' || letter == '\r') && inBrackets == 0 && !inQuotes)
                 {
                     //end of command
-                    if (newText.Trim('\r') != "")
+                    if (newText.Trim('\r') != "" && newText.Trim('\r') != " ")
                     {
-                        output.Add(new TextController(newText));
-                        growing = "";
+                            output.Add(new TextController(newText));
+                            growing = "";
                     }
                 } else if (letter == '}' && !inQuotes)
                 {
                     //end of loop
                     inBrackets--;
-                    if (inBrackets == 0)
+                    if (inBrackets == 0 && newText != " ")
                     {
                         output.Add(new TextController(newText));
                         growing = "";
@@ -178,6 +183,7 @@ namespace Dash
 
         #endregion
 
+        #region Helper Function
         public static string StringDiff(string a, string b)
         {
             //a is the longer string
@@ -193,6 +199,20 @@ namespace Dash
 
             return a;
         }
+
+        private void ResetLineNums()
+        {
+            var text = xTextBox.Text.Split('\r');
+            var textNums = "";
+            for(int i =0; i < text.Length; i++)
+            {
+                textNums += (i + 1) + "\r";
+            }
+
+            xTextLines.Text = textNums;
+        }
+
+        #endregion
 
         #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -270,6 +290,7 @@ namespace Dash
                     _oneStar = false;
                     break;
             }
+            ResetLineNums();
 
             _currentText = xTextBox.Text;
 
@@ -277,8 +298,14 @@ namespace Dash
           _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data = _currentText;
 
         }
-         #endregion
 
+        #endregion
 
+        private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            using (UndoManager.GetBatchHandle())
+                docView.DeleteDocument();
+        }
     }
 }

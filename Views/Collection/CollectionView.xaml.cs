@@ -10,7 +10,10 @@ using Windows.UI.Xaml.Media;
 using Windows.System;
 using Dash.Views.Collection;
 using Windows.UI;
+using Dash.FontIcons;
 using Windows.UI.Core;
+using Dash.Converters;
+using System.Diagnostics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -18,12 +21,14 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Standard
-        }
+        public UserControl UserControl => this;
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
-        CollectionViewType _viewType;
+        CollectionViewModel _lastViewModel = null;
+        CollectionViewType  _viewType;
+
         public int MaxZ { get; set; }
-        public UserControl CurrentView { get; set; }
+        public ICollectionView CurrentView { get; set; }
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
 
         /// <summary>
@@ -34,15 +39,18 @@ namespace Dash
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public DocumentView ParentDocumentView => this.GetFirstAncestorOfType<DocumentView>();
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
-        CollectionViewModel _lastViewModel = null;
+        //if this or any of its children are selected, it can move
+        public bool selectedCollection;
+
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
             InitializeComponent();
+
             _viewType = vm.ViewType;
             DataContext = vm;
             _lastViewModel = vm;
@@ -52,7 +60,13 @@ namespace Dash
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
-            DocumentViewContainerGrid.PointerPressed += OnPointerPressed;
+            xOuterGrid.PointerPressed += OnPointerPressed;
+	        var color = xOuterGrid.Background;
+        }
+
+        ~CollectionView()
+        {
+            Debug.WriteLine("Finalizing CollectionView");
         }
 
         /// <summary>
@@ -62,22 +76,16 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
-            if (parentFreeform != null && rightBtn)
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection ||
+                this.GetFirstAncestorOfType<DocumentView>() == MainPage.Instance.MainDocView)
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                }
-                else
-                    if (parentParentFreeform != null)
-                        CurrentView.ManipulationMode = ManipulationModes.None;
+                //selected, so pan 
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
+            }
+            else
+            {
+                //don't pan
+                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
             }
         }
 
@@ -85,21 +93,21 @@ namespace Dash
         {
             _lastViewModel?.Loaded(false);
             _lastViewModel = null;
+			RemoveViewTypeHandler();
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
+			AddViewTypeHandler();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
-            if (ParentDocument == null)
+            if (ParentDocumentView == null)
             {
                 SetView(_viewType);
                 return;
             }
-
-            ParentDocument.StyleCollection(this);
 
             #region CollectionView context menu 
 
@@ -110,65 +118,32 @@ namespace Dash
             var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
             // add a horizontal separator in context menu
-            var contextMenu = ParentDocument.MenuFlyout;
+            var contextMenu = ParentDocumentView.MenuFlyout;
             var separatorOne = new MenuFlyoutSeparator();
             contextMenu.Items.Add(separatorOne);
             elementsToBeRemoved.Add(separatorOne);
 
-            // add the item to create a new collection
-            var newCollection = new MenuFlyoutItem()
-            {
-                Text = "Add new collection",
-                Icon = new FontIcon() {Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets")}
-            };
-            newCollection.Click += NewCollectionFlyout_OnClick;
-            contextMenu.Items.Add(newCollection);
-            elementsToBeRemoved.Add(newCollection);
-
-            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
-
-            void EnterTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= EnterTagMode;
-                tagMode.Click += ExitTagMode;
-
-                tagMode.Text = "Exit Tag Mode";
-
-                (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
-            }
-
-            void ExitTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click += EnterTagMode;
-
-                tagMode.Text = "Tag Notes";
-                var view = CurrentView as CollectionFreeformBase;
-                if (view != null)
-                {
-                    view.HideTagKeyBox();
-                    view.TagMode = false;
-                }
-            }
-
-            tagMode.Click += EnterTagMode;
-            contextMenu.Items.Add(tagMode);
-            elementsToBeRemoved.Add(tagMode);
-
-            // add another horizontal separator
-            var separatorTwo = new MenuFlyoutSeparator();
-            contextMenu.Items.Add(separatorTwo);
-            elementsToBeRemoved.Add(separatorTwo);
+           
 
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
+
+            var icon5 = new FontIcons.FontAwesome
+            {
+                Icon = FontAwesomeIcon.Code
+            };
+            newRepl.Icon = icon5;
             newRepl.Click += ReplFlyout_OnClick;
             contextMenu.Items.Add(newRepl);
             elementsToBeRemoved.Add(newRepl);
-
-
+            
             // add the item to create a scripting view
             var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
+            var icon6 = new FontIcons.FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            newScriptEdit.Icon = icon6;
             newScriptEdit.Click += ScriptEdit_OnClick;
             contextMenu.Items.Add(newScriptEdit);
             elementsToBeRemoved.Add(newScriptEdit);
@@ -180,6 +155,11 @@ namespace Dash
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
+            var icon2 = new FontIcons.FontAwesome
+            {
+                Icon = FontAwesomeIcon.Eye
+            };
+            viewCollectionAs.Icon = icon2;
             contextMenu.Items.Add(viewCollectionAs);
             elementsToBeRemoved.Add(viewCollectionAs);
 
@@ -187,35 +167,26 @@ namespace Dash
             {
                 var vtype = new MenuFlyoutItem() {Text = n.ToString()};
 
-                void VType_OnClick(object sender, RoutedEventArgs e)
+                void VTypeOnClick(object sender, RoutedEventArgs e)
                 {
-                    UndoManager.StartBatch();
-                    SetView(n);
-                    UndoManager.EndBatch();
+                    using (UndoManager.GetBatchHandle())
+                        SetView(n);
                 }
 
-                vtype.Click += VType_OnClick;
-                vtype.Unloaded += delegate { vtype.Click -= VType_OnClick; };
-                viewCollectionAs.Items.Add(vtype);
+                vtype.Click += VTypeOnClick;
+                viewCollectionAs.Items?.Add(vtype);
             }
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionPreview = new MenuFlyoutItem() {Text = "Preview"};
-            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            contextMenu.Items.Add(viewCollectionPreview);
-            elementsToBeRemoved.Add(viewCollectionPreview);
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
-            fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+            fitToParent.Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
+            var icon4 = new FontIcons.FontAwesome
+            {
+                Icon = FontAwesomeIcon.WindowMaximize
+            };
+            fitToParent.Icon = icon4;
             contextMenu.Items.Add(fitToParent);
             elementsToBeRemoved.Add(fitToParent);
-
-            //ParentDocument.Unloaded += delegate
-            //{
-            //    viewCollectionPreview.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
-            //    fitToParent.Click -= ParentDocument.MenuFlyoutItemFitToParent_Click;
-            //};
 
             Unloaded += (sender, e) =>
             {
@@ -223,38 +194,25 @@ namespace Dash
                 {
                     contextMenu.Items.Remove(flyoutItem);
                 }
-
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click -= EnterTagMode;
-                newCollection.Click -= NewCollectionFlyout_OnClick;
+                
                 newRepl.Click -= ReplFlyout_OnClick;
                 newScriptEdit.Click -= ScriptEdit_OnClick;
             };
 
-            // set the top-level viewtype to be freeform by default
-            if (ParentDocument != MainPage.Instance.MainDocView || _viewType == CollectionViewType.Freeform ||
-                _viewType == CollectionViewType.Standard)
-            {
-                SetView(_viewType);
-            }
-            else //If we are trying to view the main collection not in a freeform-ish view, force a freeform view
-                //TODO This might not be what we want
-            {
-                SetView(CollectionViewType.Freeform);
-            }
+            SetView(_viewType);
         }
 
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishScriptBox(@where.X, @where.Y, 300, 400).Document;
+            var note = new DishScriptBox(@where.X, @where.Y).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
         private void ReplFlyout_OnClick(object sender, RoutedEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            var note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
+            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+            DocumentController note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
@@ -274,27 +232,39 @@ namespace Dash
         /// <returns></returns>
         private Point GetFlyoutOriginCoordinates()
         {
-            var firstFlyoutItem = ParentDocument.MenuFlyout.Items.FirstOrDefault();
+            var firstFlyoutItem = ParentDocumentView.MenuFlyout.Items.FirstOrDefault();
             return Util.PointTransformFromVisual(new Point(), firstFlyoutItem);
         }
 
         #endregion
 
-        #region Menu
+	    private void AddViewTypeHandler()
+	    {
+			ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+	    }
+
+	    private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+	    {
+		    SetView(ViewModel.ViewType);
+	    }
+
+	    private void RemoveViewTypeHandler()
+	    {
+		    ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+		}
+
+	    #region Menu
         public void SetView(CollectionViewType viewType)
         {
-            if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
-            {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
-            }
             _viewType = viewType;
+            if (CurrentView?.UserControl != null)
+                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
                     if (CurrentView is CollectionFreeformView) return;
-                    CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
-                    break;
+                    CurrentView = new CollectionFreeformView();
+					break;
                 case CollectionViewType.Grid:
                     if (CurrentView is CollectionGridView) return;
                     CurrentView = new CollectionGridView();
@@ -319,22 +289,20 @@ namespace Dash
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
                     break;
-                case CollectionViewType.Standard:
-                    if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
+                case CollectionViewType.Graph:
+                    if (CurrentView is CollectionGraphView) return;
+                    CurrentView = new CollectionGraphView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
-            CurrentView.Loaded -= CurrentView_Loaded;
-            CurrentView.Loaded += CurrentView_Loaded;
-            
+            CurrentView.UserControl.Loaded -= CurrentView_Loaded;
+            CurrentView.UserControl.Loaded += CurrentView_Loaded;
+
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
                 ViewModel.ViewType = viewType;
         }
-
-        
 
         private void CurrentView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -346,12 +314,17 @@ namespace Dash
             throw new NotImplementedException("The document view model does not have a context any more");
             //Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
+
         private void ScreenCap()
         {
             Util.ExportAsImage(xOuterGrid);
         }
 
         #endregion
+        public void SetBorderThickness(double thickness)
+        {
+            this.xOuterGrid.BorderThickness = new Thickness(thickness);
+        }
 
         public void Highlight()
         {
@@ -362,6 +335,7 @@ namespace Dash
         {
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
-        
+
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
     }
 }

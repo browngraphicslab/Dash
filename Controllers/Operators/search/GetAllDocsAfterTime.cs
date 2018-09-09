@@ -60,11 +60,11 @@ namespace Dash
 
             if (!string.IsNullOrEmpty(time))
             {
-                var allResults = DocumentTree.MainPageTree;
+                var allResults = DocumentTree.MainPageTree.GetAllNodes();
                 var data = allResults.Select(node => node.ViewDocument).ToList();
                 foreach (var t in data)
                 {
-                    var docTimeS = t.GetDataDocument().GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data;
+                    var docTimeS = t.GetDataDocument().GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data;
 
                     //return all docs after givenTime
                     if (docTimeS > givenTime)

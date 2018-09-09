@@ -42,7 +42,6 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Loaded += OnLoad;
-            Unloaded += OnUnload;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
@@ -52,18 +51,17 @@ namespace Dash
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
-        protected override void OnLoad(object sender, RoutedEventArgs e)
+        private void OnLoad(object sender, RoutedEventArgs e)
         {
-            base.OnLoad(sender,e);
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewManipulationControls.IsScaleDiscrete = true;
             UpdateViewLevel();
         }
 
-        public override Canvas GetCanvas()
+        public override Panel GetCanvas()
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override ItemsControl GetItemsControl()
@@ -71,9 +69,9 @@ namespace Dash
             return xItemsControl;
         }
 
-        public override CanvasControl GetBackgroundCanvas()
+        public override ContentPresenter GetBackgroundContentPresenter()
         {
-            return xBackgroundCanvas;
+            return xBackgroundContentPresenter;
         }
 
         public override Grid GetOuterGrid()

@@ -12,77 +12,171 @@ namespace Dash
         //TODO: Search in collections - check out "collected docs note in viewdocument.getdatadocument.documenttype.type
         //TODO: ModifiedTime not existing until document is modified
 
+        // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.Select(node =>
+            var nodes = DocumentTree.MainPageTree.GetAllNodes();
+            var filteredNodes = new List<SearchResult>();
+            foreach (var node in nodes)
             {
-                var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
-                int matchLength = stringSearchModel == null ? 0 :
-                    (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
-                return new SearchResult(node, $" >> {key}", $"\" {stringSearchModel?.RelatedString} \"", matchLength);
-            }).OrderByDescending(res => res.Rank);
+                var relatedFields = new List<string>();
+                var relatedStrings = new List<string>();
+
+                StringSearchModel dataStringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+                StringSearchModel layoutStringSearchModel = node.ViewDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+
+                var numMatchedFields = 0;
+
+                if (layoutStringSearchModel != null && layoutStringSearchModel != StringSearchModel.False)
+                {
+                    relatedFields.Add($" >> v.{key}");
+                    relatedStrings.Add($"\" {layoutStringSearchModel?.RelatedString} \"");
+                    numMatchedFields++;
+                }
+
+                if (dataStringSearchModel != null && dataStringSearchModel != StringSearchModel.False)
+                {
+                    relatedFields.Add($" >> d.{key}");
+                    relatedStrings.Add($"\" {dataStringSearchModel?.RelatedString} \"");
+                    numMatchedFields++;
+                }
+
+                filteredNodes.Add(new SearchResult(node, relatedFields, relatedStrings, numMatchedFields));
+            }
+            filteredNodes.OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+
+            //var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            //{
+            //    var relatedFields = new List<string>();
+            //    var relatedStrings = new List<string>();
+
+            //    StringSearchModel dataStringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+            //    StringSearchModel layoutStringSearchModel = node.ViewDocument?.GetDereferencedField(key, null)?.SearchForString(value);
+
+            //    var numMatchedFields = 0;
+
+            //    if (layoutStringSearchModel != null && layoutStringSearchModel != StringSearchModel.False)
+            //    {
+            //        relatedFields.Add($" >> v.{key}");
+            //        relatedStrings.Add($"\" {layoutStringSearchModel?.RelatedString} \"");
+            //        numMatchedFields++;
+            //    }
+
+            //    if (dataStringSearchModel != null && dataStringSearchModel != StringSearchModel.False)
+            //    {
+            //        relatedFields.Add($" >> d.{key}");
+            //        relatedStrings.Add($"\" {dataStringSearchModel?.RelatedString} \"");
+            //        numMatchedFields++;
+            //    }
+
+            //    return new SearchResult(node, relatedFields, relatedStrings, numMatchedFields);
+            //}).OrderByDescending(res => res.Rank);
+
+            //return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
+        // Searches the ViewDocument and DataDocuments of all DocumentControllers in the Dash View for a given query string
         public static IEnumerable<SearchResult> SearchByQuery(string query, bool negate = false)
         {
-            var filteredNodes = DocumentTree.MainPageTree.Select(node =>
+            var nodes = DocumentTree.MainPageTree.GetAllNodes();
+            var filteredNodes = new List<SearchResult>();
+            foreach (var node in nodes)
             {
-                var relatedString = "";
-                KeyController relatedField = null;
+                var relatedFields = new List<string>();
+                var relatedStrings = new List<string>();
 
                 var numMatchedFields = 0;
                 foreach (var field in node.ViewDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
-                    if (ssm == StringSearchModel.False) continue;
-
-                    if (string.IsNullOrEmpty(relatedString))
-                    {
-                        relatedString = ssm.RelatedString;
-                        relatedField = field.Key;
-                    }
+                    var ss = field.Value.DereferenceToRoot(null);
+                    var ssm = ss?.SearchForString(query);
+                    if (ssm == null || ssm == StringSearchModel.False) continue;
+                    relatedStrings.Add(ssm.RelatedString);
+                    relatedFields.Add($" >> v.{field.Key}");
                     numMatchedFields++;
                 }
                 foreach (var field in node.DataDocument.EnumDisplayableFields())
                 {
-                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
-                    if (ssm == StringSearchModel.False) continue;
+                    var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+                    if (ssm == null || ssm == StringSearchModel.False) continue;
 
-                    if (string.IsNullOrEmpty(relatedString))
-                    {
-                        relatedString = ssm.RelatedString;
-                        relatedField = field.Key;
-                    }
+                    relatedStrings.Add($" >> d.{field.Key}");
+                    relatedFields.Add($" >> d.{field.Key}");
                     numMatchedFields++;
                 }
-
-                var s = "";
-                var e = "";
-                if (!string.IsNullOrEmpty(relatedString))
-                {
-                    int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
-                    //TODO: ugly code in the following 2 lines, fix later
-                    if (ind < 0)
-                        return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
-                    var pre = 0;
-                    while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
-
-                    var post = 0;
-                    while (ind + post + query.Length < relatedString.Length && post < 5/* && !$"{relatedString[ind + post]}".Equals("\r")*/) { post++; }
-
-                    if (ind - pre != 0) s = "...";
-                    if (post == 5) e = "...";
-
-                    relatedString = relatedString.Substring(ind - pre, pre + query.Length + post);
-                }
-
-                    return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
-            })
-                .OrderByDescending(res => res.Rank);
+                filteredNodes.Add(new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields));
+            }
+            filteredNodes.OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+
+            // the above code is faster than the below code by a huge margin
+
+            //var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Select(node =>
+            //{
+            //    var relatedFields = new List<string>();
+            //    var relatedStrings = new List<string>();
+                
+            //    var numMatchedFields = 0;
+            //    foreach (var field in node.ViewDocument.EnumDisplayableFields())
+            //    {
+            //        var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+            //        if (ssm == null || ssm == StringSearchModel.False) continue;
+
+            //        relatedStrings.Add(ssm.RelatedString);
+            //        relatedFields.Add($" >> v.{field.Key}");
+            //        numMatchedFields++;
+            //    }
+            //    foreach (var field in node.DataDocument.EnumDisplayableFields())
+            //    {
+            //        var ssm = field.Value.DereferenceToRoot(null)?.SearchForString(query);
+            //        if (ssm == null || ssm == StringSearchModel.False) continue;
+
+            //        relatedStrings.Add(ssm.RelatedString);
+            //        relatedFields.Add($" >> d.{field.Key}");
+            //        numMatchedFields++;
+            //    }
+            //    return new SearchResult(node, relatedFields, Process(relatedStrings, query), numMatchedFields);
+            //})
+            //    .OrderByDescending(res => res.Rank);
+
+            //return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
+        }
+
+        // Shortens the helpful text so that the user is given a meaningful helptext string that can help
+        // identify where the match was found, while not being too long such that the Data string isn't
+        // just vomited onto the search result dropdown
+        private static List<string> Process(IEnumerable<string> relatedStrings, string query)
+        {
+            var outList = new List<string>();
+            foreach (string relatedString in relatedStrings)
+            {
+                var s = "";
+                var e = "";
+                int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
+
+                if (ind < 0)
+                {
+                    outList.Add("No Helptext Available");
+                    continue;
+                }
+
+                var pre = 0;
+                while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
+
+                var post = 0;
+                while (ind + post + query.Length < relatedString.Length && post < 5/* && !$"{relatedString[ind + post]}".Equals("\r")*/) { post++; }
+
+                if (ind - pre != 0) s = "...";
+                if (post == 5) e = "...";
+
+                string processed = $"\" {s}{relatedString.Substring(ind - pre, pre + query.Length + post)}{e} \"";
+                outList.Add(processed);
+            }
+
+            return outList;
         }
 
         public static void UnHighlightAllDocs()
@@ -112,6 +206,8 @@ namespace Dash
             }
         }
 
+        // Handles instances where the user inserted a colon, and determines whether or not the user meant to
+        // search the colon as part of a string, or perform a parameterized search
         public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart)
         {
             searchPart = searchPart ?? " ";
@@ -130,50 +226,57 @@ namespace Dash
             return SearchByQuery(searchPart);
         }
 
+        // Determines what kind of parameterized search the user intended
         private static IEnumerable<SearchResult> ParameterizeFunction(string name, string paramName)
         {
+            // Workaround for calling search in collection, since the "in" keyword has system significance and
+            // can't be used as an enum
             if (name.Equals("in"))
             {
                 name = "inside";
             }
 
             // Not really sure what the point of it is, but it was in MainSearchBox, so I adapted it to the new search
+            // All it does it do a search only taking into account rich text boxes
             if (name == "rtf" ||
                 name == "rt" ||
                 name == "richtext" ||
                 name == "richtextformat")
             {
-                var res = DocumentTree.MainPageTree.Where(node =>
-                node.DataDocument.EnumFields().Any(f => f.Value is RichTextController &&
+                var res = DocumentTree.MainPageTree.Where(node => node.DataDocument.EnumFields().Any(f => f.Value is RichTextController &&
                 ((RichTextController)f.Value).SearchForStringInRichText(paramName).StringFound));
-                return res.Select(node => new SearchResult(node, $" >> { name }", "\"" + paramName + "\"", 1));
+                return res.Select(node => new SearchResult(node, new List<string> { $" >> { name }" }, new List<string> { "\"" + paramName + "\"" }));
             }
 
+                //If the user didn't input a DSL recognized function, then they probably intended to search for a
+                // Key-value pair.
                 //this returns a string that more closely follows function syntax
                 if (!DSL.FuncNameExists(name))
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName.Trim('"'));
             }
+            
             try
             {
                 paramName = paramName.Trim('"');
                 var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
                 if (resultDocs is BaseListController resultList)
                 {
-                    var res = DocumentTree.MainPageTree.Where(node => resultList.Data.Contains(node.ViewDocument) ||
+                    var res = DocumentTree.MainPageTree.GetAllNodes().Where(node => resultList.Data.Contains(node.ViewDocument) ||
                     resultList.Data.Contains(node.DataDocument));
                     //return resultList.Data.Select(fcb => new SearchResult(fcb));
 
                     //TODO: Currently a band-aid fix, we shouldn't be searching for the node again after already searching
                     string trimParam = paramName.Length >= 10 ? paramName.Substring(0, 10) + "..." : paramName;
+                    var relatedFields = new List<string> { $" >> Operator: { name }" };
                     switch (name)
                     {
                         case "before":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
                         case "after":
-                            return res.Select(node => new SearchResult(node, $" >> Operator: { name }", "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.ModifiedTimestampKey)?.Data.ToString(), 1));
+                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
                     }
-                    return res.Select(node => new SearchResult(node, $" >> Operator: { name }", trimParam, 1));
+                    return res.Select(node => new SearchResult(node, new List<string> { $" >> Operator: { name }" }, new List<string> { trimParam }));
                 }
             }
             catch (Exception e)
@@ -183,6 +286,7 @@ namespace Dash
             return new List<SearchResult>();
         }
 
+        // Finds the index of the next logical operator
         private static int FindNextDivider(string inputString)
         {
             var inParen = false;
@@ -255,11 +359,13 @@ namespace Dash
                     {
                         return i;
                     }
-                }
+                }           
             }
             return -1;
         }
 
+        // Breaks down the user string while searching based on the desired logical operators and placement
+        // of quotes/parenthesis
         public static IEnumerable<SearchResult> Parse(string inputString)
         {
             if (string.IsNullOrEmpty(inputString))
@@ -304,12 +410,22 @@ namespace Dash
             }
             else
             {
-                searchResults = GetBasicSearchResults(modifiedSearchTerm);
+                searchResults = GetBasicSearchResults(modifiedSearchTerm).Select(res => res.AddRtfTerm(new SearchTerm(modifiedSearchTerm)));
             }
 
             if (negate >= 0 && negate % 2 == 1)
             {
-                searchResults = NegateSearch(searchResults);
+                var searchResultsList = NegateSearch(searchResults, modifiedSearchTerm);
+                foreach (var res in searchResultsList)
+                {
+                    var list = new List<SearchTerm>();
+                    foreach (var term in res.RtfHighlight)
+                    {
+                        list.Add(new SearchTerm(term._term, !term.Negate));
+                    }
+                    res.RtfHighlight = list;
+                }
+                searchResults = searchResultsList.AsEnumerable();
             }
 
             int len = inputString.Length;
@@ -325,7 +441,7 @@ namespace Dash
             switch (divider)
             {
                 case ' ':
-                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest));
+                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest), modifiedSearchTerm);
                 case '|':
                     return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
                 default:
@@ -333,15 +449,34 @@ namespace Dash
             }
         }
 
-        private static IEnumerable<SearchResult> NegateSearch(IEnumerable<SearchResult> search)
-        {
-            var results = DocumentTree.MainPageTree.Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
-            var negated = new List<SearchResult>();
-            foreach (var res in results)
+        public struct SearchTerm {
+
+            public bool Negate { get; set; }
+            public readonly string _term;
+            public SearchTerm(string term, bool negate = false)
             {
-                negated.Add(new SearchResult(res, "", "", 1));
+                Negate = negate;
+                _term = term;
             }
-            return negated;
+            
+            public static ListController<TextController> ConvertSearchTerms(List<SearchTerm> searchTerms)
+            {
+                var list = new ListController<TextController>();
+                foreach (var term in searchTerms)
+                {
+                    if (!term.Negate)
+                    {
+                        list.Add(new TextController(term._term));
+                    }
+                }
+                return list;
+            }
+        }
+
+        private static List<SearchResult> NegateSearch(IEnumerable<SearchResult> search, string term)
+        {
+            var results = DocumentTree.MainPageTree.GetAllNodes().Where(node => !search.Any(res => res.DataDocument == node.DataDocument || res.ViewDocument == node.ViewDocument));
+            return results.Select(res => new SearchResult(res, new List<string>().Append(" >> N/A").ToList(), new List<string>().Append($"Negation Search: \"{term}\"").ToList())).ToList();
         }
 
         private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
@@ -349,24 +484,72 @@ namespace Dash
         {
             //probably won't work
             //return search1.Union(search2);
+            var joined = new List<SearchResult>();
+            foreach (var res in search1)
+            {
+                foreach (var res2 in search2)
+                {
+                    if (res2.ViewDocument == res.ViewDocument)
+                    {
+                        res.RtfHighlight.AddRange(res2.RtfHighlight);
+                        res.FormattedKeyRef.AddRange(res2.FormattedKeyRef);
+                        res.RelevantText.AddRange(res2.RelevantText);
+                        break;
+                    }
+                }
+                joined.Add(res);
+            }
 
-            return (search1.Concat(search2)).DistinctBy(node => node.ViewDocument);
+            foreach (var res in search2)
+            {
+                if (!joined.Any(res1 => res1.ViewDocument == res.ViewDocument))
+                {
+                    joined.Add(res);
+                }
+            }
+
+            return joined;
         }
 
-        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2, string searchTerm)
         {
             //probably won't work
             //return search1.Intersection(search2);
 
-            var search1List = search1.ToList();
-            var joined = search1List.Where(result => search2.Any(node => node.ViewDocument == result.ViewDocument)).ToList();
-
-            foreach (var result in search2)
+            var search2List = search2.ToList();
+            var joined = new List<SearchResult>();
+            foreach (var result in search2List)
             {
-                if (search1List.Any(node => node.ViewDocument == result.ViewDocument) &&
-                    !joined.Any((node => node.ViewDocument == result.ViewDocument)))
-                    joined.Add(result);
-                //TODO: combine information from the repeated results
+                foreach (var res in search1)
+                {
+                    if (res.ViewDocument == result.ViewDocument)
+                    {
+                        result.FormattedKeyRef.AddRange(res.FormattedKeyRef);
+                        result.RelevantText.AddRange(res.RelevantText);
+                        result.RtfHighlight.Add(new SearchTerm(searchTerm));
+                        joined.Add(result);
+                        break;
+                    }
+                }
+            }
+
+            foreach (var result in search1)
+            {
+                if (joined.Any((node => node.ViewDocument == result.ViewDocument)))
+                {
+                    continue;
+                }
+                foreach (var res in search2List)
+                {
+                    if (result.ViewDocument == res.ViewDocument)
+                    {
+                        result.RtfHighlight.Add(new SearchTerm(searchTerm));
+                        result.FormattedKeyRef.AddRange(res.FormattedKeyRef);
+                        result.RelevantText.AddRange(res.RelevantText);
+                        joined.Add(result);
+                        break;
+                    }
+                }
             }
             return joined;
         }
@@ -375,9 +558,9 @@ namespace Dash
         {
             var doc = SearchIndividualById(id);
             var dataDoc = doc.GetDataDocument();
-            var filteredNodes = DocumentTree.MainPageTree.Where(node => node.DataDocument.Equals(dataDoc));
+            var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Where(node => node.DataDocument.Equals(dataDoc));
             if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
-            return filteredNodes.Select(node => new SearchResult(node, "", id));
+            return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
         }
 
         public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id);

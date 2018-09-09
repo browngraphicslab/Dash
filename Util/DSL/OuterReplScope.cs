@@ -48,11 +48,12 @@ namespace Dash
         public override void SetVariable(string variableName, FieldControllerBase valueToSet)
         {
             var child = (Scope)this;
-            while (child != null && !this._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            if (child == null) return;
-            this._dictionary[variableName] = valueToSet;
+            while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
+            if (child == null || child._dictionary[variableName].Equals(valueToSet)) return;
 
-            var key = new KeyController(variableName, variableName);
+            child._dictionary[variableName] = valueToSet;
+
+            var key = new KeyController(variableName);
             _variableDoc.SetField(key, valueToSet, true);
         }
     }

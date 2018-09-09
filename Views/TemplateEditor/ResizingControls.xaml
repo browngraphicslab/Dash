@@ -1,0 +1,49 @@
+﻿<UserControl
+    x:Class="Dash.ResizingControls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    Loaded="ResizingControl_Loaded"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid x:Name="xBounds" Width="Auto" Height="Auto" HorizontalAlignment="Left"
+          VerticalAlignment="Top">
+        <!-- creates the four cropping guides -->
+        <Rectangle
+            x:Name="xLeft" PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Fill="Transparent" Width="10" Height="40" Stroke="Black" StrokeThickness="2"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted" PointerPressed="OnPointerPressed"
+            ManipulationMode="TranslateX" HorizontalAlignment="Left"
+            VerticalAlignment="Center" />
+        <Rectangle
+            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="10"
+            Stroke="Black" StrokeThickness="2"
+            PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="40" ManipulationDelta="XRight_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" PointerPressed="OnPointerPressed"/>
+        <Rectangle
+            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="40"
+            Stroke="Black" StrokeThickness="2"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="10" ManipulationDelta="XTop_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" PointerPressed="OnPointerPressed" />
+        <Rectangle
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="40"
+            Stroke="Black" StrokeThickness="2"
+            Height="10" ManipulationDelta="XBottom_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" PointerPressed="OnPointerPressed" />
+    </Grid>
+</UserControl>

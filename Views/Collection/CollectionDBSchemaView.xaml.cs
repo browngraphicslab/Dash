@@ -5,18 +5,13 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Controllers.Operators;
-using Dash.Views;
 using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml.Controls;
 using static Dash.CollectionDBSchemaHeader;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,6 +25,7 @@ namespace Dash
 
         // This list stores the fields added in the schema view (not originally in the documents)
         private List<KeyController> _schemaFieldsNotInDocs;
+        public UserControl UserControl => this;
 
 
         public CollectionDBSchemaView()
@@ -480,26 +476,20 @@ namespace Dash
             {
                 vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
+                args.Data.AddDragModel(new DragDocumentModel(vm.Document));
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
         }
 
         private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            foreach (var m in e.Items)
+            foreach (object m in e.Items)
             {
                 var viewModel = m as HeaderViewModel;
-                var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
-                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument(), collectionViewModel.CollectionKey);
+                var collectionViewModel = viewModel?.SchemaView.DataContext as CollectionViewModel;
+                var collectionReference = new DocumentReferenceController(viewModel?.SchemaDocument.GetDataDocument(), collectionViewModel?.CollectionKey);
                 var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
-                e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-                    new DragCollectionFieldModel(
-                        collectionData,
-                        collectionReference,
-                        viewModel.FieldKey,
-                        CollectionView.CollectionViewType.DB
-                    ));
+                e.Data.AddDragModel(new DragDocumentModel(collectionData, CollectionView.CollectionViewType.DB));
             }
         }
 

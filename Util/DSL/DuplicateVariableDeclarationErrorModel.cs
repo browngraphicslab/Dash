@@ -6,6 +6,7 @@ namespace Dash
 {
     internal class DuplicateVariableDeclarationErrorModel : ScriptExecutionErrorModel
     {
+        private DocumentController _errorDoc;
         private readonly string _variableName;
         private readonly FieldControllerBase _value;
 
@@ -15,32 +16,24 @@ namespace Dash
             _value = value;
         }
 
-        public override string GetHelpfulString()
-        {
-            return $" Exception:\n            AttemptedDuplicateVariableDeclaration\n      Feedback:\n            Variable {_variableName} already exists with value {_value}. Update current assignment rather than re-declaring.";
-        }
+        public override string GetHelpfulString() => "DuplicateVariableDeclarationException";
 
         public override DocumentController BuildErrorDoc()
         {
-            var errorDoc = new DocumentController();
+            _errorDoc = new DocumentController();
 
-            string title = "Duplicate Variable Declaration Exception";
+            const string title = "DuplicateVariableDeclarationException";
 
-            errorDoc.DocumentType = DashConstants.TypeStore.ErrorType;
-            errorDoc.SetField<TextController>(KeyStore.TitleKey, title, true);
-            errorDoc.SetField<TextController>(KeyStore.ExceptionKey, GetHelpfulString(), true);
-            errorDoc.SetField<TextController>(KeyStore.ReceivedKey, _variableName, true);
-            //errorDoc.SetField(KeyStore.ExpectedKey, Expected(), true);
-            //errorDoc.SetField<TextController>(KeyStore.FeedbackKey, Feedback(), true);
+            _errorDoc.DocumentType = DashConstants.TypeStore.ErrorType;
+            _errorDoc.SetField<TextController>(KeyStore.TitleKey, title, true);
+            _errorDoc.SetField<TextController>(KeyStore.ExceptionKey, Exception(), true);
+            _errorDoc.SetField<TextController>(KeyStore.FeedbackKey, Feedback(), true);
 
-            return errorDoc;
+            return _errorDoc;
         }
 
-        //private string Received()
-        //{
-        //    string receivedTypes = string.Join(", ", _typeInfo);
-        //    string receivedExpr = receivedTypes == "" ? "None" : receivedTypes;
-        //    return $"({receivedExpr})";
-        //}
+        private string Exception() => $"Variable {_variableName} already exists with value {_value}.";
+
+        private static string Feedback() => "Update current assignment rather than re-declaring.";
     }
 }

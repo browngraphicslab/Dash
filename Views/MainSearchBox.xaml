@@ -7,7 +7,12 @@
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    >
+
+
+   
+    
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -19,7 +24,7 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
+        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" Margin="-35, 0, 0, 0" CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
@@ -29,8 +34,13 @@
                        VerticalAlignment="Center"
             />
         </Border>
-        <FontIcon x:Name="xArrow" FontFamily="Segoe MDL2 Assets" Glyph="&#xE937;" Grid.Column="1" Grid.Row="0"
-           FontSize="12" Tapped="XArrowBlock_OnTapped" />
+        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped" Width="35">
+            <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0">
+                
+            </TextBlock>
+
+        </Grid>
+        
 
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                     TextChanged="AutoSuggestBox_TextChanged"
@@ -39,9 +49,12 @@
                     UpdateTextOnSelect="False"
                     Name="xAutoSuggestBox"
                     GotFocus="XAutoSuggestBox_OnGotFocus"
+                    LostFocus="XAutoSuggestBox_OnLostFocus"
                     TextBoxStyle="{StaticResource AutoFontSize}"
                     VerticalAlignment="Stretch"
                     HorizontalAlignment="Stretch"
+                    KeyDown="XAutoSuggestBox_OnKeyDown"
+                    KeyUp="XAutoSuggestBox_OnKeyUp"
                     DragEnter="XAutoSuggestBox_OnDragEnter"
                     Drop="XAutoSuggestBox_OnDrop"
                     Grid.Column="2"
@@ -50,44 +63,86 @@
             <AutoSuggestBox.ItemTemplate>
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <Grid PointerEntered="Grid_PointerEntered" PointerExited="Grid_PointerExited" >
+                    <Grid 
+                        PointerEntered="Grid_PointerEntered" 
+                        PointerExited="Grid_PointerExited" 
+                        CanDrag="True" 
+                        DragStarting="SearchResult_OnDragStarting"
+                        Tapped="UIElement_OnTapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Border
-                        Background="Transparent"
-                        DragStarting="SearchResult_OnDragStarting"
-                        CanDrag="True">
-                            <TextBlock x:Name="xCollDragIcon"
-                                    FontFamily="{StaticResource FontAwesome}"
-                                    Foreground="{StaticResource TitleText}"
-                                    FontSize="15"
-                                    Text="{StaticResource DocumentIcon}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center"
-                                    Height="32"
-                                    Width="32" />
-                        </Border>
-                        <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
-
-                            <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
-                            <TextBlock Text="{Binding ContextualText}"></TextBlock>
+                        <TextBlock 
+                            x:Name="xCollDragIcon"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="15"
+                            Text="{StaticResource DocumentIcon}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="32"
+                            Margin="3, 15, 0, 0"
+                            PointerWheelChanged="DocIcon_OnPointerWheelChanged"/>
+                        <TextBlock x:Name="xNumFields"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="10"
+                            Text="{Binding FieldCount}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="35"
+                            Margin="20, 32, 0, 0"/>
+                        <TextBlock x:Name="xFieldNum"
+                            Grid.Column="0"
+                            FontFamily="{StaticResource FontAwesome}"
+                            Foreground="{StaticResource TitleText}"
+                            FontSize="10"
+                            Text="{Binding CurrentIndex}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Height="32"
+                            Width="35"
+                            Margin="20, 11, 0, 0"/>
+                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="1">
+                            <TextBlock Text="{Binding CurrentTitle}" FontWeight="Medium"></TextBlock>
+                            <TextBlock Text="{Binding CurrentContext}"></TextBlock>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <Grid x:Name="xSearchCodeBox" Visibility="Collapsed" BorderThickness="1.5" BorderBrush="Gray" Grid.Column="2" Grid.Row="1">
+        <Grid x:Name="xSearchCodeBox" Height="32" Visibility="Collapsed" BorderThickness="2 0 2 2" BorderBrush="Gray" Grid.Column="2" Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="235"></ColumnDefinition>
-                <ColumnDefinition Width="15"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="12"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <FontIcon x:Name="xDragScript" FontFamily="Segoe MDL2 Assets" Glyph="&#xE70F;" Grid.Column="1"
+            <FontIcon x:Name="xDragScript" Grid.Column="1"
                           FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
-            <TextBox x:Name="xSearchCode" PlaceholderText="Run on each doc" Grid.Column="0" Background="White" BorderThickness="0"
+            <TextBox x:Name="xSearchCode" FontSize="14" PlaceholderText="Run on each document" Grid.Column="0" BorderThickness="0" Margin="0 0 0 0"
                         CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
+
+            <Grid.Resources>
+                <Storyboard x:Name="xFadeAnimationIn">
+                    <DoubleAnimation
+                        Storyboard.TargetName="xSearchCodeBox"
+                        Storyboard.TargetProperty="Opacity"
+                        From="0.0" To="1.0" Duration="0:0:.5"
+                    />
+                </Storyboard>
+                <Storyboard x:Name="xFadeAnimationOut">
+                    <DoubleAnimation
+                        Storyboard.TargetName="xSearchCodeBox"
+                        Storyboard.TargetProperty="Opacity"
+                        From="1.0" To="0.0" Duration="0:0:.5"
+                    />
+                </Storyboard>
+            </Grid.Resources>
         </Grid>
     </Grid>
 </UserControl>

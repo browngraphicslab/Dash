@@ -8,9 +8,9 @@ namespace Dash
     {
         public abstract List<FieldControllerBase> Data { get; set; }
 
-        protected BaseListController(ListModel fieldModel) : base(fieldModel)
-        {
-        }
+        protected BaseListController(ListModel fieldModel) : base(fieldModel) { }
+
+        public bool Indexed { get; set; }
 
         public override TypeInfo TypeInfo => TypeInfo.List;
 
@@ -24,8 +24,6 @@ namespace Dash
         public abstract FieldControllerBase GetValue(int index);
 
         public int Count => Data.Count;
-
-        public bool Indexed { get; set; }
 
         public override bool CheckType(FieldControllerBase fmc)
         {

@@ -6,7 +6,9 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models.DragModels;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -14,7 +16,12 @@ namespace Dash
 {
    public sealed partial class CollectionTreeView : ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+
+        public List<TreeViewNode> TreeViewNodes = new List<TreeViewNode>();
+        private ToolTip _snapshot;
+        private ToolTip _newWorkspace;
 
         public CollectionTreeView()
         {
@@ -22,43 +29,73 @@ namespace Dash
             AllowDrop = true;
             Drop += CollectionTreeView_Drop;
             DragOver += CollectionTreeView_DragOver;
+            SetupTooltips();
+        }
+
+        private void SetupTooltips()
+        {
+            _snapshot = new ToolTip()
+            {
+                Content = "Snapshot Workspace",
+                Placement = PlacementMode.Bottom,
+                VerticalOffset = 5,
+            };
+            ToolTipService.SetToolTip(xSnapshot, _snapshot);
+
+            _newWorkspace = new ToolTip()
+            {
+                Content = "Add New Workspace",
+                Placement = PlacementMode.Bottom,
+                VerticalOffset = 5,
+            };
+            ToolTipService.SetToolTip(xAddWorkspace, _newWorkspace);
+        }
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is TextBlock button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is TextBlock button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
         private void CollectionTreeView_DragOver(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+            if (e.DataView.HasDataOfType(Internal))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
             }
-            else
-                e.AcceptedOperation = DataPackageOperation.None;
+            else e.AcceptedOperation = DataPackageOperation.None;
             e.Handled = true;
         }
 
-        private void CollectionTreeView_Drop(object sender, DragEventArgs e)
+        private async void CollectionTreeView_Drop(object sender, DragEventArgs e)
         {
             Debug.Assert(ViewModel != null, "ViewModel != null");
-            var dvm = e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) ? e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel : null;
-            if (dvm != null)
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.DraggedDocument);
+
+            var droppableDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement);
+            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.AddRange(droppableDocs);
+
             e.Handled = true;
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void AddWorkspace_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            UndoManager.StartBatch();
-            Debug.Assert(ViewModel != null, "ViewModel != null");
-            var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
-            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-            UndoManager.EndBatch();
+            using (UndoManager.GetBatchHandle())
+            {
+                Debug.Assert(ViewModel != null, "ViewModel != null");
+                var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
+            }
         }
 
-        public void Highlight(DocumentController document, bool? flag)
-        {
-            xTreeRoot.Highlight(document, flag);
-        }
+        public void Highlight(DocumentController document, bool? flag) => xTreeRoot.Highlight(document, flag);
 
-        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        public async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //List of Document Controller - one document controller for each collection
             //so a data file is made for each element in this list
@@ -70,15 +107,15 @@ namespace Dash
            newExport.DashToTxt(collectionDataDocs);
         }
         
-        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        public void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.TogglePresentationMode();
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
-        public void TogglePresentationMode(bool on)
-        {
-            presentationModeButton.Background = on ? (SolidColorBrush) Application.Current.Resources["AccentGreenLight"] : (SolidColorBrush) Application.Current.Resources["AccentGreen"];
-        }
+        //public void TogglePresentationMode(bool on)
+        //{
+        //    presentationModeButton.Background = on ? (SolidColorBrush) Application.Current.Resources["AccentGreenLight"] : (SolidColorBrush) Application.Current.Resources["AccentGreen"];
+        //}
 
         // This does not change the title of the underlying collection.
         public void ChangeTreeViewTitle(string title)
@@ -113,26 +150,31 @@ namespace Dash
                     : (SolidColorBrush) Application.Current.Resources["MainText"];
         }
 
-        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
-            {
-                var snapshot = freeFormView.Snapshot();
-                var freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
-                var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
-                if (snapshots == null)
-                {
-                    var nsnapshots = new List<DocumentController>();
-                    nsnapshots.Add(snapshot);
-                    freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
-                }
-                else
-                    snapshots.Add(snapshot);
+            MainPage.Instance.SnapshotOverlay.Visibility = Visibility.Visible;
+            MainPage.Instance.FadeIn.Begin();
+            MainPage.Instance.FadeOut.Begin();
 
-                // bcz: hack to get the tree view to refresh
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(snapshot);
-                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Remove(snapshot);
+            if (!(MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)) return;
+
+            DocumentController snapshot = freeFormView.Snapshot();
+            DocumentController freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
+            var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
+
+            if (snapshots == null)
+            {
+                var nsnapshots = new List<DocumentController> {snapshot};
+                freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
+            }
+            else snapshots.Add(snapshot);
+                
+            foreach (TreeViewNode node in TreeViewNodes)
+            {
+                node.UpdateSnapshots();
             }
         }
+
+        public void SetDropIndicationFill(Brush fill) { }
     }
 }

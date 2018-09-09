@@ -57,7 +57,7 @@
                 <RowDefinition Height="6*"></RowDefinition>
             </Grid.RowDefinitions>
             <!--tappable toggle ellipse-->
-            <Ellipse Name="xEllipse" Grid.Row="1" Width="18" Height="18" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
+            <Ellipse Name="xEllipse" Grid.Row="1" Width="18" Height="18" Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.7" Tapped="TimelineElement_OnTapped"/>
         </Grid>
     </Grid>
 </UserControl>

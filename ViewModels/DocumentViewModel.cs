@@ -1,9 +1,14 @@
 ﻿using System;
-using Windows.UI;
+using System.Drawing;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
+using Windows.UI.Xaml.Media.Animation;
 using static Dash.DocumentController;
+using Color = Windows.UI.Color;
+using Point = Windows.Foundation.Point;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -12,52 +17,56 @@ namespace Dash
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
         // == MEMBERS, GETTERS, SETTERS ==
-        DocumentController _lastLayout = null;
-        TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
-        bool _showLocalContext;
-        bool _decorationState = false;
-        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
-        Thickness _searchHighlightState = new Thickness(0);
-        FrameworkElement _content = null;
-        
+        private DocumentController _lastLayout = null;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
+        private bool               _showLocalContext;
+        private bool               _decorationState = false;
+        private Thickness          _searchHighlightState = new Thickness(0);
+        private FrameworkElement   _content = null;
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
-            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
 
-            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
-            InteractiveManipulationScale = Scale;
-            
+            SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
+            IsSearchHighlighted = false;
+
             if (IconTypeController == null)
             {
                 LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
         }
+        
+        public void Load()
+        {
+            //UnLoad();
+            Debug.WriteLine("Load" + DocumentController.Tag);
+            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+        }
+
+        public void UnLoad()
+        {
+            Debug.WriteLine("UnLoad" + DocumentController.Tag);
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+        }
+
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
         public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
-        
+        public bool ResizersVisible = true;
         public bool ShowLocalContext
         {
             get => _showLocalContext;
             set => SetProperty(ref _showLocalContext, value);
         }
 
-        /// <summary>
-        /// The cached Position of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Position instead
-        /// </summary>
-        public Point InteractiveManipulationPosition;
-        /// <summary>
-        /// The cached Scale of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Scale instead
-        /// </summary>
-        public Point InteractiveManipulationScale;
+        private SolidColorBrush _searchHighlightBrush;
 
         public bool IsAdornmentGroup
         {
@@ -70,7 +79,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetPosition() ?? new Point();
-            set => LayoutDocument.SetPosition(InteractiveManipulationPosition = value);
+            set => LayoutDocument.SetPosition(value);
         }
         public double XPos
         {
@@ -84,7 +93,7 @@ namespace Dash
         }
         public double Width
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
@@ -95,8 +104,9 @@ namespace Dash
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
+        public RectangleGeometry DragBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
 
@@ -119,7 +129,7 @@ namespace Dash
         {
             return LayoutDocument.GetHashCode();
         }
-        
+
         public FrameworkElement Content
         {
             get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
@@ -128,31 +138,50 @@ namespace Dash
                 OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
             }
         }
+
         public bool Undecorated { get; set; }
         public bool DecorationState
         {
             get => _decorationState;
-            set
-            {
-                if (!DisableDecorations) SetProperty(ref _decorationState, value);
-                else SetProperty(ref _decorationState, false);
-            }
+            set => SetProperty(ref _decorationState, value);
         }
-
 
         public Thickness SearchHighlightState
         {
             get => _searchHighlightState;
-            set { SetProperty(ref _searchHighlightState, value); }
+            set => SetProperty(ref _searchHighlightState, value);
         }
 
-        public CollectionViewModel.StandardViewLevel ViewLevel
+        public bool IsSearchHighlighted { get; set; }
+
+        public SolidColorBrush SearchHighlightBrush
         {
-            get => _standardViewLevel;
-            set => SetProperty(ref _standardViewLevel, value);
+            get => _searchHighlightBrush;
+            set => SetProperty(ref _searchHighlightBrush, value);
         }
-        public bool DisableDecorations { get; set; } = false;
 
+
+        public async void ExpandBorder()
+        {
+            while (SearchHighlightState.Bottom <= 7.5)
+            {
+                SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
+                await Task.Delay(TimeSpan.FromMilliseconds(7));
+            }
+
+            IsSearchHighlighted = true;
+        }
+
+        public async void RetractBorder()
+        {
+            while (SearchHighlightState.Bottom >= 0.5)
+            {
+                SearchHighlightState = new Thickness(SearchHighlightState.Bottom - 0.5);
+                await Task.Delay(TimeSpan.FromMilliseconds(7));
+            }
+
+            IsSearchHighlighted = false;
+        }
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
@@ -170,7 +199,8 @@ namespace Dash
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
             {
                 if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
@@ -201,29 +231,46 @@ namespace Dash
         /// <param name="context"></param>
         void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
-            // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
-            // if a field of the activelayout changed, we ignore that here since it should update the layout directly
-            // through bindings.
-            if (fargs == null && _lastLayout != LayoutDocument)
+            if (args.Action == FieldUpdatedAction.Remove)
             {
-                var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
-                if (curActive == null)
-                {
-                    curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
-                    curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
-                    DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
-                }
-                _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                Content = null;
+                _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
                 _lastLayout = LayoutDocument;
                 LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
                 LayoutDocument_DataChanged(null, null, new Context(DocumentController));
             }
+            else
+            {
+                var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+                // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
+                // if a field of the activelayout changed, we ignore that here since it should update the layout directly
+                // through bindings.
+                if (fargs == null && _lastLayout != LayoutDocument)
+                {
+                    var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
+                    if (curActive == null)
+                    {
+                        curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
+                        curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+                        DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
+                    }
+                    _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                    _lastLayout = LayoutDocument;
+                    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+                }
+            }
+        }
+        ~DocumentViewModel()
+        {
+            System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
+            System.Diagnostics.Debug.WriteLine(" ");
+            _content = null;
         }
         public void Dispose()
         {
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-            _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            System.Diagnostics.Debug.WriteLine("Diposing dvm:" + DocumentController?.Tag);
+            UnLoad();
         }
     }
 }

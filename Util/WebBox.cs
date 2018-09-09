@@ -58,43 +58,43 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            if (sourceBinding != null)
-                element.SetBinding(WebView.SourceProperty, sourceBinding);
+            if (sourceBinding != null) element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            // the document field model controller provides us with the DATA
-            // the Document on this courtesty document provides us with the parameters to display the DATA.
-            // X, Y, Width, and Height etc....
-
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
-                new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
-
-            var textfieldModelController = fieldModelController as TextController;
-            Debug.Assert(textfieldModelController != null);
-
             var webView = new WebBoxView();
             var web = webView.GetView();
             var html = docController.GetDereferencedField<HtmlController>(KeyStore.DataKey, context)?.Data;
-            if (html != null)
-                if (html.StartsWith("http"))
+
+            if (html.StartsWith("http"))
+            {
+                webView.SetText(html);
+
+                // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
+                web.Navigate(new Uri(html));
+            }
+            else
+            {
+                string correctedHtml;
+                var htmlIndex = html.ToLower().IndexOf("<html");
+                if (htmlIndex != -1 )
                 {
-                    // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
-                    web.Navigate(new Uri(html));
+                    var modHtml = html.Substring(htmlIndex, html.Length - htmlIndex);
+                    correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                    correctedHtml = modHtml.Replace("<HTML>", "<HTML><head><style>img {height: auto !important;}</style></head>");
+                    correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
                 }
                 else
                 {
-                    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-                    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
-                    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
+                    correctedHtml = html;
                 }
-            else web.Source = new Uri(textfieldModelController.Data);
+                web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
+            };
+
             web.LoadCompleted += Web_LoadCompleted;
 
-            SetupBindings(web, docController, context);
-            if (html == null)
-                SetupTextBinding(web, docController, context);
+            SetupBindings(webView, docController, context);
             
             return webView;
         }
@@ -186,17 +186,17 @@ namespace Dash
             var shiftState = web.IsShiftPressed();
             switch (e.Value as string)
             {
-                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState, true); break;  // "2" is the 2nd mouse button = "Right" button
-                case "move": parent.DocumentView_PointerEntered(null, null);
-                             (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
-                case "leave": if (!parent.IsPointerOver())
-                                   parent.DocumentView_PointerExited(null, null);
+                case "2":    web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
+                case "move": (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
                               break;
+                case "leave": break;
                 case "up":    parent.ToFront();
                               if (DocumentView.FocusedDocument != parent)
-                                  parent.ForceLeftTapped();
-                              (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
-                              web.Tag = null; break;
+                              {
+                                 DocumentView.FocusedDocument = parent;
+                                 parent.ForceLeftTapped();
+                              }
+                              web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null; break;
             }
         }
 

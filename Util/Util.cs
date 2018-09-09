@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.ApplicationModel.Email;
 using Windows.Foundation;
@@ -87,7 +88,10 @@ namespace Dash
         /// </summary>
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            if (to == null) to = Window.Current.Content;
+            if (to == null)
+                to = Window.Current.Content;
+            if (from == null)
+                from = Window.Current.Content;
             return @from.TransformToVisual(to).TransformPoint(p);
         }
 
@@ -313,21 +317,28 @@ namespace Dash
         /// <summary>
         ///     Saves everything within given UIelement as .png in a specified directory
         /// </summary>
-        public static async void ExportAsImage(UIElement element)
+        public static async Task<string> ExportAsImage(UIElement element, string imgName = "pic.png", bool saveLocal = false)
         {
             var bitmap = new RenderTargetBitmap();
             await bitmap.RenderAsync(element);
 
-            var picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
+            if (saveLocal)
+            {
+                folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            }
+            else
+            {
+                var picker = new FolderPicker();
+                picker.SuggestedStartLocation = PickerLocationId.Desktop;
+                picker.FileTypeFilter.Add("*");
+                folder = await picker.PickSingleFolderAsync();
+            }
 
             StorageFile file = null;
             if (folder != null)
             {
-                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+                file = await folder.CreateFileAsync(imgName, CreationCollisionOption.GenerateUniqueName);
 
                 var pixels = await bitmap.GetPixelsAsync();
                 var byteArray = pixels.ToArray();
@@ -349,7 +360,14 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
+
+                if (saveLocal)
+                {
+                    return file.Name;
+                }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -568,6 +586,35 @@ namespace Dash
             var dotProduct = a.X * b.X + a.Y * b.Y;
             var aMagSq = Math.Pow(a.X, 2) + Math.Pow(a.Y, 2);
             return new Point(a.X * dotProduct / aMagSq, a.Y * dotProduct / aMagSq);
+        }
+        /// <summary>
+        ///  clamps a point to lie within a rectangle
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public static Point Clamp(Point point, Rect rect)
+        {
+            if (point.X < rect.Left)
+            {
+                point.X = rect.Left;
+            }
+            else if (point.X > rect.Right)
+            {
+                point.X = rect.Right;
+            }
+
+            if (point.Y < rect.Top)
+            {
+                point.Y = rect.Top;
+            }
+            else if (point.Y > rect.Bottom)
+            {
+                point.Y = rect.Bottom;
+            }
+
+
+            return point;
         }
     }
 }

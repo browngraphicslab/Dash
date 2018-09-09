@@ -145,6 +145,10 @@ namespace Dash
 
         public override void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
         {
+            if (RichTextView._searchHighlight)
+            {
+                return;
+            }
             var watch = Stopwatch.StartNew();
 
             _transactionMutex.WaitOne();
@@ -530,13 +534,12 @@ namespace Dash
         public override Task Close()
         {
             _saveTimer.Stop();
-            CleanupDocuments();
             _transactionMutex.WaitOne();
             CleanupDocuments();
             _currentTransaction?.Commit();
             _currentTransaction = null;
-            _transactionMutex.ReleaseMutex();
             _db.Close();
+            _transactionMutex.ReleaseMutex();
             return Task.CompletedTask;
         }
 
