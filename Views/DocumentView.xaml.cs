@@ -815,14 +815,11 @@ namespace Dash
         {
             if (this.ViewModel.IsAdornmentGroup)
                 return;
-            var dropDoc = ViewModel.DocumentController;
-            if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
             var dragModels = e.DataView.GetDragModels();
             foreach (var dragModel in dragModels)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) continue;
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
@@ -831,17 +828,20 @@ namespace Dash
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                         dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var dropDoc = ViewModel.DocumentController;
+                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
                     MainPage.Instance.AddFloatingDoc(linkDoc);
                     //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
+                    ? DataPackageOperation.Link
+                    : e.DataView.RequestedOperation;
+                e.Handled = true;
             }
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                ? DataPackageOperation.Link
-                : e.DataView.RequestedOperation;
-            e.Handled = true;
         }
 
         void drop(bool footer, DocumentController newFieldDoc)
