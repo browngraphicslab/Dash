@@ -18,6 +18,7 @@ namespace Dash
                 _documentController = value;
                 (Model as DocumentReferenceModel).DocumentId = value.Id;
                 UpdateOnServer(null);//TODO Add FieldUpdate and undo
+                DocumentChanged();
             }
         }
 
@@ -27,23 +28,33 @@ namespace Dash
             Debug.Assert(key != null);
             _documentController = doc;
             FieldKey = key;
+            DocumentChanged();
             SaveOnServer();
         }
 
         public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
         {
-            DocumentReferenceController drc = new DocumentReferenceController(model);
+            var drc = new DocumentReferenceController(model);
             return drc;
         }
         private DocumentReferenceController(DocumentReferenceModel documentReferenceFieldModel) : base(documentReferenceFieldModel)
         {
+            _initialized = false;
             Debug.Assert(documentReferenceFieldModel?.DocumentId != null);
         }
 
+        private bool _initialized = true;
         public override async Task InitializeAsync()
         {
-            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
             await base.InitializeAsync();
+            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            DocumentChanged();
         }
 
         public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)

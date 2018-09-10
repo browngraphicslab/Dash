@@ -69,22 +69,6 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.RichText;
 
-        public override IEnumerable<DocumentController> GetReferences()
-        {
-            yield return null;
-            //var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
-            //foreach (var link in links)
-            //{
-            //    var split = link.Split('\"');
-            //    if (split.Count() > 1)
-            //    {
-            //        var doc = ContentController<FieldModel>.GetController<DocumentController>(split[1]);
-            //        if (doc != null)
-            //            yield return doc;
-            //    }
-            //}
-        }
-
         public override StringSearchModel SearchForString(string searchString)
         {
             var richEditBox = new RichEditBox();

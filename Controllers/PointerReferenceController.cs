@@ -5,21 +5,15 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class PointerReferenceController : ReferenceController
+    public class PointerReferenceController : ReferenceController
     {
         public ReferenceController DocumentReference { get; private set; }
-
-        DocumentController _lastDoc = null;
-        void fieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-        {
-            DisposeField();
-            //Init();//TODO DB
-        }
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
             FieldKey = key;
             DocumentReference = documentReference;
+            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
             SaveOnServer();
         }
 
@@ -31,19 +25,34 @@ namespace Dash
 
         private PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
         {
+            _initialized = false;
         }
 
+        private bool _initialized = true;
         public override async Task InitializeAsync()
         {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
             DocumentReference = await RESTClient.Instance.Fields.GetControllerAsync<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
             await base.InitializeAsync();
+            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
+            DocumentChanged();
+        }
+
+        private void DocumentReferenceOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            DocumentChanged();
         }
 
         public override void DisposeField()
         {
              base.DisposeField();
-            _lastDoc?.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+            DocumentReference.FieldModelUpdated -= DocumentReferenceOnFieldModelUpdated;
         }
 
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);

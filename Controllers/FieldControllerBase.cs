@@ -78,11 +78,6 @@ namespace Dash
         public abstract object GetValue(Context context);
 
 
-        public virtual IEnumerable<DocumentController> GetReferences()
-        {
-            return new List<DocumentController>();
-        }
-
         public virtual bool CheckType(FieldControllerBase fmc)
         {
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using DashShared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,13 +16,16 @@ namespace Dash
 
         }
 
+        private bool _initialized = false;
         public override async Task InitializeAsync()
         {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
             FieldKey = await RESTClient.Instance.Fields.GetControllerAsync<KeyController>(ReferenceFieldModel.KeyId);
-            //TODO DB
-            //_lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            //_lastDoc = GetDocumentController(null);
-            //_lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         DocumentController _lastDoc = null;
@@ -31,6 +34,13 @@ namespace Dash
         {
             //OnFieldModelUpdated(dargs, c);
             OnFieldModelUpdated(args.FieldArgs, c);
+        }
+
+        protected void DocumentChanged()
+        {
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc = GetDocumentController(null);
+            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         public override void DisposeField()
@@ -43,11 +53,6 @@ namespace Dash
         public abstract DocumentController GetDocumentController(Context context);
 
         public abstract FieldControllerBase GetDocumentReference();
-
-        public override IEnumerable<DocumentController> GetReferences()
-        {
-            yield return GetDocumentController(null);
-        }
 
         public override FieldControllerBase Dereference(Context context)
         {
