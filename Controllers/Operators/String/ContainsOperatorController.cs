@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using System;
+using DashShared;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -23,7 +24,7 @@ namespace Dash
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Contains", "03CB1DD8-238B-467E-8BE6-C64164DB875B");
+        private static readonly KeyController TypeKey = new KeyController("Contains", new Guid("03CB1DD8-238B-467E-8BE6-C64164DB875B"));
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

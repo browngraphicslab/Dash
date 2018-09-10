@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using DashShared;
@@ -14,7 +15,7 @@ namespace Dash
         public ToListOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Create a list from a single number", "65BA31AB-16AF-44A8-AA8E-4D760D204E52");
+        private static readonly KeyController TypeKey = new KeyController("Create a list from a single number", new Guid("65BA31AB-16AF-44A8-AA8E-4D760D204E52"));
 
         //Input keys
         public static readonly KeyController SourceKey = new KeyController("Source content");

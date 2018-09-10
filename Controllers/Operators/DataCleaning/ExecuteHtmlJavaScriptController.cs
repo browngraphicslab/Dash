@@ -68,7 +68,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", "D0286E73-D9F6-4341-B901-5ECC27AC76BC");
+        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", new Guid("D0286E73-D9F6-4341-B901-5ECC27AC76BC"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

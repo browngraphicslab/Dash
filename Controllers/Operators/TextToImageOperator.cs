@@ -18,9 +18,7 @@ namespace Dash.Controllers.Operators
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-
-        new KeyController("Text To Image", "5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1");
+        private static readonly KeyController TypeKey = new KeyController("Text To Image", new Guid("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1"));
 
 
         //Input keys

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -20,7 +21,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Concat", "F69DF9CF-5B51-482D-AE1E-40B3266930CB");
+        private static readonly KeyController TypeKey = new KeyController("Concat", new Guid("F69DF9CF-5B51-482D-AE1E-40B3266930CB"));
 
         public override FieldControllerBase GetDefaultController()
         {

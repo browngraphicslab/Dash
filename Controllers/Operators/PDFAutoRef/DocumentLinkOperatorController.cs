@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -48,7 +49,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Text Link Documents", "3830D32F-FC05-427B-9761-A47DFCEA503B");
+        private static readonly KeyController TypeKey = new KeyController("Text Link Documents", new Guid("3830D32F-FC05-427B-9761-A47DFCEA503B"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {

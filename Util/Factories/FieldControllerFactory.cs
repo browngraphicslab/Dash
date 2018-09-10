@@ -12,7 +12,7 @@ namespace Dash
 {
     public class FieldControllerFactory : BaseControllerFactory
     {
-        public static async Task<FieldControllerBase> CreateFromModel(FieldModel model)
+        public static FieldControllerBase CreateFromModel(FieldModel model)
         {
             Type t = model.GetType();
             System.Reflection.TypeInfo ti;
@@ -97,8 +97,6 @@ namespace Dash
                 default:
                     throw new ArgumentException("Parameter doesn't match any known types", nameof(model));
             }
-
-            await controller.InitializeAsync();
 
             Debug.Assert(controller != null);
 

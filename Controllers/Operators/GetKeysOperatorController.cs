@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using DashShared;
@@ -38,7 +39,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("Get Keys", "0FE2858F-CB94-4163-B4CD-CA84F99438E4");
+        private static KeyController TypeKey = new KeyController("Get Keys", new Guid("0FE2858F-CB94-4163-B4CD-CA84F99438E4"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

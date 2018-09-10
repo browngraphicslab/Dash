@@ -18,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Quizlet", "B1F174E7-64C3-4DB7-9D67-67F9DB24BB54");
+        private static readonly KeyController TypeKey = new KeyController("Quizlet", new Guid("B1F174E7-64C3-4DB7-9D67-67F9DB24BB54"));
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new QuizletOperatorBox(rfmc);
 

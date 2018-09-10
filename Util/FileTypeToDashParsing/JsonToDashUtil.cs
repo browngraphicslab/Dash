@@ -253,7 +253,7 @@ namespace Dash
         {
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                new DocumentType(UtilShared.GetDeterministicGuid(BasePath), BasePath));
+                new DocumentType(UtilShared.GetDeterministicGuid(BasePath).ToString(), BasePath));
             Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(Prototype.DocumentType.Type + "API"), true);
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -265,7 +265,7 @@ namespace Dash
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
             // bcz: if jToken.Path is "", then it seems to cause problems later on because the key doesn't have a name (I think it gets filtered out of the KeyValue pane list)
-            return new KeyController(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path), DashShared.UtilShared.GetDeterministicGuid(uniqueName));
+            return new KeyController(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path), UtilShared.GetDeterministicGuid(uniqueName));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

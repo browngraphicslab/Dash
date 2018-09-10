@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Melt", "871A8ADC-5D15-4B31-9BE7-6256D9C961EE");
+        private static readonly KeyController TypeKey = new KeyController("Melt", new Guid("871A8ADC-5D15-4B31-9BE7-6256D9C961EE"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -86,8 +87,8 @@ namespace Dash
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
-            var variableKey = new KeyController(variableName.Data, DashShared.UtilShared.GenerateNewId());
-            var valueKey = new KeyController(valueName.Data, DashShared.UtilShared.GenerateNewId());
+            var variableKey = new KeyController(variableName.Data);
+            var valueKey = new KeyController(valueName.Data);
 
             var outputDocs = new List<DocumentController>();
 

@@ -648,7 +648,7 @@ namespace Dash
 
 				if (key == null)
 				{
-					TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
+				    TagKey = new KeyController(args.QueryText);
 				}
 				else
 				{

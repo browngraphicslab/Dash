@@ -37,22 +37,18 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
-        private static string GetId(string name)
+        public KeyModel KeyModel => Model as KeyModel;
+        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out var id) ? id : Guid.NewGuid().ToString())
         {
-            if (_nameDictionary.ContainsKey(name))
-            {
-                return _nameDictionary[name];
-            }
-
-            var id = Guid.NewGuid().ToString();
-            _nameDictionary[name] = id;
-            return id;
         }
 
-        public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : base(new KeyModel(name, GetId(name)))
+        private KeyController(string name, string id) : base(new KeyModel(name, id))
         {
-            SaveOnServer();
+            if (!_nameDictionary.ContainsKey(name))
+            {
+                _nameDictionary[name] = id;
+                SaveOnServer();
+            }
         }
 
         /// <summary>
@@ -60,11 +56,11 @@ namespace Dash
         /// </summary>
         /// <param name="name"></param>
         /// <param name="guid"></param>
-        public KeyController(string name, string guid) : base(new KeyModel(name, guid))
+        public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
             SaveOnServer();
-            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
-            _nameDictionary[name] = guid;
+            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
+            _nameDictionary[name] = Id;
         }
 
         public KeyController() : this(Guid.NewGuid().ToString())
@@ -79,7 +75,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         public override bool Equals(object obj)

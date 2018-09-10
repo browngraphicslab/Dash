@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
@@ -35,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List concatenation", "679ADBE0-AD2C-4776-9672-9AF9759FE37D");
+        private static readonly KeyController TypeKey = new KeyController("List concatenation", new Guid("679ADBE0-AD2C-4776-9672-9AF9759FE37D"));
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var listA = (BaseListController) inputs[ListAKey];

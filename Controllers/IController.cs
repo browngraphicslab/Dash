@@ -24,7 +24,7 @@ namespace Dash
         /// <summary>
         /// The model that this controller controls. Can only be changed internally.
         /// </summary>
-        protected T Model { get; private set; }
+        public T Model { get; private set; }
 
         public string Id => Model.Id;
 
@@ -71,7 +71,7 @@ namespace Dash
                 UndoManager.EventOccured(undoEvent);
             }
 
-            _serverEndpoint.UpdateDocument(Model);
+            _serverEndpoint.UpdateDocument(this);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Dash
         /// </summary>
         public void SaveOnServer()
         {
-            _serverEndpoint.AddDocument(Model);
+            _serverEndpoint.AddDocument(this);
         }
 
         public Task<bool> IsOnServer()

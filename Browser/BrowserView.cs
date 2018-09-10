@@ -234,7 +234,7 @@ namespace Dash
 
         public string GetUrlHash()
         {
-            var hash = UtilShared.GetDeterministicGuid(Url);
+            var hash = UtilShared.GetDeterministicGuid(Url).ToString();
             //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }

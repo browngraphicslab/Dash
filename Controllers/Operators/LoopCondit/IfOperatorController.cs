@@ -20,7 +20,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("If", "144E6E9D-E430-443E-85A9-29F87CE99DF5");
+        private static readonly KeyController TypeKey = new KeyController("If", new Guid("144E6E9D-E430-443E-85A9-29F87CE99DF5"));
 
         //Input keys
         //public static readonly KeyController BinaryKey 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -9,11 +10,11 @@ namespace Dash
     public sealed class ElementAccessOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("6407AD77-89C7-470C-A0FE-1133ADEED75D", "List");
-        public static readonly KeyController IndexKey = new KeyController("E800D4F4-AF0D-4848-AA30-0CCBF1014C99", "Index");
+        public static readonly KeyController ListKey = new KeyController("List");
+        public static readonly KeyController IndexKey = new KeyController("Index");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("425BEF63-041B-4705-8DAA-AECB9A5BF7CB", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public ElementAccessOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
@@ -34,7 +35,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Element Access");
+        private static readonly KeyController TypeKey = new KeyController("Element Access", new Guid("4B1577D2-BD3E-457B-BA74-F7ED46F2A0F7"));
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var indexable = inputs[ListKey];

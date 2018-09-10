@@ -11,13 +11,13 @@ namespace Dash
         ///     Adds a document to the server.
         /// </summary>
         /// <param name="newDocument"></param>
-        Task AddDocument(T newDocument);
+        Task AddDocument(Controller<T> newDocument);
 
         /// <summary>
         ///     Updates a document on the server.
         /// </summary>
         /// <param name="documentToUpdate"></param>
-        Task UpdateDocument(T documentToUpdate);
+        Task UpdateDocument(Controller<T> documentToUpdate);
 
         /// <summary>
         ///     Gets a document from the server.

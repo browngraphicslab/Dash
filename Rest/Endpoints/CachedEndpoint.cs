@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,8 +13,8 @@ namespace Dash
     {
         private readonly Dictionary<string, FieldControllerBase> _cache = new Dictionary<string, FieldControllerBase>();
 
-        public abstract Task AddDocument(FieldModel newDocument);
-        public abstract Task UpdateDocument(FieldModel documentToUpdate);
+        protected abstract Task AddModel(FieldModel newDocument);
+        protected abstract Task UpdateModel(FieldModel documentToUpdate);
         public abstract Task<FieldModel> GetDocument(string id);
         public abstract Task<List<FieldModel>> GetDocuments(IEnumerable<string> ids);
         public abstract Task<List<U>> GetDocuments<U>(IEnumerable<string> ids) where U : EntityBase;
@@ -29,6 +30,18 @@ namespace Dash
         public abstract void SetBackupInterval(int millis);
         public abstract void SetNumBackups(int numBackups);
 
+        public async Task AddDocument(Controller<FieldModel> controller)
+        {
+            Debug.Assert(!_cache.ContainsKey(controller.Id));
+            _cache[controller.Id] = (FieldControllerBase)controller;
+            await AddModel(controller.Model);
+        }
+
+        public async Task UpdateDocument(Controller<FieldModel> controller)
+        {
+            await UpdateModel(controller.Model);
+        }
+
         public async Task<FieldControllerBase> GetControllerAsync(string id)
         {
             if (_cache.TryGetValue(id, out FieldControllerBase field))
@@ -38,8 +51,9 @@ namespace Dash
 
             var model = await GetDocument(id);
             if (model == null) return null;
-            field = await model.NewController();
+            field = FieldControllerFactory.CreateFromModel(model);
             _cache[id] = field;
+            await field.InitializeAsync();
             return field;
 
         }
@@ -77,8 +91,9 @@ namespace Dash
                 var foundFields = await GetDocuments(missingIds);
                 for (int i = 0; i < foundFields.Count; i++)
                 {
-                    var field = await foundFields[i].NewController();
+                    var field = FieldControllerFactory.CreateFromModel(foundFields[i]);
                     _cache[missingIds[i]] = field;
+                    await field.InitializeAsync();
                     fields[missingIdxs[i]] = field;
                 }
             }
@@ -112,7 +127,9 @@ namespace Dash
             {
                 if (!_cache.TryGetValue(fieldModel.Id, out var controller))
                 {
-                    controller = await fieldModel.NewController();
+                    controller = FieldControllerFactory.CreateFromModel(fieldModel);
+                    _cache[fieldModel.Id] = controller;
+                    await controller.InitializeAsync();
                 }
 
                 if (controller is V vField)

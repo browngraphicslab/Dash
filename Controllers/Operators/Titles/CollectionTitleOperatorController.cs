@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using DashShared;
@@ -17,13 +18,13 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Collection Title", "775EE4CC-D2A8-4A11-AC3F-EC36C91355DE");
+        private static readonly KeyController TypeKey = new KeyController("Collection Title", new Guid("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE"));
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
         //Input keys
         public static readonly KeyController CollectionDocsKey = KeyStore.DataKey;
-       // public static readonly KeyController CollectionDocsKey = new KeyController("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2", "Collection Docs");
+       // public static readonly KeyController CollectionDocsKey = new KeyController(new Guid("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2"), "Collection Docs");
 
         //Output keys
         public static readonly KeyController ComputedTitle = new KeyController("Computed Title");

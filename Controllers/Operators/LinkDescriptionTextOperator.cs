@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Link Description Text", "6A81D1DC-E26D-43E5-856E-E4634A46354D");
+        private static readonly KeyController TypeKey = new KeyController("Link Description Text", new Guid("6A81D1DC-E26D-43E5-856E-E4634A46354D"));
 
         //Input keys
         public static readonly KeyController DescriptionText = KeyStore.DocumentTextKey;

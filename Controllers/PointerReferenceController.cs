@@ -18,6 +18,8 @@ namespace Dash
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
+            FieldKey = key;
+            DocumentReference = documentReference;
             SaveOnServer();
         }
 
@@ -41,7 +43,7 @@ namespace Dash
         public override void DisposeField()
         {
              base.DisposeField();
-            _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+            _lastDoc?.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);

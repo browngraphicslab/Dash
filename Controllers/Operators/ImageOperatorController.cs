@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -17,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Image Operator", "58032D3F-2B09-475B-8A56-F455DC809229");
+        private static readonly KeyController TypeKey = new KeyController("Image Operator", new Guid("58032D3F-2B09-475B-8A56-F455DC809229"));
 
 
         public static readonly KeyController URIKey = new KeyController("URI");

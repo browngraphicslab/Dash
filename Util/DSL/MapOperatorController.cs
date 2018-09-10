@@ -18,7 +18,7 @@ namespace Dash
         public static readonly KeyController LambdaFuncKey = new KeyController("LambdaFunc");
 
         //Output keys
-        public static readonly KeyController ResultListKey = new KeyController("ResultList", "87F48D1A-F958-4020-8F47-2F247BA7D66C");
+        public static readonly KeyController ResultListKey = new KeyController("ResultList");
 
         public MapOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -48,8 +48,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Lambda Map", "E119C98C-6A29-4D10-978C-8E8049330D92");
+        private static readonly KeyController TypeKey = new KeyController("Lambda Map", new Guid("E119C98C-6A29-4D10-978C-8E8049330D92"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

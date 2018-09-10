@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -41,7 +42,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("Intersect by value", "9B073C2B-8B11-4939-818F-903A067D412E");
+            new KeyController("Intersect by value", new Guid("9B073C2B-8B11-4939-818F-903A067D412E"));
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -33,7 +33,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Zip", "FA39D712-E1AA-4740-8CC9-C3201708A1F5");
+        private static readonly KeyController TypeKey = new KeyController("Zip", new Guid("FA39D712-E1AA-4740-8CC9-C3201708A1F5"));
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 

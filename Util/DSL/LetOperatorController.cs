@@ -14,22 +14,17 @@ namespace Dash
     {
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Let", "ED03AF63-0A70-4EC5-BB3B-3F9DF621C1A1");
+        private static readonly KeyController TypeKey = new KeyController("Let", new Guid("ED03AF63-0A70-4EC5-BB3B-3F9DF621C1A1"));
 
         //Input keys
-        public static readonly KeyController VariableNameKey =
-            new KeyController("Variable");
+        public static readonly KeyController VariableNameKey = new KeyController("Variable");
 
-        public static readonly KeyController VariableValueKey =
-            new KeyController("Value");
+        public static readonly KeyController VariableValueKey = new KeyController("Value");
 
-        public static readonly KeyController ContinuedExpressionKey =
-            new KeyController("Expression");
+        public static readonly KeyController ContinuedExpressionKey = new KeyController("Expression");
 
         //Output keys
-        public static readonly KeyController ReturnValueKey =
-            new KeyController("ReturnValue");
+        public static readonly KeyController ReturnValueKey = new KeyController("ReturnValue");
 
         public LetOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {

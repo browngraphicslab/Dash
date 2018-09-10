@@ -119,7 +119,7 @@ namespace Dash
         #region DATABASE MUTATORS
 
 
-        public override Task AddDocument(FieldModel newDocument)
+        protected override Task AddModel(FieldModel newDocument)
         {
             var watch = Stopwatch.StartNew();
 
@@ -142,7 +142,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task UpdateDocument(FieldModel documentToUpdate)
+        protected override Task UpdateModel(FieldModel documentToUpdate)
         {
             var watch = Stopwatch.StartNew();
 
