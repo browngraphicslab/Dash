@@ -21,6 +21,7 @@ using Windows.Foundation.Collections;
 using Microsoft.Office.Interop.Word;
 using Excel = Microsoft.Office.Interop.Excel;
 using Word = Microsoft.Office.Interop.Word;
+using Windows.Foundation;
 
 namespace OfficeInterop
 {
@@ -33,7 +34,7 @@ namespace OfficeInterop
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int Width, int Height, bool Repaint);
-
+        
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool ShowWindow(IntPtr hWnd, ShowWindowEnum flags);
@@ -49,11 +50,20 @@ namespace OfficeInterop
 
         [DllImport("user32.dll")]
         private static extern int SetForegroundWindow(IntPtr hwnd);
-
+        
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
         private const UInt32 TOPMOST_FLAGS = 0x0002 | 0x0001;
+
+        public static void ShutdownWordApps()
+        {
+            foreach (var process in Process.GetProcessesByName("WINWORD"))
+            {
+                if (process.MainWindowTitle == "")
+                    process.Kill();
+            }
+        }
 
         public static void Main(string[] args)
         {
