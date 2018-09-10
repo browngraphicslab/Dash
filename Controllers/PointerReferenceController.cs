@@ -14,6 +14,7 @@ namespace Dash
             FieldKey = key;
             DocumentReference = documentReference;
             DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
+            DocumentChanged();
             SaveOnServer();
         }
 
