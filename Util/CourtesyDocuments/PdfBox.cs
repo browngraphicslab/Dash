@@ -86,7 +86,7 @@ namespace Dash
 
         protected static void BindPdfSource(PdfView pdf, DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<ImageController>()
+            var binding = new FieldBinding<PdfController>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,

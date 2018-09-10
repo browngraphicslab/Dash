@@ -30,7 +30,7 @@ namespace Dash
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.DataKey] = new ImageController(new Uri(file.Path)),
+                [KeyStore.DataKey] = new PdfController(new Uri(file.Path)),
                 [KeyStore.TitleKey] = new TextController(title),
                 [KeyStore.DateCreatedKey] = new DateTimeController(),
                 [KeyStore.AuthorKey] = new TextController("avd")
