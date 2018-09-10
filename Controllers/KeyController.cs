@@ -38,7 +38,7 @@ namespace Dash
         }
 
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out var id) ? id : Guid.NewGuid().ToString())
+        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out var id) ? id : UtilShared.GetDeterministicGuid(name).ToString())
         {
         }
 
@@ -69,7 +69,7 @@ namespace Dash
 
         public KeyController(KeyModel model) : base(model)
         {
-            Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
+            Debug.Assert(!_nameDictionary.ContainsKey(model.Name) || _nameDictionary[model.Name] == model.Id);
             _nameDictionary[model.Name] = model.Id;
         }
 

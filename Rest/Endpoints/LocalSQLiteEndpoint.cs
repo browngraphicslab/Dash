@@ -82,7 +82,8 @@ namespace Dash
         private async void CleanupDocuments()
         {
             var fields = new HashSet<FieldModel>();
-            await DeleteDocumentsExcept(fields);
+            //TODO DB: Maybe use reference counting instead of trying to track down references?
+            //await DeleteDocumentsExcept(fields);
         }
 
         public override void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }

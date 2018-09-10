@@ -54,6 +54,7 @@ namespace Dash
             _initialized = true;
             await base.InitializeAsync();
             _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            Debug.Assert(_documentController != null);
             DocumentChanged();
         }
 

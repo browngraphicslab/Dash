@@ -89,9 +89,11 @@ namespace Dash
             if (missingIds.Any())
             {
                 var foundFields = await GetDocuments(missingIds);
+                var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
                 for (int i = 0; i < foundFields.Count; i++)
                 {
-                    var field = FieldControllerFactory.CreateFromModel(foundFields[i]);
+                    var f = foundFieldsDict[missingIds[i]];
+                    var field = FieldControllerFactory.CreateFromModel(f);
                     _cache[missingIds[i]] = field;
                     await field.InitializeAsync();
                     fields[missingIdxs[i]] = field;
