@@ -192,8 +192,10 @@ namespace Dash
                 return new HtmlNote(html, title, where: where).Document;
 
             string richtext = await dataPackageView.GetRtfAsync();
-            DocumentController rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
-            if (!string.IsNullOrEmpty(title)) rtfNote.GetDataDocument().SetTitle(title);
+            var rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
+            var text = rtfNote.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+            if (!string.IsNullOrEmpty(title))
+                rtfNote.GetDataDocument().SetTitle(title+": " + text.Split('\v').FirstOrDefault());
 
             return rtfNote;
         }

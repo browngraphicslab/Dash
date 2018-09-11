@@ -107,7 +107,7 @@ namespace Dash
             {
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                _oldViewModel.UnLoad();
+                _oldViewModel?.UnLoad();
                 DataContext = null;
             };
 
@@ -607,14 +607,12 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 

@@ -771,8 +771,21 @@ namespace Dash
 					GetOuterGrid().PointerMoved -= OnPointerMoved;
 					GetOuterGrid().PointerMoved += OnPointerMoved;
 				}
-			}
-		}
+            }
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                docview.ManipulationMode = ManipulationModes.All;
+                ManipulationMode = SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) ?
+                    ManipulationModes.All : ManipulationModes.None;
+            } 
+            else
+            {
+                docview.ManipulationMode = ManipulationModes.None;
+            }
+
+            args.Handled = true;
+        }
 
         private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
         {
