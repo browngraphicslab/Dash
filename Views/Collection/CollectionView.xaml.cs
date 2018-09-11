@@ -96,7 +96,6 @@ namespace Dash
         {
             //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
             _lastViewModel?.Loaded(false);
-            _lastViewModel = null;
             RemoveViewTypeHandler();
         }
 
@@ -201,6 +200,7 @@ namespace Dash
             };
 
             SetView(_viewType);
+        #endregion
         }
 
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
@@ -223,7 +223,6 @@ namespace Dash
             ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
         }
 
-        #endregion
 
         #region ClickHandlers for collection context menu items
 

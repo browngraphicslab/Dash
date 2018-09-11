@@ -29,7 +29,7 @@ namespace Dash
     {
         static ICollectionView _previousDragEntered;
         bool _canDragItems = true;
-        bool _isLoaded;
+        private bool _isLoaded => _refCount > 0;
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
@@ -134,11 +134,13 @@ namespace Dash
             }
         }
 
+        private int _refCount = 0;
         public void Loaded(bool isLoaded)
         {
-            _isLoaded = isLoaded;
             if (isLoaded)
             {
+                Debug.WriteLine("CVM Loaded");
+                _refCount++;
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -164,6 +166,8 @@ namespace Dash
             }
             else
             {
+                Debug.WriteLine("CVM Unloaded");
+                _refCount--;
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);

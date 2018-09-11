@@ -282,7 +282,7 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 refCount++;
-                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -292,7 +292,7 @@ namespace Dash
                 {
                     binding.Remove(handler);
                 }
-                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
@@ -314,7 +314,7 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
-                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
             }
 
             void RemoveBinding()
@@ -375,7 +375,7 @@ namespace Dash
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
                 refCount++;
-                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -393,7 +393,7 @@ namespace Dash
                     token = -1;
                 }
 
-                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
@@ -411,7 +411,7 @@ namespace Dash
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
                 }
-                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
+                //Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
             }
 
             void RemoveBinding()

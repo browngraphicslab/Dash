@@ -308,6 +308,10 @@ namespace Dash
             bool updateActiveFrame = false;
             if (CurSplitMode == SplitMode.Horizontal)
             {
+                if (index >= Columns.Count)
+                {
+                    return;
+                }
                 var splitterIndex = index == XContentGrid.ColumnDefinitions.Count - 1 ? index - 1 : index + 1;
                 var eles = XContentGrid.Children.Where(ele =>
                 {
@@ -334,6 +338,10 @@ namespace Dash
             }
             else if (CurSplitMode == SplitMode.Vertical)
             {
+                if (index >= Rows.Count)
+                {
+                    return;
+                }
                 var splitterIndex = index == XContentGrid.RowDefinitions.Count - 1 ? index - 1 : index + 1;
                 var eles = XContentGrid.Children.Where(ele =>
                 {
