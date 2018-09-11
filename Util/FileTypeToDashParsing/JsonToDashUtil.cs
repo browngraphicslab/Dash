@@ -226,6 +226,11 @@ namespace Dash
             {
                 return new ImageController(new Uri(text));
             }
+
+            if (text.Equals("pdf"))
+            {
+                return new PdfController(new Uri(text));
+            }
             return new TextController(text);
         }
 

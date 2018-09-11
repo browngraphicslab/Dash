@@ -652,6 +652,11 @@ namespace Dash
 
             _selectionDocControllers.Add(selection, dc);
 
+            using (UndoManager.GetBatchHandle())
+            {
+                this.convertTextFromXamlRTF();
+            }
+
             return dc;
         }
 
