@@ -139,7 +139,6 @@ namespace Dash
         {
             if (isLoaded)
             {
-                Debug.WriteLine("CVM Loaded");
                 _refCount++;
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
@@ -166,7 +165,6 @@ namespace Dash
             }
             else
             {
-                Debug.WriteLine("CVM Unloaded");
                 _refCount--;
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
