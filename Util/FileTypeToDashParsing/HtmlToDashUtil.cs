@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -29,6 +30,7 @@ namespace Dash
                 uri = introParts[introParts.Count - 2]?.Substring(10);
             string titlesUrl = GetTitlesUrl(uri);
 
+            var text = "";
             if (!string.IsNullOrEmpty(titlesUrl) || uri?.StartsWith("HTML") == true)
             {
                 //try to get website and article title
@@ -51,7 +53,7 @@ namespace Dash
                 int endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
                 string mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
                 string htmlClose = html.Substring(endPoint);
-
+                text = ExtractText(mainHtml);
 
                 //combine all parts
                 html = newHtmlStart + mainHtml + addition + htmlClose;
@@ -72,11 +74,6 @@ namespace Dash
 
             var splits = new Regex("<").Split(html);
             var imgs = splits.Where(s => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-
-            string text = packageView.Properties.ContainsKey(StandardDataFormats.Text)
-                ? (await packageView.GetTextAsync()).Trim()
-                : "";
-
             if (string.IsNullOrEmpty(text) && imgs.Count == 1)
             {
                 string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
@@ -123,6 +120,30 @@ namespace Dash
             }
 
             return htmlNote;
+        }
+        public static string ExtractText(string html)
+        {
+            if (html == null)
+            {
+                throw new ArgumentNullException("html");
+            }
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            var chunks = new List<string>();
+
+            foreach (var item in doc.DocumentNode.DescendantNodesAndSelf())
+            {
+                if (item.NodeType == HtmlNodeType.Text)
+                {
+                    if (item.InnerText.Trim() != "")
+                    {
+                        chunks.Add(item.InnerText.Trim());
+                    }
+                }
+            }
+            return string.Join(" ", chunks);
         }
 
         public static string GetTitlesUrl(string uri)

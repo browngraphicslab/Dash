@@ -21,7 +21,7 @@ namespace Dash
     public sealed partial class WebBoxView
     {
         readonly WebView _xWebView;
-        Image _bitmapImage = new Image();
+        Image _bitmapImage = null;
         public const string BlockManipulation = "true";// bcz: block dragging of web view when it's selected by itself so that we can fully interact with its content
         public const string AllowManipulation = null;
         public WebBoxView()
@@ -42,7 +42,7 @@ namespace Dash
 
             if (SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
-                if (xOuterGrid.Children.Contains(_bitmapImage) && !xOuterGrid.Children.Contains(_xWebView))
+                if (!xOuterGrid.Children.Contains(_xWebView))
                 {
                     xOuterGrid.Children.Remove(_bitmapImage);
                     xOuterGrid.Children.Add(_xWebView);
@@ -53,30 +53,48 @@ namespace Dash
             {
                 if (!xOuterGrid.Children.Contains(_bitmapImage) && xOuterGrid.Children.Contains(_xWebView))
                 {
-                    var rtb = new RenderTargetBitmap();
-                    var s = new Point(Math.Floor(_xWebView.ActualWidth), Math.Floor(_xWebView.ActualHeight));
-                    var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
-                    var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
-                    s = new Point(rect.Width, rect.Height);
-                    if (s.X > 0 && s.Y > 0)
-                    {
-                        await rtb.RenderAsync(_xWebView, (int)s.X, (int)s.Y);
-                        var buf = await rtb.GetPixelsAsync();
-                        var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
-                        var source = new SoftwareBitmapSource();
-                        await source.SetBitmapAsync(sb);
-                        _bitmapImage = new Image
-                        {
-                            Source = source,
-                            VerticalAlignment = VerticalAlignment.Stretch,
-                            HorizontalAlignment = HorizontalAlignment.Stretch
-                        };
-                        xOuterGrid.Children.Add(_bitmapImage);
-                    }
-                    xOuterGrid.Children.Remove(_xWebView);
-                    _xWebView.Tag = AllowManipulation;
+                    await FreezeAsSnapshot();
                 }
             }
+        }
+
+        public async System.Threading.Tasks.Task FreezeAsSnapshot()
+        {
+            var rtb = new RenderTargetBitmap();
+            var s = new Point(Math.Floor(ActualWidth), Math.Floor(ActualHeight));
+            var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
+            var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
+            s = new Point(rect.Width, rect.Height);
+            if (s.X > 0 && s.Y > 0)
+            {
+                await rtb.RenderAsync(_xWebView, (int)s.X, (int)s.Y);
+                var buf = await rtb.GetPixelsAsync();
+                var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
+                var source = new SoftwareBitmapSource();
+                await source.SetBitmapAsync(sb);
+                _bitmapImage = new Image
+                {
+                    Source = source,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+                xOuterGrid.Children.Add(_bitmapImage);
+                xOuterGrid.Children.Remove(_xWebView);
+            } 
+            else if (_bitmapImage == null)
+            {
+                var dp = new DispatcherTimer();
+                dp.Interval = new TimeSpan(0, 0, 0, 0, 250);
+                dp.Tick += Dp_Tick;
+                dp.Start();
+            }
+            _xWebView.Tag = AllowManipulation;
+        }
+
+        private void Dp_Tick(object sender, object e)
+        {
+            (sender as DispatcherTimer).Tick -= Dp_Tick;
+            FreezeAsSnapshot();
         }
 
         public WebView GetView() => _xWebView;

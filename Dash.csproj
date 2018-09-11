@@ -153,6 +153,7 @@
     <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1506,6 +1507,9 @@
     </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
+    </PackageReference>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.7</Version>
     </PackageReference>
     <PackageReference Include="itext7">
       <Version>7.1.2</Version>

@@ -664,7 +664,8 @@ namespace Dash
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
-                SelectionManager.Select(this, this.IsShiftPressed());
+                if (!MainPage.Instance.IsRightBtnPressed())
+                    SelectionManager.Select(this, this.IsShiftPressed());
 
                 if (SelectionManager.GetSelectedDocs().Count > 1)
                 {

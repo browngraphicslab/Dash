@@ -106,16 +106,16 @@ namespace Dash
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
 
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('enter'); } document.onpointerenter=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('leave'); } document.onmouseout=x;" });
-            //await _WebView.InvokeScriptAsync("eval", new[]
-            //{"function tableToJson(table) { var data = []; var headers = []; for (var i = 0; i < table.rows[0].cells.length; i++) {headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(' ', ''); } for (var i = 1; i < table.rows.length; i++) { var tableRow = table.rows[i]; var rowData = { }; " +
-            //"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
+            //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
+            //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
+            //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
+            //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('enter'); } document.onpointerenter=x;" });
+            //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('leave'); } document.onmouseout=x;" });
+            ////await _WebView.InvokeScriptAsync("eval", new[]
+            ////{"function tableToJson(table) { var data = []; var headers = []; for (var i = 0; i < table.rows[0].cells.length; i++) {headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(' ', ''); } for (var i = 1; i < table.rows.length; i++) { var tableRow = table.rows[i]; var rowData = { }; " +
+            ////"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
 
-            //});
+            ////});
 
 
             _WebView.NavigationStarting -= Web_NavigationStarting;
@@ -123,6 +123,10 @@ namespace Dash
             _WebView.NavigationCompleted -= _WebView_NavigationCompleted;
             _WebView.NavigationCompleted += _WebView_NavigationCompleted;
             _WebView_NavigationCompleted(_WebView, null);
+            var parent = _WebView?.GetFirstAncestorOfType<WebBoxView>(); 
+            if (parent != null)
+                parent.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,   
+                () => parent.FreezeAsSnapshot());
         }
         
         private async static void _WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
@@ -183,21 +187,25 @@ namespace Dash
             if (parent == null)
                 return;
 
-            var shiftState = web.IsShiftPressed();
-            switch (e.Value as string)
-            {
-                case "2":    web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
-                case "move": (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
-                              break;
-                case "leave": break;
-                case "up":    parent.ToFront();
-                              if (DocumentView.FocusedDocument != parent)
-                              {
-                                 DocumentView.FocusedDocument = parent;
-                                 parent.ForceLeftTapped();
-                              }
-                              web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null; break;
-            }
+            //var shiftState = web.IsShiftPressed();
+            //switch (e.Value as string)
+            //{
+            //    case "2":    //web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
+            //    case "move": //(web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
+            //                  break;
+            //    case "leave": break;
+            //    case "up":    if (!MainPage.Instance.IsRightBtnPressed())
+            //                  {
+            //                        parent.tofront();
+            //                        if (documentview.focuseddocument != parent)
+            //                        {
+            //                            documentview.focuseddocument = parent;
+            //                            parent.forcelefttapped();
+            //                        }
+            //                        web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null;
+            //                   }
+            //                   break;
+            //}
         }
 
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
