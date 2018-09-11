@@ -135,9 +135,17 @@ namespace Dash
                         DraggedDocumentViews[i].GetFirstAncestorOfType<NewAnnotationOverlay>() == // bcz: this is hacky -- better to make NewAnnotationOverlay's be Collections?  
                         target?.GetFirstAncestorOfType<NewAnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
                     {
-                        DraggedDocuments[i].SetPosition(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                        var draggedDoc = DraggedDocuments[i];
+                        if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))
+                        {
+                            draggedDoc = draggedDoc.GetViewCopy();
+                            draggedDoc.SetWidth(400);
+                            draggedDoc.SetHeight(300);
+                            draggedDoc.SetFitToParent(true);
+                        }
+                        draggedDoc.SetPosition(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
                             where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y));
-                        docs.Add(DraggedDocuments[i]);
+                        docs.Add(draggedDoc);
                     }
                 }
             }

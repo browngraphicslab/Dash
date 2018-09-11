@@ -529,34 +529,30 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            var postitNote = new RichTextNote(text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
                         }
                     }
                 }
-                else if (dvp.Contains(StandardDataFormats.Html) && false)
+                else if (dvp.Contains(StandardDataFormats.Html) )
                 {
-                    //Create an instance for word app
-                    //Microsoft.Office.Interop.Word.Application winword = new Microsoft.Office.Interop.Word.Application();
+                    var text = await dvp.GetHtmlFormatAsync();
+                    var layoutMode = await MainPage.Instance.GetLayoutType();
 
-                    ////Set animation status for word application
-                    //winword.ShowAnimation = false;
-
-                    ////Set status for word application is to be visible or not.
-                    //winword.Visible = false;
-
-                    ////Create a missing variable for missing value
-                    //object missing = System.Reflection.Missing.Value;
-
-                    ////Create a new document
-                    //Microsoft.Office.Interop.Word.Document document = winword.Documents.Add(ref missing, ref missing, ref missing, ref missing);
-                    //document.Content.Paste();
-                    //document.Content.Select();
-                    //var dvp2 = Clipboard.GetContent();
-                    //if (dvp2.Contains(StandardDataFormats.Rtf))
-                    //{
-                    //}
+                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
+                        (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
+                    {
+                        var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
+                        Actions.DisplayDocument(this, htmlNote, where);
+                        return htmlNote;
+                    } 
+                    else
+                    {
+                        var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
+                        Actions.DisplayDocument(this, htmlNote, where);
+                        return htmlNote;
+                    }
                 }
                 else if (dvp.Contains(StandardDataFormats.Text))
                 {

@@ -765,7 +765,8 @@ namespace Dash
 					_marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
 					_isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
-					ParentDocument.ManipulationMode = ManipulationModes.None;
+                    if (ParentDocument != null)
+					    ParentDocument.ManipulationMode = ManipulationModes.None;
 					args.Handled = true;
 					GetOuterGrid().PointerMoved -= OnPointerMoved;
 					GetOuterGrid().PointerMoved += OnPointerMoved;

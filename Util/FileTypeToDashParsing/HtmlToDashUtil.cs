@@ -73,7 +73,7 @@ namespace Dash
             var splits = new Regex("<").Split(html);
             var imgs = splits.Where(s => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
 
-            string text = packageView.Contains(StandardDataFormats.Text)
+            string text = packageView.Properties.ContainsKey(StandardDataFormats.Text)
                 ? (await packageView.GetTextAsync()).Trim()
                 : "";
 

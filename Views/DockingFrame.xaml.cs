@@ -355,24 +355,17 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Move;
                 else e.AcceptedOperation = e.DataView.RequestedOperation;
 
-                //if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-                //{
-                //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                //    Dock(dragModel.GetDropDocument(new Point()), dir);
-                //}
-                // if we drag from the file system
-                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, this, new Point());
+
+               
+                try
                 {
-                    try
-                    {
-                        var droppedDoc = await FileDropHelper.HandleDrop(e.DataView, new Point());
-                        Dock(droppedDoc, dir);
-                        return;
-                    }
-                    catch (Exception exception)
-                    {
-                        Debug.WriteLine(exception);
-                    }
+                    Dock(docsToAdd.FirstOrDefault(), dir);
+                    return;
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine(exception);
                 }
             }
         }

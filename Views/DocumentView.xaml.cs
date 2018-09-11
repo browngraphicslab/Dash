@@ -83,51 +83,6 @@ namespace Dash
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
             RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
 
-            void updateRenderTransformBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindRenderTransform || doc == null
-                    ? null
-                    : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                        new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
-                    {
-                        Converter = new TransformGroupMultiConverter(),
-                        Context = new Context(doc),
-                        Mode = BindingMode.OneWay,
-                        Tag = "RenderTransform multi binding in DocumentView"
-                    };
-                this.AddFieldBinding(RenderTransformProperty, binding);
-            }
-
-            void updateVisibilityBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindVisibility || doc == null
-                    ? null
-                    : new FieldBinding<BoolController>
-                    {
-                        Converter = new InverseBoolToVisibilityConverter(),
-                        Document = doc,
-                        Key = KeyStore.HiddenKey,
-                        Mode = BindingMode.OneWay,
-                        Tag = "Visibility binding in DocumentView",
-                        FallbackValue = false
-                    };
-                this.AddFieldBinding(VisibilityProperty, binding);
-            }
-
-            void updateBindings()
-            {
-                updateRenderTransformBinding(null, null);
-                updateVisibilityBinding(null, null);
-
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-
-                this.BindBackgroundColor();
-                ViewModel?.Load();
-            }
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -137,16 +92,8 @@ namespace Dash
             {
                 FadeIn.Begin();
                 updateBindings();
-                DataContextChanged += (s, a) =>
-                {
-                    if (a.NewValue != _oldViewModel)
-                    {
-                        _oldViewModel?.UnLoad();
-                        updateBindings();
-                        _oldViewModel = ViewModel;
-                    }
-                };
-
+                DataContextChanged -= DocumentView_DataContextChanged;
+                DataContextChanged += DocumentView_DataContextChanged;
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 
@@ -160,7 +107,7 @@ namespace Dash
             {
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                ViewModel?.UnLoad();
+                _oldViewModel.UnLoad();
                 DataContext = null;
             };
 
@@ -221,6 +168,62 @@ namespace Dash
 
             ToFront();
         }
+
+        void updateRenderTransformBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindRenderTransform || doc == null
+                ? null
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Context = new Context(doc),
+                    Mode = BindingMode.OneWay,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            this.AddFieldBinding(RenderTransformProperty, binding);
+        }
+
+        void updateVisibilityBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindVisibility || doc == null
+                ? null
+                : new FieldBinding<BoolController>
+                {
+                    Converter = new InverseBoolToVisibilityConverter(),
+                    Document = doc,
+                    Key = KeyStore.HiddenKey,
+                    Mode = BindingMode.OneWay,
+                    Tag = "Visibility binding in DocumentView",
+                    FallbackValue = false
+                };
+            this.AddFieldBinding(VisibilityProperty, binding);
+        }
+        void updateBindings()
+        {
+            updateRenderTransformBinding(null, null);
+            updateVisibilityBinding(null, null);
+
+            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+
+            this.BindBackgroundColor();
+            ViewModel?.Load();
+        }
+
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
+        {
+            if (a.NewValue != _oldViewModel)
+            {
+                _oldViewModel?.UnLoad();
+                updateBindings();
+                _oldViewModel = ViewModel;
+            }
+        }
+
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;
@@ -644,7 +647,7 @@ namespace Dash
                 FocusedDocument = this;
             }
 
-            if (!(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
+            if (FocusManager.GetFocusedElement() == null || !(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
                 .Contains(this))
             {
                 Focus(FocusState.Programmatic);

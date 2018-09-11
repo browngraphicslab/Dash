@@ -1129,6 +1129,13 @@ namespace Dash
 
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType) &&
+                double.IsNaN(doc.GetWidth()) && double.IsNaN(doc.GetHeight()))
+            {
+                docCopy.SetWidth(400);
+                docCopy.SetHeight(300);
+                docCopy.SetFitToParent(true);
+            }
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
