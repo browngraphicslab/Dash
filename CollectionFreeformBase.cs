@@ -758,6 +758,7 @@ namespace Dash
 					  // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
 						((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
 				{
+                    this.ParentDocument.ManipulationMode = ManipulationModes.None;
 					if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
 						SelectionManager.DeselectAll();
 
