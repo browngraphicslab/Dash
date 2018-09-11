@@ -74,10 +74,11 @@ namespace Dash
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed )
             {
                 docview.ManipulationMode = ManipulationModes.All;
-                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ?
+                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
+                this.GetFirstAncestorOfType<DocumentView>() == MainPage.Instance.MainDocView ?
                     ManipulationModes.All : ManipulationModes.None;
             } else
             {
