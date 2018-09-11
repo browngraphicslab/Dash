@@ -24,8 +24,11 @@ namespace OfficeInterop
                 _word?.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
                 _word = null;
             };
+
+            Program.ShutdownWordApps();
             _word = new Word.Application();
             _doc = _word.Documents.Add();
+
             _chrome = new ChromeApp();
             _chrome.MessageReceived += s =>
             {

@@ -62,8 +62,13 @@ namespace Dash
             get => _resizerVisibilityState;
             set
             {
-                _resizerVisibilityState = value;
-                OnPropertyChanged(nameof(ResizerVisibilityState));
+                if (_resizerVisibilityState != value)
+                {
+                    _resizerVisibilityState = value;
+                    if (value == Visibility.Visible)
+                        SetPositionAndSize();
+                    OnPropertyChanged(nameof(ResizerVisibilityState));
+                }
             }
         }
 
@@ -106,31 +111,27 @@ namespace Dash
             get => _selectedDocs;
             set
             {
-                foreach (var doc in _selectedDocs)
+                foreach (var docView in _selectedDocs)
                 {
-                    doc.PointerEntered -= SelectedDocView_PointerEntered;
-                    doc.PointerExited -= SelectedDocView_PointerExited;
-                    doc.ViewModel?.DocumentController.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey,
-                        DocumentController_OnPositionFieldUpdated);
-                    doc.SizeChanged -= DocView_OnSizeChanged;
-                    doc.FadeOutBegin -= DocView_OnDeleted;
+                    docView.PointerEntered -= SelectedDocView_PointerEntered;
+                    docView.PointerExited -= SelectedDocView_PointerExited;
+                    docView.SizeChanged -= DocView_OnSizeChanged;
+                    docView.FadeOutBegin -= DocView_OnDeleted;
                 }
 
                 _visibilityLock = false;
-                foreach (var doc in value)
+                foreach (var docView in value)
                 {
-                    if (doc.ViewModel?.Undecorated == true)
+                    if (docView.ViewModel?.Undecorated == true)
                     {
                         _visibilityLock = true;
                         VisibilityState = Visibility.Collapsed;
                     }
 
-                    doc.PointerEntered += SelectedDocView_PointerEntered;
-                    doc.PointerExited += SelectedDocView_PointerExited;
-                    doc.ViewModel?.DocumentController.AddFieldUpdatedListener(KeyStore.PositionFieldKey,
-                        DocumentController_OnPositionFieldUpdated);
-                    doc.SizeChanged += DocView_OnSizeChanged;
-                    doc.FadeOutBegin += DocView_OnDeleted;
+                    docView.PointerEntered += SelectedDocView_PointerEntered;
+                    docView.PointerExited += SelectedDocView_PointerExited;
+                    docView.SizeChanged += DocView_OnSizeChanged;
+                    docView.FadeOutBegin += DocView_OnDeleted;
                 }
 
                 _selectedDocs = value;
@@ -143,12 +144,6 @@ namespace Dash
         }
 
         private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            SetPositionAndSize();
-        }
-
-        private void DocumentController_OnPositionFieldUpdated(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             SetPositionAndSize();
         }

@@ -993,8 +993,15 @@ namespace Dash
 			//if (XInkCanvas.IsTopmost())
 			{
 				_isMarqueeActive = false;
-				if (!this.IsShiftPressed())
-					RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (!this.IsShiftPressed())
+                {
+                    var dt = new DispatcherTimer();
+                    var pt = e.GetPosition(_itemsPanelCanvas);
+                    dt.Tick += (s, ee) => { RenderPreviewTextbox(pt); dt.Stop(); };
+                    dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
+                    dt.Start();
+                    // RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                }
 			}
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;

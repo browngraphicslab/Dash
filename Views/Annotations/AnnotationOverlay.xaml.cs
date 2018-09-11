@@ -220,9 +220,22 @@ namespace Dash
         }
         void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
-            if ((args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs) &&
-                 listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
-                listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
+            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
+            {
+                switch (listArgs.ListAction)
+                {
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                    listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                    XAnnotationCanvas.Children.OfType<RegionAnnotation>().ToList().ForEach((reg) =>
+                    {
+                        if (listArgs.OldItems.Contains(reg.RegionDocumentController))
+                            XAnnotationCanvas.Children.Remove(reg);
+                    });
+                    break;
+                }
+            }
         }
         void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
@@ -302,7 +315,16 @@ namespace Dash
         /// <param name="point"></param>
         public async void EmbedDocumentWithPin(Point point, DocumentController embeddedDocument = null)
         {
-            _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => pin.GetBoundingRect(this).Contains(point)).FirstOrDefault();
+            _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) =>
+            {
+
+                var rect = pin.GetBoundingRect(this);
+                rect.X -= pin.ActualWidth;
+                rect.Y -= pin.ActualHeight;
+                rect.Width = pin.ActualWidth * 2;
+                rect.Height = pin.ActualHeight * 2;
+                return rect.Contains(point);
+            }).FirstOrDefault();
             if (_currentAnnotation == null)
             {
                 embeddedDocument = embeddedDocument ?? await createEmbeddedTextNote(this, point);
