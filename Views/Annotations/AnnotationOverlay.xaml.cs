@@ -454,62 +454,65 @@ namespace Dash
                     //if (closeEnough && similarSize || true)
                     //{
 
-                    var left = Canvas.GetLeft(_selectedRectangles[index]);
-                    var right = Canvas.GetLeft(_selectedRectangles[index]) + _selectedRectangles[index].Width;
-                    //if (endIndex != -1)
-                    //{
-                    //    if (_selectedRectangles[index] != _selectedRectangles[endIndex])
-                    //    {
-                    //        if (_selectedRectangles[index].Width != 0)
-                    //        {
-                    //            _selectedRectangles[index].Width = 0;
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //    }
-                    //}
-                    // if we're deselecting text backwards
-                    /*else*/ if (ele.Bounds.Left - left < ele.Bounds.Width)
+                    var currRect = _selectedRectangles[index];
+                    var left = Canvas.GetLeft(currRect);
+                    var right = Canvas.GetLeft(currRect) + currRect.Width;
+                    if (endIndex != -1)
                     {
-                        // if we've reached a different line
-                        if (Math.Abs(Canvas.GetTop(_selectedRectangles[index]) -
-                            TextSelectableElements[index + 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2)
+                        //if (currRect.GetBoundingRect(this).Top - _selectedRectangles[endIndex].GetBoundingRect(this).Top > currRect.Height / 2)
+                        //{
+                        //    if (currRect.Width != 0)
+                        //    {
+                        //        currRect.Width = 0;
+                        //        XAnnotationCanvas.Children.Remove(currRect);
+                        //    }
+                        //} else
                         {
-                            _selectedRectangles[index].Width = 0;
-                        }
-                        else
-                        {
-                            Canvas.SetLeft(_selectedRectangles[index], TextSelectableElements[index + 1].Bounds.Left);
-                            _selectedRectangles[index].Width =
-                                Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
+                            // if we're deselecting text backwards
+                            if (ele.Bounds.Left - left < ele.Bounds.Width)
+                            {
+                                // if we've reached a different line
+                                if (Math.Abs(Canvas.GetTop(currRect) -
+                                             TextSelectableElements[index + 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2 ||
+                                    Math.Abs(Canvas.GetLeft(currRect) - TextSelectableElements[index + 1].Bounds.Left) > TextSelectableElements[index].Bounds.Width * 2)
+                                {
+                                    currRect.Width = 0;
+                                    XAnnotationCanvas.Children.Remove(currRect);
+                                } else
+                                {
+                                    Canvas.SetLeft(currRect, TextSelectableElements[index + 1].Bounds.Left);
+                                    currRect.Width =
+                                        Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
+                                }
+                            }
+                            // if we're deselecting text forwards
+                            else if (ele.Bounds.Right - right < ele.Bounds.Width)
+                            {
+                                // if we've reached a different line
+                                if (Math.Abs(Canvas.GetTop(currRect) -
+                                             TextSelectableElements[index - 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2)
+                                {
+                                    currRect.Width = 0;
+                                    XAnnotationCanvas.Children.Remove(currRect);
+                                } else
+                                {
+                                    currRect.Width =
+                                        Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
+                                }
+                            }
                         }
                     }
-                    // if we're deselecting text forwards
-                    else if (ele.Bounds.Right - right < ele.Bounds.Width)
-                    {
-                        // if we've reached a different line
-                        if (Math.Abs(Canvas.GetTop(_selectedRectangles[index]) -
-                            TextSelectableElements[index - 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2)
-                        {
-                            _selectedRectangles[index].Width = 0;
-                        }
-                        else
-                        {
-                            _selectedRectangles[index].Width =
-                                Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
-                        }
-                    }
+                    /*else*/
                     // if we're deselecting something in the middle
-                    else
-                    {
+                    //else
+                    //{
 
-                    }
+                    //}
 
-                    if (!_selectedRectangles.ContainsValue(_selectedRectangles[index]))
-                    {
-                        XAnnotationCanvas.Children.Remove(_selectedRectangles[index]);
-                    }
+                    //if (!_selectedRectangles.ContainsValue(_selectedRectangles[index]))
+                    //{
+                    //    XAnnotationCanvas.Children.Remove(_selectedRectangles[index]);
+                    //}
 
                     _selectedRectangles.Remove(index);
 
@@ -547,7 +550,7 @@ namespace Dash
             }
 
             var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                              ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
+                              ele.Bounds.Width * 2 && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
                               ele.Bounds.Height / 2;
             var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
             if (closeEnough && similarSize)
@@ -702,8 +705,10 @@ namespace Dash
 
             foreach (var ele in TextSelectableElements)
             {
-                if (currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
-                    currentClipRect.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom)))
+                if (currentClipRect.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+                        ele.Bounds.Y + ele.Bounds.Height / 2))
+                    /*currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
+                    currentClipRect.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))*/)
                 {
                     var newRects = new List<Rectangle>();
                     var found = false;
