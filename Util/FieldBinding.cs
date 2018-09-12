@@ -79,7 +79,7 @@ namespace Dash
                     if (GetConverter != null)
                     {
                         converter = GetConverter(field);
-						Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
+                        Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
                     var fieldData = ValueType == BindingValueType.Value ? field.GetValue(context) : field;
                     var xamlData = converter == null || fieldData == null
@@ -126,8 +126,8 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || 
-                         FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? 
+            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel ||
+                         FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ?
                 Document.GetField(Key) : Document.GetDereferencedField<TField>(Key, Context);
             if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference)
             {
@@ -207,15 +207,15 @@ namespace Dash
             if (binding == null) return;
             switch (binding.Mode)
             {
-                case BindingMode.OneTime:
-                    AddOneTimeBinding(element, property, binding);
-                    break;
-                case BindingMode.OneWay:
-                    AddOneWayBinding(element, property, binding);
-                    break;
-                case BindingMode.TwoWay:
-                    AddTwoWayBinding(element, property, binding);
-                    break;
+            case BindingMode.OneTime:
+                AddOneTimeBinding(element, property, binding);
+                break;
+            case BindingMode.OneWay:
+                AddOneWayBinding(element, property, binding);
+                break;
+            case BindingMode.TwoWay:
+                AddTwoWayBinding(element, property, binding);
+                break;
             }
         }
 
@@ -276,13 +276,13 @@ namespace Dash
             element.Unloaded += OnElementOnUnloaded;
             element.Loaded += OnElementOnLoaded;
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if(true || element.IsInVisualTree())
+            if (true || element.IsInVisualTree())
             {
                 mask = true;
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 refCount++;
-                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
+                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -292,7 +292,9 @@ namespace Dash
                 {
                     binding.Remove(handler);
                 }
-                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
+
+                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
@@ -306,6 +308,7 @@ namespace Dash
                 if (mask)
                 {
                     mask = false;
+                    Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
                     return;
                 }
 
@@ -314,7 +317,7 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
-                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
+                Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
             }
 
             void RemoveBinding()
@@ -360,7 +363,7 @@ namespace Dash
                             binding.ConvertToXaml(element, property, binding.Context);
                     }
                 };
-            
+
             long token = -1;
             int refCount = 0;
             bool mask = false;
@@ -368,23 +371,19 @@ namespace Dash
             element.Unloaded += OnElementOnUnloaded;
 
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if(true || element.IsInVisualTree())
+            if (true || element.IsInVisualTree())
             {
                 mask = true;
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
                 refCount++;
-                Debug.WriteLine($"Binding {id, -5} in visual tree : RefCount = {refCount, 5}");
+                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                if (mask)
-                {
-                    mask = false;
-                    return;
-                }
+                mask = false;
 
                 if (--refCount == 0)
                 {
@@ -393,7 +392,8 @@ namespace Dash
                     token = -1;
                 }
 
-                Debug.WriteLine($"Binding {id, -5} Unloaded :       RefCount = {refCount, 5}");
+                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
@@ -404,19 +404,24 @@ namespace Dash
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                mask = false;
+                if (mask)
+                {
+                    mask = false;
+                    Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
+                    return;
+                }
                 if (refCount++ == 0)
                 {
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
                 }
-                Debug.WriteLine($"Binding {id, -5} Loaded :         RefCount = {refCount, 5}");
+                Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
             }
 
             void RemoveBinding()
             {
-                element.Loaded   -= OnElementOnLoaded;
+                element.Loaded -= OnElementOnLoaded;
                 element.Unloaded -= OnElementOnUnloaded;
                 binding.Remove(handler);
                 if (token != -1)

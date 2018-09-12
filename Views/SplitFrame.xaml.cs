@@ -29,7 +29,16 @@ namespace Dash
 
         public DocumentView Document => XDocView;
 
-        public static SplitFrame ActiveFrame { get; set; }
+        public static SplitFrame ActiveFrame
+        {
+            get => _activeFrame;
+            set
+            {
+                _activeFrame?.SetActive(false);
+                _activeFrame = value;
+                _activeFrame.SetActive(true);
+            }
+        }
 
         public static void OpenInActiveFrame(DocumentController doc)
         {
@@ -68,12 +77,10 @@ namespace Dash
             {
                 return;
             }
-            if (!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()))
-            {
-                doc = doc.GetViewCopy();
-                doc.SetWidth(double.NaN);
-                doc.SetHeight(double.NaN);
-            }
+
+            doc = doc.GetViewCopy();
+            doc.SetWidth(double.NaN);
+            doc.SetHeight(double.NaN);
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
         }
@@ -140,6 +147,15 @@ namespace Dash
             }
 
             //XDocView.RemoveResizeHandlers();
+        }
+
+        private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
+        private static SolidColorBrush ActiveBrush { get; } = new SolidColorBrush(Colors.Gray);
+
+        private void SetActive(bool active)
+        {
+            XTopRightResizer.Fill = active ? ActiveBrush : InactiveBrush;
+            XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
         public void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
@@ -337,6 +353,7 @@ namespace Dash
 
         private SolidColorBrush Yellow = new SolidColorBrush(Color.FromArgb(127, 255, 215, 0));
         private SolidColorBrush Transparent = new SolidColorBrush(Colors.Transparent);
+        private static SplitFrame _activeFrame;
 
         private void DropTarget_OnDragEnter(object sender, DragEventArgs e)
         {
