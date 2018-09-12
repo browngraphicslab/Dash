@@ -710,7 +710,6 @@ namespace Dash
                     /*currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                     currentClipRect.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))*/)
                 {
-                    var newRects = new List<Rectangle>();
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
@@ -728,13 +727,12 @@ namespace Dash
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
                         }
-                        else if (rect.IsInVisualTree() && (rect.GetBoundingRect(this).Contains(ele.Bounds)))
+                        else if (/*rect.IsInVisualTree() &&*/ (new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height).Contains(ele.Bounds)))
                         {
-                            found = true;
+                            found = true; 
                             _selectedRectangles[ele.Index] = rect;
                         }
                     }
-                    _clipRectSelections.AddRange(newRects);
 
                     if (!found && !_selectedRectangles.ContainsKey(ele.Index))
                     {
@@ -750,14 +748,14 @@ namespace Dash
                         _clipRectSelections.Add(newRect);
                         _selectedRectangles[ele.Index] = newRect;
                     }
-                }
-                else if (_selectedRectangles.ContainsKey(ele.Index))
+                } else if (_selectedRectangles.ContainsKey(ele.Index))
                 {
                     foreach (var rect in _clipRectSelections)
                     {
-                        if (rect.IsInVisualTree() &&
-                            (rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
-                             rect.GetBoundingRect(this).Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
+                        var rbounds = new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height);
+                        if (// rect.IsInVisualTree() &&
+                            (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
+                             rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
                         {
                             if (ele.Bounds.Left - Canvas.GetLeft(rect) > ele.Bounds.Width)
                             {
