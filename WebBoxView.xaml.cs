@@ -78,7 +78,7 @@ namespace Dash
         private async Task Freeze()
         {
             var rtb = new RenderTargetBitmap();
-            var size = new Point(Math.Round(ActualWidth)*4, Math.Round(ActualHeight)*4);
+            var size = new Point(Math.Round(ActualWidth), Math.Round(ActualHeight));
             _xWebView.UseLayoutRounding = true;
             //var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
             //var rect = transformToVisual.TransformBounds(new Rect(0, 0, size.X, size.Y));
@@ -92,7 +92,7 @@ namespace Dash
                 var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
                 await Util.SaveSoftwareBitmapToFile(sb, localFile);
                 LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
-                xOuterGrid.Children.Remove(_xWebView);
+                _xWebView.Visibility = Visibility.Collapsed;
                 xCacheBitmap.Visibility = Visibility.Visible;
                 if (xTextBlock != null)
                     xTextBlock.Visibility = Visibility.Collapsed;
@@ -112,11 +112,12 @@ namespace Dash
             if (_xWebView == null)
             {
                 constructWebBrowserViewer();
+                xOuterGrid.Children.Add(_xWebView);
             }
-            if (!xOuterGrid.Children.Contains(_xWebView))
+            if (_xWebView.Visibility == Visibility.Collapsed)
             {
                 xCacheBitmap.Visibility = Visibility.Collapsed;
-                xOuterGrid.Children.Add(_xWebView);
+                _xWebView.Visibility = Visibility.Visible;
                 _xWebView.Tag = BlockManipulation;
                 if (xTextBlock != null)
                     xTextBlock.Visibility = Visibility.Visible;
@@ -261,7 +262,7 @@ namespace Dash
                 })()"
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
-            var docview = webBoxView.GetFirstAncestorOfType<DocumentView>();
+            var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
             if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
                 webBoxView.Freeze();
             }
