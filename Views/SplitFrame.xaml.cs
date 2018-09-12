@@ -81,6 +81,10 @@ namespace Dash
             doc = doc.GetViewCopy();
             doc.SetWidth(double.NaN);
             doc.SetHeight(double.NaN);
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType))
+            {
+                doc.SetFitToParent(false);
+            }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
         }
@@ -150,7 +154,7 @@ namespace Dash
         }
 
         private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
-        private static SolidColorBrush ActiveBrush { get; } = new SolidColorBrush(Colors.Gray);
+        private static SolidColorBrush ActiveBrush { get; } = new SolidColorBrush(Colors.LightBlue);
 
         private void SetActive(bool active)
         {

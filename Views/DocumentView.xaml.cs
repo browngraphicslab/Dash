@@ -54,7 +54,12 @@ namespace Dash
         // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
         public static DocumentView FocusedDocument { get; set; }
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
-            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
+
+        private static void BindRenderTransformChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((DocumentView)d).UpdateRenderTransformBinding();
+        }
 
         public bool BindRenderTransform
         {
@@ -63,7 +68,12 @@ namespace Dash
         }
 
         public static readonly DependencyProperty BindVisibilityProperty = DependencyProperty.Register(
-            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindVisibilityChanged));
+
+        private static void BindVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((DocumentView)d).UpdateVisibilityBinding();
+        }
 
         public bool BindVisibility
         {
@@ -71,62 +81,60 @@ namespace Dash
             set => SetValue(BindVisibilityProperty, value);
         }
 
+        private void UpdateRenderTransformBinding()
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindRenderTransform || doc == null
+                ? null
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Context = new Context(doc),
+                    Mode = BindingMode.OneWay,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            this.AddFieldBinding(RenderTransformProperty, binding);
+        }
+
+        private void UpdateVisibilityBinding()
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindVisibility || doc == null
+                ? null
+                : new FieldBinding<BoolController>
+                {
+                    Converter = new InverseBoolToVisibilityConverter(),
+                    Document = doc,
+                    Key = KeyStore.HiddenKey,
+                    Mode = BindingMode.OneWay,
+                    Tag = "Visibility binding in DocumentView",
+                    FallbackValue = false
+                };
+            this.AddFieldBinding(VisibilityProperty, binding);
+        }
+
         // == CONSTRUCTORs ==
         private static int DOCID = 0;
         public DocumentView()
         {
             InitializeComponent();
+            DataContextChanged += ContextChanged;
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
-
-            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
-            RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
-
-            void updateRenderTransformBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindRenderTransform || doc == null
-                    ? null
-                    : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                        new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
-                    {
-                        Converter = new TransformGroupMultiConverter(),
-                        Context = new Context(doc),
-                        Mode = BindingMode.OneWay,
-                        Tag = "RenderTransform multi binding in DocumentView"
-                    };
-                this.AddFieldBinding(RenderTransformProperty, binding);
-            }
-
-            void updateVisibilityBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindVisibility || doc == null
-                    ? null
-                    : new FieldBinding<BoolController>
-                    {
-                        Converter = new InverseBoolToVisibilityConverter(),
-                        Document = doc,
-                        Key = KeyStore.HiddenKey,
-                        Mode = BindingMode.OneWay,
-                        Tag = "Visibility binding in DocumentView",
-                        FallbackValue = false
-                    };
-                this.AddFieldBinding(VisibilityProperty, binding);
-            }
-
+            
             void updateBindings()
             {
-                updateRenderTransformBinding(null, null);
-                updateVisibilityBinding(null, null);
 
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
+                UpdateRenderTransformBinding();
+                UpdateVisibilityBinding();
                 this.BindBackgroundColor();
                 ViewModel?.Load();
             }
@@ -152,9 +160,7 @@ namespace Dash
             {
                 Debug.WriteLine($"Document View {id} loaded {++count}");
                 //FadeIn.Begin();
-                updateBindings();
 
-                DataContextChanged += ContextChanged;
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
@@ -169,7 +175,6 @@ namespace Dash
                 Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                DataContextChanged -= ContextChanged;
                 ViewModel?.UnLoad();
             };
 
