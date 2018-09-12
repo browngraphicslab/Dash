@@ -26,7 +26,7 @@ namespace Dash
     {
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
+        public RegionAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
@@ -119,8 +119,8 @@ namespace Dash
             XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
             XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
             XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
-            Canvas.SetLeft(XRegionRect, XPos);
-            Canvas.SetTop(XRegionRect, YPos);
+            Canvas.SetLeft(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Left);
+            Canvas.SetTop(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Top);
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {

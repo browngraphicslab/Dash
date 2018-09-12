@@ -413,7 +413,7 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, NewAnnotationOverlay overlay)
+        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
             var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
             var annoType = t == null

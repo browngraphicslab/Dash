@@ -123,7 +123,7 @@ namespace Dash
                     }
                 }
             }
-            else if (target?.GetFirstAncestorOfType<NewAnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
+            else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
                 docs = GetLinkDocuments(where);
             }
@@ -132,8 +132,8 @@ namespace Dash
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
                     if (DraggedDocumentViews == null ||
-                        DraggedDocumentViews[i].GetFirstAncestorOfType<NewAnnotationOverlay>() == // bcz: this is hacky -- better to make NewAnnotationOverlay's be Collections?  
-                        target?.GetFirstAncestorOfType<NewAnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
+                        DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>() == // bcz: this is hacky -- better to make AnnotationOverlay's be Collections?  
+                        target?.GetFirstAncestorOfType<AnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
                     {
                         var draggedDoc = DraggedDocuments[i];
                         if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))

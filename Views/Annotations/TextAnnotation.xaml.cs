@@ -27,7 +27,7 @@ namespace Dash
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
 
-        public TextAnnotation(NewAnnotationOverlay parent, Selection selectionViewModel) :
+        public TextAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
@@ -45,6 +45,42 @@ namespace Dash
         public override void StartAnnotation(Point p)
         {
             _selectionStartPoint = p;
+        }
+        public SelectableElement GetClosestElementInDirection(Point p, Point dir)
+        {
+            SelectableElement ele = null;
+            double closestDist = double.PositiveInfinity;
+            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
+            {
+                var b = selectableElement.Bounds;
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
+                {
+                    return selectableElement;
+                }
+                var dist = GetMinRectDist(b, p, out var closest);
+                if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
+                {
+                    ele = selectableElement;
+                    closestDist = dist;
+                }
+            }
+
+            return ele;
+        }
+
+        private double GetMinRectDist(Rect r, Point p, out Point closest)
+        {
+            var x1Dist = p.X - r.Left;
+            var x2Dist = p.X - r.Right;
+            var y1Dist = p.Y - r.Top;
+            var y2Dist = p.Y - r.Bottom;
+            x1Dist *= x1Dist;
+            x2Dist *= x2Dist;
+            y1Dist *= y1Dist;
+            y2Dist *= y2Dist;
+            closest.X = x1Dist < x2Dist ? r.Left : r.Right;
+            closest.Y = y1Dist < y2Dist ? r.Top : r.Bottom;
+            return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
         }
 
         public override void UpdateAnnotation(Point p)
@@ -74,42 +110,6 @@ namespace Dash
                 XPos = Math.Min(XPos, startEle.Bounds.X);
                 YPos = Math.Min(YPos, startEle.Bounds.Y);
             }
-        }
-
-        private SelectableElement GetClosestElementInDirection(Point p, Point dir)
-        {
-            SelectableElement ele = null;
-            double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
-            {
-                var b = selectableElement.Bounds;
-                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
-                {
-                    return selectableElement;
-                }
-                var dist = GetMinRectDist(b, p, out var closest);
-                if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
-                {
-                    ele = selectableElement;
-                    closestDist = dist;
-                }
-            }
-
-            return ele;
-        }
-        private double GetMinRectDist(Rect r, Point p, out Point closest)
-        {
-            var x1Dist = p.X - r.Left;
-            var x2Dist = p.X - r.Right;
-            var y1Dist = p.Y - r.Top;
-            var y2Dist = p.Y - r.Bottom;
-            x1Dist *= x1Dist;
-            x2Dist *= x2Dist;
-            y1Dist *= y1Dist;
-            y2Dist *= y2Dist;
-            closest.X = x1Dist < x2Dist ? r.Left : r.Right;
-            closest.Y = y1Dist < y2Dist ? r.Top : r.Bottom;
-            return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
         }
 
         public override void EndAnnotation(Point p)

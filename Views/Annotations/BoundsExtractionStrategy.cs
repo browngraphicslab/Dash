@@ -48,7 +48,7 @@ namespace Dash
             var aspect     = rotated ? pageWidth / pageHeight : 1;
 
             foreach (var textData in mainData.GetCharacterRenderInfos())
-            {
+            { 
                 // top left corner of the bounding box
                 var rawStartPt = textData.GetAscentLine().GetStartPoint();
                 // bottom right corner of the bounding box
