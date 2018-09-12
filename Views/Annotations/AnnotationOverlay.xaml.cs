@@ -120,7 +120,7 @@ namespace Dash
                     }
                     if (documentView.ViewModel != null)
                     {
-                        documentView.ViewModel.SearchHighlightState = new Thickness(deselect ? 0 : 8);
+                        documentView.ViewModel.SearchHighlightState = deselect ? DocumentViewModel.UnHighlighted : DocumentViewModel.Highlighted;
                     }
                 }
         }

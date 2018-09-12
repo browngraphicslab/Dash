@@ -87,6 +87,10 @@ namespace Dash
             {
                 //get list of doc views in the collection
                 var mainPageCollectionView = _collection.GetFirstAncestorOfType<CollectionView>();
+                if (mainPageCollectionView == null)
+                {
+                    return;
+                }
                 var vms = _collection.ViewModel.DocumentViewModels.ToList();
 
 	            var offsetX = _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.XPos ?? 0;

@@ -22,19 +22,19 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
+        public enum CollectionViewType { None, Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
 
         public int MaxZ { get; set; }
         public ICollectionView CurrentView { get; set; }
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); 
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
@@ -43,25 +43,23 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
-        //if this or any of its children are selected, it can move
-        public bool selectedCollection;
-
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
+            Unloaded += CollectionView_Unloaded;
             InitializeComponent();
 
-            _viewType = vm.ViewType;
             DataContext = vm;
             _lastViewModel = vm;
-            Unloaded += CollectionView_Unloaded;
+            SetView(vm.ViewType);
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
+            id = COLid++;
 
             xOuterGrid.PointerPressed += OnPointerPressed;
-	        var color = xOuterGrid.Background;
+            var color = xOuterGrid.Background;
         }
 
         ~CollectionView()
@@ -76,31 +74,36 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || selectedCollection ||
-                this.GetFirstAncestorOfType<DocumentView>() == MainPage.Instance.MainDocView)
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
             {
-                //selected, so pan 
-                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
-            }
-            else
+                docview.ManipulationMode = ManipulationModes.All;
+                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
+                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel() ?
+                    ManipulationModes.All : ManipulationModes.None;
+                    args.Handled = true;
+            } else
             {
-                //don't pan
-                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+                docview.ManipulationMode = ManipulationModes.None;
             }
         }
 
+        private int count = 0;
+        private static int COLid = 0;
+        private int id = 0;
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
+            //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
             _lastViewModel?.Loaded(false);
-            _lastViewModel = null;
-			RemoveViewTypeHandler();
+            RemoveViewTypeHandler();
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
+            //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             _lastViewModel = ViewModel;
             ViewModel.Loaded(true);
-			AddViewTypeHandler();
+            AddViewTypeHandler();
 
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocumentView == null)
@@ -111,10 +114,6 @@ namespace Dash
 
             #region CollectionView context menu 
 
-            /// <summary>
-            /// Update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
-            /// view the collection as different formats).
-            /// </summary>
             var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
             // add a horizontal separator in context menu
@@ -123,7 +122,7 @@ namespace Dash
             contextMenu.Items.Add(separatorOne);
             elementsToBeRemoved.Add(separatorOne);
 
-           
+
 
             // add the item to create a repl
             var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
@@ -136,7 +135,7 @@ namespace Dash
             newRepl.Click += ReplFlyout_OnClick;
             contextMenu.Items.Add(newRepl);
             elementsToBeRemoved.Add(newRepl);
-            
+
             // add the item to create a scripting view
             var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
             var icon6 = new FontIcons.FontAwesome
@@ -194,12 +193,13 @@ namespace Dash
                 {
                     contextMenu.Items.Remove(flyoutItem);
                 }
-                
+
                 newRepl.Click -= ReplFlyout_OnClick;
                 newScriptEdit.Click -= ScriptEdit_OnClick;
             };
 
             SetView(_viewType);
+        #endregion
         }
 
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
@@ -222,8 +222,7 @@ namespace Dash
             ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
         }
 
-        #endregion
-        
+
         #region ClickHandlers for collection context menu items
 
         /// <summary>
@@ -238,22 +237,22 @@ namespace Dash
 
         #endregion
 
-	    private void AddViewTypeHandler()
-	    {
-			ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
-	    }
+        private void AddViewTypeHandler()
+        {
+            ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+        }
 
-	    private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-	    {
-		    SetView(ViewModel.ViewType);
-	    }
+        private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        {
+            SetView(ViewModel.ViewType);
+        }
 
-	    private void RemoveViewTypeHandler()
-	    {
-		    ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
-		}
+        private void RemoveViewTypeHandler()
+        {
+            ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+        }
 
-	    #region Menu
+        #region Menu
         public void SetView(CollectionViewType viewType)
         {
             _viewType = viewType;
@@ -261,40 +260,40 @@ namespace Dash
                 CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             switch (_viewType)
             {
-                case CollectionViewType.Freeform:
-                    if (CurrentView is CollectionFreeformView) return;
-                    CurrentView = new CollectionFreeformView();
-					break;
-                case CollectionViewType.Grid:
-                    if (CurrentView is CollectionGridView) return;
-                    CurrentView = new CollectionGridView();
-                    break;
-                case CollectionViewType.Page:
-                    if (CurrentView is CollectionPageView) return;
-                    CurrentView = new CollectionPageView();
-                    break;
-                case CollectionViewType.DB:
-                    if (CurrentView is CollectionDBView) return;
-                    CurrentView = new CollectionDBView();
-                    break;
-                case CollectionViewType.Schema:
-                    if (CurrentView is CollectionDBSchemaView) return;
-                    CurrentView = new CollectionDBSchemaView();
-                    break;
-                case CollectionViewType.TreeView:
-                    if (CurrentView is CollectionTreeView) return;
-                    CurrentView = new CollectionTreeView();
-                    break;
-                case CollectionViewType.Timeline:
-                    if (CurrentView is CollectionTimelineView) return;
-                    CurrentView = new CollectionTimelineView();
-                    break;
-                case CollectionViewType.Graph:
-                    if (CurrentView is CollectionGraphView) return;
-                    CurrentView = new CollectionGraphView();
-                    break;
-                default:
-                    throw new NotImplementedException("You need to add support for your collectionview here");
+            case CollectionViewType.Freeform:
+                if (CurrentView is CollectionFreeformView) return;
+                CurrentView = new CollectionFreeformView();
+                break;
+            case CollectionViewType.Grid:
+                if (CurrentView is CollectionGridView) return;
+                CurrentView = new CollectionGridView();
+                break;
+            case CollectionViewType.Page:
+                if (CurrentView is CollectionPageView) return;
+                CurrentView = new CollectionPageView();
+                break;
+            case CollectionViewType.DB:
+                if (CurrentView is CollectionDBView) return;
+                CurrentView = new CollectionDBView();
+                break;
+            case CollectionViewType.Schema:
+                if (CurrentView is CollectionDBSchemaView) return;
+                CurrentView = new CollectionDBSchemaView();
+                break;
+            case CollectionViewType.TreeView:
+                if (CurrentView is CollectionTreeView) return;
+                CurrentView = new CollectionTreeView();
+                break;
+            case CollectionViewType.Timeline:
+                if (CurrentView is CollectionTimelineView) return;
+                CurrentView = new CollectionTimelineView();
+                break;
+            case CollectionViewType.Graph:
+                if (CurrentView is CollectionGraphView) return;
+                CurrentView = new CollectionGraphView();
+                break;
+            default:
+                throw new NotImplementedException("You need to add support for your collectionview here");
             }
             CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             CurrentView.UserControl.Loaded += CurrentView_Loaded;
@@ -336,6 +335,6 @@ namespace Dash
             xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
 
-        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); } 
+        public void SetDropIndicationFill(Brush fill) { CurrentView?.SetDropIndicationFill(fill); }
     }
 }

@@ -153,6 +153,7 @@
     <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -562,14 +563,8 @@
     <Compile Include="Views\Annotations\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DockingFrame.xaml.cs">
-      <DependentUpon>DockingFrame.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DockedView.xaml.cs">
-      <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
@@ -764,6 +759,12 @@
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplitFrame.xaml.cs">
+      <DependentUpon>SplitFrame.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplitManager.xaml.cs">
+      <DependentUpon>SplitManager.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
@@ -1154,15 +1155,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DockingFrame.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1374,6 +1367,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\SplitFrame.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SplitManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1506,6 +1507,9 @@
     </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
+    </PackageReference>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.7</Version>
     </PackageReference>
     <PackageReference Include="itext7">
       <Version>7.1.2</Version>

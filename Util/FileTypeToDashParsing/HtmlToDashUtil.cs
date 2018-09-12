@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -29,20 +30,18 @@ namespace Dash
                 uri = introParts[introParts.Count - 2]?.Substring(10);
             string titlesUrl = GetTitlesUrl(uri);
 
+            var text = "";
             if (!string.IsNullOrEmpty(titlesUrl) || uri?.StartsWith("HTML") == true)
             {
-                //try to get website and article title
-                string addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
-
                 //update html length in intro - the way that word reads HTML is kinda funny
                 //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
                 //we must change these numbers
                 string endingInfo = introParts.ElementAt(2);
-                string endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length).ToString().PadLeft(10, '0');
+                string endingNum = (Convert.ToInt32(endingInfo.Substring(8))).ToString().PadLeft(10, '0');
                 introParts[2] = endingInfo.Substring(0, 8) + endingNum;
 
                 string endingInfo2 = introParts.ElementAt(4);
-                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length).ToString().PadLeft(10, '0');
+                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12))).ToString().PadLeft(10, '0');
                 introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
 
                 string newHtmlStart = string.Join("\r\n", introParts) + "\r\n";
@@ -51,10 +50,10 @@ namespace Dash
                 int endPoint = html.IndexOf("<!--EndFragment-->", StringComparison.Ordinal);
                 string mainHtml = html.Substring(htmlStartIndex, endPoint - htmlStartIndex);
                 string htmlClose = html.Substring(endPoint);
-
+                text = ExtractText(mainHtml);
 
                 //combine all parts
-                html = newHtmlStart + mainHtml + addition + htmlClose;
+                html = newHtmlStart + mainHtml + htmlClose;
             }
 
             //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
@@ -72,11 +71,6 @@ namespace Dash
 
             var splits = new Regex("<").Split(html);
             var imgs = splits.Where(s => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-
-            string text = packageView.Contains(StandardDataFormats.Text)
-                ? (await packageView.GetTextAsync()).Trim()
-                : "";
-
             if (string.IsNullOrEmpty(text) && imgs.Count == 1)
             {
                 string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
@@ -94,8 +88,7 @@ namespace Dash
                 (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
             {
                 htmlNote = new HtmlNote(html, titlesUrl, where).Document;
-            }
-            else
+            } else
             {
                 htmlNote = await CreateRtfNote(where, titlesUrl, html);
             }
@@ -124,6 +117,30 @@ namespace Dash
 
             return htmlNote;
         }
+        public static string ExtractText(string html)
+        {
+            if (html == null)
+            {
+                throw new ArgumentNullException("html");
+            }
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            var chunks = new List<string>();
+
+            foreach (var item in doc.DocumentNode.DescendantNodesAndSelf())
+            {
+                if (item.NodeType == HtmlNodeType.Text)
+                {
+                    if (item.InnerText.Trim() != "")
+                    {
+                        chunks.Add(item.InnerText.Trim());
+                    }
+                }
+            }
+            return string.Join(" ", chunks);
+        }
 
         public static string GetTitlesUrl(string uri)
         {
@@ -138,7 +155,7 @@ namespace Dash
             webName = new CultureInfo("en-US").TextInfo.ToTitleCase(webName.Replace('_', ' ').Replace('-', ' '));
 
             string pageTitle = uriParts[uriParts.Count - 1];
-            
+
             // convert symbols back to correct chars
             pageTitle = Uri.UnescapeDataString(pageTitle);
 
@@ -152,22 +169,22 @@ namespace Dash
             pageTitle = isId ? uriParts[uriParts.Count - 2] : pageTitle;
             pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
             pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
-            
+
             // dashes are used in urls as spaces
             pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
-            
+
             // if first word is basically all numbers, its id, so delete
             string firstTitleWord = pageTitle.Split(' ').First();
 
             bool status = firstTitleWord.Count(char.IsDigit) > firstTitleWord.Length / 2 && pageTitle.Length > firstTitleWord.Length;
             pageTitle = status ? pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
-            
+
             // if last word is basically all numbers, its id, so delete
             string lastTitleWord = pageTitle.Split(' ').Last();
 
             status = lastTitleWord.Count(char.IsDigit) > lastTitleWord.Length / 2 && pageTitle.Length > lastTitleWord.Length;
             pageTitle = status ?
-            
+
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
             pageTitle = char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
 
@@ -192,8 +209,10 @@ namespace Dash
                 return new HtmlNote(html, title, where: where).Document;
 
             string richtext = await dataPackageView.GetRtfAsync();
-            DocumentController rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
-            if (!string.IsNullOrEmpty(title)) rtfNote.GetDataDocument().SetTitle(title);
+            var rtfNote = new RichTextNote(richtext, where, new Size(double.NaN, double.NaN)).Document;
+            var text = rtfNote.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+            if (!string.IsNullOrEmpty(title))
+                rtfNote.GetDataDocument().SetTitle(title + ": " + text.Split('\v').FirstOrDefault());
 
             return rtfNote;
         }

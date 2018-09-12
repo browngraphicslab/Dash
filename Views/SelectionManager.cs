@@ -55,9 +55,9 @@ namespace Dash
         public  static event EventHandler DragManipulationStarted;
         public  static event EventHandler DragManipulationCompleted;
 
-        private static IList<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
+        private static List<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
 
-        public static IList<DocumentView> GetSelectedDocs()
+        public static List<DocumentView> GetSelectedDocs()
         {
             return new List<DocumentView>(SelectedDocs);
         }
@@ -231,7 +231,7 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
-            _dragViews = SelectionManager.GetSelectedDocs().Contains(draggedView) ? SelectionManager.GetSelectedDocs().ToList() : new List<DocumentView>(new DocumentView[] { draggedView });
+            _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
             {

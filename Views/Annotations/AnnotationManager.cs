@@ -185,7 +185,7 @@ namespace Dash
                     }
                     break;
                 case LinkBehavior.Dock:
-                    MainPage.Instance.Dock_Link(link, direction, linkContext);
+                    MainPage.Instance.DockLink(link, direction, linkContext);
                     break;
                 case LinkBehavior.Float:
                     MainPage.Instance.AddFloatingDoc(document);

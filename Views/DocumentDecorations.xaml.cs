@@ -271,8 +271,7 @@ namespace Dash
 
             foreach (var doc in SelectedDocs)
             {
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas)
-                    .TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
                 topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
@@ -675,12 +674,12 @@ namespace Dash
             {
                 if (!MainPage.Instance.IsShiftPressed())
                 {
-                    MainPage.Instance.ActivationManager.DeactivateAllExcept(SelectedDocs);
+                    LinkActivationManager.DeactivateAllExcept(SelectedDocs);
                 }
 
                 foreach (var doc in SelectedDocs)
                 {
-                    MainPage.Instance.ActivationManager.ToggleActivation(doc);
+                    LinkActivationManager.ToggleActivation(doc);
                 }
             }
 

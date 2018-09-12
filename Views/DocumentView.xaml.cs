@@ -34,25 +34,33 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        DocumentController _templateEditor;
-        bool               _isQuickEntryOpen;
-        readonly Flyout    _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
-        DocumentViewModel  _oldViewModel = null;
+        private DocumentController _templateEditor;
+        private bool               _isQuickEntryOpen;
+        private readonly Flyout    _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
+        private DocumentViewModel  _oldViewModel = null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
+        
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+
         public DocumentViewModel ViewModel
         {
             get => DataContext as DocumentViewModel;
             set => DataContext = value;
         }
+
         public MenuFlyout MenuFlyout => xMenuFlyout;
         public bool PreventManipulation { get; set; }
         // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
         public static DocumentView FocusedDocument { get; set; }
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
-            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
+
+        private static void BindRenderTransformChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((DocumentView)d).UpdateRenderTransformBinding();
+        }
 
         public bool BindRenderTransform
         {
@@ -61,7 +69,12 @@ namespace Dash
         }
 
         public static readonly DependencyProperty BindVisibilityProperty = DependencyProperty.Register(
-            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+            "BindVisibility", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindVisibilityChanged));
+
+        private static void BindVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((DocumentView)d).UpdateVisibilityBinding();
+        }
 
         public bool BindVisibility
         {
@@ -69,62 +82,60 @@ namespace Dash
             set => SetValue(BindVisibilityProperty, value);
         }
 
-        public event Action<DocumentView> DocumentDeleted;
+        private void UpdateRenderTransformBinding()
+        {
+            var doc = ViewModel?.LayoutDocument;
 
+            var binding = !BindRenderTransform || doc == null
+                ? null
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Context = new Context(doc),
+                    Mode = BindingMode.OneWay,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            this.AddFieldBinding(RenderTransformProperty, binding);
+        }
+
+        private void UpdateVisibilityBinding()
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindVisibility || doc == null
+                ? null
+                : new FieldBinding<BoolController>
+                {
+                    Converter = new InverseBoolToVisibilityConverter(),
+                    Document = doc,
+                    Key = KeyStore.HiddenKey,
+                    Mode = BindingMode.OneWay,
+                    Tag = "Visibility binding in DocumentView",
+                    FallbackValue = false
+                };
+            this.AddFieldBinding(VisibilityProperty, binding);
+        }
+
+        // == CONSTRUCTORs ==
+        private static int DOCID = 0;
         public DocumentView()
         {
             InitializeComponent();
+            DataContextChanged += ContextChanged;
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
 
-            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateRenderTransformBinding);
-            RegisterPropertyChangedCallback(BindVisibilityProperty, updateVisibilityBinding);
-
-            void updateRenderTransformBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindRenderTransform || doc == null
-                    ? null
-                    : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                        new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
-                    {
-                        Converter = new TransformGroupMultiConverter(),
-                        Context = new Context(doc),
-                        Mode = BindingMode.OneWay,
-                        Tag = "RenderTransform multi binding in DocumentView"
-                    };
-                this.AddFieldBinding(RenderTransformProperty, binding);
-            }
-
-            void updateVisibilityBinding(object sender, DependencyProperty dp)
-            {
-                var doc = ViewModel?.LayoutDocument;
-
-                var binding = !BindVisibility || doc == null
-                    ? null
-                    : new FieldBinding<BoolController>
-                    {
-                        Converter = new InverseBoolToVisibilityConverter(),
-                        Document = doc,
-                        Key = KeyStore.HiddenKey,
-                        Mode = BindingMode.OneWay,
-                        Tag = "Visibility binding in DocumentView",
-                        FallbackValue = false
-                    };
-                this.AddFieldBinding(VisibilityProperty, binding);
-            }
-
             void updateBindings()
             {
-                updateRenderTransformBinding(null, null);
-                updateVisibilityBinding(null, null);
 
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
+                UpdateRenderTransformBinding();
+                UpdateVisibilityBinding();
                 this.BindBackgroundColor();
                 ViewModel?.Load();
             }
@@ -133,23 +144,27 @@ namespace Dash
             {
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
             }
+
+            void ContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+            {
+                if (!Equals(args.NewValue, _oldViewModel))
+                {
+                    _oldViewModel?.UnLoad();
+                    updateBindings();
+                    _oldViewModel = ViewModel;
+                }
+            }
+
+            int id = DOCID++;
+            int count = 0;
             Loaded += (sender, e) =>
             {
-                FadeIn.Begin();
-                updateBindings();
-                DataContextChanged += (s, a) =>
-                {
-                    if (a.NewValue != _oldViewModel)
-                    {
-                        _oldViewModel?.UnLoad();
-                        updateBindings();
-                        _oldViewModel = ViewModel;
-                    }
-                };
+                Debug.WriteLine($"Document View {id} loaded {++count}");
+                //FadeIn.Begin();
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                
+
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
                 var maxZ = parentCanvas.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg));
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
@@ -158,10 +173,10 @@ namespace Dash
 
             Unloaded += (sender, args) =>
             {
+                Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                ViewModel?.UnLoad();
-                DataContext = null;
+                _oldViewModel?.UnLoad();
             };
 
             PointerPressed += (sender, e) =>
@@ -178,13 +193,40 @@ namespace Dash
                 }
             };
 
+            KeyDown += (sender, args) =>
+            {
+                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+                {
+                    if (!_isQuickEntryOpen)
+                    {
+                        _clearByClose = true;
+                        ClearQuickEntryBoxes();
+                        xKeyBox.Focus(FocusState.Keyboard);
+                    }
+
+                    ToggleQuickEntry();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                {
+                    if (xKeyBox.FocusState != FocusState.Unfocused)
+                    {
+                        _articialChange = true;
+                        int pos = xKeyBox.SelectionStart;
+                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+                        xKeyBox.SelectionStart = pos;
+                    }
+                    args.Handled = true;
+                }
+            };
 
             ManipulationMode = ManipulationModes.All;
-            ManipulationStarted   += (s,e) => SelectionManager.InitiateDragDrop(this, null, e);
-            DragStarting          += (s,e) => SelectionManager.DragStarting(this, s, e);
-            DropCompleted         += (s,e) => SelectionManager.DropCompleted(this, s, e);
-            RightTapped           += (s,e) => e.Handled = TappedHandler(e.Handled);
-            Tapped                += (s,e) => e.Handled = TappedHandler(e.Handled);
+            ManipulationStarted += (s, e) => SelectionManager.InitiateDragDrop(this, null, e);
+            DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
+            DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
+            RightTapped += (s, e) => e.Handled = TappedHandler(e.Handled);
+            Tapped += (s, e) => e.Handled = TappedHandler(e.Handled);
 
             xKeyBox.AddKeyHandler(VirtualKey.Enter, KeyBoxOnEnter);
             xValueBox.AddKeyHandler(VirtualKey.Enter, ValueBoxOnEnter);
@@ -208,11 +250,12 @@ namespace Dash
 
             LostFocus += (sender, args) =>
             {
-                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused && xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
+                if (_isQuickEntryOpen && xKeyBox.FocusState == FocusState.Unfocused &&
+                    xValueBox.FocusState == FocusState.Unfocused) ToggleQuickEntry();
 
                 MainPage.Instance.xPresentationView.ClearHighlightedMatch();
             };
-            
+
             MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
@@ -221,13 +264,70 @@ namespace Dash
 
             ToFront();
         }
+
+        void updateRenderTransformBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindRenderTransform || doc == null
+                ? null
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Context = new Context(doc),
+                    Mode = BindingMode.OneWay,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            this.AddFieldBinding(RenderTransformProperty, binding);
+        }
+
+        void updateVisibilityBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindVisibility || doc == null
+                ? null
+                : new FieldBinding<BoolController>
+                {
+                    Converter = new InverseBoolToVisibilityConverter(),
+                    Document = doc,
+                    Key = KeyStore.HiddenKey,
+                    Mode = BindingMode.OneWay,
+                    Tag = "Visibility binding in DocumentView",
+                    FallbackValue = false
+                };
+            this.AddFieldBinding(VisibilityProperty, binding);
+        }
+        void updateBindings()
+        {
+            updateRenderTransformBinding(null, null);
+            updateVisibilityBinding(null, null);
+
+            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+
+            this.BindBackgroundColor();
+            ViewModel?.Load();
+        }
+
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
+        {
+            if (a.NewValue != _oldViewModel)
+            {
+                _oldViewModel?.UnLoad();
+                updateBindings();
+                _oldViewModel = ViewModel;
+            }
+        }
+
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;
 
-            Dictionary<string, List<DocumentController>>.ValueCollection linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
+            var linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
 
-            bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
+            bool allVisible = linkDocs.All(l =>
+                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
 
             foreach (var docs in linkDocs)
             {
@@ -241,8 +341,10 @@ namespace Dash
 
         private void XMenuFlyout_OnOpening(object sender, object e)
         {
-            var linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
-            bool allVisible = linkDocs.All(l => l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
+            var linkDocs =
+                MainPage.Instance.XDocumentDecorations.TagMap.Values;
+            bool allVisible = linkDocs.All(l =>
+                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
             xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
 
@@ -337,7 +439,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft,
+            bool maintainAspectRatio)
         {
             e.Handled = true;
             if (PreventManipulation || MainPage.Instance.IsRightBtnPressed())
@@ -346,7 +449,7 @@ namespace Dash
             }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
-                ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
+                          ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
             if (!Double.IsNaN(Width))
@@ -454,7 +557,8 @@ namespace Dash
             if (ViewModel.DragBounds != null)
             {
                 if (!ViewModel.DragBounds.Rect.Contains(newPos) ||
-                    !ViewModel.DragBounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
+                    !ViewModel.DragBounds.Rect.Contains(new Point(newPos.X + newSize.Width,
+                        newPos.Y + DesiredSize.Height)))
                 {
                     ViewModel.Position = oldPos;
                     ViewModel.Width = oldSize.Width;
@@ -534,7 +638,7 @@ namespace Dash
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
 
-                MainPage.Instance.ActivationManager.DeactivateDoc(this);
+                LinkActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
             }
         }
@@ -586,6 +690,8 @@ namespace Dash
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
+        public event Action<DocumentView> DocumentDeleted;
+
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
@@ -604,14 +710,12 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.selectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 
@@ -620,14 +724,6 @@ namespace Dash
             xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
-
-            ColorSelectionBorder(selected ? Color.FromArgb(120, 160, 197, 232) : Colors.Transparent);
-
-        }
-
-        private void ColorSelectionBorder(Color color)
-        {
-            var brush = new SolidColorBrush(color);
         }
 
         #endregion
@@ -644,8 +740,8 @@ namespace Dash
                 FocusedDocument = this;
             }
 
-            if (!(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
-                .Contains(this))
+            var focused = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (focused == null || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
                 Focus(FocusState.Programmatic);
             }
@@ -663,7 +759,8 @@ namespace Dash
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
-                SelectionManager.Select(this, this.IsShiftPressed());
+                if (!MainPage.Instance.IsRightBtnPressed())
+                    SelectionManager.Select(this, this.IsShiftPressed());
 
                 if (SelectionManager.GetSelectedDocs().Count > 1)
                 {
@@ -719,24 +816,28 @@ namespace Dash
                     doc.CopyDocument();
             }
         }
+
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                     doc.CopyViewDocument();
         }
+
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                     doc.DeleteDocument();
         }
+
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                     doc.KeyValueViewDocument();
         }
+
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -746,6 +847,7 @@ namespace Dash
                     SetZLayer();
                 }
         }
+
         public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -753,40 +855,33 @@ namespace Dash
                 var collectionView = this.GetFirstDescendantOfType<CollectionView>();
                 if (collectionView != null)
                 {
-                    collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel.ContainerDocument.GetFitToParent());
+                    collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel
+                        .ContainerDocument.GetFitToParent());
                     if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
                         collectionView.ViewModel.FitContents(collectionView);
                 }
             }
         }
-        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
+        {
+            ShowContext();
+        }
+
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        {
+            Util.ExportAsImage(LayoutRoot);
+        }
+
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
         {
-
-            var docs = new List<ListController<DocumentController>>
-            {
-                MainPage.Instance.DockManager.DocController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey, null)
-            };
-
             using (UndoManager.GetBatchHandle())
             {
-                var dockedView = this.GetFirstAncestorOfType<DockedView>();
-                ViewModel.DocumentController.SetField<NumberController>(KeyStore.TextWrappingKey, (int)DashShared.TextWrapping.Wrap, true);
-                if (dockedView != null)
-                {
-                    var toDock = ViewModel.DocumentController.GetViewCopy();
-                    toDock.SetWidth(double.NaN);
-                    toDock.SetHeight(double.NaN);
-                    dockedView.ChangeView(new DocumentView() { DataContext = new DocumentViewModel(toDock) });
-                }
-                else
-                {
-                    MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
-                }
+                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
             }
 
         }
+
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
@@ -795,11 +890,12 @@ namespace Dash
                     c => c.Title + "  :  " + c.Url)));
             Clipboard.SetContent(data);
         }
-        private void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
+
+        private async void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
         {
             var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
             if (text != null)
-                Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+                await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
 
             //var storageFile = item as StorageFile;
             //var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -810,7 +906,7 @@ namespace Dash
         }
 
         #endregion
-        
+
         public void This_Drop(object sender, DragEventArgs e)
         {
             if (this.ViewModel.IsAdornmentGroup)
@@ -924,25 +1020,32 @@ namespace Dash
             ViewModel.DecorationState = false;
         }
 
+        public bool IsTopLevel()
+        {
+            return this.GetFirstAncestorOfType<SplitFrame>().DataContext == DataContext;
+        }
+
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (!Equals(MainPage.Instance.MainDocView))
-                using (UndoManager.GetBatchHandle())
+            if (IsTopLevel()) return;
+
+            using (UndoManager.GetBatchHandle())
+            {
+                MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+                if (ViewModel.LayoutDocument == null)
                 {
-                    MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
-                    if (ViewModel.LayoutDocument == null)
-                    {
-                        Debug.WriteLine("uh-oh");
-                    }
+                    Debug.WriteLine("uh oh");
                 }
+            }
         }
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
             var ann = new AnnotationManager(this);
-            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
+            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(),
+                e.GetPosition(this));
         }
-        
+
         private void AdjustEllipseSize(Ellipse ellipse, double length)
         {
             ellipse.Width = length;
@@ -983,7 +1086,7 @@ namespace Dash
 
         private void ToggleQuickEntry()
         {
-            if (_animationBusy || Equals(MainPage.Instance.MainDocView) || Equals(MainPage.Instance.xMapDocumentView)) return;
+            if (_animationBusy || IsTopLevel() || Equals(MainPage.Instance.xMapDocumentView)) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
@@ -1006,6 +1109,7 @@ namespace Dash
                 {
                     xKeyBox.Focus(FocusState.Programmatic);
                 }
+
                 _animationBusy = false;
             }
         }
@@ -1147,7 +1251,7 @@ namespace Dash
                 ViewModel.LayoutDocument.SetHidden(true);
             }
         }
-        
+
         public void SetLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
@@ -1165,7 +1269,7 @@ namespace Dash
         }
         ~DocumentView()
         {
-            Debug.Write("dispose DocumentView");
+            //Debug.Write("dispose DocumentView");
         }
 
         private void xActivationMode_Tapped(object sender, TappedRoutedEventArgs e)

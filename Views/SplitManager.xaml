@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="Dash.WebBoxView"
+    x:Class="Dash.SplitManager"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -9,7 +9,6 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" Background="Gray">
-        <Image x:Name="xCacheBitmap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Fill" />
+    <Grid x:Name="XContentGrid">
     </Grid>
 </UserControl>

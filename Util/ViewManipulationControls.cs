@@ -82,6 +82,7 @@ namespace Dash
 
                 // get the scale amount from the mousepoint in canvas space
                 float scaleAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta >= 0 ? 1.07f : 1 / 1.07f;
+
                 
                 if (!IsScaleDiscrete)
                     //Clamp the scale factor 

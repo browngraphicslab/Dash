@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -29,14 +28,14 @@ namespace Dash
     public class CollectionViewModel : ViewModelBase
     {
         static ICollectionView _previousDragEntered;
-        bool    _canDragItems = true;
-        bool    _isLoaded;
+        bool _canDragItems = true;
+        private bool _isLoaded => _refCount > 0;
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
-        private SettingsView.WebpageLayoutMode         WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
-        public ListController<DocumentController>      CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-        public InkController                           InkController        => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
+        private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
+        public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
+        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
-        public TransformGroupData                      TransformGroup
+        public TransformGroupData TransformGroup
         {
             get
             {
@@ -54,17 +53,17 @@ namespace Dash
                 ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
             }
         }
-        public DocumentController                      ContainerDocument { get; set; }
-        public KeyController                           CollectionKey { get; set; }
+        public DocumentController ContainerDocument { get; private set; }
+        public KeyController CollectionKey { get; set; }
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
-        public CollectionView.CollectionViewType       ViewType
+        public AdvancedCollectionView BindableDocumentViewModels { get; set; }
+        public CollectionView.CollectionViewType ViewType
         {
             get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
             set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
-        public bool                                    CanDragItems
+        public bool CanDragItems
         {
             get { return _canDragItems; }
             set { SetProperty(ref _canDragItems, value); }
@@ -91,7 +90,10 @@ namespace Dash
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
             var wasLoaded = _isLoaded;
-            Loaded(false);
+            if (_isLoaded)
+            {
+                Loaded(false);
+            }
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
@@ -111,7 +113,7 @@ namespace Dash
             {
                 var realPar = cview?.CurrentView?.UserControl;
                 var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
-                
+
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -132,15 +134,12 @@ namespace Dash
             }
         }
 
+        private int _refCount = 0;
         public void Loaded(bool isLoaded)
         {
-            _isLoaded = isLoaded;
             if (isLoaded)
             {
-                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _refCount++;
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -151,8 +150,14 @@ namespace Dash
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
-                    DocumentViewModels.Clear();
-                    addViewModels(CollectionController.TypedData);
+                    var curDocs =
+                        new HashSet<DocumentController>(DocumentViewModels.Select(dvm => dvm.DocumentController));
+                    var colDocs =
+                        new HashSet<DocumentController>(CollectionController);
+                    var newDocs = colDocs.Where(dc => !curDocs.Contains(dc)).ToList();
+                    var deletedDocs = curDocs.Where(dc => !colDocs.Contains(dc)).ToList();
+                    addViewModels(newDocs);
+                    removeViewModels(deletedDocs);
                 }
                 ActualSizeFieldChanged(null, null, null);
 
@@ -160,11 +165,11 @@ namespace Dash
             }
             else
             {
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
-                _lastContainerDocument?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                _lastContainerDocument = null;
+                _refCount--;
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _lastContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             }
         }
         void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
@@ -199,7 +204,7 @@ namespace Dash
         }
 
         #region DocumentModel and DocumentViewModel Data Changes
-        
+
         private Storyboard _lateralAdjustment = new Storyboard();
         private Storyboard _verticalAdjustment = new Storyboard();
 
@@ -207,43 +212,43 @@ namespace Dash
         {
             switch (args.ListAction)
             {
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
-                    // we only care about changes to the Hidden field of the contained documents.
-                    foreach (var d in args.NewItems)
-                    {
-                        //var visible = !d.GetHidden();
-                        //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
-                        //if (visible && !shown)
-                        //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                        //if (!visible && shown)
-                        //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                    }
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(args.NewItems);
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
-                    DocumentViewModels.Clear();
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(args.OldItems);
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                    DocumentViewModels.Clear();
-                    addViewModels(args.NewItems);
-                    break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
+                // we only care about changes to the Hidden field of the contained documents.
+                foreach (var d in args.NewItems)
+                {
+                    //var visible = !d.GetHidden();
+                    //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
+                    //if (visible && !shown)
+                    //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                    //if (!visible && shown)
+                    //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                }
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                addViewModels(args.NewItems);
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
+                DocumentViewModels.Clear();
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                removeViewModels(args.OldItems);
+                break;
+            case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
+                DocumentViewModels.Clear();
+                addViewModels(args.NewItems);
+                break;
             }
         }
 
         void addViewModels(List<DocumentController> documents)
         {
-                using (BindableDocumentViewModels.DeferRefresh())
+            using (BindableDocumentViewModels.DeferRefresh())
+            {
+                foreach (var documentController in documents)
                 {
-                    foreach (var documentController in documents)
-                    {
-                            DocumentViewModels.Add(new DocumentViewModel(documentController));
-                    }
+                    DocumentViewModels.Add(new DocumentViewModel(documentController));
                 }
+            }
         }
 
         void removeViewModels(List<DocumentController> documents)
@@ -349,7 +354,7 @@ namespace Dash
         }
 
         #endregion
-        
+
         #region DragAndDrop
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
@@ -529,34 +534,30 @@ namespace Dash
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            var postitNote = new RichTextNote(text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
                         }
                     }
                 }
-                else if (dvp.Contains(StandardDataFormats.Html) && false)
+                else if (dvp.Contains(StandardDataFormats.Html) )
                 {
-                    //Create an instance for word app
-                    //Microsoft.Office.Interop.Word.Application winword = new Microsoft.Office.Interop.Word.Application();
+                    var text = await dvp.GetHtmlFormatAsync();
+                    var layoutMode = await MainPage.Instance.GetLayoutType();
 
-                    ////Set animation status for word application
-                    //winword.ShowAnimation = false;
-
-                    ////Set status for word application is to be visible or not.
-                    //winword.Visible = false;
-
-                    ////Create a missing variable for missing value
-                    //object missing = System.Reflection.Missing.Value;
-
-                    ////Create a new document
-                    //Microsoft.Office.Interop.Word.Document document = winword.Documents.Add(ref missing, ref missing, ref missing, ref missing);
-                    //document.Content.Paste();
-                    //document.Content.Select();
-                    //var dvp2 = Clipboard.GetContent();
-                    //if (dvp2.Contains(StandardDataFormats.Rtf))
-                    //{
-                    //}
+                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
+                        (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
+                    {
+                        var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
+                        Actions.DisplayDocument(this, htmlNote, where);
+                        return htmlNote;
+                    } 
+                    else
+                    {
+                        var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
+                        Actions.DisplayDocument(this, htmlNote, where);
+                        return htmlNote;
+                    }
                 }
                 else if (dvp.Contains(StandardDataFormats.Text))
                 {
@@ -575,7 +576,7 @@ namespace Dash
                             if (Clipboard.GetContent().Contains(StandardDataFormats.Html))
                             {
                                 var html = await Clipboard.GetContent().GetHtmlFormatAsync();
-                                foreach (var str in html.Split(new[] {'\r'}))
+                                foreach (var str in html.Split(new[] { '\r' }))
                                 {
                                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                                     if (matches.Count != 0)
@@ -597,7 +598,7 @@ namespace Dash
                                 postitNote = postitView.Document;
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
                                     sourceDoc.Title, true);
-                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController>{region});
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController> { region });
 
                                 region.SetRegionDefinition(postitNote);
                                 region.SetAnnotationType(AnnotationType.Selection);
@@ -610,10 +611,10 @@ namespace Dash
                                 postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: urlSource).Document;
                             }
 
-                            
+
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
-                            
+
 
                         }
                     }
@@ -665,8 +666,8 @@ namespace Dash
                 // accept move, then copy, and finally accept whatever they requested (for now)
                 e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
                     ? DataPackageOperation.Move :
-                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ? 
-                        DataPackageOperation.Copy 
+                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ?
+                        DataPackageOperation.Copy
                         : e.DataView.RequestedOperation;
 
                 RemoveDragDropIndication(sender as ICollectionView);
@@ -674,7 +675,7 @@ namespace Dash
                 var senderView = (sender as CollectionView)?.CurrentView;
                 var where = new Point();
                 if (senderView is CollectionFreeformBase freeformBase)
-                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xCanvas));
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
                 else if (DocumentViewModels.Count > 0)
                 {
                     Point lastPos = DocumentViewModels.Last().Position;
@@ -701,7 +702,8 @@ namespace Dash
                             if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
-                                if (d.DraggedDocumentViews[i] != null) {
+                                if (d.DraggedDocumentViews[i] != null)
+                                {
                                     d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
                                 }
                             }
@@ -744,7 +746,6 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
-            MainPage.Instance.DockManager.HighlightDock(e.GetPosition(MainPage.Instance.xMainDocView));
             HighlightPotentialDropTarget(sender as ICollectionView);
 
             if (e.DragUIOverride != null)

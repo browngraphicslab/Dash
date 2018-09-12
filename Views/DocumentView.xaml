@@ -16,8 +16,7 @@
     DragOver="This_DragOver"
     DragLeave="This_DragLeave"
     Drop="This_Drop"
-    UseLayoutRounding="False"
-    Opacity="0">
+    UseLayoutRounding="False">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>

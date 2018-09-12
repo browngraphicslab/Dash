@@ -105,7 +105,7 @@ namespace Dash
         private async void RenderPage(int pageNum)
         {
             using (var page = _view.PDFdoc.GetPage((uint)pageNum))
-            {
+            { 
                 while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
                 {
                     BitmapSource source = null;
@@ -115,7 +115,7 @@ namespace Dash
                         var options = new Windows.Data.Pdf.PdfPageRenderOptions();
                         var stream = new InMemoryRandomAccessStream();
                         var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
-                        var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
+                        var widthRatio = (targetWidth / screenMap.X) / _view.PdfMaxWidth;
                         var box = page.Dimensions.MediaBox;
                         options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, MaxPageWidth);
                         options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width);
@@ -123,7 +123,7 @@ namespace Dash
                         source = new BitmapImage();
                         await source.SetSourceAsync(stream);
                     }
-                    _visibleElements[pageNum].Source = source;
+                    _visibleElements[pageNum].Source = source; 
                     _visibleElementsRenderedWidth[pageNum] = targetWidth;
                 }
                 _visibleElementsIsRendering[pageNum] = false;

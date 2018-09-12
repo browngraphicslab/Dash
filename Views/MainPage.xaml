@@ -55,71 +55,65 @@
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
-        <!-- MainDocView -->
-        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <local:DockingFrame.DocumentContent>
-                <Grid>
-                    <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
-                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
-                            <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
-                        </Grid>
-                        <Grid  Name="xSearchButton" Tapped="xSearchButton_Tapped" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+        <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
 
-                            </Ellipse>
-                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+            <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
+                <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
+            </Grid>
+            <Grid  Name="xSearchButton" Tapped="xSearchButton_Tapped" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+
+                </Ellipse>
+                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
                                 />
-                            </ToolTipService.ToolTip>
-                        </Grid>
+                </ToolTipService.ToolTip>
+            </Grid>
 
-                        <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+            <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
 
-                            </Ellipse>
-                            <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
+                </Ellipse>
+                <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
                                 />
-                            </ToolTipService.ToolTip>
-                        </Grid>
+                </ToolTipService.ToolTip>
+            </Grid>
 
-                        <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
+            <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
 
-                            </Ellipse>
-                            <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
+                </Ellipse>
+                <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
                                 />
-                            </ToolTipService.ToolTip>
-                        </Grid>
+                </ToolTipService.ToolTip>
+            </Grid>
 
-                        <StackPanel.Resources>
-                            <Storyboard x:Name="xFadeAnimationIn">
-                                <DoubleAnimation
+            <StackPanel.Resources>
+                <Storyboard x:Name="xFadeAnimationIn">
+                    <DoubleAnimation
                                     Storyboard.TargetName="xSearchBoxGrid"
                                     Storyboard.TargetProperty="Opacity"
                                     From="0.0" To="1.0" Duration="0:0:.5"
                                 />
-                            </Storyboard>
+                </Storyboard>
 
-                            <Storyboard x:Name="xFadeAnimationOut">
-                                <DoubleAnimation
+                <Storyboard x:Name="xFadeAnimationOut">
+                    <DoubleAnimation
                                     Storyboard.TargetName="xSearchBoxGrid"
                                     Storyboard.TargetProperty="Opacity"
                                     From="1.0" To="0.0" Duration="0:0:.5"
                                 />
-                            </Storyboard>
-                        </StackPanel.Resources>
+                </Storyboard>
+            </StackPanel.Resources>
 
 
-                    </StackPanel>
-                </Grid>
-            </local:DockingFrame.DocumentContent>
-        </local:DockingFrame>
+        </StackPanel>
 
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
@@ -132,8 +126,8 @@
             </ToolTipService.ToolTip>
             <!--<SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>-->
         </Grid>
-        
-        
+
+
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
@@ -142,14 +136,14 @@
             <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
 
                 <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
-            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
-            
+                <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
+
             </Grid>
 
             <Grid x:Name="xSnapshotOverlay" Background="White" Height="5000" Width="5000" Visibility="Collapsed">
                 <Grid.Resources>
                     <Storyboard x:Name="xFadeIn">
-                    <DoubleAnimation
+                        <DoubleAnimation
                         Storyboard.TargetName="xSnapshotOverlay"
                         Storyboard.TargetProperty="Opacity"
                         From="0.5" To="0.9" Duration="0:0:.05"
@@ -165,7 +159,7 @@
                         />
                     </Storyboard>
 
-                
+
                 </Grid.Resources>
             </Grid>
 
@@ -195,7 +189,7 @@
 
         <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
-            <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+        <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
 
         <local:ActionTextBox 
             x:Name="xLinkInputBox"

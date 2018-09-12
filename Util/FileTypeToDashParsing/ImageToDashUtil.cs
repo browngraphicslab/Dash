@@ -144,7 +144,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateUniqueLocalFile()
+        public static async Task<StorageFile> CreateUniqueLocalFile()
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
@@ -155,7 +155,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateLocalFile(string fileName)
+        public static async Task<StorageFile> CreateLocalFile(string fileName)
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = fileName + ".jpg"; // somehow this works for all images... who knew
