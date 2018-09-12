@@ -257,6 +257,7 @@ namespace Dash
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
             _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
+            _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
         }
@@ -289,6 +290,7 @@ namespace Dash
                 tl.Y = Math.Min(tl.Y, bounds.Top * scaling);
                 br.X = Math.Max(br.X, bounds.Right * scaling);
                 br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
+                doc.IsHitTestVisible = false;
             }
 
             var width = (br.X - tl.X);
