@@ -269,7 +269,7 @@ namespace Dash
                     }
                 };
 
-            int id = ID++;
+            //int id = ID++;
             int refCount = 0;
             bool mask = false;
 
@@ -282,7 +282,7 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 refCount++;
-                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -293,7 +293,7 @@ namespace Dash
                     binding.Remove(handler);
                 }
 
-                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
 
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
@@ -308,7 +308,7 @@ namespace Dash
                 if (mask)
                 {
                     mask = false;
-                    Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
+                    //Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
                     return;
                 }
 
@@ -317,7 +317,7 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
-                Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
+                //Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
             }
 
             void RemoveBinding()
@@ -331,11 +331,11 @@ namespace Dash
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
-        private static int ID = 0;
+        //private static int ID = 0;
         private static void AddTwoWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding)
             where T : FrameworkElement
         {
-            int id = ID++;
+            //int id = ID++;
             bool updateUI = true;
             DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
@@ -378,7 +378,7 @@ namespace Dash
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
                 refCount++;
-                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -392,7 +392,7 @@ namespace Dash
                     token = -1;
                 }
 
-                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
 
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
@@ -407,7 +407,7 @@ namespace Dash
                 if (mask)
                 {
                     mask = false;
-                    Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
+                    //Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
                     return;
                 }
                 if (refCount++ == 0)
@@ -416,7 +416,7 @@ namespace Dash
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
                 }
-                Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
+                //Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
             }
 
             void RemoveBinding()

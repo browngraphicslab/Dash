@@ -155,11 +155,11 @@ namespace Dash
                 }
             }
 
-            int id = DOCID++;
-            int count = 0;
+            //int id = DOCID++;
+            //int count = 0;
             Loaded += (sender, e) =>
             {
-                Debug.WriteLine($"Document View {id} loaded {++count}");
+                //Debug.WriteLine($"Document View {id} loaded {++count}");
                 //FadeIn.Begin();
 
                 SizeChanged += sizeChangedHandler;
@@ -173,7 +173,7 @@ namespace Dash
 
             Unloaded += (sender, args) =>
             {
-                Debug.WriteLine($"Document View {id} unloaded {--count}");
+                //Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
