@@ -428,5 +428,57 @@ namespace Dash
             e.Handled = true;
             await DropHandler(e, SplitDirection.Down);
         }
+
+        private List<DocumentController> _history = new List<DocumentController>();
+        private List<DocumentController> _future = new List<DocumentController>();
+
+        private DocumentViewModel _oldViewModel;
+        private bool _changingView = false; 
+        private void SplitFrame_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (Equals(ViewModel, _oldViewModel))
+            {
+                return;
+            }
+
+            if (_changingView)
+            {
+                _changingView = false;
+                return;
+            }
+
+            if (_oldViewModel != null)
+            {
+                _future.Clear();
+                _history.Add(_oldViewModel.DocumentController);
+            }
+
+            _oldViewModel = ViewModel;
+        }
+
+
+        public void GoBack()
+        {
+            if (_history.Any())
+            {
+                var doc = _history.Last();
+                _history.RemoveAt(_history.Count - 1);
+                _future.Add(DocumentController);
+                _changingView = true;
+                DataContext = new DocumentViewModel(doc);
+            }
+        }
+
+        public void GoForward()
+        {
+            if (_future.Any())
+            {
+                var doc = _future.Last();
+                _future.RemoveAt(_future.Count - 1);
+                _history.Add(DocumentController);
+                _changingView = true;
+                DataContext = new DocumentViewModel(doc);
+            }
+        }
     }
 }

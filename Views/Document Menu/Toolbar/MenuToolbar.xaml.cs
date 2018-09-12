@@ -1110,5 +1110,15 @@ namespace Dash
         {
             SplitFrame.ActiveFrame.Delete();
         }
+
+        private void XGoBack_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.GoBack();
+        }
+
+        private void XGoForward_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.GoForward();
+        }
     }
 }

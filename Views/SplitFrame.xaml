@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    DataContextChanged="SplitFrame_OnDataContextChanged">
 
     <Grid x:Name="Grid">
         <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>

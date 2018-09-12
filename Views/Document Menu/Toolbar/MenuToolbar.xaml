@@ -646,6 +646,30 @@
                     </AppBarButton>
 
                     <AppBarButton 
+                    x:Name="xGoBack"
+                    Height="60"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="True" 
+                    Opacity="1" 
+                    Click="XGoBack_OnClick"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <TextBlock Text="&#xE72B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="2, -0.5, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center" />
+                    </AppBarButton>
+
+                    <AppBarButton 
+                    x:Name="xGoForward"
+                    Height="60"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    IsEnabled="True" 
+                    Opacity="1" 
+                    Click="XGoForward_OnClick"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <TextBlock Text="&#xE72A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="2, -0.5, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+
+                    <AppBarButton 
                     x:Name="xCloseSplit"
                     Height="60"
                     Style="{StaticResource AppBarButtonStyler}" 

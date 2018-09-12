@@ -57,7 +57,7 @@
 
         <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
 
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 15, 15, 0" Spacing="10" Grid.Column="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
             </Grid>
@@ -72,7 +72,7 @@
                 </ToolTipService.ToolTip>
             </Grid>
 
-            <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+            <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited" Visibility="Collapsed">
                 <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
 
                 </Ellipse>
@@ -83,7 +83,7 @@
                 </ToolTipService.ToolTip>
             </Grid>
 
-            <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+            <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited" Visibility="Collapsed">
                 <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
 
                 </Ellipse>
