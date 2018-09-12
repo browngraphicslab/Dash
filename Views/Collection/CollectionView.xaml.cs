@@ -43,9 +43,6 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
-        //if this or any of its children are selected, it can move
-        public bool SelectedCollection;
-
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
@@ -77,15 +74,17 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) || SelectedCollection ||
-                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel())
+            var docview = this.GetFirstAncestorOfType<DocumentView>();
+            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
             {
-                //selected, so pan 
-                CurrentView.UserControl.ManipulationMode = ManipulationModes.All;
+                docview.ManipulationMode = ManipulationModes.All;
+                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
+                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel() ?
+                    ManipulationModes.All : ManipulationModes.None;
+                    args.Handled = true;
             } else
             {
-                //don't pan
-                CurrentView.UserControl.ManipulationMode = ManipulationModes.None;
+                docview.ManipulationMode = ManipulationModes.None;
             }
         }
 

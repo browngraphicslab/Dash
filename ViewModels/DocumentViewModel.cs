@@ -21,8 +21,10 @@ namespace Dash
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
         private bool               _decorationState = false;
-        private Thickness          _searchHighlightState = new Thickness(0);
+        private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
+
+        public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
@@ -161,7 +163,7 @@ namespace Dash
 
         public async void ExpandBorder()
         {
-            while (SearchHighlightState.Bottom <= 7.5)
+            while (SearchHighlightState.Bottom <= Highlighted.Bottom - 0.5)
             {
                 SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
                 await Task.Delay(TimeSpan.FromMilliseconds(7));

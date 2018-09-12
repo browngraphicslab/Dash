@@ -742,34 +742,36 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Handles mouse movement. Starts drawing Marquee selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            // marquee on left click by default
-            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
-            {
-                if (
-                    (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                    ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
-                      // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
-                        ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
-                {
-                    if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                        SelectionManager.DeselectAll();
+		/// <summary>
+		/// Handles mouse movement. Starts drawing Marquee selection.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+		{
+			// marquee on left click by default
+			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
+			{
+				if (
+					(args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+					( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
+					  // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+						((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
+				{
+                    this.ParentDocument.ManipulationMode = ManipulationModes.None;
+					if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
+						SelectionManager.DeselectAll();
 
-                    GetOuterGrid().CapturePointer(args.Pointer);
-                    _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
-                    _isMarqueeActive = true;
-                    PreviewTextbox_LostFocus(null, null);
-                    ParentDocument.ManipulationMode = ManipulationModes.None;
-                    args.Handled = true;
-                    GetOuterGrid().PointerMoved -= OnPointerMoved;
-                    GetOuterGrid().PointerMoved += OnPointerMoved;
-                }
+					GetOuterGrid().CapturePointer(args.Pointer);
+					_marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
+					_isMarqueeActive = true;
+					PreviewTextbox_LostFocus(null, null);
+                    if (ParentDocument != null)
+					    ParentDocument.ManipulationMode = ManipulationModes.None;
+					args.Handled = true;
+					GetOuterGrid().PointerMoved -= OnPointerMoved;
+					GetOuterGrid().PointerMoved += OnPointerMoved;
+				}
             }
         }
 

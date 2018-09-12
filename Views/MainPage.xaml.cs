@@ -471,7 +471,7 @@ namespace Dash
                     }
                     else
                     {
-                        dm.SearchHighlightState = new Thickness(8);
+                        dm.SearchHighlightState = DocumentViewModel.Highlighted;
                     }
                 }
                 else
@@ -483,7 +483,7 @@ namespace Dash
                     }
                     else
                     {
-                        dm.SearchHighlightState = new Thickness(0);
+                        dm.SearchHighlightState = DocumentViewModel.UnHighlighted;
                     }
                 }
             }
@@ -1069,8 +1069,8 @@ namespace Dash
 
             if (onScreenView != null)
             {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
-                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+                onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
                 if (highlighted)
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
@@ -1099,7 +1099,7 @@ namespace Dash
                     return;
             }
 
-            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.SearchHighlightState != new Thickness(0)).ToList().ForEach((dv) => dv.ViewModel?.RetractBorder());
+            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.SearchHighlightState == DocumentViewModel.Highlighted).ToList().ForEach((dv) => dv.ViewModel?.RetractBorder());
             ClearFloaty(null);
         }
 
@@ -1114,6 +1114,13 @@ namespace Dash
 
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType) &&
+                double.IsNaN(doc.GetWidth()) && double.IsNaN(doc.GetHeight()))
+            {
+                docCopy.SetWidth(400);
+                docCopy.SetHeight(300);
+                docCopy.SetFitToParent(true);
+            }
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
@@ -1167,14 +1174,14 @@ namespace Dash
             if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
-                if (onScreenView != null) onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                if (onScreenView != null) onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
                 return LinkHandledResult.HandledRemainOpen;
             }
 
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != new Thickness(0);
-                onScreenView.ViewModel.SearchHighlightState = new Thickness(8);
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+                onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
@@ -1221,10 +1228,10 @@ namespace Dash
                 {
                     SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                     SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-                    doc.SearchHighlightState = new Thickness(8);
+                    doc.SearchHighlightState = DocumentViewModel.Highlighted;
                     void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
                     {
-                        doc.SearchHighlightState = new Thickness(0);
+                        doc.SearchHighlightState = DocumentViewModel.UnHighlighted;
                         SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                     }
                 }

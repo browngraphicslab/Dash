@@ -176,7 +176,7 @@ namespace Dash
                 Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                ViewModel?.UnLoad();
+                _oldViewModel?.UnLoad();
             };
 
             PointerPressed += (sender, e) =>
@@ -264,6 +264,62 @@ namespace Dash
 
             ToFront();
         }
+
+        void updateRenderTransformBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindRenderTransform || doc == null
+                ? null
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Context = new Context(doc),
+                    Mode = BindingMode.OneWay,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            this.AddFieldBinding(RenderTransformProperty, binding);
+        }
+
+        void updateVisibilityBinding(object sender, DependencyProperty dp)
+        {
+            var doc = ViewModel?.LayoutDocument;
+
+            var binding = !BindVisibility || doc == null
+                ? null
+                : new FieldBinding<BoolController>
+                {
+                    Converter = new InverseBoolToVisibilityConverter(),
+                    Document = doc,
+                    Key = KeyStore.HiddenKey,
+                    Mode = BindingMode.OneWay,
+                    Tag = "Visibility binding in DocumentView",
+                    FallbackValue = false
+                };
+            this.AddFieldBinding(VisibilityProperty, binding);
+        }
+        void updateBindings()
+        {
+            updateRenderTransformBinding(null, null);
+            updateVisibilityBinding(null, null);
+
+            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+
+            this.BindBackgroundColor();
+            ViewModel?.Load();
+        }
+
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
+        {
+            if (a.NewValue != _oldViewModel)
+            {
+                _oldViewModel?.UnLoad();
+                updateBindings();
+                _oldViewModel = ViewModel;
+            }
+        }
+
         private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuFlyoutItem item)) return;
@@ -654,14 +710,12 @@ namespace Dash
         public void OnSelected()
         {
             SetSelectionBorder(true);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.SelectedCollection = true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
             SetSelectionBorder(false);
-            this.GetAncestorsOfType<CollectionView>().ToList().ForEach(p => p.SelectedCollection = false);
             DocumentDeselected?.Invoke(this);
         }
 
@@ -686,8 +740,8 @@ namespace Dash
                 FocusedDocument = this;
             }
 
-            if (!(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
-                .Contains(this))
+            var focused = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (focused == null || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
                 Focus(FocusState.Programmatic);
             }
@@ -705,7 +759,8 @@ namespace Dash
             if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
-                SelectionManager.Select(this, this.IsShiftPressed());
+                if (!MainPage.Instance.IsRightBtnPressed())
+                    SelectionManager.Select(this, this.IsShiftPressed());
 
                 if (SelectionManager.GetSelectedDocs().Count > 1)
                 {
