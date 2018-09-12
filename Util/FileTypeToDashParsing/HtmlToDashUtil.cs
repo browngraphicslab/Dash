@@ -88,8 +88,7 @@ namespace Dash
                 (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
             {
                 htmlNote = new HtmlNote(html, titlesUrl, where).Document;
-            }
-            else
+            } else
             {
                 htmlNote = await CreateRtfNote(where, titlesUrl, html);
             }
@@ -156,7 +155,7 @@ namespace Dash
             webName = new CultureInfo("en-US").TextInfo.ToTitleCase(webName.Replace('_', ' ').Replace('-', ' '));
 
             string pageTitle = uriParts[uriParts.Count - 1];
-            
+
             // convert symbols back to correct chars
             pageTitle = Uri.UnescapeDataString(pageTitle);
 
@@ -170,22 +169,22 @@ namespace Dash
             pageTitle = isId ? uriParts[uriParts.Count - 2] : pageTitle;
             pageTitle = pageTitle.Contains(".html") || pageTitle.Contains(".aspx") ? pageTitle.Substring(0, pageTitle.Length - 5) : pageTitle;
             pageTitle = pageTitle.Contains(".htm") || pageTitle.Contains(".asp") ? pageTitle.Substring(0, pageTitle.Length - 4) : pageTitle;
-            
+
             // dashes are used in urls as spaces
             pageTitle = pageTitle.Replace('_', ' ').Replace('-', ' ').Replace('.', ' ');
-            
+
             // if first word is basically all numbers, its id, so delete
             string firstTitleWord = pageTitle.Split(' ').First();
 
             bool status = firstTitleWord.Count(char.IsDigit) > firstTitleWord.Length / 2 && pageTitle.Length > firstTitleWord.Length;
             pageTitle = status ? pageTitle.Substring(firstTitleWord.Length + 1) : pageTitle;
-            
+
             // if last word is basically all numbers, its id, so delete
             string lastTitleWord = pageTitle.Split(' ').Last();
 
             status = lastTitleWord.Count(char.IsDigit) > lastTitleWord.Length / 2 && pageTitle.Length > lastTitleWord.Length;
             pageTitle = status ?
-            
+
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
             pageTitle = char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
 
@@ -210,10 +209,10 @@ namespace Dash
                 return new HtmlNote(html, title, where: where).Document;
 
             string richtext = await dataPackageView.GetRtfAsync();
-            var rtfNote = new RichTextNote(richtext, where, new Size(300, 300)).Document;
+            var rtfNote = new RichTextNote(richtext, where, new Size(double.NaN, double.NaN)).Document;
             var text = rtfNote.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
             if (!string.IsNullOrEmpty(title))
-                rtfNote.GetDataDocument().SetTitle(title+": " + text.Split('\v').FirstOrDefault());
+                rtfNote.GetDataDocument().SetTitle(title + ": " + text.Split('\v').FirstOrDefault());
 
             return rtfNote;
         }
