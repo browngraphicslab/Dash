@@ -33,18 +33,15 @@ namespace Dash
             var text = "";
             if (!string.IsNullOrEmpty(titlesUrl) || uri?.StartsWith("HTML") == true)
             {
-                //try to get website and article title
-                string addition = "<br><br><br><div> Website from <a href = \"" + uri + "\" >" + titlesUrl + " </a> </div>";
-
                 //update html length in intro - the way that word reads HTML is kinda funny
                 //it uses numbers in heading that say when html starts and ends, so in order to edit html, 
                 //we must change these numbers
                 string endingInfo = introParts.ElementAt(2);
-                string endingNum = (Convert.ToInt32(endingInfo.Substring(8)) + addition.Length).ToString().PadLeft(10, '0');
+                string endingNum = (Convert.ToInt32(endingInfo.Substring(8))).ToString().PadLeft(10, '0');
                 introParts[2] = endingInfo.Substring(0, 8) + endingNum;
 
                 string endingInfo2 = introParts.ElementAt(4);
-                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12)) + addition.Length).ToString().PadLeft(10, '0');
+                string endingNum2 = (Convert.ToInt32(endingInfo2.Substring(12))).ToString().PadLeft(10, '0');
                 introParts[4] = endingInfo2.Substring(0, 12) + endingNum2;
 
                 string newHtmlStart = string.Join("\r\n", introParts) + "\r\n";
@@ -56,7 +53,7 @@ namespace Dash
                 text = ExtractText(mainHtml);
 
                 //combine all parts
-                html = newHtmlStart + mainHtml + addition + htmlClose;
+                html = newHtmlStart + mainHtml + htmlClose;
             }
 
             //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements

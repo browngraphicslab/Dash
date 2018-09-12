@@ -645,8 +645,8 @@ namespace Dash
                 FocusedDocument = this;
             }
 
-            if (FocusManager.GetFocusedElement() == null || !(FocusManager.GetFocusedElement() as FrameworkElement).GetAncestorsOfType<DocumentView>()
-                .Contains(this))
+            var focused = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (focused == null || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
                 Focus(FocusState.Programmatic);
             }
