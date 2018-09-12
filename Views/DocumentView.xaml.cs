@@ -36,11 +36,12 @@ namespace Dash
     {
         private DocumentController _templateEditor;
         private bool               _isQuickEntryOpen;
-        private readonly Flyout    _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
+        private readonly Flyout    _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel  _oldViewModel = null;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
+        
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
         public DocumentViewModel ViewModel
@@ -127,7 +128,7 @@ namespace Dash
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
-            
+
             void updateBindings()
             {
 
@@ -205,7 +206,8 @@ namespace Dash
 
                     ToggleQuickEntry();
                     args.Handled = true;
-                } else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                }
+                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
                 {
                     if (xKeyBox.FocusState != FocusState.Unfocused)
                     {
@@ -297,7 +299,8 @@ namespace Dash
                 if (xKeyBox.Text.Length <= 2 && !(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v.")))
                 {
                     e.Cancel = true;
-                } else
+                }
+                else
                 {
                     if (string.IsNullOrEmpty(e.NewText))
                     {
@@ -306,7 +309,8 @@ namespace Dash
                         xKeyBox.Focus(FocusState.Keyboard);
                     }
                 }
-            } else
+            }
+            else
             {
                 if (!(e.NewText.StartsWith("d.") || e.NewText.StartsWith("v."))) e.Cancel = true;
             }
@@ -341,7 +345,8 @@ namespace Dash
                 ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                 //creates a doc controller for the image(s)
                 Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-            } else
+            }
+            else
             {
                 _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
                 ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
@@ -453,7 +458,8 @@ namespace Dash
             {
 
                 useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
-            } else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            }
+            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
             {
                 useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
             }
@@ -468,7 +474,8 @@ namespace Dash
                 diffY = proportional
                     ? aspect * diffX
                     : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
-            } else
+            }
+            else
             {
                 diffY = cursorYDirection * delta.Y;
                 diffX = proportional
@@ -563,7 +570,8 @@ namespace Dash
                 //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
                 //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
                 this.ViewModel.DocumentController.SetHidden(true);
-            } else if (ParentCollection != null)
+            }
+            else if (ParentCollection != null)
             {
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
@@ -896,7 +904,8 @@ namespace Dash
                         fields.Insert(0, newFieldDoc);
                     else fields.Add(newFieldDoc);
                     activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                } else
+                }
+                else
                 {
                     var listCtrl =
                         activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
@@ -904,7 +913,8 @@ namespace Dash
                         listCtrl.Insert(0, newFieldDoc);
                     else listCtrl.Add(newFieldDoc);
                 }
-            } else
+            }
+            else
             {
                 var curLayout = activeLayout;
                 if (ViewModel.DocumentController?.GetActiveLayout() != null
@@ -914,7 +924,8 @@ namespace Dash
                     curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
                     curLayout.SetWidth(double.NaN);
                     curLayout.SetHeight(double.NaN);
-                } else // need to create a stackPanel activeLayout and add the document to it
+                }
+                else // need to create a stackPanel activeLayout and add the document to it
                 {
                     curLayout =
                         activeLayout
@@ -993,7 +1004,8 @@ namespace Dash
             if (_flyout.IsInVisualTree())
             {
                 _flyout.Hide();
-            } else
+            }
+            else
             {
                 _flyout.ShowAt(this);
             }
@@ -1037,7 +1049,8 @@ namespace Dash
                 {
                     xKeyValueBorder.Width = 0;
                     Focus(FocusState.Programmatic);
-                } else
+                }
+                else
                 {
                     xKeyBox.Focus(FocusState.Programmatic);
                 }
@@ -1100,7 +1113,8 @@ namespace Dash
                 xValueBox.Text = "=" + xValueBox.Text;
                 xValueBox.SelectionStart = 1;
                 xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            } else
+            }
+            else
             {
                 xValueBox.SelectAll();
             }
@@ -1112,7 +1126,8 @@ namespace Dash
             {
                 xValueBox.SelectionStart = 1;
                 xValueBox.SelectionLength = xValueBox.Text.Length - 1;
-            } else
+            }
+            else
             {
                 xValueBox.SelectAll();
             }
