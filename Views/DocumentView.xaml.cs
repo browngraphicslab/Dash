@@ -223,7 +223,12 @@ namespace Dash
             };
 
             ManipulationMode = ManipulationModes.All;
-            ManipulationStarted += (s, e) => SelectionManager.InitiateDragDrop(this, null, e);
+            ManipulationStarted += (s, e) =>
+            {
+                var parents = this.GetAncestorsOfType<DocumentView>().Count();
+                if (parents < 2 || SelectionManager.GetSelectedDocs().Contains(this))
+                    SelectionManager.InitiateDragDrop(this, null, e);
+            };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped += (s, e) => e.Handled = TappedHandler(e.Handled);
