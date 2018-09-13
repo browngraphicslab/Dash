@@ -359,18 +359,17 @@ namespace Dash
 
                     if (regionDoc == null)
                         continue;
-
-                    var allLinks = regionDoc.GetDataDocument().GetLinks(null);
-
+                    
                     //bool for checking whether child is currently in view of scrollviewer
                     var inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-                    foreach (var link in allLinks)
+                    foreach (var link in regionDoc.GetDataDocument().GetLinks(null))
                     {
-                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
+                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? 
+                                        !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)      is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
                     }
                 }
             }

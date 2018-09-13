@@ -1023,7 +1023,7 @@ namespace Dash
 
         public bool IsTopLevel()
         {
-            return this.GetFirstAncestorOfType<SplitFrame>().DataContext == DataContext;
+            return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)

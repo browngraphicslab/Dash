@@ -1121,7 +1121,11 @@ namespace Dash
                 docCopy.SetHeight(300);
                 docCopy.SetFitToParent(true);
             }
+            var origWidth = doc.GetWidth();
+            var origHeight = doc.GetHeight();
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth/origHeight : 1;
             docCopy.SetWidth(size?.X ?? 150);
+            docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
