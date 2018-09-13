@@ -838,6 +838,7 @@ namespace Dash
                     doc.KeyValueViewDocument();
         }
 
+
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -1257,11 +1258,6 @@ namespace Dash
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
         }
 
-        public void SetActivationMode(bool onoff)
-        {
-            this.xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         public void RemoveLinkBorderColor()
         {
             MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
@@ -1272,9 +1268,5 @@ namespace Dash
             //Debug.Write("dispose DocumentView");
         }
 
-        private void xActivationMode_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            SetActivationMode(this.xActivationMode.Visibility == Visibility.Collapsed);
-        }
     }
 }

@@ -42,7 +42,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Point", "45C9F1AB-1E61-453E-B3DB-A17A81A2C428");
+        private static readonly KeyController TypeKey = new KeyController("PointType", "45C9F1AB-1E61-453E-B3DB-A17A81A2C428");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {

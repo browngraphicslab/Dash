@@ -173,7 +173,6 @@
                 <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
                 <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
                 <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-                <Ellipse x:Name="xActivationMode" HorizontalAlignment="Right" VerticalAlignment="Top" Tapped="xActivationMode_Tapped" Visibility="Collapsed" Margin="0 -40 -40 0" Width="40" Height="40" Fill="Green" />
             </Grid>
         </Border>
 

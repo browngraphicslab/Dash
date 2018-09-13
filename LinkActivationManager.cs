@@ -27,14 +27,13 @@ namespace Dash
 
 		private static void ActivateDocHelper(DocumentView view, bool shouldUndo)
 		{
-			if (IsActivated(view)) return;
+            if (!IsActivated(view))
+            {
+                ActivatedDocs.Add(view);
 
-			ActivatedDocs.Add(view);
-            view.SetActivationMode(true);
-			//add activation border 
-			///view.SetLinkBorderColor();
-
-			if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => ActivateDocHelper(view, false), () => DeactivateDocHelper(view, false)));
+                if (shouldUndo)
+                    UndoManager.EventOccured(new UndoCommand(() => ActivateDocHelper(view, false), () => DeactivateDocHelper(view, false)));
+            }
 		}
 
 		public static void DeactivateDoc(DocumentView view)
@@ -44,13 +43,12 @@ namespace Dash
 
 		public static void DeactivateDocHelper(DocumentView view, bool shouldUndo)
 		{
-			if (!IsActivated(view)) return;
-
-			ActivatedDocs.Remove(view);
-			//remove activation border 
-			///view.RemoveLinkBorderColor();
-            view.SetActivationMode(false);
-            if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => DeactivateDocHelper(view, false), () => ActivateDocHelper(view, false)));
+            if (IsActivated(view))
+            {
+                ActivatedDocs.Remove(view);
+                if (shouldUndo)
+                    UndoManager.EventOccured(new UndoCommand(() => DeactivateDocHelper(view, false), () => ActivateDocHelper(view, false)));
+            }
 		}
 
 		public static bool IsActivated(DocumentView view)

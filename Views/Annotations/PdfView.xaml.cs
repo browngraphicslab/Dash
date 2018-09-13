@@ -15,6 +15,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -1328,6 +1329,19 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
+        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
+        }
+
+        public void SetActivationMode(bool onoff)
+        {
+            xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
+            if (onoff)
+                LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+            else
+                LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+        }
     }
 }
 
