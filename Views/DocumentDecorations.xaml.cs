@@ -20,6 +20,7 @@ using DashShared;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.UI.Xaml.Documents;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -428,6 +429,25 @@ namespace Dash
                 AddTag(name, TagMap[name]);
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
+
+
+            var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
+            if (!string.IsNullOrEmpty(htmlAddress))
+            {// add a hyperlink that points to the source webpage.
+
+                xURISource.Text = "From website";
+                try
+                {
+                    var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
+                    hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
+
+                    xURISource.Inlines.Add(hyperlink);
+                } catch (Exception)
+                {
+
+                }
+                xURISource.Visibility = Visibility.Visible;
+            } else xURISource.Visibility = Visibility.Collapsed;
         }
 
         private Dictionary<string, List<DocumentController>> UpdateTags()
