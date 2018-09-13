@@ -163,6 +163,9 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\XOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
     <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
