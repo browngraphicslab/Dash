@@ -575,20 +575,20 @@ namespace Dash
                     align = ParagraphAlignment.Left;
                 }
             }
-            if (hashcount > 0)
+            if (hashcount > 0 || extracount > 0)
             {
                 xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, xRichEditBox.Document.Selection.StartPosition + hashcount + extracount);
                 if (xRichEditBox.Document.Selection.StartPosition == 0)
                     CollectionFreeformBase.PreviewFormatString = xRichEditBox.Document.Selection.Text;
                 xRichEditBox.Document.Selection.Text = "";
                 xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, s2);
-                xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                if (hashcount > 0)
+                    xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 xRichEditBox.Document.Selection.ParagraphFormat.Alignment = align;
                 xRichEditBox.Document.Selection.CharacterFormat.Size = fsize + hashcount * 5;
             }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-            xRichEditBox.Document.Selection.ParagraphFormat.Alignment = origAlign;
             xRichEditBox.Document.Selection.CharacterFormat.Size = fsize;
         }
 
