@@ -121,6 +121,11 @@ namespace Dash
 
                 if (_processManipulation)
                 {
+                    //if control is pressed, zoom content instead
+                   // if (_freeformView.IsCtrlPressed())
+                   // {
+                   //     PanContent(delta.X, delta.Y);
+                  //  }
                     if (!IsScaleDiscrete)
                         ElementScale *= e.Delta.Scale;
                     if (!ClampScale(e.Delta.Scale))
@@ -132,7 +137,9 @@ namespace Dash
                 e.Handled = true;
             }
         }
+
         
+
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;

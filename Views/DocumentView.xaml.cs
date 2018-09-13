@@ -38,6 +38,7 @@ namespace Dash
         private bool               _isQuickEntryOpen;
         private readonly Flyout    _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel  _oldViewModel = null;
+        private Point _pointerPoint = new Point(0, 0);
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
@@ -163,6 +164,8 @@ namespace Dash
                 //FadeIn.Begin();
 
                 SizeChanged += sizeChangedHandler;
+                PointerWheelChanged += wheelChangedHandler;
+
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
@@ -181,6 +184,8 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
+                //store this point to calculate pointer movement for content panning
+                _pointerPoint = e.GetCurrentPoint(this).Position;
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -265,6 +270,30 @@ namespace Dash
             ToFront();
         }
 
+
+
+        void wheelChangedHandler(object sender, PointerRoutedEventArgs e)
+        {
+            //if control is pressed, zoom content of document
+            /*
+            if (this.IsCtrlPressed())
+            {
+                //set render scale transform of content to zoom based on wheel changed value
+                var wheelValue = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
+                //(this.RenderTransform as CompositeTransform).ScaleX += wheelValue;
+                //(this.RenderTransform as CompositeTransform).ScaleY += wheelValue;
+                ViewModel.Content.RenderTransform = new CompositeTransform();
+
+                (ViewModel.Content.RenderTransform as CompositeTransform).ScaleX += (wheelValue) / 100;
+                (ViewModel.Content.RenderTransform as CompositeTransform).ScaleY += (wheelValue) / 100;
+
+                e.Handled = true;
+            }
+            */
+        }
+
+        
+
         void updateRenderTransformBinding(object sender, DependencyProperty dp)
         {
             var doc = ViewModel?.LayoutDocument;
@@ -309,6 +338,7 @@ namespace Dash
             this.BindBackgroundColor();
             ViewModel?.Load();
         }
+
 
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
         {
@@ -1275,6 +1305,32 @@ namespace Dash
         private void xActivationMode_Tapped(object sender, TappedRoutedEventArgs e)
         {
             SetActivationMode(this.xActivationMode.Visibility == Visibility.Collapsed);
+        }
+
+        /// <summary>
+        /// Pans content of a document view
+        /// </summary>
+        private void PanContent(double deltaX, double deltaY)
+        {
+            if (xContentScrollViewer.ChangeView(xContentScrollViewer.HorizontalOffset + deltaX,
+                xContentScrollViewer.VerticalOffset - deltaY, null))
+            {
+                _pointerPoint = new Point(_pointerPoint.X + deltaX, _pointerPoint.Y + deltaY);
+            }
+        }
+
+        //checks if we should be panning content
+        private void LayoutRoot_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            //if ctrl is pressed and either or both of left/right btns, we should pan content
+            if (this.IsCtrlPressed() && (this.IsLeftBtnPressed() || this.IsRightBtnPressed()))
+            {
+                double deltaX = _pointerPoint.X - e.GetCurrentPoint(this).Position.X;
+                double deltaY = _pointerPoint.Y - e.GetCurrentPoint(this).Position.Y;
+                PanContent(deltaX, deltaY);
+            }
+
+            //TODO:CHECK HORIZONTAL/VERTICAL OFFSET-> SOMEHOW THEY ARE BEING SET TO 0??
         }
     }
 }

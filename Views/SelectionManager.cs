@@ -231,6 +231,7 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
+
             _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
@@ -264,8 +265,7 @@ namespace Dash
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
-
-           
+       
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
             var rawOffsets = _dragViews.Select(args.GetPosition);

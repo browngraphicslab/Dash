@@ -1075,7 +1075,7 @@ namespace Dash
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                 }
-            }
+           }
             else
             {
                 var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
