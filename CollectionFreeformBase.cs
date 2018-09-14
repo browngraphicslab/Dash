@@ -124,7 +124,8 @@ namespace Dash
             {
                 var storedPath = settingsView.CustomImagePath;
                 if (storedPath != null) _background = storedPath;
-            } else
+            }
+            else
             {
                 _background = settingsView.EnumToPathDict[settingsView.ImageState];
             }
@@ -391,7 +392,9 @@ namespace Dash
         /// </summary>
         public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
         private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private static object _backgroundDot = "ms-appx:///Assets/transparent_dot_tilable.png";
         private CanvasBitmap _bgImage;
+        private CanvasBitmap _bgImageDot;
 
         /// <summary>
         /// Collection background tiling image
@@ -469,6 +472,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, new Uri(s));
             else
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, (IRandomAccessStream)_background);
+            _bgImageDot = await CanvasBitmap.LoadAsync(canvas, new Uri((string)_backgroundDot));
             // NOTE *** At this point, _backgroundTask will be marked completed. This has bearing on the IsLoadInProgress bool and how that dictates the rendered drawing (see immediately below).
             // Indicates that the contents of the CanvasControl need to be redrawn. Calling Invalidate results in the Draw event being raised shortly afterward (see immediately below).
             canvas.Invalidate();
@@ -483,8 +487,11 @@ namespace Dash
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
             } else
             {
+                var ff = this as CollectionFreeformView;
+                var mat = ff?._itemsPanelCanvas.RenderTransform as MatrixTransform;
+                var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = _bgImage;
+                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
@@ -570,7 +577,7 @@ namespace Dash
 
                     var matrix = composite.Value;
 
-                    var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    var aliasSafeScale = matrix.M11;// clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
                     _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
                         (float)matrix.M12,
                         (float)matrix.M21,
@@ -1136,7 +1143,8 @@ namespace Dash
                 Width = 200,
                 Height = 50,
                 Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Visibility.Collapsed
+                Visibility = Visibility.Collapsed,
+                ManipulationMode = ManipulationModes.All
             };
             previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
