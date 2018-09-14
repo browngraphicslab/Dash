@@ -27,6 +27,7 @@ using Task = System.Threading.Tasks.Task;
 using Window = Windows.UI.Xaml.Window;
 using DashShared;
 using System.Threading;
+using Windows.Devices.Input;
 using Windows.Storage.Streams;
 using Windows.Storage;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
@@ -82,6 +83,9 @@ namespace Dash
         public abstract Rectangle GetDropIndicationRectangle();
 
         public abstract Canvas GetInkHostCanvas();
+
+        //records number of fingers on screen for touch interactions
+        public static int num_fingers;
 
         protected CollectionFreeformBase()
         {
@@ -678,6 +682,10 @@ namespace Dash
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null)
+            {
+                num_fingers--;
+            }
             if (_marquee != null)
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
@@ -691,7 +699,7 @@ namespace Dash
 
             SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
-            if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
+            //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
         /// <summary>
@@ -756,6 +764,10 @@ namespace Dash
 		/// <param name="args"></param>
 		protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
 		{
+		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+		    {
+		        num_fingers++;
+		    }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
 			{

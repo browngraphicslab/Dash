@@ -62,7 +62,7 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
-            element.ManipulationCompleted += (sender, args) => args.Handled = true;
+            element.ManipulationCompleted += (sender, args) => args.Handled = true;  
         }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -113,7 +113,8 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
+                (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.num_fingers == 4))
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -130,6 +131,9 @@ namespace Dash
                     }
                 }
                 e.Handled = true;
+            } else if (e.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                //handle touch interactions with just one finger - equivalent to drag without ctrl
             }
         }
         
