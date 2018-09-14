@@ -378,25 +378,27 @@ namespace Dash
         private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (IsCropping)
+            {
                 switch (e.Key)
                 {
-                    case VirtualKey.Enter:
-                        // crop the image!
-                        IsCropping = false;
-                        xGrid.Children.Remove(_cropControl);
-                        await Crop(_cropControl.GetBounds());
-                        _docview.ViewModel.DecorationState = false;
+                case VirtualKey.Enter:
+                    // crop the image!
+                    IsCropping = false;
+                    xGrid.Children.Remove(_cropControl);
+                    await Crop(_cropControl.GetBounds());
+                    _docview.ViewModel.DecorationState = false;
 
-                        break;
-                    case VirtualKey.Left:
-                    case VirtualKey.Right:
-                    case VirtualKey.Up:
-                    case VirtualKey.Down:
-                        // moves the bounding box in the key's direction
-                        _cropControl.OnKeyDown(e);
-                        break;
+                    break;
+                case VirtualKey.Left:
+                case VirtualKey.Right:
+                case VirtualKey.Up:
+                case VirtualKey.Down:
+                    // moves the bounding box in the key's direction
+                    _cropControl.OnKeyDown(e);
+                    break;
                 }
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
 
         // removes the cropping controls and allows image to be moved and used when focus is lost
