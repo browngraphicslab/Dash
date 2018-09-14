@@ -1006,18 +1006,18 @@ namespace Dash
 			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
 				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
 		}
-        
+        static public string PreviewFormatString = "#";
 		public void RenderPreviewTextbox(Point where)
         {
-            previewTextBuffer = "";
+            previewTextBuffer = PreviewFormatString;
             if (previewTextbox != null)
             {
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
                 previewTextbox.Visibility = Visibility.Visible;
                 AddHandler(KeyDownEvent, previewTextHandler, false);
-                previewTextbox.Text = "";
-                previewTextbox.SelectAll();
+                previewTextbox.Text = PreviewFormatString;
+                previewTextbox.SelectionStart = PreviewFormatString.Length;
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
                 previewTextbox.LostFocus += PreviewTextbox_LostFocus;
                 previewTextbox.Focus(FocusState.Pointer);
@@ -1110,6 +1110,11 @@ namespace Dash
             }
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
+            if (e.Key == VirtualKey.Back)
+            {
+                previewTextBuffer = previewTextBuffer == PreviewFormatString ? "" : previewTextBuffer;
+                previewTextbox.Text = previewTextBuffer;
+            }
             if (string.IsNullOrEmpty(text))
                 return;
             if (previewTextbox.Visibility != Visibility.Collapsed)
@@ -1405,6 +1410,7 @@ namespace Dash
             previewTextbox.Text = string.Empty;
             richEditBox.Document.Selection.SetRange(0, 0);
             richEditBox.Document.SetText(TextSetOptions.None, text);
+            richEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
 

@@ -13,8 +13,8 @@ namespace Dash
 {
     public class ManipulationControlHelper
     {
-        DocumentView       _manipulationDocumentTarget = null;
-        int                _numMovements = 0;
+        private DocumentView _manipulationDocumentTarget = null;
+        private int          _numMovements = 0;
 
         public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)
         {
@@ -27,7 +27,12 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e?.GetCurrentPoint(_manipulationDocumentTarget), null);
+                var parents = _manipulationDocumentTarget.GetAncestorsOfType<DocumentView>().ToList();
+                if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(_manipulationDocumentTarget))
+                    SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e?.GetCurrentPoint(_manipulationDocumentTarget), null);
+                else if (parents.LastOrDefault()?.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.DocumentType) == true &&
+                         parents.Last().GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView) // bcz: Ugh.. this is ugly.
+                    SelectionManager.InitiateDragDrop(parents[parents.Count - 2], e?.GetCurrentPoint(parents[parents.Count-2]), null);
             }
         }
     }

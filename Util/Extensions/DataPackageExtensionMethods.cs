@@ -84,6 +84,10 @@ namespace Dash
             {
                 DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where);
                 if (documentController != null) dropDocs.Add(documentController);
+                else if(transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
+                {
+                    dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+                }
             }
 
             // HTML

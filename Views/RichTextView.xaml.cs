@@ -60,6 +60,7 @@ namespace Dash
         public RichTextView()
         {
             InitializeComponent();
+
             Loaded += OnLoaded;
             Unloaded += UnLoaded;
 
@@ -462,6 +463,11 @@ namespace Dash
                 getDataDoc().CaptureNeighboringContext();
             }
 
+            if (e.Key.Equals(VirtualKey.Enter))
+            {
+                processMarkdown();
+            }
+
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
@@ -528,6 +534,62 @@ namespace Dash
             }
             else
                 ;
+        }
+
+        void processMarkdown()
+        {
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            var fsize = xRichEditBox.Document.Selection.CharacterFormat.Size;
+            var origAlign = xRichEditBox.Document.Selection.ParagraphFormat.Alignment;
+            var align = ParagraphAlignment.Left;
+            var hashcount = 0;
+            var extracount = 0;
+
+            for (int i = xRichEditBox.Document.Selection.StartPosition - 2; i >= 0; i--)
+            {
+                xRichEditBox.Document.Selection.SetRange(i, i + 1);
+                string text = xRichEditBox.Document.Selection.Text;
+                if (text == "}")
+                {
+                    align = ParagraphAlignment.Right;
+                    extracount++;
+                } else if (text == "^")
+                {
+                    align = ParagraphAlignment.Center;
+                    extracount++;
+                } else if (text == "{")
+                {
+                    align = ParagraphAlignment.Left;
+                    extracount++;
+                } else if (text == "#")
+                {
+                    hashcount++;
+                } else if (text == "\r")
+                {
+                    xRichEditBox.Document.Selection.SetRange(i + 1, i + 2);
+                    break;
+                } else
+                {
+                    extracount = hashcount = 0;
+                    align = ParagraphAlignment.Left;
+                }
+            }
+            if (hashcount > 0 || extracount > 0)
+            {
+                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, xRichEditBox.Document.Selection.StartPosition + hashcount + extracount);
+                if (xRichEditBox.Document.Selection.StartPosition == 0)
+                    CollectionFreeformBase.PreviewFormatString = xRichEditBox.Document.Selection.Text;
+                xRichEditBox.Document.Selection.Text = "";
+                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, s2);
+                if (hashcount > 0)
+                    xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = align;
+                xRichEditBox.Document.Selection.CharacterFormat.Size = fsize + hashcount * 5;
+            }
+            xRichEditBox.Document.Selection.SetRange(s1, s2);
+            xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = fsize;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)

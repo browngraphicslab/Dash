@@ -24,8 +24,9 @@ namespace Dash
             string beforeHtml = html.Substring(0, htmlStartIndex);
 
             var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-            string uri = introParts.LastOrDefault()?.Substring(10);
-
+            var uri = packageView.AvailableFormats.Contains("UniformResourceLocator") ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
+            uri = uri ?? introParts.LastOrDefault()?.Substring(10);
+            
             if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
                 uri = introParts[introParts.Count - 2]?.Substring(10);
             string titlesUrl = GetTitlesUrl(uri);
@@ -77,6 +78,9 @@ namespace Dash
                 string src = srcMatch.Substring(6, srcMatch.Length - 6);
                 var imgNote = new ImageNote(new Uri(src), where, new Size(), src);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "HTML", true);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
                 return imgNote.Document;
             }
 

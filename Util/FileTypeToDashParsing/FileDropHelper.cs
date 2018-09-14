@@ -90,8 +90,11 @@ namespace Dash
                     documentController.SetTitle(files[0].Name);
                     documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.GetPositionField().Data = where;
+                    var uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
                     documentController.GetDataDocument()?
-                        .SetField<TextController>(KeyStore.WebContextKey, fileType.FileUri?.AbsoluteUri, true);
+                        .SetField<TextController>(KeyStore.SourceUriKey, uri, true);
+                    documentController.GetDataDocument()?
+                        .SetField<TextController>(KeyStore.WebContextKey, uri, true);
                     return documentController;
                 }
             }
