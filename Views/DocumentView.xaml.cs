@@ -116,6 +116,17 @@ namespace Dash
                     FallbackValue = false
                 };
             this.AddFieldBinding(VisibilityProperty, binding);
+
+            var binding2 = doc == null ? null : new FieldBinding<BoolController>
+            {
+                Converter = new BoolToVisibilityConverter(),
+                Document = doc,
+                Key = KeyStore.IsAdornmentKey,
+                Mode = BindingMode.OneWay,
+                Tag = "IsAdornment binding in DocumentView",
+                FallbackValue = Visibility.Collapsed
+            };
+            xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
         }
 
         // == CONSTRUCTORs ==
@@ -132,7 +143,6 @@ namespace Dash
 
             void updateBindings()
             {
-
                 _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
                 UpdateRenderTransformBinding();
@@ -717,21 +727,12 @@ namespace Dash
 
         public void OnSelected()
         {
-            SetSelectionBorder(true);
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
-            SetSelectionBorder(false);
             DocumentDeselected?.Invoke(this);
-        }
-
-        private void SetSelectionBorder(bool selected)
-        {
-            xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
-            xTargetBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
 
         #endregion
@@ -918,7 +919,7 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            if (this.ViewModel.IsAdornmentGroup)
+            if (ViewModel.IsAdornmentGroup)
                 return;
 
             var dragModels = e.DataView.GetDragModels();
@@ -1276,5 +1277,20 @@ namespace Dash
             //Debug.Write("dispose DocumentView");
         }
 
+        private void xBackgroundPin_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+        private void xBackgroundPin_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void xBackgroundPin_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ViewModel.IsNotBackgroundPinned = !ViewModel.IsNotBackgroundPinned;
+            xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE842 : 0xE77A);
+            e.Handled = true;
+        }
     }
 }

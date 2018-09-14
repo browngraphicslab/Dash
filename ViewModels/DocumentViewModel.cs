@@ -67,7 +67,13 @@ namespace Dash
         }
 
         private SolidColorBrush _searchHighlightBrush;
+        private bool _isNotBackgroundPinned = true;
 
+        public bool IsNotBackgroundPinned
+        {
+            get => _isNotBackgroundPinned;
+            set => SetProperty(ref _isNotBackgroundPinned, value);
+        }
         public bool IsAdornmentGroup
         {
             get => DocumentController.GetIsAdornment();
