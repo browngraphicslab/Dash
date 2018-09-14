@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using MyToolkit.Multimedia;
 
 namespace Dash
 {
@@ -71,9 +73,8 @@ namespace Dash
         ///     to have StorageItems, and the DragEventArgs should have been handled
         /// </summary>
         /// <param name="where"></param>
-        /// <param name="e"></param>
-        /// <param name="collectionViewModel"></param>
-        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
+        /// <param name="dataView"></param>
+        public static async Task<DocumentController> HandleDrop(DataPackageView dataView, Point where)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -86,7 +87,14 @@ namespace Dash
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
                 {
+                    documentController.SetTitle(files[0].Name);
+                    documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.GetPositionField().Data = where;
+                    var uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
+                    documentController.GetDataDocument()?
+                        .SetField<TextController>(KeyStore.SourceUriKey, uri, true);
+                    documentController.GetDataDocument()?
+                        .SetField<TextController>(KeyStore.WebContextKey, uri, true);
                     return documentController;
                 }
             }
@@ -94,18 +102,17 @@ namespace Dash
             // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
-                var CollectionNoteOffset = 250;
+                var CollectionNoteOffset = 260;
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                int xPos = 0, yPos = 0, count = 0;  
+                double xPos = 0, yPos = 0, count = 0;  
                 // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
-                    FileData fileType;
                     try
                     {
-                        fileType = await GetFileData(file, dataView);
+                        FileData fileType = await GetFileData(file, dataView);
                         var documentController = await ParseFileAsync(fileType, where, dataView);
                         if (documentController != null)
                         {
@@ -116,8 +123,9 @@ namespace Dash
                                 yPos += CollectionNoteOffset;
                                 xPos = 0;
                             }
-                            documentController.GetPositionField().Data = new Point(xPos, yPos); 
-                            xPos += CollectionNoteOffset;
+                            documentController.GetPositionField().Data = new Point(xPos, yPos);
+                            var docWidth = documentController.GetWidthField()?.Data + 10 ?? CollectionNoteOffset;
+                            xPos += double.IsNaN(docWidth) ? CollectionNoteOffset : docWidth;
                             count++;
                         }
                     }
@@ -158,8 +166,34 @@ namespace Dash
                     return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Web:
                     var link = await dataView.GetWebLinkAsync();
-                    return new HtmlNote(link.AbsoluteUri, where: where).Document;
-                case FileType.Pdf:
+
+					// if this is a YouTube link, drop the video instead
+	                if (link.Host == "www.youtube.com")
+	                {
+		                var query = HttpUtility.ParseQueryString(link.Query);
+		                var videoId = string.Empty;
+						// the video ID depends on if it's youtube or youtu.be
+		                videoId = query.AllKeys.Contains("v") ? query["v"] : link.Segments.Last();
+
+		                try
+		                {
+							// make the video box with the Uri set as the video's, and return it
+			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+			                var uri = url.Uri;
+			                return VideoToDashUtil.CreateVideoBoxFromUri(uri);
+		                }
+		                // if that returns an error somehow, just return the page instead
+		                catch (Exception)
+		                {
+			                return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						}
+	                }
+	                else
+					{
+						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+					}
+
+				case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Text:
                     return await new TextToDashUtil().ParseFileAsync(fileData, dataView);
@@ -178,7 +212,7 @@ namespace Dash
         private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
-            if (storageItem.FileType.EndsWith(".url"))
+            if (storageItem.FileType.EndsWith(".url") && dataView.Contains(StandardDataFormats.WebLink))
             {
                 var link = await dataView.GetWebLinkAsync();
                 // if the link does not have a filetype assume its a web link

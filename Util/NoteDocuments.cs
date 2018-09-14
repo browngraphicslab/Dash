@@ -34,7 +34,7 @@ namespace Dash
         /// <returns></returns>
         protected DocumentReferenceController getDataReference(DocumentController dataDoc)
         {
-            return new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey);
+            return new DocumentReferenceController(dataDoc, KeyStore.DataKey);
         }
 
         /// <summary>
@@ -44,8 +44,14 @@ namespace Dash
         /// <returns></returns>
         protected DocumentController makeDataDelegate(FieldControllerBase controller)
         {
-            var dataDocument = _prototype.MakeDelegate();
+            DocumentController dataDocument = _prototype.MakeDelegate();
+            
             dataDocument.SetField(KeyStore.DataKey, controller, true);
+            dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
+            dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
+            dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, dataDocument.DocumentType.Type, true);
+            dataDocument.SetField<TextController>(KeyStore.AuthorKey, "avd", true);
+            
             return dataDocument;
         }
 
@@ -61,9 +67,9 @@ namespace Dash
             if (!string.IsNullOrEmpty(title))
                 dataDocument.SetTitle(title);
             layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-            layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
+            layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
             // layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
-            layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
+            layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument, KeyStore.TitleKey), true);
             return layout;
         }
     }

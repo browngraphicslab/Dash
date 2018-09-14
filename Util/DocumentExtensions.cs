@@ -131,7 +131,7 @@ namespace Dash
         /// <summary>
         /// Creates an instance of a document's data and copies the documents view.
         /// </summary>
-        /// <param name="where"></param>
+        /// <param name="where"></param
         /// <returns></returns>
         public static DocumentController GetDataInstance(this DocumentController doc, Point? where = null)
         {
@@ -179,7 +179,7 @@ namespace Dash
             // Note: bindings might need to be changed to create copy-on-write
             foreach (var f in origDocContext.EnumDisplayableFields())
                 if ((mapping[origDocContext] as DocumentController).GetField(f.Key, true) == null)
-                    (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext.Id, f.Key, true), true);
+                    (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext, f.Key, true), true);
 
             return newDoc;
         }
@@ -203,7 +203,7 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetPosition(
-                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetActualSize()?.X ?? doc.GetActiveLayout().GetActualSize()?.X ?? 0) + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetActualSize()?.X ?? doc.GetActiveLayout()?.GetActualSize()?.X ?? 0) + 70, 
                         where?.Y ?? oldPosition.Data.Y));
             }
 
@@ -221,7 +221,7 @@ namespace Dash
             Debug.Assert(where != null);
             var previewDoc =
                 new PreviewDocument(
-                    new DocumentReferenceController(doc.Id, KeyStore.SelectedSchemaRow), where.Value);
+                    new DocumentReferenceController(doc, KeyStore.SelectedSchemaRow), where.Value);
             return new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.ActiveLayoutKey] = previewDoc.Document,
@@ -321,50 +321,61 @@ namespace Dash
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            var neighboringRaw = dataDocument.GetDereferencedField(KeyStore.WebContextKey, null);
+            string url = null;
+            var type = neighboringRaw?.TypeInfo.ToString();
+            if (type == "List")
             {
-                var context = doc.GetFirstContext();
-                if (context != null)
+                var neighboring = neighboringRaw as ListController<TextController>;
+                if (neighboring != null && neighboring.TypedData.Count > 0)
                 {
-                    MainPage.Instance.WebContext.SetUrl(context.Url);
+                    var context = doc.GetFirstContext();
                     MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                    url = context.Url;
                 }
+            } else if (type == "Text")
+            {
+                url = (neighboringRaw as TextController).Data;
             }
+
+            if (url != null)
+            {
+                MainPage.Instance.WebContext?.SetUrl(url);
+                
+            }
+
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField<DateTimeController>(KeyStore.ModifiedTimestampKey, DateTime.Now, true);
-            if (MainPage.Instance.WebContext == null)
-            {
-                return;
-            }
+            DocumentController dataDocument = doc.GetDataDocument();
+            dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
 
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
+            if (MainPage.Instance.WebContext == null) return;
 
-            if (neighboring == null)
-            {
-                neighboring = new ListController<TextController>();
-                dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
-            }
+            //var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 
-            var context = MainPage.Instance.WebContext.GetAsContext();
+            //if (neighboring == null)
+            //{
+            //    neighboring = new ListController<TextController>();
+            //    dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
+            //}
 
-            if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
-            {
-                var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
-                if (context.Equals(last))
-                {
-                    neighboring.Remove(neighboring.TypedData.Last());
-                }
-                neighboring.Add(new TextController(context.Serialize()));
-            }
-            else
-            {
-                neighboring.Add(new TextController(context.Serialize()));
-            }
+            //var context = MainPage.Instance.WebContext.GetAsContext();
+
+            //if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
+            //{
+            //    var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+            //    if (context.Equals(last))
+            //    {
+            //        neighboring.Remove(neighboring.TypedData.Last());
+            //    }
+            //    neighboring.Add(new TextController(context.Serialize()));
+            //}
+            //else
+            //{
+            //    neighboring.Add(new TextController(context.Serialize()));
+            //}
         }
 
 
@@ -556,18 +567,15 @@ namespace Dash
                 foreach (var r in refs)
                 {
                     var referenceDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
-                    if (referenceDoc?.DocumentId == oldToNewDoc.Key.Id) // if reference pointed to a doc that got copied
-                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value.Id);  // then update the reference to point to the new doc
+                    if (referenceDoc?.DocumentController == oldToNewDoc.Key) // if reference pointed to a doc that got copied
+                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value);  // then update the reference to point to the new doc
                 }
             }
             return copy;
         }
 
 
-        public static string GetDishName<T>(this T controller) where T : OperatorController
-        {
-            return DSL.GetFuncName(controller);
-        }
+        public static Op.Name GetDishName<T>(this T controller) where T : OperatorController => DSL.GetFuncName(controller);
 
         static DocumentController makeCopy(
                 this DocumentController doc, 

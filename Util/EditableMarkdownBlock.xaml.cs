@@ -162,11 +162,25 @@ namespace Dash
                 SetExpression(XMarkdownBox.Text);
                 e.Handled = true;
             }
+
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                var tab = XMarkdownBlock.IsTabStop;
+                XMarkdownBlock.IsTabStop = false;
+                XMarkdownBlock.IsEnabled = false;
+                XMarkdownBlock.IsEnabled = true;
+                XMarkdownBlock.IsTabStop = tab;
+            }
         }
 
         private async void XMarkdownBlock_LinkClicked(object sender, Microsoft.Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
         {
-            if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
+            var linkE = e.Link;
+            if (!linkE.Contains("http"))
+            {
+                linkE = "https://" + linkE;
+            }
+            if (Uri.TryCreate(linkE, UriKind.Absolute, out Uri link))
             {
                 await Launcher.LaunchUriAsync(link);
             }

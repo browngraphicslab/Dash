@@ -58,18 +58,13 @@ namespace Dash
         /// </summary>
         public static TControllerType GetController<TControllerType>(string controllerId) where TControllerType : IController<T>
         {
-            if (_controllers.ContainsKey(controllerId))
-            {
-                var controller = _controllers[controllerId];
-                if (controller is TControllerType)
-                {
-                    return controller as TControllerType;
-                }
-                //Debug.Assert(false,
-                    //"The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
-            }
+            if (!_controllers.ContainsKey(controllerId)) return null;
+
+            var controller = _controllers[controllerId];
+            return controller as TControllerType;
+            //Debug.Assert(false,
+            //"The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
             //Debug.Assert(false, "No controller exists with the passed in id");
-            return null;
         }
 
         /// <summary>
@@ -106,6 +101,13 @@ namespace Dash
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
 
+			/*
+			foreach (var controller in _controllers)
+	        {
+				Debug.WriteLine("CONTROLLERS: " + _controllers);
+		        Debug.WriteLine(controller);
+			}
+			*/
             Debug.Assert(controllerIds.All(_controllers.ContainsKey));
 
             // get any controllers which exist and are of type TControllerType

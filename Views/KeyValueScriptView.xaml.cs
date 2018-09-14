@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -75,7 +63,7 @@ namespace Dash
             {
                 UndoManager.StartBatch();
                 var field = DSL.InterpretUserInput(text,
-                    state: ScriptState.CreateStateWithThisDocument(
+                    scope: Scope.CreateStateWithThisDocument(
                         ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
@@ -92,37 +80,37 @@ namespace Dash
 
         async void UserControl_Drop(object sender, DragEventArgs e)
         {
-            if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                e.Handled = true;
-                var dragModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel);
-                if (dragModel.DraggedKey != null && dragModel.DraggedKey.Equals(ViewModel.Key) && dragModel.DraggedDocument.Equals(ViewModel.Reference.GetDocumentController(ViewModel.Context)))
-                {
-                    // don't allow droping a field on itself
-                    return;
-                }
-                var data = dragModel.DraggedKey != null ? dragModel.DraggedDocument.GetDereferencedField(dragModel.DraggedKey, null) : 
-                                         dragModel.DraggedDocument.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null);
-                if (data != null)
-                {
-                    var fieldData = ViewModel.Reference.DereferenceToRoot(ViewModel.Context);
-                    if (!fieldData.TypeInfo.Equals(data.TypeInfo))
-                    {
-                        var changeTypeDialog = new ContentDialog
-                        {
-                            Title = "Change field data type?",
-                            Content = "Assigning this data will change the data type of this field.",
-                            PrimaryButtonText = "OK",
-                            SecondaryButtonText = "Cancel"
-                        };
-                        var result = await changeTypeDialog.ShowAsync();
-                        if (result != ContentDialogResult.Primary)
-                            return;
-                    }
-                }
-                var dropDocument = dragModel.DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
-            }
+            //if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            //{
+            //    e.Handled = true;
+            //    var dragModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel);
+            //    if (dragModel.DraggedKey != null && dragModel.DraggedKey.Equals(ViewModel.Key) && dragModel.DraggedDocument.Equals(ViewModel.Reference.GetDocumentController(ViewModel.Context)))
+            //    {
+            //        // don't allow droping a field on itself
+            //        return;
+            //    }
+            //    var data = dragModel.DraggedKey != null ? dragModel.DraggedDocument.GetDereferencedField(dragModel.DraggedKey, null) : 
+            //                             dragModel.DraggedDocument.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null);
+            //    if (data != null)
+            //    {
+            //        var fieldData = ViewModel.Reference.DereferenceToRoot(ViewModel.Context);
+            //        if (!fieldData.TypeInfo.Equals(data.TypeInfo))
+            //        {
+            //            var changeTypeDialog = new ContentDialog
+            //            {
+            //                Title = "Change field data type?",
+            //                Content = "Assigning this data will change the data type of this field.",
+            //                PrimaryButtonText = "OK",
+            //                SecondaryButtonText = "Cancel"
+            //            };
+            //            var result = await changeTypeDialog.ShowAsync();
+            //            if (result != ContentDialogResult.Primary)
+            //                return;
+            //        }
+            //    }
+            //    var dropDocument = dragModel.DraggedDocument;
+            //    ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
+            //}
         }
 
         public void ExpandBox()
@@ -137,7 +125,7 @@ namespace Dash
         {
             xFormulaColumn.Width = new GridLength(0);
             xValueColumn.Width = new GridLength(1, GridUnitType.Star);
-            xBackground.Height = 60;
+            xBackground.Height = 50;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
             kvp?.Collapse_Value(this);
@@ -184,7 +172,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
-            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document.Id, _oldBinding.Key)).Document;
+            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);
         }

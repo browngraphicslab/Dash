@@ -1,59 +1,111 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
-        private string _opName;
-        private Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly List<ScriptExpression> _parameters;
+        private readonly ScriptExpression _funcName;
 
-        public FunctionExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public FunctionExpression(List<ScriptExpression> parameters, ScriptExpression func)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _funcName = func;
+            _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public FunctionExpression(Op.Name op, List<ScriptExpression> parameters)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            foreach (var parameter in _parameters)
+            _funcName = new VariableExpression(op.ToString());
+            _parameters = parameters;
+        }
+
+        public override FieldControllerBase Execute(Scope scope)
+        {
+            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
+            OperatorController op = null;
+            var opName = Op.Name.invalid;
+            try
             {
-                inputs.Add(parameter.Key, parameter.Value?.Execute(state));
+                op = _funcName.Execute(scope) as FunctionOperatorController;
             }
+            catch (ScriptExecutionException)
+            {
+                if (!(_funcName is VariableExpression variable))
+                {
+                    throw;
+                }
+
+                var variableName = variable.GetVariableName();
+                opName = Op.Parse(variableName);
+                if (opName == Op.Name.invalid)
+                {
+                    throw;
+                }
+            }
+
+            var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
 
             try
             {
-                var output = OperatorScript.Run(_opName, inputs, state);
+                scope = new ReturnScope();
+
+                var output = op != null ? OperatorScript.Run(op, inputs, scope) : OperatorScript.Run(opName, inputs, scope);
                 return output;
+            }
+            catch (ReturnException)
+            {
+                return scope.GetReturn;
+            }
+            catch (ScriptExecutionException)
+            {
+                throw;
             }
             catch (Exception e)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
+
+            return new TextController("");
         }
 
-        public string GetOperatorName()
+        //TDDO This should be fixed
+        public Op.Name GetOperatorName() => Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? "");
+
+
+        public List<ScriptExpression> GetFuncParams() => _parameters;
+
+        public override FieldControllerBase CreateReference(Scope scope)
         {
-            return _opName;
+            //TODO
+            throw new NotImplementedException();
+            //return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)),
+            //    Op.Parse(_funcName)); //recursive linq
         }
 
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? ""));
 
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
+        public override string ToString()
         {
-            return _parameters;
+            var concat = "";
+            foreach (var param in _parameters)
+            {
+                switch (param)
+                {
+                    case VariableExpression varExp:
+                        concat += varExp.GetVariableName() + " ";
+                        break;
+                    case LiteralExpression litExp:
+                        concat += litExp.GetField() + " ";
+                        break;
+                }
+            }
+
+            return concat;
         }
-
-
-        public override FieldControllerBase CreateReference(ScriptState state)
-        {
-            return OperatorScript.CreateDocumentForOperator(
-                _parameters.Select(
-                    kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key,
-                        kvp.Value.CreateReference(state))), _opName); //recursive linq
-        }
-
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
     }
 }
+

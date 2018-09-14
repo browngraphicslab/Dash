@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
+using Dash.Controllers;
 using DashShared;
 using Newtonsoft.Json;
 
@@ -18,6 +19,12 @@ namespace Dash
             [typeof(DocumentController)] = TypeInfo.Document,
             [typeof(KeyController)] = TypeInfo.Key,
             [typeof(OperatorController)] = TypeInfo.Operator,
+            [typeof(VideoController)] = TypeInfo.Video,
+            [typeof(AudioController)] = TypeInfo.Audio,
+            [typeof(BoolController)] = TypeInfo.Bool,
+            [typeof(ColorController)] = TypeInfo.Color,
+            [typeof(DateTimeController)] = TypeInfo.DateTime,
+            [typeof(DocumentReferenceController)] = TypeInfo.DocumentReference,
 
             [typeof(FieldControllerBase)] = TypeInfo.Any
         };
@@ -52,7 +59,7 @@ namespace Dash
                         //return new DocumentFieldModel(data.ToString());
                     case TypeInfo.DocumentReference:
                         DocumentFieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
-                        return new DocumentReferenceModel(docFieldRefence.DocumentId, docFieldRefence.FieldKey.Model.Id, false);
+                        return new DocumentReferenceModel(docFieldRefence.DocumentController.Id, docFieldRefence.FieldKey.Model.Id, false);
                     case TypeInfo.PointerReference:
                         throw new NotImplementedException();
                     case TypeInfo.Operator: //TODO What should this do?

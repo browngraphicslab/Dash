@@ -39,7 +39,6 @@ namespace Dash
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
         public CollectionFreeformBase FreeformView;
-        public InkController InkController;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetInkCanvas { get; set; }
@@ -51,7 +50,6 @@ namespace Dash
             TargetInkCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
-            InkController = view.InkController;
             LassoHelper = new LassoSelectHelper(FreeformView);
             InkRecognitionHelper = new InkRecognitionHelper(this);
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.Mode =
@@ -74,7 +72,7 @@ namespace Dash
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeContinued += StrokeInputOnStrokeContinued;
             TargetInkCanvas.RightTapped += TargetCanvasOnRightTapped;
-            InkController.InkUpdated += InkControllerOnInkUpdated;
+            FreeformView.ViewModel.InkController.FieldModelUpdated += InkControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
         }
 
@@ -160,8 +158,7 @@ namespace Dash
         /// </summary>
         public void UpdateInkController()
         {
-            InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes(),
-                TargetInkCanvas);
+            FreeformView.ViewModel.InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         /// <summary>
@@ -170,8 +167,8 @@ namespace Dash
         private void UpdateStrokes()
         {
             TargetInkCanvas.InkPresenter.StrokeContainer.Clear();
-            if (InkController?.GetStrokes() != null)
-                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkController.GetStrokes()
+            if (FreeformView.ViewModel.InkController?.GetStrokes() != null)
+                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(FreeformView.ViewModel.InkController.GetStrokes()
                     .Select(stroke => stroke.Clone()));
         }
 
@@ -212,11 +209,11 @@ namespace Dash
         /// <param name="selectionPoints"></param>
         private void LassoSelectDocs(PointCollection selectionPoints)
         {
-            FreeformView.DeselectAll();
+            SelectionManager.DeselectAll();
             var selectionList =
                 LassoHelper.GetSelectedDocuments(
                     new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000)))); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl
-            FreeformView.SelectDocs(selectionList);
+            SelectionManager.SelectDocuments(selectionList, false);
         }
 
         /// <summary>
@@ -327,9 +324,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void InkControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
+        private void InkControllerOnInkUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            if (!sender.Equals(TargetInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
                 UpdateStrokes();
         }
 

@@ -9,27 +9,27 @@ namespace Dash
     /// this class represents a fake operator controller.  
     /// This was made so that the language can parse the 'let' operation just like any operator, but can override its functionality
     /// </summary>
-    [OperatorType("let")]
+    [OperatorType(Op.Name.let)]
     public class LetOperatorController : OperatorController
     {
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("ED03AF63-0A70-4EC5-BB3B-3F9DF621C1A1", "Let");
+            new KeyController("Let", "ED03AF63-0A70-4EC5-BB3B-3F9DF621C1A1");
 
         //Input keys
         public static readonly KeyController VariableNameKey =
-            new KeyController("A35F1E4F-B876-428C-BB21-EB0A33422118", "Variable");
+            new KeyController("Variable");
 
         public static readonly KeyController VariableValueKey =
-            new KeyController("8F6CE1B3-0D2A-4A62-8BB2-F848A7BB808B", "Value");
+            new KeyController("Value");
 
         public static readonly KeyController ContinuedExpressionKey =
-            new KeyController("52CE71E6-14D7-4606-A235-B0A9B5880B27", "Expression");
+            new KeyController("Expression");
 
         //Output keys
         public static readonly KeyController ReturnValueKey =
-            new KeyController("D19EC771-E30F-477D-9C14-31CA33F04491", "ReturnValue");
+            new KeyController("ReturnValue");
 
         public LetOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -63,7 +63,7 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args,
-            ScriptState state = null)
+            Scope scope = null)
         {
             throw new NotImplementedException();
         }

@@ -39,6 +39,8 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        public abstract FieldControllerBase GetDocumentReference();
+
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return GetDocumentController(null);
@@ -55,8 +57,6 @@ namespace Dash
         }
 
         public abstract FieldReference GetFieldReference();
-
-        public abstract string GetDocumentId(Context context);
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
@@ -106,11 +106,6 @@ namespace Dash
             }
 
             return false;
-        }
-
-        public override string GetTypeAsString()
-        {
-            return "Ref";
         }
 
         /// <summary>

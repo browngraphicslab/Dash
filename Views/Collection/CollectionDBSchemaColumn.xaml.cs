@@ -55,7 +55,7 @@ namespace Dash
             EditableViewModels = new ObservableCollection<EditableScriptViewModel>();
             foreach (var documentController in CollectionDocs)
             {
-                EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController.Id, Key)));
+                EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController, Key)));
             }
             if (headerViewModel != null)
             {
@@ -88,7 +88,7 @@ namespace Dash
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach (var documentController in e.NewItems.Cast<DocumentController>())
                     {
-                        EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController.Id, Key)));
+                        EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController, Key)));
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:

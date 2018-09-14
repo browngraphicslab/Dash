@@ -72,10 +72,17 @@
                     <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
                     <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
                 </StackPanel>
-                <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
-                <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
                 <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Allow infinite upwards panning</TextBlock>
                 <ToggleSwitch x:Name="xUpwardPanningToggle" Margin="10, 0, 0, 0"/>
+                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Webpage import mode</TextBlock>
+                <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
+                    <RadioButton x:Name="xRTFImport" GroupName="WebpageLayout">RTF Format</RadioButton>
+                    <RadioButton x:Name="xHTMLImport" GroupName="WebpageLayout">HTML Format</RadioButton>
+                    <RadioButton x:Name="xDefaultImport" GroupName="WebpageLayout"  IsChecked="True">Ask when Imported</RadioButton>
+                </StackPanel>
+                <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
+                <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
+                
             </StackPanel>
 
             <!--Backup-->

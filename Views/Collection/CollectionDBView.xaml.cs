@@ -6,7 +6,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -14,6 +13,7 @@ namespace Dash
 {
     public sealed partial class CollectionDBView : ICollectionView
     {
+        public UserControl UserControl => this;
         public CollectionDBView()
         {
             this.InitializeComponent();
@@ -26,27 +26,26 @@ namespace Dash
         }
 
 
-        void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
+        private void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
             var pattern = ParentDocument.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
-            if (dbDocs != null && pattern != null && !string.IsNullOrEmpty(pattern.Name))
+
+            if (dbDocs == null || pattern == null || string.IsNullOrEmpty(pattern.Name)) return;
+
+            var collection = dbDocs.Select((d) =>
             {
-                var collection = dbDocs.Select((d) =>
-                {
-                    var key =  testPatternMatch(d.GetDataDocument(), pattern, term);
-                    if (key != null)
-                    {
-                        var derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
-                        var rnote = new RichTextNote(derefField ?? "<empty>").Document;
-                        rnote.GetDataDocument().SetField(CollectionDBView.SelectedKey, new TextController(term), true);
-                        return rnote;
-                    }
-                    return null;
-                });
-                args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(
-                    collection.Where((c) => c != null).ToList(), null, null, CollectionView.CollectionViewType.Schema);
-            }
+                KeyController key =  testPatternMatch(d.GetDataDocument(), pattern, term);
+
+                if (key == null) return null;
+
+                string derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
+                DocumentController rnote = new RichTextNote(derefField ?? "<empty>").Document;
+                rnote.GetDataDocument().SetField(SelectedKey, new TextController(term), true);
+                return rnote;
+            });
+
+            args.Data.AddDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionView.CollectionViewType.Schema));
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
@@ -67,12 +66,12 @@ namespace Dash
         }   
         
         //Input Keys
-        public static readonly KeyController FilterFieldKey = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
-        public static readonly KeyController BucketsKey = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
-        public static readonly KeyController SelectedKey = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
-        public static readonly KeyController InputDocsKey = new KeyController("0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17", "Dataset");
-        public static readonly KeyController AutoFitKey = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "_AutoFit");
-        public static readonly KeyController AvgResultKey = new KeyController("27A7017A-170E-4E4A-8CDC-94983C2A5188", "Avg");
+        public static readonly KeyController FilterFieldKey = new KeyController("_FilterField", "B98F5D76-55D6-4796-B53C-D7C645094A85");
+        public static readonly KeyController BucketsKey = new KeyController("_Buckets", "5F0974E9-08A1-46BD-89E5-6225C1FE40C7");
+        public static readonly KeyController SelectedKey = new KeyController("Selected", "A1AABEE2-D842-490A-875E-72C509011D86");
+        public static readonly KeyController InputDocsKey = new KeyController("Dataset", "0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17");
+        public static readonly KeyController AutoFitKey = new KeyController("_AutoFit", "79A247CB-CE40-44EA-9EA5-BB295F1F70F5");
+        public static readonly KeyController AvgResultKey = new KeyController("Avg", "27A7017A-170E-4E4A-8CDC-94983C2A5188");
 
 
         DocumentController _parentDocument;
@@ -388,7 +387,7 @@ namespace Dash
                 return null;
             // loop through each field to find on that matches the field name pattern 
             if (dmc.GetField(pattern) != null)
-                return new DocumentReferenceController(dmc.Id, pattern);
+                return new DocumentReferenceController(dmc, pattern);
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Value is DocumentController))
             {
                 var nestedDoc = pfield.Value as DocumentController;
@@ -411,14 +410,6 @@ namespace Dash
 
         public void SetDropIndicationFill(Brush fill)
         {
-        }
-        #endregion
-
-        #region Activation
-        
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
         }
         #endregion
     }

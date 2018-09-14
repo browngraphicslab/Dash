@@ -1,0 +1,883 @@
+﻿<UserControl
+    x:Class="Dash.TemplateEditorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:fontIcons="using:Dash.FontIcons"
+    xmlns:input="using:Syncfusion.UI.Xaml.Controls.Input"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    mc:Ignorable="d"
+    x:Name="xEditorControl"
+    AllowDrop="True"
+    d:DesignHeight="600"
+    d:DesignWidth="1000">
+    <UserControl.Resources>
+        <Style x:Key="ToggleButtonStyler" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{ThemeResource ToggleButtonBackground}"/>
+            <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForeground}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource ToggleButtonBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="{ThemeResource ToggleButtonBorderThemeThickness}"/>
+            <Setter Property="Padding" Value="8,4,8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
+            <Setter Property="FocusVisualMargin" Value="-3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Checked">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="#334f43"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0"  Value="{ThemeResource ToggleButtonBorderBrushCheckedPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundCheckedPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedDisabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundCheckedDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Indeterminate">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundIndeterminate}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundIndeterminate}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushIndeterminate}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="IndeterminatePointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundIndeterminatePointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushIndeterminatePointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundIndeterminatePointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="IndeterminatePressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundIndeterminatePressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushIndeterminatePressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundIndeterminatePressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="IndeterminateDisabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundIndeterminateDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundIndeterminateDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushIndeterminateDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Vertical" Height="540" Width="1000" Background="#416857" Padding="-2 2 0 0">
+
+        <!--Header-->
+        <Grid>
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"
+                    Width="1000" Height="40">
+                <Button Background="Transparent" Width="40" Height="40"   HorizontalAlignment="Right" VerticalAlignment="Center"  Click="CloseButton_OnClick">
+                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource ClearIcon}" />
+                </Button>
+                <Button Background="Transparent" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Center" Click="MinusButton_OnClick" >
+                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource MinusIcon}" />
+                </Button>
+            </StackPanel>
+            
+            <local:EditableTextBlock Foreground="White" Width="200" FontSize="16" HorizontalAlignment="Center" x:Name="xTitleBlock" />
+        </Grid>
+
+        <!--StackPanel for panes-->
+        <StackPanel  Orientation="Horizontal"  BorderThickness="0 0 0 0" x:Name="xOuterPanel" Margin="0 -10 0 0">
+
+            <!--Panel that holds Key Value Pane-->
+            <ScrollViewer x:Name="XScrollViewer" Width="300" Height="500" Visibility="Visible"  VerticalScrollBarVisibility="Disabled"  Background="White" PointerWheelChanged="ScrollViewer_OnPointerWheelChanged">
+                <StackPanel Orientation="Horizontal" x:Name="xDataPanel" Width="300" Background="White">
+
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--Panel that holds Canvas-->
+            <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
+                           x:Name="xOuterWorkspace">
+                <Line 
+                    X1="0" Y1="0" X2="500" Y2="0" 
+                    x:Name="xHorizLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
+                    RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
+                <Line 
+                    X1="0" Y1="0" X2="0" Y2="500" 
+                    x:Name="xVertLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
+                    RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
+                <local:Ruler Orientation="Horizontal" Visibility="Collapsed" Length="480" Thickness="20" Ticks="100" Fill="Gray"
+                             x:Name="xGridTopDragger" RelativePanel.AlignTopWithPanel="True"
+                             ManipulationStarted="XGridTopDragger_OnManipulationStarted"
+                             ManipulationDelta="XGridTopDragger_OnManipulationDelta"
+                             ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
+                             ManipulationMode="TranslateY">
+                    <local:Ruler.RenderTransform>
+                        <TranslateTransform X="20" />
+                    </local:Ruler.RenderTransform>
+                </local:Ruler>
+                <local:Ruler Orientation="Vertical" Visibility="Collapsed" Length="480" Thickness="20" Ticks="100" Fill="Gray"
+                             x:Name="xGridLeftDragger" RelativePanel.AlignTopWithPanel="True"
+                             ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
+                             ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
+                             ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
+                             ManipulationMode="TranslateX">
+                    <local:Ruler.RenderTransform>
+                        <TranslateTransform Y="20" />
+                    </local:Ruler.RenderTransform>
+                </local:Ruler>
+                <Rectangle Width="20" Height="20" Fill="Gray" x:Name="xRulerCorner"  Visibility="Collapsed" />
+
+                <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
+                    x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
+                    <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--DESIGN GRID -->
+                    <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 3x3 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+                    <Grid x:Name="xDesignGridSmall" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 9x9 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+
+                        <Border Grid.Column="3" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+
+                    <ItemsControl x:Name="xItemsControlCanvas"
+                              x:FieldModifier="public"
+                              ItemsSource="{Binding DocumentViewModels}"
+                              Visibility ="Visible">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas x:Name="xCollectionGrid"
+                                      x:FieldModifier="public"
+                                      Background="Transparent"
+                                      VerticalAlignment="Top"
+                                      HorizontalAlignment="Left" >
+                                </Canvas>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate >
+                                <local:DocumentView
+                                BindRenderTransform="True"
+                                Loaded="DocumentView_OnLoaded"
+                                   />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public"
+                                  ItemsSource="{Binding DocumentViewModels}" Visibility="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Grid x:Name="xGrid" x:FieldModifier="public">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                </Grid>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:DocumentView BindRenderTransform="True"
+                                                    Loaded="DocumentView_OnLoaded_GridView" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ListView x:Name="xItemsControlList"
+                              x:FieldModifier="public"
+                              ItemsSource="{Binding ViewCopiesList}"
+                              Visibility ="Collapsed"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              Background="Transparent"
+                              CanReorderItems="True"  AllowDrop="True" CanDragItems="True" ReorderMode="Enabled"
+                              DragItemsStarting="XItemsControlList_OnDragItemsStartingList_DragItemsStarting"
+                              DragItemsCompleted="XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted"
+                             >
+                        <ListView.ItemTemplate >
+                            <DataTemplate >
+                                <local:DocumentView
+                                    
+                                        Loaded="DocumentView_OnLoaded_ListView"
+                                    HorizontalAlignment="Center"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+
+                </Grid>
+
+
+
+                <!--ELLIPSES-->
+                <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 10, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                    <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
+
+                        <!--Apply button -->
+                        <Grid PointerPressed="XApplyButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
+                            <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Apply Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+
+
+                        <!--Revert Ellipse -->
+                        <Grid PointerPressed="XResetButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
+                            <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Revert Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+                        <!--Clear Template Ellipse -->
+                        <Grid PointerPressed="XClearButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Bottom">
+                            <Ellipse x:Name="xClearEllipse" Fill="#D64141" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -1, 0, 0" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                                    />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+
+                    </StackPanel>
+                </RelativePanel>
+
+
+            </RelativePanel>
+
+            <!--Formatting Panel-->
+            <ScrollViewer Visibility="Visible" VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto" Width="200" Height="500">
+
+
+                <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Height="500" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" >
+
+                    <!--Data Key Header-->
+
+                    <StackPanel Width="170" Background="#334f43" HorizontalAlignment="Center" Margin="0,5,0,10">
+
+                        <TextBlock FontSize="15"  HorizontalAlignment="Left" Foreground="White">Data Key</TextBlock>
+                        <local:EditableTextBlock Width="170" FontSize="14" HorizontalAlignment="Left" x:Name="xKeyBox" Foreground="White"></local:EditableTextBlock>
+
+                    </StackPanel>
+
+                    <StackPanel x:Name="xToggleControl" Orientation="Horizontal" Margin="5,10,0,20" HorizontalAlignment="Left" VerticalAlignment="Center">
+
+                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#416857" Tapped="XActivate_MaintainChecked" IsDoubleTapEnabled="False" Click="XActivate_Clicked">
+
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Name="xActivateIcon" FontSize="14" Foreground="White"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ActivateIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
+                                <TextBlock x:Name="xActivateTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
+
+                            </StackPanel>
+
+                        </ToggleButton>
+                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#416857" Tapped="XPreview_MaintainChecked" IsDoubleTapEnabled="False" Click="XPreview_Clicked">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Name="xPreviewIcon" FontSize="14" Foreground="White"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource PreviewIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
+                                <TextBlock x:Name="xPreviewTitle" FontSize="14" Foreground="White" Text="Preview"></TextBlock>
+
+                            </StackPanel>
+                        </ToggleButton>
+                    </StackPanel>
+
+                    <!--Add Items Drop Down-->
+                    <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimation">
+                                <DoubleAnimation
+                                Storyboard.TargetName="xAddItemsButtonStack"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0.0" To="1.0" Duration="0:0:.5"
+                            />
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <TextBlock x:Name="xAddItemsArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
+                        </StackPanel>
+                        <!--StackPanel for buttons-->
+                        <StackPanel x:Name="xAddItemsButtonStack" IsHitTestVisible="True"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <StackPanel Orientation="Horizontal" >
+                                <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick"  >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FontIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Text" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" Click="ImageButton_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ImageIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Image" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton  Height="46" Width="42.5" Click="VideoButton_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource VideoIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Video" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" Click="AudioButton_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource AudioIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Audio" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" >
+                                <AppBarButton Height="46" Width="42.5" Click="AddList_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0" 
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add List" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" Click="AddGrid_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Grid" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton  Height="46" Width="42.5" Click="AddFreeform_OnClick">
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Freeform" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" >
+                                    <TextBlock FontSize="18" Foreground="Gray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Add Document" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!--Format Items Drop Down-->
+                    <StackPanel x:Name="XAlignmentGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" Tapped="TappedHandler">
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationFormat">
+                                <DoubleAnimation
+                                Storyboard.TargetName="xAlignmentButtonStack"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0.0" To="1.0" Duration="0:0:.5"
+                            />
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel  x:Name="xAlignmentHeader" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <TextBlock x:Name="xAlignmentArrow"  FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Alignment</TextBlock>
+                        </StackPanel>
+                        
+                        
+                        <!--StackPanel for Format buttons-->
+                        <StackPanel x:Name="xAlignmentButtonStack"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+
+                            <StackPanel x:Name="xAlignmentToggleControl" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xItem" Height="35" Width="85" Background="#416857" Checked="AlignmentToggleControl_OnChecked" Unchecked="AlignmentToggleControl_OnUnChecked">
+                                    
+                                        <TextBlock HorizontalAlignment="Right" FontSize="14" Foreground="White" Text="Item" Margin="0 -5 0 0"></TextBlock>
+                                   
+
+                                </ToggleButton>
+                                <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xAll" Height="35" Width="85" Background="#416857" Checked="AlignmentToggleControl_OnChecked" Unchecked="AlignmentToggleControl_OnUnChecked">
+                                   
+                                        <TextBlock HorizontalAlignment="Left" FontSize="14" Foreground="White" Text="All" Margin="0 -5 0 0"></TextBlock>
+                                 </ToggleButton>
+                                
+                            </StackPanel>
+                            <StackPanel x:Name="xAlignmentButtons" Orientation="Vertical" Visibility="Collapsed">
+                            <!--ALIGNMENT-->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
+                                <AppBarButton x:Name="xAlignItemLeft"  Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Left" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemCenter" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Center" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemRight" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Right" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemJustify" Height="46" Width="42.5" Tapped="HorizontalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignJustify" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Stretch" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+
+
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" >
+                                <AppBarButton x:Name="xAlignItemTop"  Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome Icon="LongArrowUp" Foreground="LightGray"   />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Top" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemVerticalCenter" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="Compress" Foreground="LightGray"  />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Center" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemBottom" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="LongArrowDown" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Bottom" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemVerticalStretch" Height="46" Width="42.5" Tapped="VerticalAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="ArrowsV" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Stretch" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+
+                                </AppBarButton>
+
+
+                                </StackPanel>
+                            </StackPanel>
+
+
+                        </StackPanel>
+
+                        </StackPanel>
+
+                  
+
+                    <!--Options Drop Down-->
+                    <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationOptions">
+                                <DoubleAnimation
+                                Storyboard.TargetName="xOptionsButtonStack"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0.0" To="1.0" Duration="0:0:.5"
+                            />
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <TextBlock x:Name="xOptionsArrow"  FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ArrowIcon}" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
+                        </StackPanel>
+                        <!--StackPanel for Option buttons-->
+                        <StackPanel x:Name="xOptionsButtonStack" IsHitTestVisible="True" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+
+                            <!--TEMPLATE STYLE -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" >
+                                <ToggleButton x:Name="xFreeFormButton" Style="{StaticResource ToggleButtonStyler}" Background="#416857" Height="46" Width="56" HorizontalAlignment="Left"  VerticalAlignment="Center" Checked="xOptionsToggle_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Freeform Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </ToggleButton>
+                                <ToggleButton x:Name="xListButton" Style="{StaticResource ToggleButtonStyler}" Background="#416857" Height="46" Width="57" Checked="xOptionsToggle_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="List Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </ToggleButton>
+                                <ToggleButton x:Name="xGridButton" Style="{StaticResource ToggleButtonStyler}" Background="#416857" Height="46" Width="56" Checked="xOptionsToggle_OnChecked">
+                                    <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Grid Mode" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </ToggleButton>
+                            </StackPanel>
+
+                           
+
+                          
+
+                            <!-- BACKGROUND -->
+                            <StackPanel Orientation="Horizontal" Margin="6,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                                <TextBlock Foreground="White" FontSize="14"  > Background</TextBlock>
+                                <Rectangle x:Name="xBackgroundColorPreviewBox" Width="16" Height="16" Fill="White" Margin="36,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+
+                                    <!--colorpicker flyout-->
+                                    <FlyoutBase.AttachedFlyout>
+                                        <Flyout x:Name="xBackgroundColorFlyout" >
+                                            <StackPanel>
+                                                <Slider x:Name="xBackgroundOpacitySlider" Header="Opacity"
+                                                    Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1"
+                                                    SnapsTo="StepValues" Value="255"
+                                                    ValueChanged="XBackgroundOpacitySlider_OnValueChanged">
+                                                    <Slider.Foreground>
+                                                        <LinearGradientBrush >
+                                                            <GradientStop Color="White" Offset="0.0" />
+                                                            <GradientStop Color="Black" Offset="1.0" />
+                                                        </LinearGradientBrush>
+                                                    </Slider.Foreground>
+                                                </Slider>
+                                                <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </FlyoutBase.AttachedFlyout>
+                                </Rectangle>
+
+
+
+                            </StackPanel>
+
+                            <!--<StackPanel Orientation="Horizontal" Margin="8,10,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
+
+                                <ToggleButton x:Name="xDesignGridVisibilityButton" Padding="-10 -10 -10 -10" Style="{StaticResource ToggleButtonStyler}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" >
+                                    <TextBlock FontSize="18" Foreground="White" 
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridOverlayIcon}" Margin="-10 -8 -10 -10"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Grid Overlay" Placement="Bottom" HorizontalOffset="0" VerticalOffset="20"
+                                        />
+                                    </ToolTipService.ToolTip>
+                                </ToggleButton>
+                                --><!--GRID SIZE DROP DOWN -->
+                                <!--<ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
+                                    <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
+                                    <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
+                                </ComboBox>-->
+
+                               
+
+                                <!--<ComboBox x:Name="xAspectRatioComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="8" SelectionChanged="XAspectRatioComboBox_OnSelectionChanged">
+                                    --><!--<ComboBoxItem x:Name="xOriginal">Original</ComboBoxItem>--><!--
+                                    <ComboBoxItem >Square</ComboBoxItem>
+                                    <ComboBoxItem >2:3</ComboBoxItem>
+                                    <ComboBoxItem >3:4</ComboBoxItem>
+                                    <ComboBoxItem >3:5</ComboBoxItem>
+                                    <ComboBoxItem >4:5</ComboBoxItem>
+                                    <ComboBoxItem >5:7</ComboBoxItem>
+                                    <ComboBoxItem >9:16</ComboBoxItem>
+                                </ComboBox>--><!--
+                                
+
+                              
+                            </StackPanel>-->
+
+                            <StackPanel x:Name="XGridOverlay" Width="148" Orientation="Vertical"  Background="#416857" Margin="0 0 0 0">
+                                <StackPanel.Resources>
+                                    <Storyboard x:Name="xFadeAnimationGrid">
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="xGridOverlayButtonStack"
+                                            Storyboard.TargetProperty="Opacity"
+                                            From="0.0" To="1.0" Duration="0:0:.5"
+                                        />
+                                    </Storyboard>
+                                </StackPanel.Resources>
+                                <!--Header-->
+                               
+                                <!--StackPanel for buttons-->
+
+                                <StackPanel  x:Name="xGridOverlayHeader" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Height="36"  Tapped="ExpandButtonOnClick" >
+                                    <TextBlock FontSize="14" HorizontalAlignment="Left" Foreground="White" Margin="-4 2 0 0">Grid Overlay</TextBlock>
+                                    <TextBlock x:Name="xGridOverlayArrow" FontSize="20" FontFamily="{StaticResource FontAwesome}" Margin="20 2 0 0" Text="{StaticResource GridOverlayIcon}" Foreground="White" Width="40" />
+
+                                </StackPanel>
+
+                                <StackPanel x:Name="xGridOverlayButtonStack" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                                    <Button x:Name="xSmall" Height="40" Width="74" Foreground="White" Background="#334f43" Click="XGridOverlayButton_OnClicked">
+                                        <TextBlock Foreground="White">Small</TextBlock></Button>
+                                    <Button x:Name="xLarge" Height="40" Width="74" Foreground="White" Background="#334f43" Click="XGridOverlayButton_OnClicked"><TextBlock Foreground="White">Large</TextBlock></Button>
+                                </StackPanel>
+
+
+                            </StackPanel>
+
+                            <!--<TextBox x:Name="xWidthControl" KeyDown="XWidthControl_OnKeyDown"></TextBox>
+                            <TextBox x:Name="xHeightControl" KeyDown="XHeightControl_OnKeyDown"></TextBox>-->
+
+
+                            <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
+                                <Button.Flyout>
+                                    <Flyout x:Name="xUploadTemplateFlyout"/>
+                                </Button.Flyout>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <TextBlock FontSize="14" Foreground="White" Margin="-2 0 0 0">Upload Template</TextBlock>
+                                    <TextBlock FontSize="18" Foreground="White"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}" Margin="-4 0 0 0"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- DESIGN GRID-->
+                            
+                        </StackPanel>
+
+                        
+
+
+
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

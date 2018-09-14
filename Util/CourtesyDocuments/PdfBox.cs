@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Syncfusion.Windows.PdfViewer;
 using System.Linq;
+using Dash.Views;
 
 namespace Dash
 {
@@ -36,15 +37,20 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the pdf view
-            var pdfView = new PdfView() { DataContext = docController,
-                LayoutDocument = docController.GetActiveLayout() ?? docController,
-                DataDocument = docController.GetDataDocument()
-            };
-            var pdf = pdfView.Pdf;
+            //var pdfView = new PdfView() { DataContext = docController,
+            //    LayoutDocument = docController.GetActiveLayout() ?? docController,
+            //    DataDocument = docController.GetDataDocument()
+            //};
+            //var pdf = pdfView.Pdf;
 
-            // make the pdf respond to resizing, interactions etc...
+            //// make the pdf respond to resizing, interactions etc...
+            //SetupBindings(pdfView, docController, context);
+            //SetupPdfBinding(pdf, docController, context);
+
+            MainPage.Instance.TogglePopup();
+            var pdfView = new PdfView(docController);
             SetupBindings(pdfView, docController, context);
-            SetupPdfBinding(pdf, docController, context);
+            SetupPdfBinding(pdfView, docController, context);
             
             return pdfView;
         }
@@ -54,12 +60,12 @@ namespace Dash
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
-        public static DocumentController MakeRegionDocument(DocumentView richTextBox)
+        public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
-            var pdf = richTextBox.GetFirstDescendantOfType<PdfView>();
-            return pdf.GetRegionDocument();
+            return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
-        protected static void SetupPdfBinding(SfPdfViewerControl pdf, DocumentController controller,
+
+        protected static void SetupPdfBinding(PdfView pdf, DocumentController controller,
             Context context)
         {
 
@@ -78,17 +84,17 @@ namespace Dash
             BindPdfSource(pdf, controller, context);
         }
 
-        protected static void BindPdfSource(SfPdfViewerControl pdf, DocumentController docController, Context context)
+        protected static void BindPdfSource(PdfView pdf, DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<ImageController>()
+            var binding = new FieldBinding<PdfController>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                Converter = UriToStreamConverter.Instance
+                //Converter = UriToStreamConverter.Instance
             };
-            pdf.AddFieldBinding(SfPdfViewerControl.ItemsSourceProperty, binding);
+            pdf.AddFieldBinding(PdfView.PdfUriProperty, binding);
         }
     }
 }

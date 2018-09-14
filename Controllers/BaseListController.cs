@@ -8,20 +8,23 @@ namespace Dash
     {
         public abstract List<FieldControllerBase> Data { get; set; }
 
-        protected BaseListController(ListModel fieldModel) : base(fieldModel)
-        {
-        }
+        protected BaseListController(ListModel fieldModel) : base(fieldModel) { }
+
+        public bool Indexed { get; set; }
 
         public override TypeInfo TypeInfo => TypeInfo.List;
 
         public abstract TypeInfo ListSubTypeInfo { get; }
 
         public abstract void Remove(FieldControllerBase fmc);
-        public abstract void Add(FieldControllerBase fmc);
-        public abstract void AddRange(IList<FieldControllerBase> fmcs);
+        public abstract void AddBase(FieldControllerBase fmc);
+        public abstract void AddRange(IEnumerable<FieldControllerBase> fmcs);
+
+        public abstract void SetValue(int index, FieldControllerBase field);
+        public abstract FieldControllerBase GetValue(int index);
 
         public int Count => Data.Count;
-        
+
         public override bool CheckType(FieldControllerBase fmc)
         {
             bool isList = base.CheckType(fmc);

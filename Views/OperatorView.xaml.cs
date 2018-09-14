@@ -5,7 +5,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Data;
 using Windows.ApplicationModel.DataTransfer;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -60,9 +59,7 @@ namespace Dash
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
             _documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (_documentView == null)
-                return;
-            _documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
+            _documentView?.ViewModel.DocumentController.GetDataDocument().SetTitle( _operator.GetOperatorType());
         }
 
 
@@ -104,7 +101,7 @@ namespace Dash
             {
                 return;
             }
-            preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
+            preview.Doc = (DataContext as DocumentFieldReference)?.DocumentController;
         }
 
         private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -112,9 +109,7 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             var el = sender as FrameworkElement;
             var docRef = DataContext as DocumentFieldReference;
-            args.Data.Properties.Add(nameof(DragDocumentModel),
-                new DragDocumentModel(docRef.GetDocumentController(null),
-                ((DictionaryEntry?)el?.DataContext)?.Key as KeyController));
+            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(docRef.GetDocumentController(null), ((DictionaryEntry?)el?.DataContext)?.Key as KeyController)));
         }
     }
 }

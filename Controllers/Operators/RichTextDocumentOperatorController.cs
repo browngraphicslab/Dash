@@ -6,14 +6,13 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    [OperatorType("docText")]
+    [OperatorType(Op.Name.rich_document_text)]
     public class RichTextDocumentOperatorController : OperatorController
     {
 
         public RichTextDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
             SaveOnServer();
-
         }
 
         public RichTextDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -23,7 +22,7 @@ namespace Dash
         //Input key   KeyStore.DataKey;
 
         //Output key
-        public static readonly KeyController ReadableTextKey = new KeyController("AAAA064D-C4BC-4623-AAD3-402077433C46", "ReadableText");
+        public static readonly KeyController ReadableTextKey = new KeyController("ReadableText");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>>  Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -36,16 +35,16 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("A0BB0580-31E8-441E-907A-8A9C74224964", "Doc Text");
-
+        private static KeyController TypeKey = new KeyController("Doc Text", "A0BB0580-31E8-441E-907A-8A9C74224964");
+        private static RichEditBox richEditBox = new RichEditBox();
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var richTextController = inputs[KeyStore.DataKey] as RichTextController;
             if (richTextController != null)
             {
-                var richEditBox = new RichEditBox();
+               // var richEditBox = new RichEditBox();
                 richEditBox.Document.SetText(TextSetOptions.FormatRtf, richTextController.RichTextFieldModel.Data.RtfFormatString);
                 richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
                 readableText = readableText.Replace("\r", "\n");

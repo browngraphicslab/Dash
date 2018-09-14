@@ -3,35 +3,30 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using DashShared;
 
 namespace Dash
 {
-    [OperatorType("getField")]
-    public class GetFieldOperatorController : OperatorController
+    [OperatorType(Op.Name.get_field)]
+    public sealed class GetFieldOperatorController : OperatorController
     {
         public GetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            throw new NotImplementedException();
-        }
+        public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
+
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("6277A484-644D-4BC4-8D3C-7F7DFCBA6517", "GetField");
+        private static readonly KeyController TypeKey = new KeyController("GetField", "6277A484-644D-4BC4-8D3C-7F7DFCBA6517");
 
         //Input keys
-        public static readonly KeyController KeyNameKey = new KeyController("80628016-F13A-411A-8291-EB8B77391D01", "KeyName");
-        public static readonly KeyController InputDocumentKey = new KeyController("C317E592-D663-4B36-9BC7-922EB2A2E92F", "InputDoc");
+        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
 
         //Output keys
-        public static readonly KeyController ResultFieldKey = new KeyController("601FF47D-128D-40C6-B06C-1E0D1CBCA133", "ResultField");
+        public static readonly KeyController ResultFieldKey = new KeyController("ResultField");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -42,9 +37,10 @@ namespace Dash
         {
             [ResultFieldKey] = TypeInfo.Any,
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
 
@@ -62,34 +58,36 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
-                var fields = doc.EnumFields().ToArray();
-
-                var controller = FindInDocFields(fields, keyName);
-
-                outputs[ResultFieldKey] = controller ?? new TextController();
-            }
-        }
-
-        private FieldControllerBase FindInDocFields(KeyValuePair<KeyController, FieldControllerBase>[] fields, string keyName)
-        {
-            foreach (var key in fields) //check exact string equality
-            {
-                if (key.Key.Name.Replace(" ", "").Equals(keyName))
+                var field = doc.GetDereferencedField(new KeyController(keyName), null);
+                if (field != null)
                 {
-
-                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
+                    outputs[ResultFieldKey] = field;
+                    return;
                 }
-            }
-
-            foreach (var key in fields) //check to lower string equality
-            {
-                if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
+                var sb = new StringBuilder();
+                var pattern = @"([a-z])([A-Z])";
+                var matches = Regex.Matches(keyName, pattern);
+                var prevIndex = 0;
+                if (matches.Any())
                 {
-                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
+                    foreach (Match match in matches)
+                    {
+                        var caml = match.Groups.First();
+                        var startIndex = caml.Captures.First().Index;
+                        sb.Append(keyName.Substring(prevIndex, startIndex - prevIndex));
+                        if (startIndex == prevIndex) continue;
+                        sb.Append(keyName[startIndex] + " " + keyName[startIndex + 1]);
+                        prevIndex = startIndex + 2;
+
+                    }
                 }
+                sb.Append(keyName.Substring(prevIndex));
+
+                var newKeyName = sb.ToString();
+                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(newKeyName), null);
             }
 
-            return null;
+            
         }
     }
 }

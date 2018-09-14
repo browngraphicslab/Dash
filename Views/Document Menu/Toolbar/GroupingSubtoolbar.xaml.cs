@@ -1,16 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Dash.Converters;
-using System;
-using Windows.Networking.BackgroundTransfer;
-using Windows.UI.Xaml.Shapes;
-using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
+using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,6 +15,7 @@ namespace Dash
         //INSTANCE VARIABLES
         private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
+	    private DocumentView _groupView;
 
         //ORIENTATION property registration and declaration
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
@@ -38,17 +33,20 @@ namespace Dash
             InitializeComponent();
 
             //Initial values
-            xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+           // xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
+			xGroupForegroundColorPicker.SetOpacity(128);
+
             _currentColor = Windows.UI.Color.FromArgb(0x80, 0xff, 0x00, 0x00); //Red with an opacity of 0.5
 
             FormatDropdownMenu();
+
+            SetUpToolTips();
 
             //Sets orientation binding when the actual command bar UI element is loaded. 
             //Potential bug fix: if visibility of command bar is collapsed, will never load and will fail to add event handler
             xGroupCommandbar.Loaded += delegate
             {
-                var sp = xGroupCommandbar.GetFirstDescendantOfType<StackPanel>();
-                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                xGroupCommandbar.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
                     Path = new PropertyPath(nameof(Orientation)),
@@ -57,7 +55,7 @@ namespace Dash
                 Visibility = Visibility.Collapsed;
             };
 
-            CheckForCustom();
+	        xGroupForegroundColorPicker.ParentFlyout = xColorFlyout;
         }
 
         //SETUP AND HELPER METHODS
@@ -67,27 +65,14 @@ namespace Dash
          */
         private void FormatDropdownMenu()
         {
-            xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
-        }
-
-        /*
-         * Ensures current color reflects desired opacity and then updates the appropriate bindings for...
-         */
-        private void UpdateColor()
-        {
-            _currentColor = GetColorWithUpdatedOpacity();
-            //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
-            //...shape's background color
-            _currentDocController?.GetDataDocument().SetBackgroundColor(_currentColor);
-            //...indirectly, the shape's opacity
-            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
+            //xShapeOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            //xShapeOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            //xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
-         */
+         
         private Windows.UI.Color GetColorWithUpdatedOpacity()
         {
             if (_currentColor == null)
@@ -95,13 +80,17 @@ namespace Dash
             var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
             return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
         }
-
+		*/
     //ACCESSORS AND MUTATORS
 
         /*
         * Whenever a group is clicked, it receives the document view associated with the click for editing, etc, stored in this mutator. 
         */
-        public void SetGroupBinding(DocumentView selection) => _currentDocController = selection.ViewModel.DocumentController;
+        public void SetGroupBinding(DocumentView selection)
+        {
+	        _currentDocController = selection.ViewModel.DocumentController;
+	        _groupView = selection;
+        } 
 
         /*
          * Determines whether or not to hide or display the combo box: in context, this applies only to toggling rotation which is not currently supported
@@ -113,22 +102,11 @@ namespace Dash
          */
         public void CommandBarOpen(bool status)
         {
-            xGroupCommandbar.IsOpen = status;
-
             //Whether or not open or closed, should always be visible if some content is selected
-            xGroupCommandbar.IsEnabled = true;
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
-            xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            //xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 
-            var margin = xOpacitySlider.Margin;
-            margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
-            margin.Left = 22;
-            xOpacitySlider.Margin = margin;
-
-            margin = xSideCounter.Margin;
-            margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
-            xSideCounter.Margin = margin;
         }
 
         /*
@@ -148,72 +126,44 @@ namespace Dash
          */
         private void ShapeOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var switchList = new List<string>
+            using (UndoManager.GetBatchHandle())
             {
-                BackgroundShape.AdornmentShape.Rectangular.ToString(),
-                BackgroundShape.AdornmentShape.Elliptical.ToString(),
-                BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
-                BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
-                BackgroundShape.AdornmentShape.Pentagonal.ToString(),
-                BackgroundShape.AdornmentShape.Hexagonal.ToString(),
-                BackgroundShape.AdornmentShape.Octagonal.ToString(),
-                BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
-                BackgroundShape.AdornmentShape.CustomStar.ToString(),
-                BackgroundShape.AdornmentShape.Clover.ToString(),
-            };
+                var switchList = new List<string>
+                {
+                    BackgroundShape.AdornmentShape.Rectangular.ToString(),
+                    BackgroundShape.AdornmentShape.Elliptical.ToString(),
+                    BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
+                    BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
+                    BackgroundShape.AdornmentShape.Pentagonal.ToString(),
+                    BackgroundShape.AdornmentShape.Hexagonal.ToString(),
+                    BackgroundShape.AdornmentShape.Octagonal.ToString(),
+                    BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                    BackgroundShape.AdornmentShape.CustomStar.ToString(),
+                    BackgroundShape.AdornmentShape.Clover.ToString(),
+                };
 
-            CheckForCustom();
-
-            var index = xShapeOptionsDropdown.SelectedIndex;
-            var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
-
-            if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
-            
-            var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
-            xSideCounter.Text = safeSideCount.ToString("G");
-        }
-
-        private void CheckForCustom()
-        {
-            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex || xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
-            {
-                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
-                xRadialCol.Width = new GridLength(50);
-                xSliderCol.Width = new GridLength(316);
-            }
-            else
-            {
+                var index = xShapeOptionsDropdown.SelectedIndex;
+                var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
+                _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
                 if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
-                xRadialCol.Width = new GridLength(0);
-                xSliderCol.Width = new GridLength(344);
+
+                if (!(index == GroupGeometryConstants.CustomPolyDropdownIndex || index == GroupGeometryConstants.CustomStarDropdownIndex)) return;
+
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
+                var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
+                _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
+                xSideCounter.Text = safeSideCount.ToString("G");
             }
         }
 
-        /*
-         * Resets opacity of the group to 0.5 opacity on right click
-         */
-        private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            xOpacitySlider.Value = 128;
-            UpdateColor();
-        }
-
-        /*
-         * Edits the alpha prefix of the current color string based on the new opacity slider value
-         */
-        private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e) => UpdateColor();
-
+   
         /*
          * Create a new group with the current selections
          */
         private void XGroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: when multiselect is eventually implemented, group all selected elements with as small a group as possible
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*
@@ -222,9 +172,7 @@ namespace Dash
         private void XUngroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // TODO: Delete groups on tapped
-            //For proper toolbar UI behavior on click
-            xGroupCommandbar.IsOpen = true;
-            xGroupCommandbar.IsEnabled = true;
+
         }
 
         /*
@@ -254,33 +202,15 @@ namespace Dash
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColor = _currentDocController?.GetDataDocument().GetBackgroundColor() ?? Windows.UI.Colors.Red;
-            UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
+           // xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
             //NUM SIDES
             xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
             
         }
-
-        private void UpdateToolbarAccentColors()
-        {
-            xOpacitySlider.Background = new SolidColorBrush(_currentColor);
-            xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
-            xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
-        }
-
-        /*
-         * Updates the value of the current color (as string) and updates color/opacity bindings
-         */
-        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            _currentColor = xGroupForegroundColorPicker.SelectedColor;
-            UpdateToolbarAccentColors();
-            UpdateColor();
-        }
-
+		
         private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var inc = (MainPage.Instance.IsShiftPressed()) ? GroupGeometryConstants.MassiveInc : GroupGeometryConstants.SmallInc;
@@ -309,6 +239,65 @@ namespace Dash
             numSides += step;
             xSideCounter.Text = numSides.ToString();
             _currentDocController?.GetDataDocument().SetSideCount(numSides);
+        }
+
+	    /*
+         * Updates the value of the current color (as string) and updates color/opacity bindings
+         */
+		private void XGroupForegroundColorPicker_OnSelectedColorChanged(object sender, Color e)
+	    {
+			_currentColor = xGroupForegroundColorPicker.SelectedColor;
+			//have to use a different key so that background color is 
+		    _currentDocController?.SetField(KeyStore.GroupBackgroundColorKey, new TextController(e.ToString()), true);
+		   
+	    }
+
+        private ToolTip _group;
+        private ToolTip _ungroup;
+        private ToolTip _color;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _group = new ToolTip()
+            {
+                Content = "Group Items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xGroup, _group);
+
+            _ungroup = new ToolTip()
+            {
+                Content = "Ungroup Items",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xUngroup, _ungroup);
+
+            _color = new ToolTip()
+            {
+                Content = "Font Color",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFontColor, _color);
+
+
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
     }
 }

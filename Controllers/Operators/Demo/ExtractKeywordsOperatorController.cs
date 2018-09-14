@@ -14,14 +14,14 @@ namespace Dash
     {
 
         // Input Keys
-        public static readonly KeyController InputCollection = new KeyController("F04A6C53-4C60-48F6-9B22-9084E1BA0D25", "Input Collection");
-        public static readonly KeyController TextField = new KeyController("F0370FFD-C15E-41D2-BB4F-353F948E4FF8", "Text Field");
+        public static readonly KeyController InputCollection = new KeyController("Input Collection");
+        public static readonly KeyController TextField = new KeyController("Text Field");
 
         // Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("142ED4F4-56AE-4481-8566-BD207A3586BB", "Output");
+        public static readonly KeyController OutputCollection = new KeyController("Output");
 
         // Helper Key
-        public static readonly KeyController KeyWords = new KeyController("D4E89394-35EA-477B-959E-1A96F5CC2D39", "KeyWords");
+        public static readonly KeyController KeyWords = new KeyController("KeyWords");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
@@ -47,11 +47,11 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("8EA60017-CF8E-4885-B712-7C38906C299F", "Keywords");
+        private static readonly KeyController TypeKey = new KeyController("Keywords", "8EA60017-CF8E-4885-B712-7C38906C299F");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;

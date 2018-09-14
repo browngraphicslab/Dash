@@ -9,10 +9,66 @@
     xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="800">
+    d:DesignWidth="1010">
 
     <Grid>
-        <CommandBar Background="LightGray" x:Name="xGroupCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
+        <StackPanel Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" x:Name="xGroupCommandbar" Height="40">
+            <ComboBox x:Name="xShapeOptionsDropdown" Style="{StaticResource ComboBoxStyler}"  SelectedIndex="0" Width="200" Height="30" Margin="5 5 0 0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
+                    <ComboBoxItem Content="Rectangle"/>
+                    <ComboBoxItem Content="Ellipse"/>
+                    <ComboBoxItem Content="Rounded"/>
+                    <ComboBoxItem Content="Frame"/>
+                    <ComboBoxItem Content="Pentagon"/>
+                    <ComboBoxItem Content="Hexagon"/>
+                    <ComboBoxItem Content="Octagon"/>
+                    <ComboBoxItem Content="CustomPoly"/>
+                    <ComboBoxItem Content="CustomStar"/>
+                    <ComboBoxItem Content="Clover"/>
+                </ComboBox>
+            <Grid x:Name="xSideToggleButtonGrid" Visibility="Collapsed">
+                <Button x:Name="xAddSide" Margin="2, -17, 0, 0" Width="20" Height="20" Background="Transparent" Tapped="XAddSide_OnTapped" RightTapped="XAddSide_OnRightTapped">
+                    <StackPanel>
+                        <Border CornerRadius="1" 
+                                    Background="Transparent" 
+                                    BorderBrush="Green" 
+                                    BorderThickness="6">
+                        </Border>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="xRemoveSide" Margin="2, 17, 0, 0"  Width="20" Height="20" Background="Transparent" Tapped="XRemoveSide_OnTapped" RightTapped="XRemoveSide_OnRightTapped">
+                    <StackPanel>
+                        <Border CornerRadius="1" 
+                                    Background="Transparent" 
+                                    BorderBrush="Red" 
+                                    BorderThickness="6">
+                        </Border>
+                    </StackPanel>
+                </Button>
+                <TextBlock x:Name="xSideCounter" Margin="13, 2, 0, 0" Text="7" Foreground="White"/>
+            </Grid>
+            <AppBarSeparator Height="45" Margin="0, -2, 0, 0" Background="White" Foreground="White"/>
+            <AppBarButton x:Name="xGroup" Style="{StaticResource AppBarButtonStyler}" Tapped="XGroup_OnTapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xGroupIcon" Text="&#xEF20;" FontSize="16" Margin="0, -3, 0, 0" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton x:Name="xFontColor" Style="{StaticResource AppBarButtonStyler}" Label="Color" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <Button.Flyout>
+                    <Flyout x:Name="xColorFlyout">
+                        <local:DashColorPicker x:Name="xGroupForegroundColorPicker" SelectedColorChanged="XGroupForegroundColorPicker_OnSelectedColorChanged">
+                            
+                        </local:DashColorPicker>
+                    </Flyout>
+                </Button.Flyout>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png" Width="20" Margin="2, -9, 0, 0"/>
+            </AppBarButton>
+            <AppBarButton x:Name="xUngroup" Style="{StaticResource AppBarButtonStyler}" Tapped="XUngroup_OnTapped" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xUngroupIcon" Text="&#xE8C6;" FontSize="16" Margin="2, -3, 0, 0"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+
+        </StackPanel>
+
+
+<!--
+            <CommandBar Background="LightGray" x:Name="xGroupCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -73,6 +129,7 @@
                         NeedleBrush="Red"
                         NeedleLength="77"
                         NeedleWidth="5"/>
+                   
                     <Slider x:Name="xOpacitySlider" 
                         Minimum="0" 
                         Maximum="255"
@@ -85,19 +142,21 @@
                         Margin="22, 11, 0, 0" 
                         RightTapped="XOpacitySlider_OnRightTapped"  
                         ValueChanged="XOpacitySlider_OnValueChanged"/>
+                    
                 </Grid>
             </CommandBar.Content>
             <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
             <AppBarButton x:Name="xFontColor" Label="Color">
                 <Button.Flyout>
-                    <Flyout>
-                        <media:SfColorPicker  x:Name="xGroupForegroundColorPicker"  PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
+                    <Flyout x:Name="xColorFlyout">
+                        <local:DashColorPicker x:Name="xGroupForegroundColorPicker" SelectedColorChanged="XGroupForegroundColorPicker_OnSelectedColorChanged"/>
                     </Flyout>
                 </Button.Flyout>
                 <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
             </AppBarButton>
             <AppBarButton x:Name="xUngroup" Icon="Cancel" Label="Ungroup" Tapped="XUngroup_OnTapped"/>
         </CommandBar>
+        -->
     </Grid>
 </UserControl>
 

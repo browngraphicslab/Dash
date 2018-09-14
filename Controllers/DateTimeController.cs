@@ -7,7 +7,7 @@ namespace Dash.Controllers
     /// An implementation of FieldModelController, DateTimeController models a controller that stores Data of type DateTime
     /// Used in updating the modified-time field of a document. 
     /// </summary>
-    public class DateTimeController : FieldModelController<DateTimeModel>
+    public sealed class DateTimeController : FieldModelController<DateTimeModel>
     {
         public DateTimeModel DateTimeFieldModel => Model as DateTimeModel;
 
@@ -19,36 +19,24 @@ namespace Dash.Controllers
         /*
          * Default parameterless constructor sets Data to the current local time. 
          */
-        public DateTimeController() : this(DateTime.Now.Date)
-        {
-        }
+        public DateTimeController() : this(DateTime.Now) { }
 
         /*
          * Primary constructor recieves data of type DateTime and uses it to construct a new DateTimeModel. Default value is set to 1/1/0001 0:00:00.
          */
-        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data))
-        {
-            SaveOnServer();
-
-        }
+        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data)) => SaveOnServer();
 
         /*
          * Constructor that receives only an instance of DateTimeModel
          */
-        public DateTimeController(DateTimeModel dateTimeFieldModel) : base(dateTimeFieldModel)
-        {
-
-        }
-
+        public DateTimeController(DateTimeModel dateTimeFieldModel) : base(dateTimeFieldModel) { }
+        
         //END CONSTRUCTORS
 
         /*
          * Initialization method
          */
-        public override void Init()
-        {
-
-        }
+        public override void Init() { }
 
         /*
          * Effectively a conditional mutator for the instance's Data field, where 'value' must be of type DateTime 
@@ -76,26 +64,17 @@ namespace Dash.Controllers
         /*
          * Given a context, returns the controller's Data field, of type DateTime
          */
-        public override object GetValue(Context context)
-        {
-            return Data;
-        }
+        public override object GetValue(Context context) => Data;
 
         /*
          * Returns a new instance of DateTimeController initialized with the default constructor
          */
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new DateTimeController();
-        }
+        public override FieldControllerBase GetDefaultController() => new DateTimeController();
 
         /*
          * Returns a copy of this instance of DateTimeController (Data field is preserved)
          */
-        public override FieldControllerBase Copy()
-        {
-            return new DateTimeController(Data);
-        }
+        public override FieldControllerBase Copy() => new DateTimeController(Data);
 
         /*
          * Accessor/mutator for the controller's Data field, of type DateTime
@@ -113,20 +92,20 @@ namespace Dash.Controllers
             }
         }
 
+        public override string ToString() => DateTimeFieldModel.Data.ToString("G");
+
         /*
          * Sets the data property and gives UpdateOnServer an UndoCommand 
          */
         private void SetData(DateTime val, bool withUndo = true)
         {
             DateTime data = DateTimeFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+            var newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
 
             DateTimeFieldModel.Data = val;
             UpdateOnServer(withUndo ? newEvent : null);
             OnFieldModelUpdated(null);
         }
-
-
 
         /*
          * Returns a StringSearchModel based on the text query submitted and the contents of this instance's Data (DateTime)

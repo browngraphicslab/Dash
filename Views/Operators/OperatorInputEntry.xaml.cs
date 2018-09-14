@@ -1,14 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
-using Windows.UI;
-using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -45,48 +41,48 @@ namespace Dash
         /// <param name="e"></param>
         private void UIElement_OnDrop(object sender, DragEventArgs e)
         {
-            // make sure drop data is a document
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                // we pass a view document, so we get the data document
-                _refDoc = dragData.DraggedDocument?.GetDataDocument();
-                var opDoc = OperatorFieldReference.GetDocumentController(null);
-                var el = sender as FrameworkElement;
+            //// make sure drop data is a document
+            //if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            //{
+            //    var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+            //    // we pass a view document, so we get the data document
+            //    _refDoc = dragData.DraggedDocument?.GetDataDocument();
+            //    var opDoc = OperatorFieldReference.GetDocumentController(null);
+            //    var el = sender as FrameworkElement;
                 
 
-                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
-                xEllipse.Stroke = new SolidColorBrush(Colors.Red);
-                if (dragData.DraggedKey != null)
-                {
-                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
-                }
-                else
-                {
-                    // if only one field on the input has the correct type then connect that field
-                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                    if (fieldsWithCorrectType.Count == 1)
-                    {
-                        var refKey = fieldsWithCorrectType[0];
-                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
-                    }
-                    else // otherwise display the autosuggest box
-                    {
-                        SuggestBox.Visibility = Visibility.Visible;
-                        SuggestBox.Focus(FocusState.Programmatic);
-                    }
-                }
-            }
-            // if the user dragged from the header of a schema view
-            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
-            {
-                var opDoc = OperatorFieldReference.GetDocumentController(null);
-                var el = sender as FrameworkElement;
-                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
-                var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
-                var fieldKey = dragData.FieldKey;
-                opDoc.SetField<TextController>(key, fieldKey.Id, true);
-            }
+            //    var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
+            //    xEllipse.Stroke = new SolidColorBrush(Colors.Red);
+            //    if (dragData.DraggedKey != null)
+            //    {
+            //        opDoc.SetField(key, new DocumentReferenceController(_refDoc, dragData.DraggedKey), true);
+            //    }
+            //    else
+            //    {
+            //        // if only one field on the input has the correct type then connect that field
+            //        var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+            //        if (fieldsWithCorrectType.Count == 1)
+            //        {
+            //            var refKey = fieldsWithCorrectType[0];
+            //            opDoc.SetField(key, new DocumentReferenceController(_refDoc, refKey), true);
+            //        }
+            //        else // otherwise display the autosuggest box
+            //        {
+            //            SuggestBox.Visibility = Visibility.Visible;
+            //            SuggestBox.Focus(FocusState.Programmatic);
+            //        }
+            //    }
+            //}
+            //// if the user dragged from the header of a schema view
+            //else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
+            //{
+            //    var opDoc = OperatorFieldReference.GetDocumentController(null);
+            //    var el = sender as FrameworkElement;
+            //    var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
+            //    var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
+            //    var fieldKey = dragData.FieldKey;
+            //    opDoc.SetField<TextController>(key, fieldKey.Id, true);
+            //}
 
 
             e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
@@ -105,40 +101,40 @@ namespace Dash
         /// <param name="e"></param>
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
-            // set the types of data this operator input can handle
-            var el = sender as FrameworkElement;
-            var opField = OperatorFieldReference.DereferenceToRoot<ListController<OperatorController>>(null).TypedData.First();
-            var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
-            _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
+            //// set the types of data this operator input can handle
+            //var el = sender as FrameworkElement;
+            //var opField = OperatorFieldReference.DereferenceToRoot<ListController<OperatorController>>(null).TypedData.First();
+            //var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
+            //_inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
 
 
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                _refDoc = dragData.DraggedDocument.GetDataDocument();
-                if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
-                {
-                    // the operator controller the input is going to
-                    // the key we're dropping on
-                    // the type of the field we're dragging
-                    var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
-                    // if the field we're dragging from and the field we're dragging too are the same (todo: or convertible)
-                    // then let the user link otherwise don't let them do anything
-                    e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
-                }
-                else //There's just a document, and a key needs to be chosen later, so accept for now
-                {
-                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
-                    e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
-                }
-            }
+            //if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            //{
+            //    var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+            //    _refDoc = dragData.DraggedDocument.GetDataDocument();
+            //    if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
+            //    {
+            //        // the operator controller the input is going to
+            //        // the key we're dropping on
+            //        // the type of the field we're dragging
+            //        var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
+            //        // if the field we're dragging from and the field we're dragging too are the same (todo: or convertible)
+            //        // then let the user link otherwise don't let them do anything
+            //        e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
+            //    }
+            //    else //There's just a document, and a key needs to be chosen later, so accept for now
+            //    {
+            //        var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+            //        e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
+            //    }
+            //}
 
-            // if the user dragged from the header of a schema view
-            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
-            {
-                e.AcceptedOperation = DataPackageOperation.Link;
-            }
-            System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
+            //// if the user dragged from the header of a schema view
+            //else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
+            //{
+            //    e.AcceptedOperation = DataPackageOperation.Link;
+            //}
+            //System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
             e.Handled = true;
         }
 
@@ -215,7 +211,7 @@ namespace Dash
                 if (chosen.CollectionKey == null)
                 {
                     OperatorFieldReference.GetDocumentController(null).SetField(key,
-                        new DocumentReferenceController(_refDoc.Id, chosen.FieldKey), true);
+                        new DocumentReferenceController(_refDoc, chosen.FieldKey), true);
                 }
                 else
                 {

@@ -15,19 +15,19 @@ namespace Dash
         /// <summary>
         /// The unique id of the Document that is being referenced
         /// </summary>
-        public string DocumentId { get; set; }
+        public DocumentController DocumentController { get; set; }
 
         /// <summary>
         /// Create a new reference to a field on a document. When this reference is resolved 
         /// it will return the corresponding field on the deepest delegate of this document
         /// in the passed in context.
         /// </summary>
-        /// <param name="documentId"></param>
+        /// <param name="document"></param>
         /// <param name="fieldKey"></param>
-        public DocumentFieldReference(string documentId, KeyController fieldKey) : base(fieldKey)
+        public DocumentFieldReference(DocumentController document, KeyController fieldKey) : base(fieldKey)
         {
-            Debug.Assert(documentId != null);
-            DocumentId = documentId;
+            Debug.Assert(document != null);
+            DocumentController = document;
         }
 
         /// <summary>
@@ -38,23 +38,19 @@ namespace Dash
         /// <returns></returns>
         public override DocumentController GetDocumentController(Context context)
         {
-            string docId = DocumentId;
-            if (context != null)
-            {
-                docId = context.GetDeepestDelegateOf(docId) ?? docId;
-            }
-            return ContentController<FieldModel>.GetController<DocumentController>(docId);
+            return DocumentController;
+            return context?.GetDeepestDelegateOf(DocumentController) ?? DocumentController;
         }
 
         public override FieldReference Copy()
         {
-            return new DocumentFieldReference(DocumentId, FieldKey);
+            return new DocumentFieldReference(DocumentController, FieldKey);
         }
 
         public override FieldReference Resolve(Context context)
         {
-            string docId = context.GetDeepestDelegateOf(DocumentId) ?? DocumentId;
-            return new DocumentFieldReference(docId, FieldKey);
+            DocumentController doc = context.GetDeepestDelegateOf(DocumentController) ?? DocumentController;
+            return new DocumentFieldReference(doc, FieldKey);
         }
 
         public override bool Equals(object obj)
@@ -65,17 +61,17 @@ namespace Dash
                 return false;
             }
 
-            return base.Equals(reference) && DocumentId.Equals(reference.DocumentId);
+            return base.Equals(reference) && DocumentController.Equals(reference.DocumentController);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ DocumentId.GetHashCode();
+            return base.GetHashCode() ^ DocumentController.GetHashCode();
         }
 
         public override ReferenceController GetReferenceController()
         {
-            return new DocumentReferenceController(DocumentId, FieldKey);
+            return new DocumentReferenceController(DocumentController, FieldKey);
         }
     }
 }

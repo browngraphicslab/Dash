@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Contacts;
 using Windows.ApplicationModel.Email;
 using Windows.Foundation;
@@ -87,7 +88,10 @@ namespace Dash
         /// </summary>
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            if (to == null) to = Window.Current.Content;
+            if (to == null)
+                to = Window.Current.Content;
+            if (from == null)
+                from = Window.Current.Content;
             return @from.TransformToVisual(to).TransformPoint(p);
         }
 
@@ -111,18 +115,16 @@ namespace Dash
         ///     to the given collection's freeform view.
         /// </summary>
         /// <param name="collection"></param>
+        /// <param name="freeform"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionFreeFormPoint(CollectionFreeformBase freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformBase freeform, Point absolutePosition)
         {
-            //Debug.Assert(freeForm != null);
-            if (freeForm != null)
-            {
-                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.GetItemsControl().ItemsPanelRoot);
-                Debug.Assert(r != null);
-                return r.TransformPoint(absolutePosition);
-            }
-            return absolutePosition;
+            if (freeform == null) return absolutePosition;
+
+            GeneralTransform r = MainPage.Instance.xCanvas.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
+            Debug.Assert(r != null);
+            return r.TransformPoint(absolutePosition);
         }
 
         /// <summary>
@@ -217,6 +219,45 @@ namespace Dash
             return result;
         }
 
+        public static async Task<StorageFile> SaveSoftwareBitmapToFile(SoftwareBitmap softwareBitmap, StorageFile outputFile)
+        {
+            using (var stream = await outputFile.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                // Create an encoder with the desired format
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+
+                // Set the software bitmap
+                encoder.SetSoftwareBitmap(softwareBitmap);
+
+                // Set additional encoding parameters, if needed
+                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
+                encoder.IsThumbnailGenerated = true;
+
+                try
+                {
+                    await encoder.FlushAsync();
+                } catch (Exception err)
+                {
+                    const int WINCODEC_ERR_UNSUPPORTEDOPERATION = unchecked((int)0x88982F81);
+                    switch (err.HResult)
+                    {
+                    case WINCODEC_ERR_UNSUPPORTEDOPERATION:
+                        // If the encoder does not support writing a thumbnail, then try again
+                        // but disable thumbnail generation.
+                        encoder.IsThumbnailGenerated = false;
+                        break;
+                    default:
+                        throw;
+                    }
+                }
+
+                if (encoder.IsThumbnailGenerated == false)
+                {
+                    await encoder.FlushAsync();
+                }
+            }
+            return outputFile;
+        }
 
         /// <summary>
         ///     Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController
@@ -315,21 +356,28 @@ namespace Dash
         /// <summary>
         ///     Saves everything within given UIelement as .png in a specified directory
         /// </summary>
-        public static async void ExportAsImage(UIElement element)
+        public static async Task<string> ExportAsImage(UIElement element, string imgName = "pic.png", bool saveLocal = false)
         {
             var bitmap = new RenderTargetBitmap();
             await bitmap.RenderAsync(element);
 
-            var picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
+            if (saveLocal)
+            {
+                folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            }
+            else
+            {
+                var picker = new FolderPicker();
+                picker.SuggestedStartLocation = PickerLocationId.Desktop;
+                picker.FileTypeFilter.Add("*");
+                folder = await picker.PickSingleFolderAsync();
+            }
 
             StorageFile file = null;
             if (folder != null)
             {
-                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+                file = await folder.CreateFileAsync(imgName, CreationCollisionOption.GenerateUniqueName);
 
                 var pixels = await bitmap.GetPixelsAsync();
                 var byteArray = pixels.ToArray();
@@ -351,7 +399,14 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
+
+                if (saveLocal)
+                {
+                    return file.Name;
+                }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -570,6 +625,35 @@ namespace Dash
             var dotProduct = a.X * b.X + a.Y * b.Y;
             var aMagSq = Math.Pow(a.X, 2) + Math.Pow(a.Y, 2);
             return new Point(a.X * dotProduct / aMagSq, a.Y * dotProduct / aMagSq);
+        }
+        /// <summary>
+        ///  clamps a point to lie within a rectangle
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public static Point Clamp(Point point, Rect rect)
+        {
+            if (point.X < rect.Left)
+            {
+                point.X = rect.Left;
+            }
+            else if (point.X > rect.Right)
+            {
+                point.X = rect.Right;
+            }
+
+            if (point.Y < rect.Top)
+            {
+                point.Y = rect.Top;
+            }
+            else if (point.Y > rect.Bottom)
+            {
+                point.Y = rect.Bottom;
+            }
+
+
+            return point;
         }
     }
 }

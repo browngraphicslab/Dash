@@ -27,7 +27,7 @@ namespace Dash
 
             var title = file.DisplayName;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
 
@@ -41,7 +41,7 @@ namespace Dash
 
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         public static async Task<Uri> GetLocalURI(StorageFile file)
@@ -56,7 +56,7 @@ namespace Dash
         {
             var localFile = await CopyBitmapToLocal(bitmap, title);
 
-            return await CreateImageBoxFromLocalFile(localFile, title);
+            return await CreateImageNoteFromLocalFile(localFile, title);
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateUniqueLocalFile()
+        public static async Task<StorageFile> CreateUniqueLocalFile()
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
@@ -155,7 +155,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateLocalFile(string fileName)
+        public static async Task<StorageFile> CreateLocalFile(string fileName)
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = fileName + ".jpg"; // somehow this works for all images... who knew
@@ -166,27 +166,45 @@ namespace Dash
         /// <summary>
         /// Convert a local file which stores an image into an ImageBox, if the title is null the ImageBox doesn't have a Title
         /// </summary>
-        public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
+        public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, string title, Point where = new Point())
         {
-            var imgSize = await GetImageSize(localFile);
+            Point size = await GetImageSize(localFile);
+            double imgWidth = size.X;
+            double imgHeight = size.Y;
 
-            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgSize.Width, double.NaN), title).Document;
+            return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }
 
         /// <summary>
         /// Return the height and width of an image stored in a randomaccess stream
         /// </summary>
-        private static async Task<Size> GetImageSize(IRandomAccessStreamReference streamRef)
+        private static async Task<Point> GetImageSize(IRandomAccessStreamReference streamRef)
         {
-            int pictureHeight;
-            int pictureWidth;
+           
+            const double maxDim = 250;
+            double pictureHeight = 0;
+            double pictureWidth = 0;
             using (var stream = await streamRef.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-                pictureHeight = Convert.ToInt32(decoder.PixelHeight);
-                pictureWidth = Convert.ToInt32(decoder.PixelWidth);
+                pictureHeight = (double) Convert.ToInt32(decoder.OrientedPixelHeight);
+                pictureWidth = (double) Convert.ToInt32(decoder.OrientedPixelWidth);
+
+                if (pictureHeight > pictureWidth && pictureHeight > maxDim)
+                {
+                    pictureWidth = pictureWidth / pictureHeight * maxDim;
+                    pictureHeight = maxDim;
+                }
+                else if (pictureWidth > maxDim)
+                {
+                    pictureHeight = pictureHeight / pictureWidth * maxDim;
+                    pictureWidth = maxDim;
+                }
             }
-            return new Size(pictureWidth, pictureHeight);
+            Point size = new Point(pictureWidth, pictureHeight);
+            return size;
         }
+
+       
     }
 }

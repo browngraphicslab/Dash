@@ -7,10 +7,10 @@ namespace Dash
 {
     public class MapOperatorController : OperatorController
     {
-        public static KeyController InputKey = new KeyController("D7F1CA4D-820F-419E-979A-6A1538E20A5E", "Input Collection");
-        public static KeyController OperatorKey = new KeyController("3A2C13C5-33F4-4845-9854-6CEE0E2D9438", "Operator");
+        public static KeyController InputKey = new KeyController("Input Collection");
+        public static KeyController OperatorKey = new KeyController("Operator");
 
-        public static KeyController OutputKey = new KeyController("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
+        public static KeyController OutputKey = new KeyController("Output Collection");
 
         public MapOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("A8A3732F-FADE-4504-BC51-4CCF23165E8A", "Map");
+        private static readonly KeyController TypeKey = new KeyController("Map", "A8A3732F-FADE-4504-BC51-4CCF23165E8A");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -40,9 +40,10 @@ namespace Dash
             return new MapOperatorController();
         }
 
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var input = (BaseListController) inputs[InputKey];
             var op = (OperatorController)inputs[OperatorKey];

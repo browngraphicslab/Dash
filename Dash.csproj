@@ -18,10 +18,10 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>98DB1B12D47C5E4609E7D10FFC216AB2AC95AE4E</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>AD0550088CF7CFE386EDB842EA5B2F00A60D8569</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
@@ -100,6 +100,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
@@ -149,8 +150,10 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
+    <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -160,7 +163,11 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnnotationManager.cs" />
+    <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\XOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
+    <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
@@ -173,16 +180,99 @@
     <Compile Include="CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
+    <Compile Include="Controllers\ColorController.cs" />
+    <Compile Include="Controllers\CountOperatorController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
+    <Compile Include="Controllers\HtmlController.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ExponentialOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\GreaterThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\InverseEqualityOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\LessThanEqualsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\LessThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\DebugPrintOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
+    <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
+    <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
+    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
+    <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
+    <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\DocumentLinkOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFDocTextOperatorController.cs" />
+    <Compile Include="Controllers\Operators\PDFAutoRef\PDFToReferencesOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
+    <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\SearchResult.cs" />
+    <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ContainsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ParseDoubleOperatorController.cs" />
+    <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\TemplateAssignmentOperatorController.cs" />
+    <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
+    <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\PdfController.cs" />
+    <Compile Include="Models\HtmlModel.cs" />
+    <Compile Include="Models\PdfModel.cs" />
+    <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
+    <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
+    <Compile Include="LinkActivationManager.cs" />
+    <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
+    <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
+    <Compile Include="Views\Annotations\AnnotationOverlay.xaml.cs">
+      <DependentUpon>AnnotationOverlay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\DashPopup.cs" />
+    <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
+      <DependentUpon>HTMLRTFPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ImportImagePopup.xaml.cs">
+      <DependentUpon>ImportImagePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ImportVideoPopup.xaml.cs">
+      <DependentUpon>ImportVideoPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\PushpinTypePopup.xaml.cs">
+      <DependentUpon>PushpinTypePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\YouTubeLinkPopup.xaml.cs">
+      <DependentUpon>YouTubeLinkPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Annotations\RegionAnnotation.xaml.cs">
+      <DependentUpon>RegionAnnotation.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ColorModel.cs" />
+    <Compile Include="Converters\DataFieldToMakeViewConverter.cs" />
+    <Compile Include="Util\ColorConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
+    <Compile Include="Util\DashColorPicker.xaml.cs">
+      <DependentUpon>DashColorPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\DSL\DuplicateVariableDeclarationErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\DocumentationNotFoundErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\IndexOutOfBoundsErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidListCreationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Op.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
@@ -194,25 +284,23 @@
     <Compile Include="Controllers\Operators\GetKeysOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
-    <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsByAlias.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
-    <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
-    <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
-    <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ToListOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\VariableAssignOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
@@ -226,21 +314,18 @@
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
-    <Compile Include="IAnnotationEnabled.cs" />
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
-    <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\AccessStreamModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
-    <Compile Include="Models\RatedSearchResult.cs" />
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
+    <Compile Include="Rest\Endpoints\BaseModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
     <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
@@ -256,6 +341,7 @@
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DishReplBox.cs" />
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
@@ -265,65 +351,89 @@
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\TemplateBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\TemplateEditorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\Error Models\AbsentStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\BreakLoopExpression.cs" />
+    <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidReturnStatementErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\TextErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
+    <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionSuggestion.cs" />
+    <Compile Include="Util\DSL\ObjectExpression.cs" />
+    <Compile Include="Util\DSL\OuterReplScope.cs" />
+    <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\DSL\ForExpression.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
+    <Compile Include="Util\DSL\ForInExpression.cs" />
+    <Compile Include="Util\DSL\IfExpression.cs" />
+    <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
+    <Compile Include="Util\DSL\ReplPopupSuggestion.cs" />
+    <Compile Include="Util\DSL\ReturnException.cs" />
+    <Compile Include="Util\DSL\ReturnExpression.cs" />
+    <Compile Include="Util\DSL\ReturnScope.cs" />
+    <Compile Include="Util\DSL\Scope.cs" />
+    <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
+    <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\VariableAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\VariableDeclarationExpression.cs" />
+    <Compile Include="Util\DSL\VariableSuggestion.cs" />
+    <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\Export\ExportToTxt.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
-    <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\EmptyScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
-    <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\FunctionExpression.cs" />
-    <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\FunctionCallMissingScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
-    <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\Error Models\GeneralScriptExecutionFailureModel.cs" />
     <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
     <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
-    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidDotNotationScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\ExpressionChain.cs" />
     <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
-    <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\MissingParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\ScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptException.cs" />
-    <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ScriptExecutionErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptExecutionException.cs" />
     <Compile Include="Util\DSL\ScriptExpression.cs" />
-    <Compile Include="Util\DSL\ScriptState.cs" />
     <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
-    <Compile Include="Util\DSL\State.cs" />
     <Compile Include="Util\DSL\TypescriptToOperatorParser.cs" />
     <Compile Include="Util\DSL\VariableExpression.cs" />
-    <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
+    <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\HtmlToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
-    <Compile Include="Util\ImageRegionBox.xaml.cs">
-      <DependentUpon>ImageRegionBox.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
@@ -337,6 +447,7 @@
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
+    <Compile Include="Util\Search\Search.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\StateCropControl.xaml.cs">
       <DependentUpon>StateCropControl.xaml</DependentUpon>
@@ -377,10 +488,11 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\TooManyParametersGivenScriptErrorModel.cs" />
     <Compile Include="Util\TypeTimer.cs" />
     <Compile Include="Util\UndoCommand.cs" />
     <Compile Include="Util\UndoManager.cs" />
+    <Compile Include="Util\VideoWrapper.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
@@ -388,24 +500,51 @@
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\DishReplViewModel.cs" />
     <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineNode.xaml.cs">
+      <DependentUpon>ReplLineNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionDBSchemaColumn.xaml.cs">
       <DependentUpon>CollectionDBSchemaColumn.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
-      <DependentUpon>CollectionStandardView.xaml</DependentUpon>
+    <Compile Include="Views\Annotations\PinAnnotation.xaml.cs">
+      <DependentUpon>PinAnnotation.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Annotations\TextAnnotation.xaml.cs">
+      <DependentUpon>TextAnnotation.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\CollectionGraphView.xaml.cs">
+      <DependentUpon>CollectionGraphView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\GraphConnection.cs" />
+    <Compile Include="Views\Collection\HiddenNodesView.xaml.cs">
+      <DependentUpon>HiddenNodesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\NodeConnectionsView.xaml.cs">
+      <DependentUpon>NodeConnectionsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\NodeInfoView.xaml.cs">
+      <DependentUpon>NodeInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\GraphInfoView.xaml.cs">
+      <DependentUpon>GraphInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\GraphNodeView.xaml.cs">
+      <DependentUpon>GraphNodeView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\SnapshotView.cs" />
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>
@@ -419,14 +558,19 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ActionTextBox.cs" />
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
+    <Compile Include="Views\Annotations\DataVirtualizationSource.cs" />
+    <Compile Include="Views\DishScriptEditView.xaml.cs">
+      <DependentUpon>DishScriptEditView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Annotations\PdfView.xaml.cs">
+      <DependentUpon>PdfView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DockedView.xaml.cs">
-      <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
@@ -444,18 +588,21 @@
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
-      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml.cs">
+      <DependentUpon>PlainTextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml.cs">
+      <DependentUpon>RichTextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml.cs">
+      <DependentUpon>PdfSubToolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
-    <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
-      <DependentUpon>TreeMenuNode.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
-      <DependentUpon>TreeNode.xaml</DependentUpon>
+    <Compile Include="Views\DocumentDecorations.xaml.cs">
+      <DependentUpon>DocumentDecorations.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
@@ -493,6 +640,7 @@
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ILinkHandler.cs" />
     <Compile Include="Views\ImageNode.xaml.cs">
       <DependentUpon>ImageNode.xaml</DependentUpon>
     </Compile>
@@ -501,6 +649,9 @@
     </Compile>
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LinkButton.xaml.cs">
+      <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
@@ -517,8 +668,11 @@
     <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
       <DependentUpon>SearchOperatorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PdfView.xaml.cs">
-      <DependentUpon>PdfView.xaml</DependentUpon>
+    <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
+      <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
+      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
@@ -599,6 +753,7 @@
     <Compile Include="Views\CustomGroupGeometries\GeometryDesigner.xaml.cs">
       <DependentUpon>GeometryDesigner.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PresentationNumberViewModel.cs" />
     <Compile Include="Views\PresentationView.xaml.cs">
       <DependentUpon>PresentationView.xaml</DependentUpon>
     </Compile>
@@ -606,8 +761,16 @@
     <Compile Include="Views\PresentationViewTextBox.xaml.cs">
       <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Annotations\SelectableElement.cs" />
+    <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplitFrame.xaml.cs">
+      <DependentUpon>SplitFrame.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplitManager.xaml.cs">
+      <DependentUpon>SplitManager.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
@@ -669,15 +832,14 @@
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
-    <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />
     <Compile Include="Models\ImageModel.cs" />
     <Compile Include="Models\NumberModel.cs" />
     <Compile Include="Models\OperatorDocumentFactory.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\AddOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\DivideOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorController.cs" />
@@ -761,6 +923,28 @@
     <Compile Include="Views\ContextPreview.xaml.cs">
       <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Tag.xaml.cs">
+      <DependentUpon>Tag.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
+      <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\Ruler.xaml.cs">
+      <DependentUpon>Ruler.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\ResizingControls.xaml.cs">
+      <DependentUpon>ResizingControls.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateApplier.xaml.cs">
+      <DependentUpon>TemplateApplier.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateConstants.cs" />
+    <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
+      <DependentUpon>TemplateEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateRecord.xaml.cs">
+      <DependentUpon>TemplateRecord.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
     <Compile Include="WebBoxView.xaml.cs">
@@ -820,7 +1004,6 @@
     <Content Include="Assets\Store\StoreLogo.scale-200.png" />
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
-    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\unlocked.png" />
     <Content Include="Assets\pinned.png" />
@@ -858,6 +1041,34 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\Annotations\AnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\HTMLRTFPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportImagePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ImportVideoPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\PushpinTypePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\RegionAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -870,17 +1081,29 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Collection\CollectionStandardView.xaml">
+    <Page Include="Views\Annotations\PinAnnotation.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Annotations\TextAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionGraphView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\DashColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewModels\ReplLineNode.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\EditableMarkdownBlock.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Util\ImageRegionBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
       <SubType>Designer</SubType>
@@ -891,6 +1114,26 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\HiddenNodesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\NodeConnectionsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\NodeInfoView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\GraphInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\GraphNodeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -914,11 +1157,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
+    <Page Include="Views\DishScriptEditView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DockedView.xaml">
+    <Page Include="Views\Annotations\PdfView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -942,7 +1189,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
+    <Page Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\PdfSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -950,11 +1205,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeNode.xaml">
+    <Page Include="Views\DocumentDecorations.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1006,6 +1257,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\LinkButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainSearchBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1030,7 +1285,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PdfView.xaml">
+    <Page Include="Views\Annotations\PDFRegionMarker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1118,6 +1377,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\SplitFrame.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SplitManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1194,6 +1461,34 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Tag.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\Ruler.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\ResizingControls.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateApplier.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="WebBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1217,8 +1512,17 @@
     <PackageReference Include="Flurl.Http">
       <Version>2.3.1</Version>
     </PackageReference>
+    <PackageReference Include="FontAwesome.UWP">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
+    </PackageReference>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.7</Version>
+    </PackageReference>
+    <PackageReference Include="itext7">
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="lightbuzz-smtp">
       <Version>1.8.0</Version>
@@ -1256,6 +1560,9 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
       <Version>3.0.0</Version>
     </PackageReference>
+    <PackageReference Include="MyToolkit.Extended">
+      <Version>2.5.16</Version>
+    </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>
     </PackageReference>
@@ -1276,6 +1583,12 @@
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.23.0</Version>
+    </PackageReference>
+    <PackageReference Include="Windows.Andy.Code4App">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="WriteableBitmapEx">
+      <Version>1.5.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

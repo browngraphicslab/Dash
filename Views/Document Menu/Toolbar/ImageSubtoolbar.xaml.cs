@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Dash.Views.Document_Menu.Toolbar;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -25,6 +27,8 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
+        private void AlertModified() => _currentDocController.CaptureNeighboringContext();
+
         public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
         private DocumentView _currentDocView;
@@ -36,12 +40,14 @@ namespace Dash
         {
             InitializeComponent();
             FormatDropdownMenu();
+            SetUpToolTips();
 	        xToggleAnnotations.IsChecked = false;
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
+			
             xImageCommandbar.Loaded += delegate
             {
-                var sp = xImageCommandbar.GetFirstDescendantOfType<StackPanel>();
+                var sp = xImageCommandbar;
                 sp.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
@@ -50,6 +56,7 @@ namespace Dash
                 });
                 Visibility = Visibility.Collapsed;
             };
+			
         }
 
         /// <summary>
@@ -57,22 +64,13 @@ namespace Dash
         /// </summary>
         private void FormatDropdownMenu()
         {
-            xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
-        }
-
-        /// <summary>
-        /// Prevents command bar from hiding labels on click by setting isOpen to true every time it begins to close.
-        /// </summary>
-        private void CommandBar_Closing(object sender, object e)
-        {
-            xImageCommandbar.IsOpen = true;
+        //    xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+        //    xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+        //    xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             _currentImage.StartCrop();
         }
@@ -82,7 +80,6 @@ namespace Dash
         /// </summary>
         private async void Replace_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await ReplaceImage();
         }
@@ -92,17 +89,15 @@ namespace Dash
         /// </summary>
         public void CommandBarOpen(bool status)
         {
-            xImageCommandbar.IsOpen = status;
-            xImageCommandbar.IsEnabled = true;
             xImageCommandbar.Visibility = Visibility.Visible;
-            //updates margin to visually account for the change in size
-            xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            ////updates margin to visually account for the change in size
+            //xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             _currentImage.Revert();
+            AlertModified();
         }
 
         /// <summary>
@@ -124,15 +119,16 @@ namespace Dash
             var replacement = await imagePicker.PickSingleFileAsync();
             if (replacement != null)
             {
-                UndoManager.StartBatch();
-                _currentDocController.SetField<ImageController>(KeyStore.DataKey,
+                using (UndoManager.GetBatchHandle())
+                {
+                    _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
-                await _currentImage.ReplaceImage();
-                UndoManager.EndBatch();
+                    await _currentImage.ReplaceImage();
+                    AlertModified();
+                }
             }
         }
-
-
+        
         /// <summary>
         /// Enables the subtoolbar access to the Document View of the image that was selected on tap.
         /// </summary>
@@ -141,44 +137,122 @@ namespace Dash
             _currentDocView = selection;
             _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
+	        xToggleAnnotations.IsChecked = _currentImage?.AreAnnotationsVisible();
         }
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.Rotate();
+            AlertModified();
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorVertical();
+            AlertModified();
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
-            xImageCommandbar.IsOpen = true;
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
+            AlertModified();
         }
-
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-		    xImageCommandbar.IsOpen = true;
 			_currentImage?.ShowRegions();
-		    xToggleAnnotations.Label = "Hide";
-	
+		    xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
-	    {
-		    xImageCommandbar.IsOpen = true;
-			_currentImage?.HideRegions();
-		    xToggleAnnotations.Label = "Show";
+	    {			_currentImage?.HideRegions();
+		    xToggleAnnotations.Label = "Hidden";
 	    }
 
-	}
+        private ToolTip _toggle;
+        private ToolTip _crop;
+        private ToolTip _replace;
+        private ToolTip _rotate;
+        private ToolTip _hoz;
+        private ToolTip _vert;
+        private ToolTip _revert;
+
+        private void SetUpToolTips()
+        {
+            var placementMode = PlacementMode.Bottom;
+            const int offset = 5;
+
+            _toggle = new ToolTip()
+            {
+                Content = "Toggle Annotations",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
+
+            _crop = new ToolTip()
+            {
+                Content = "Crop Image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xCrop, _crop);
+
+            _replace = new ToolTip()
+            {
+                Content = "Replace Image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xReplace, _replace);
+
+            _rotate = new ToolTip()
+            {
+                Content = "Rotate",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRotate, _rotate);
+
+            _hoz = new ToolTip()
+            {
+                Content = "Horizontal Mirror",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xHorizontalMirror, _hoz);
+
+            _vert = new ToolTip()
+            {
+                Content = "Vertical Mirror",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xVerticalMirror, _vert);
+
+            _revert = new ToolTip()
+            {
+                Content = "Revert Image",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xRevert, _revert);
+        }
+
+        private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+        }
+
+        private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+        }
+
+    }
 }

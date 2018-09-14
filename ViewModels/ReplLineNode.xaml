@@ -1,0 +1,56 @@
+﻿<UserControl
+    x:Class="Dash.ReplLineNode"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    
+    DataContextChanged="ReplLineNode_OnDataContextChanged">
+
+    <StackPanel  DragStarting="XNode_OnDragStarting" CanDrag="True">
+        <StackPanel.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem Text="Edit" Click="MenuFlyoutItem_OnClick"></MenuFlyoutItem>
+            </MenuFlyout>
+        </StackPanel.ContextFlyout>
+        <StackPanel.Resources>
+            <x:Double  x:Key="dataSizing">13</x:Double>
+        </StackPanel.Resources>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock 
+                Grid.Column="0"
+                x:Name="xArrowBlock" 
+                Margin="5, 6, 0, 4" 
+                Height="15"
+                FontSize="{StaticResource dataSizing}" 
+                FontFamily="{StaticResource FontAwesome}" 
+                Style="{StaticResource xMenuItemExpandRight}" 
+                Tapped="XArrowBlock_OnTapped" 
+                Foreground="{x:Bind Foreground, Mode=OneWay}"/>
+            <TextBlock 
+                x:Name="xSnapshotArrowBlock" 
+                Margin="0, 5, 5, 5"
+                Width="Auto"
+                Height="Auto"
+                HorizontalAlignment="Left"
+                FontSize="{StaticResource dataSizing}" 
+                Grid.Column="1" 
+                FontFamily="Lucida Sans Typewriter"
+                Style="{StaticResource xMenuItemExpandRight}" 
+                Tapped="XArrowBlock_OnTapped" 
+                RightTapped="XSnapshotArrowBlock_OnRightTapped"
+                Foreground="{x:Bind Foreground, Mode=OneWay}" 
+                Text="{x:Bind ViewModel.ResultText, Mode=OneWay}"/>
+        </Grid>
+        <StackPanel x:Name="xChildren" Margin="30, 0, 0, 0" Visibility ="Collapsed"/>
+    </StackPanel>
+</UserControl>

@@ -1,5 +1,4 @@
-﻿using Dash.Models.DragModels;
-using DashShared;
+﻿using DashShared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +12,7 @@ using Windows.UI.Xaml.Input;
 using Flurl.Util;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.CollectionDBSchemaHeader;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -55,6 +55,7 @@ namespace Dash
             }
         }
 
+        public UserControl UserControl => this;
 
         public CollectionDBSchemaView()
         {
@@ -176,7 +177,7 @@ namespace Dash
             // otherwise replace the entire data source to reflect the new set of fields (due to add or remove)
             var dargs = (ListController<DocumentController>.ListFieldUpdatedEventArgs) args;
 
-            UpdateHeaders(dargs.ChangedDocuments); // TODO find a better way to update this
+            UpdateHeaders(dargs.NewItems); // TODO find a better way to update this
 
 
             if (dargs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
@@ -221,7 +222,7 @@ namespace Dash
 
         private void AddRows(ListController<DocumentController>.ListFieldUpdatedEventArgs dargs)
         {
-            foreach (var doc in dargs.ChangedDocuments.Select(doc => doc.GetDataDocument()))
+            foreach (var doc in dargs.NewItems.Select(doc => doc.GetDataDocument()))
                 CollectionDocuments.Add(doc);
         }
 
@@ -292,15 +293,6 @@ namespace Dash
             }
         }
 
-        #region Activation
-
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        #endregion
-
         private void xOuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
@@ -331,9 +323,8 @@ namespace Dash
             {
                 vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
-                args.Data.RequestedOperation =
-                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                args.Data.AddDragModel(new DragDocumentModel(vm.Document));
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
         }
 
@@ -380,7 +371,7 @@ namespace Dash
                 SchemaView = this,
                 SchemaDocument = ParentDocument,
                 Width = 150,
-                FieldKey = new KeyController(Guid.NewGuid().ToString(), "New Field")
+                FieldKey = new KeyController("New Field", Guid.NewGuid().ToString())
             };
             SchemaHeaders.Add(newHvm);
 
@@ -389,6 +380,10 @@ namespace Dash
             //cvm.PropertyChanged += Cvm_PropertyChanged;
 
             e.Handled = true;
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
         }
     }
 }

@@ -55,6 +55,7 @@ namespace Dash
         public static void StartBatch()
         {
             _batchCounter++;
+            //System.Diagnostics.Debug.WriteLine("START BATCH : " + _batchCounter);
         }
 
         /// <summary>
@@ -64,8 +65,9 @@ namespace Dash
         public static void EndBatch()
         {
             _batchCounter--;
+            //System.Diagnostics.Debug.WriteLine("END BATCH : " + _batchCounter);
             //only finalize Batch is all batches closed and stuff happened in batch
-            if((_batchCounter == 0) && (_currentBatch.Count != 0))
+            if ((_batchCounter == 0) && (_currentBatch.Count != 0))
             {
                 //add batch to redo stack
                 _undoStack.Push(_currentBatch);

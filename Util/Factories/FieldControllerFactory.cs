@@ -66,10 +66,16 @@ namespace Dash
                 case TypeInfo.RichText:
                     controller = new RichTextController(model as RichTextModel);
                     break;
+                case TypeInfo.Html:
+                    controller = new HtmlController(model as HtmlModel);
+                    break;
                 case TypeInfo.Image:
                     controller = new ImageController(model as ImageModel);
                     break;
-				case TypeInfo.Video:
+                case TypeInfo.Pdf:
+                    controller = new PdfController(model as PdfModel);
+                    break;
+                case TypeInfo.Video:
 					controller = new VideoController(model as VideoModel);
 					break;
                 case TypeInfo.Audio:
@@ -83,6 +89,9 @@ namespace Dash
                     break;
                 case TypeInfo.Bool:
                     controller = new BoolController(model as BoolModel);
+                    break;
+                case TypeInfo.Color:
+                    controller = new ColorController(model as ColorModel);
                     break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
@@ -160,6 +169,9 @@ namespace Dash
                 case TypeInfo.Bool:
                     controller = new ListController<BoolController>(model);
                     break;
+                case TypeInfo.Color:
+                    controller = new ListController<ColorController>(model);
+                    break;
                 case TypeInfo.Any:
                     //Debug.Fail("idk why you got here");
                     controller = new ListController<FieldControllerBase>(model);
@@ -171,7 +183,7 @@ namespace Dash
         }
 
         private static IEnumerable<Type> OperatorTypes { get; } = typeof(OperatorController).Assembly.GetTypes()
-            .Where(type => type.IsSubclassOf(typeof(OperatorController)));
+            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {
@@ -230,6 +242,12 @@ namespace Dash
                 case TypeInfo.Audio:
                     controller = new AudioController(new Uri("ms - appx://Dash/Assets/DefaultAudio.mp3"));
                     break;
+                case TypeInfo.Html:
+                    controller = new HtmlController("");
+                    break;
+                case TypeInfo.Pdf:
+                    controller = new PdfController(new Uri("DEFAULT URI"));
+                    break;
                 case TypeInfo.None:
                 case TypeInfo.Reference:
                 case TypeInfo.Any:
@@ -248,7 +266,7 @@ namespace Dash
             switch (listType)
             {
                 case TypeInfo.None:
-                    Debug.Fail("this shouldnt happen????");
+		    Debug.Fail("This shouldn't happen");
                     break;
                 case TypeInfo.Number:
                     controller = new ListController<NumberController>();
@@ -299,12 +317,49 @@ namespace Dash
                     controller = new ListController<KeyController>();
                     break;
                 case TypeInfo.Any:
-                    Debug.Fail("idk why you got here");
+                    controller = new ListController<FieldControllerBase>();
+                    //Debug.Fail("idk why you got here");
                     break;
                 default:
                     break;
             }
             return controller;
+        }
+
+        private static Dictionary<Type, TypeInfo> _typeDictionary;
+
+        static FieldControllerFactory()
+        {
+            _typeDictionary = new Dictionary<Type, TypeInfo>
+            {
+                [typeof(TextController)] = TypeInfo.Text,
+                [typeof(ImageController)] = TypeInfo.Image,
+                [typeof(VideoController)] = TypeInfo.Video,
+                [typeof(AudioController)] = TypeInfo.Audio,
+                [typeof(RichTextController)] = TypeInfo.RichText,
+                [typeof(PointController)] = TypeInfo.Point,
+                [typeof(PointerReferenceController)] = TypeInfo.PointerReference,
+                [typeof(DocumentReferenceController)] = TypeInfo.DocumentReference,
+                [typeof(ReferenceController)] = TypeInfo.Reference,
+                [typeof(DocumentController)] = TypeInfo.Document,
+                [typeof(FieldControllerBase)] = TypeInfo.Any,
+                [typeof(RectController)] = TypeInfo.Rectangle,
+                [typeof(KeyController)] = TypeInfo.Key,
+                [typeof(BaseListController)] = TypeInfo.List,
+                [typeof(NumberController)] = TypeInfo.Number,
+                [typeof(BoolController)] = TypeInfo.Bool,
+            };
+        }
+
+        public static TypeInfo GetTypeInfo<T>() where T : FieldControllerBase
+        {
+            var type = typeof(T);
+            while (!_typeDictionary.ContainsKey(type))
+            {
+                type = type.BaseType;
+            }
+
+            return _typeDictionary[type];
         }
 
 

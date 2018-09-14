@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("keys")]
+    [OperatorType(Op.Name.get_keys, Op.Name.keys)]
     public class GetKeysOfDocumentOperatorController : OperatorController
     {
         public GetKeysOfDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -27,13 +27,13 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("0D40C96F-2088-4601-A74A-AB582C369BD4", "Get Keys Of Document");
+        private static readonly KeyController TypeKey = new KeyController("Get Keys Of Document", "0D40C96F-2088-4601-A74A-AB582C369BD4");
 
         //Input keys
-        public static readonly KeyController InputDocumentKey = new KeyController("261AF38D-53C2-44C7-BBA0-B9AD9F0CDF71", "InputDoc");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
 
         //Output keys
-        public static readonly KeyController ResultKeysKey = new KeyController("F8D0DAD3-551A-4A06-B65D-CBB4A9AB4490", "Keys");
+        public static readonly KeyController ResultKeysKey = new KeyController("Keys");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -43,9 +43,10 @@ namespace Dash
         {
             [ResultKeysKey] = TypeInfo.List,
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (doc != null)

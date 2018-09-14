@@ -33,14 +33,13 @@ namespace Dash
         DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
         {
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-            return new BackgroundShape(getDataReference(dataDoc), new DocumentReferenceController(dataDoc.Id, KeyStore.SideCountKey), new DocumentReferenceController(dataDoc.Id, KeyStore.BackgroundColorKey),  where.X, where.Y, size.Width, size.Height).Document;
+            return new BackgroundShape(getDataReference(dataDoc), new DocumentReferenceController(dataDoc, KeyStore.SideCountKey), new DocumentReferenceController(dataDoc, KeyStore.BackgroundColorKey),  where.X, where.Y, size.Width, size.Height).Document;
         }
         public BackgroundNote(AdornmentShape shape, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)
         {
             var dataDocument = makeDataDelegate(new TextController(shape.ToString()));
-
-
+			
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255));
             // set fields based on the parameters

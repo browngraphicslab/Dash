@@ -9,20 +9,21 @@ using System.Threading.Tasks;
 using System.Timers;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 using Microsoft.Data.Sqlite;
 using Timer = System.Threading.Timer;
 
 namespace Dash
 {
-    public class LocalSqliteEndpoint : IModelEndpoint<FieldModel>
+    public class LocalSqliteEndpoint : BaseModelEndpoint<FieldModel>
     {
         /// <summary>
         /// Connection to the sqlite database
         /// </summary>
         private SqliteConnection _db;
         private SqliteTransaction _currentTransaction;
-        private readonly System.Timers.Timer _backupTimer, _saveTimer;
+        private readonly System.Timers.Timer _backupTimer, _saveTimer, _cleanupTimer;
         private int _numBackups = DashConstants.DefaultNumBackups;
         public bool NewChangesToBackup { get; set; }
 
@@ -71,12 +72,23 @@ namespace Dash
             _backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
             _backupTimer.Start();
 
+            //_cleanupTimer = new System.Timers.Timer(30 * 1000);
+            //_cleanupTimer.Elapsed += (sender, args) => CleanupDocuments();
+            //_cleanupTimer.Start();
+
             NewChangesToBackup = false;
         }
 
-        public void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
+        private async void CleanupDocuments()
+        {
+            var fields = new HashSet<FieldModel>();
+            await TrackDownReferences(MainPage.Instance.MainDocument?.Model, fields);
+            DeleteDocumentsExcept(fields, null, null);
+        }
 
-        public void SetNumBackups(int numBackups) { }
+        public override void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
+
+        public override void SetNumBackups(int numBackups) { }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -108,7 +120,7 @@ namespace Dash
         #region DATABASE MUTATORS
 
 
-        public void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
+        public override void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -131,8 +143,12 @@ namespace Dash
             NewChangesToBackup = true;
         }
 
-        public void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
+        public override void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
         {
+            if (RichTextView._searchHighlight)
+            {
+                return;
+            }
             var watch = Stopwatch.StartNew();
 
             _transactionMutex.WaitOne();
@@ -154,7 +170,7 @@ namespace Dash
             NewChangesToBackup = true;
         }
 
-        public void DeleteDocument(FieldModel documentToDelete, Action success, Action<Exception> error)
+        public override void DeleteDocument(FieldModel documentToDelete, Action success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -175,7 +191,106 @@ namespace Dash
             NewChangesToBackup = true;
         }
 
-        public void DeleteAllDocuments(Action success, Action<Exception> error)
+        public override void DeleteDocuments(IEnumerable<FieldModel> documents, Action success, Action<Exception> error)
+        {
+            var watch = Stopwatch.StartNew();
+
+            var fieldModels = documents.ToList();
+            var tempParams = new string[fieldModels.Count];
+
+            for (var i = 0; i < fieldModels.Count; ++i) { tempParams[i] = "@param" + i; }
+
+            _transactionMutex.WaitOne();
+            var deleteDocsCommand = new SqliteCommand
+            {
+                //i.e. "In "Fields", return the field contents at the specified document ids"
+                CommandText = @"DELETE FROM `Fields` WHERE `id` IN (" + string.Join(", ", tempParams) + ");",
+                Connection = _db,
+                Transaction = _currentTransaction
+            };
+
+            for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i]); }
+
+            if (!SafeExecuteMutateQuery(deleteDocsCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
+            success?.Invoke();
+        }
+
+        public void DeleteDocumentsExcept(IEnumerable<FieldModel> documents, Action success, Action<Exception> error)
+        {
+            var watch = Stopwatch.StartNew();
+
+            var ids = new List<string>();
+            _transactionMutex.WaitOne();
+            var selectAllDocs = new SqliteCommand
+            {
+                CommandText = @"SELECT `id` FROM `Fields`",
+                Connection = _db,
+                Transaction = _currentTransaction
+            };
+            var enumerable = documents.ToList();
+            try
+            {
+                var reader = selectAllDocs.ExecuteReader();
+                while (reader.Read())
+                {
+                    ids.Add(reader.GetString(0));
+                }
+                reader.Close();
+                ids = ids.Except(enumerable.Select(fm => fm.Id)).ToList();
+            }
+            catch (SqliteException e)
+            {
+                _transactionMutex.ReleaseMutex();
+                error?.Invoke(e);
+                return;
+            }
+
+            var deleteDoc = new SqliteCommand
+            {
+                CommandText = @"DELETE FROM `Fields` WHERE `id` = @param",
+                Connection = _db,
+                Transaction = _currentTransaction
+            };
+            var param = new SqliteParameter("@param", SqliteType.Text);
+            deleteDoc.Parameters.Add(param);
+            foreach (var id in ids)
+            {
+                param.Value = id;
+                try
+                {
+                    deleteDoc.ExecuteNonQuery();
+                }
+                catch (SqliteException e)
+                {
+                    _transactionMutex.ReleaseMutex();
+                    error?.Invoke(e);
+                    return;
+                }
+            }
+
+            _transactionMutex.ReleaseMutex();
+
+            //var tempParams = new string[ids.Count];
+
+            //for (var i = 0; i < ids.Count; ++i) { tempParams[i] = "@param" + i; }
+
+            //_transactionMutex.WaitOne();
+            //var deleteDocsCommand = new SqliteCommand
+            //{
+            //    //i.e. "In "Fields", return the field contents at the specified document ids"
+            //    CommandText = @"DELETE FROM `Fields` WHERE `id` IN (" + string.Join(", ", tempParams) + ");",
+            //    Connection = _db,
+            //    Transaction = _currentTransaction
+            //};
+
+            //for (var i = 0; i < ids.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], ids[i]); }
+
+            //if (!SafeExecuteMutateQuery(deleteDocsCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
+            Debug.WriteLine($"Delete Documents Except took {watch.ElapsedMilliseconds} ms");
+            success?.Invoke();
+        }
+
+        public override void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -189,7 +304,7 @@ namespace Dash
             };
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) {return;}
+            if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) { return; }
 
             success?.Invoke();
             NewChangesToBackup = true;
@@ -199,7 +314,7 @@ namespace Dash
 
         #region DATABASE ACCESSORS
 
-        public async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -220,7 +335,7 @@ namespace Dash
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
-        public async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -249,12 +364,12 @@ namespace Dash
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
-        public async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public override async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error)
         {
             throw new NotImplementedException();
         }
 
-        public async Task GetDocumentsByQuery(IQuery<FieldModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public override async Task GetDocumentsByQuery(IQuery<FieldModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -288,7 +403,7 @@ namespace Dash
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
-        public async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public override async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -322,7 +437,7 @@ namespace Dash
             success?.Invoke(fieldModels.OfType<V>());
         }
 
-        public void HasDocument(FieldModel model, Action<bool> success, Action<Exception> error)
+        public override void HasDocument(FieldModel model, Action<bool> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();
 
@@ -359,7 +474,7 @@ namespace Dash
             success?.Invoke(hasDoc);
         }
 
-        public bool CheckAllDocuments(IEnumerable<FieldModel> documents)
+        public override bool CheckAllDocuments(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
 
@@ -416,17 +531,19 @@ namespace Dash
 
         #region CONVENIENCE AND HELPER METHODS
 
-        public async Task Close()
+        public override Task Close()
         {
             _saveTimer.Stop();
             _transactionMutex.WaitOne();
+            CleanupDocuments();
             _currentTransaction?.Commit();
             _currentTransaction = null;
-            _transactionMutex.ReleaseMutex();
             _db.Close();
+            _transactionMutex.ReleaseMutex();
+            return Task.CompletedTask;
         }
 
-        public Dictionary<string, string> GetBackups() { return new Dictionary<string, string>(); }
+        public override Dictionary<string, string> GetBackups() { return new Dictionary<string, string>(); }
 
         private bool SafeExecuteMutateQuery(IDbCommand command, Action<Exception> error, string source, long elapsedTime)
         {

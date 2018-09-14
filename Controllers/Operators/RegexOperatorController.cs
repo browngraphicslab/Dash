@@ -4,80 +4,84 @@ using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public class RegexOperatorController : OperatorController
+    [OperatorType(Op.Name.regex)]
+    public sealed class RegexOperatorController : OperatorController
     {
-        public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
+        private readonly List<string> _digits = new List<string> {"1", "2", "3", "4", "5", "6", "7", "8", "9"}; 
 
-        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
+        public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        }
+        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("434B2CBC-003A-4DAD-8E8B-7F759A39B37C", "Regex");
+        private static readonly KeyController TypeKey = new KeyController("Regex", "DF48D210-40A9-46A2-B32A-8F3C96C6CDD7");
 
         //Input keys
-        public static readonly KeyController ExpressionKey      = new KeyController("0FA9226F-35BB-4AEE-A830-C81FF9611F3E", "Expression");
-        public static readonly KeyController SplitExpressionKey = new KeyController("1AB31BED-2FF8-4C84-96E1-7B3C739038AC", "SplitExpression");
-        public static readonly KeyController TextKey            = new KeyController("B4D356C5-361E-4538-BB4D-F14C85159312", "Text");
+        public static readonly KeyController TextKey = new KeyController("Text");
+        public static readonly KeyController ExpressionKey = new KeyController("Expression");
 
         //Output keys
-        public static readonly KeyController MatchesKey = new KeyController("9C395B1C-A7A7-47A4-9F30-3B83CD2D0939", "Matches");
+        public static readonly KeyController MatchDocsKey = new KeyController("Matches");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
             new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
             new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(SplitExpressionKey, new IOInfo(TypeInfo.Text, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [MatchesKey] = TypeInfo.List,
+            [MatchDocsKey] = TypeInfo.Document,
         };
 
-        static DocumentController _prototype = null;
-        
-        void initProto()
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            if (_prototype == null)
+            string text = (inputs[TextKey] as TextController)?.Data;
+            string expr = (inputs[ExpressionKey] as TextController)?.Data;
+
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return;
+
+            var reg = new Regex($@"{expr}");
+            var matches = reg.Matches(text).ToList();
+
+            var matchDocs = new ListController<DocumentController>();
+            var i = 0;
+
+            foreach (Match match in matches)
             {
-                _prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                    new DocumentType(UtilShared.GetDeterministicGuid("RegexOutput"), "RegexOutput"));
-                _prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(_prototype.DocumentType.Type + "API"), true);
-            }
-        }
+                var groups = match.Groups.ToList();
+                var infoDoc = new DocumentController();
+                var unnamedList = new ListController<TextController>();
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
-        {
-            initProto();
-            var text = (inputs[TextKey] is ListController<TextController>) ? (inputs[TextKey] as ListController<TextController>).Data.Aggregate("", (init, fm) => init + " " + (fm as TextController).Data ) :
-                (inputs[TextKey] as TextController).Data;
-            var expr = (inputs[ExpressionKey] as TextController).Data;
-            var split = (inputs[SplitExpressionKey] as TextController).Data;
-            var rsplit = new Regex(split);
-            var ematch = new Regex(expr);
-            var splits = rsplit.Split(text);
+                infoDoc.SetField<TextController>(KeyStore.TitleKey, $"Match #{++i}", true);
+                infoDoc.SetField<NumberController>(new KeyController("Index"), match.Index, true);
 
-            var collected = new List<TextController>();
-            foreach (var s in splits)
-                if (ematch.IsMatch(s))
+                foreach (Group group in groups)
                 {
-                    collected.Add(new TextController(s));
+                    if (string.IsNullOrEmpty(group.Value.Trim())) continue;
+
+                    if (IsNumeric(group.Name)) unnamedList.Add(new TextController(group.Value.Trim()));
+                    else
+                    {
+                        var key = new KeyController(group.Name);
+                        if (group.Name.Equals("0")) key = new KeyController("Full Match");
+
+                        infoDoc.SetField<TextController>(key, group.Value.Trim(), true);
+                    }
                 }
-            outputs[MatchesKey] = new ListController<TextController>(collected);
+
+                if (unnamedList.Count > 0) infoDoc.SetField(KeyStore.AnonymousGroupsKey, unnamedList, true);
+
+                matchDocs.Add(infoDoc);
+            }
+            outputs[MatchDocsKey] = matchDocs;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new RegexOperatorController(OperatorFieldModel);
-        }
+        private bool IsNumeric(string name) => _digits.Contains(name[0].ToString());
+
+        public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);
     }
 }

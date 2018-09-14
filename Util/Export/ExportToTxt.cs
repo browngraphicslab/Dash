@@ -171,6 +171,9 @@ namespace Dash
                         case "Key Value Document Box":
                             newText = KeyValToTxt(doc, minMax);
                             break;
+                        case "Web Box":
+                            newText = HtmlBoxToTxt(doc, minMax);
+                            break;
                         default:
                             newText = "";
                             break;
@@ -239,11 +242,11 @@ namespace Dash
                     var y = pt1.Data.Y;
 
                     var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
-                    var width = 0;/*
+                    double width = 0;
                     if (rawWidth != "NaN")
                     {
-                        width = Int32.Parse(rawWidth);
-                    }*/
+                        width = Convert.ToDouble(rawWidth);
+                    }
 
                     if (x < minX)
                     {
@@ -266,18 +269,20 @@ namespace Dash
             }
 
             var minMax = new List<double>();
+
+
             //add numbers for margins
             minMax.Add(minX - (minX * .1));
             minMax.Add(maxX);
-            minMax.Add(minY - (minY * .1));
-            minMax.Add(maxY + (maxY * .2));
+            minMax.Add(minY - (Math.Abs(minY) * .1));
+            minMax.Add(maxY + (Math.Abs(maxY) * .1));
             return minMax;
         }
 
         private List<double> getMargin(DocumentController doc, List<double> minMax)
         {
             var marginLeft = 0.0;
-            var marginRight = 0.0;
+            var marginTop = 0.0;
             var pt1 = doc.GetPosition();
             if (pt1 != null)
             {
@@ -295,12 +300,12 @@ namespace Dash
                 var y = pt1.Value.Y - minY;
 
                 var DASHHEIGHT = Math.Abs(maxY - minY);
-                marginRight = (y * PAGEHEIGHT) / (DASHHEIGHT);
+                marginTop = (y * PAGEHEIGHT) / (DASHHEIGHT);
             }
 
             var margins = new List<double>();
             margins.Add(marginLeft);
-            margins.Add(marginRight);
+            margins.Add(marginTop);
             return margins;
         }
 
@@ -436,6 +441,26 @@ namespace Dash
             }
         }
 
+        private string HtmlBoxToTxt(DocumentController doc, List<double> minMax)
+        {
+            //string version of the image uri
+            var html = doc.GetDereferencedField<TextController>(KeyStore.DataKey, null);
+            if (html != null)
+            {
+                var htmlText = html.Data;
+
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML image formatting
+                return "<div width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax)
+                       + "px\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">" + htmlText + "</div>";
+            }
+            return "";
+        }
+
         private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
             //get text that must be added to file for this collection
@@ -480,7 +505,7 @@ namespace Dash
             // create a collectionview off the screen
             var collView = col.MakeViewUI(null) as CollectionView;
             Debug.Assert(collView != null);    
-            MainPage.Instance.xCanvas.Children.Add(collView);
+            MainPage.Instance.xTabCanvas.Children.Add(collView);
             Canvas.SetLeft(collView, -10000);
             Canvas.SetTop(collView, -10000);
 
@@ -491,7 +516,7 @@ namespace Dash
             collView.CurrentViewLoaded += async delegate
             {
                 var bitmap = new RenderTargetBitmap();
-                await bitmap.RenderAsync(collView.CurrentView);
+                await bitmap.RenderAsync(collView.CurrentView.UserControl);
                
                 var file = await folder.CreateFileAsync($"{colTitle}.png", CreationCollisionOption.ReplaceExisting);
 
@@ -514,7 +539,7 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
-                MainPage.Instance.xCanvas.Children.Remove(collView); // remove the collection from the canvas (cleanup)
+                MainPage.Instance.xTabCanvas.Children.Remove(collView); // remove the collection from the canvas (cleanup)
             };
 
             //return link to the image you just created

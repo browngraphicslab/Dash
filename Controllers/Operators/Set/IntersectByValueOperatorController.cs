@@ -4,15 +4,15 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("intersectByValue")]
+    [OperatorType(Op.Name.intersect_by_value)]
     public class IntersectByValueOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController SetAKey = new KeyController("C6DF3CD1-729B-4E3F-AB51-8CF1C46E6AE8", "A");
-        public static readonly KeyController SetBKey = new KeyController("752AC76D-BB48-458E-BA32-FC00F0955D7C", "B");
+        public static readonly KeyController SetAKey = new KeyController("A");
+        public static readonly KeyController SetBKey = new KeyController("B");
 
         //Output keys
-        public static readonly KeyController IntersectionKey = new KeyController("5B7CA95F-9DE7-4884-9827-F1E8A22DB48F", "Intersection");
+        public static readonly KeyController IntersectionKey = new KeyController("Intersection");
 
         public IntersectByValueOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -41,11 +41,11 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("9B073C2B-8B11-4939-818F-903A067D412E", "Intersect by value");
+            new KeyController("Intersect by value", "9B073C2B-8B11-4939-818F-903A067D412E");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
             var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;

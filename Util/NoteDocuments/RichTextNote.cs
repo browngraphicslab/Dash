@@ -18,8 +18,8 @@ namespace Dash
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
 
-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, RichTextDocumentOperatorController.ReadableTextKey), true);
-            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc, RichTextDocumentOperatorController.ReadableTextKey), true);
+            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
             return protoDoc;
         }
 
@@ -30,13 +30,19 @@ namespace Dash
             return new RichTextBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
 
-        public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size()) :
+        public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size(), string urlSource=null) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
+            var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text + (urlSource != null ? RichTextView.HyperlinkText : ""))));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             Document.Tag = "Rich Text Note Layout " + rcount;
             dataDocument.Tag = "Rich Text Note Data" + rcount++;
+            if (urlSource != null)
+            {
+                dataDocument.SetField<TextController>(KeyStore.SourceUriKey, urlSource, true);
+                dataDocument.SetField<TextController>(KeyStore.WebContextKey, urlSource, true);
+            }
+
         }
     }
 }

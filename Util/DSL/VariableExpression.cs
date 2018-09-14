@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -29,24 +30,22 @@ namespace Dash
             _variableName = variableName;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public override FieldControllerBase Execute(Scope scope)
         {
-            if (state[_variableName] != null)
+            if (scope[_variableName] != null)
             {
-                return state[_variableName];
+                return scope[_variableName];
             }
+
             throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
         }
 
-        public override FieldControllerBase CreateReference(ScriptState state)
+        public override FieldControllerBase CreateReference(Scope scope)
         {
-            return Execute(state);
+            return Execute(scope);
         }
 
-        public override DashShared.TypeInfo Type
-        {
-            get { return DashShared.TypeInfo.Any; }
-        }
+        public override DashShared.TypeInfo Type => DashShared.TypeInfo.Any;
 
         public string GetVariableName()
         {

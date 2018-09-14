@@ -8,11 +8,11 @@ namespace Dash
 
     {
         //Input keys
-        public static readonly KeyController AKey = new KeyController("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
-        public static readonly KeyController BKey = new KeyController("0B9C67F7-3FB7-400A-B016-F12C048325BA", "Input B");
+        public static readonly KeyController AKey = new KeyController("Input A");
+        public static readonly KeyController BKey = new KeyController("Input B");
 
         //Output keys
-        public static readonly KeyController IntersectionKey = new KeyController("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
+        public static readonly KeyController IntersectionKey = new KeyController("Intersection");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -35,11 +35,11 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("5B93D353-AE02-4E20-9E2D-D38C01BC5F20", "Intersection");
+        private static readonly KeyController TypeKey = new KeyController("Intersection operator", "5B93D353-AE02-4E20-9E2D-D38C01BC5F20");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             ListController<DocumentController> setA = (ListController<DocumentController>) inputs[AKey];
             ListController<DocumentController> setB = (ListController<DocumentController>) inputs[BKey];

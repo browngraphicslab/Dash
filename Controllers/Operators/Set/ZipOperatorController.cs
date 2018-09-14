@@ -7,10 +7,10 @@ namespace Dash
 {
     public class ZipOperatorController : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("0252A0F7-E6A3-498E-A728-8B23B16FA0E5", "Input A");
-        public static readonly KeyController BKey = new KeyController("BC72A0FF-C707-488E-A03A-29A6515AB441", "Input B");
+        public static readonly KeyController AKey = new KeyController("Input A");
+        public static readonly KeyController BKey = new KeyController("Input B");
 
-        public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
+        public static readonly KeyController OutputKey = new KeyController("Output");
 
         public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -33,13 +33,13 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("FA39D712-E1AA-4740-8CC9-C3201708A1F5", "Zip");
+        private static readonly KeyController TypeKey = new KeyController("Zip", "FA39D712-E1AA-4740-8CC9-C3201708A1F5");
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
             var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();

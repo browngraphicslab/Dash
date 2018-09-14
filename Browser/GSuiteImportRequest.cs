@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -18,6 +19,8 @@ namespace Dash
 
         public string data { get; set; }
 
+        public string url { get; set; }
+
         public override async Task Handle(BrowserView browser)
         {
             byte[] bdata = Convert.FromBase64String(data);
@@ -27,8 +30,18 @@ namespace Dash
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>
                 {
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()?.ViewModel
-                        .AddDocument(new PdfToDashUtil().GetPDFDoc(file));
+                    var doc = new PdfToDashUtil().GetPDFDoc(file);
+                    if (SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase cfb)
+                    {
+                        var point = Util.GetCollectionFreeFormPoint(cfb, new Point(
+                            (SplitFrame.ActiveFrame.ActualWidth - MainPage.Instance.xMainTreeView.ActualWidth) / 2,
+                            SplitFrame.ActiveFrame.ActualHeight / 2));
+                        doc.SetField(KeyStore.PositionFieldKey, new PointController(point), true);
+                    }
+
+                    doc.GetDataDocument().SetField(KeyStore.WebContextKey, new TextController(url), true);
+                    SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>()?.ViewModel
+                        .AddDocument(doc);
                 });
         }
 

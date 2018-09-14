@@ -13,9 +13,11 @@
             font-size: 100%;
         }
 
-        button {
+        button, #addDoc {
+            margin-top: 5px;
             background: black;
             color: white;
+            width: 100%
         }
 
         h1 {
@@ -30,16 +32,59 @@
             overflow: hidden;
             max-width: 400px;
         }
+
+        #loadingBar {
+            width: 0;
+            height: 100%;
+            background: green;
+        }
+
+        #addDocButton {
+            color: white;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            vertical-align: top;
+            visibility: hidden;
+        }
+
+        #addDoc {
+            background: black;
+            margin-top: 5px;
+            height: auto;
+        }
+
+        #addText {
+            width: fit-content;
+            margin: 0 4.5px;
+        }
+
+        #mainCont {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
     <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
     <script src="popup.js"></script>
 </head>
-  <body>
-      <div id="status"></div>
-      <img id="image-result" hidden>
-      <h1>Dash</h1>
-      <button id="openDash">Open Dash </button>
-      <button id="addDoc" style="visibility: collapse">Add Document to Dash </button>
-  </body>
+<body>
+    <div id="mainCont">
+        <div id="status"></div>
+        <img id="image-result" hidden>
+        <h1>Dash</h1>
+        <button id="openDash">Open Dash </button>
+        <div id="addDoc">
+            <button id="addDocButton">
+                <div id="loadingBar">
+                    <div id="addText">
+                        Add Document to Dash
+                    </div>
+                </div>
+            </button>
+        </div>
+    </div>
+</body>
 </html>
 

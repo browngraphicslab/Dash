@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -236,15 +236,7 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
-            CollectionNote cnote;
-            if (FreeformInkControl.FreeformView is CollectionFreeformView)
-            {
-                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
-            }
-            else
-            {
-                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Standard);
-            }
+            var cnote  = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,
@@ -302,11 +294,11 @@ namespace Dash
                         var field = doc.GetField(key);
                         if (field != null)
                         {
-                            list.Add(field);
+                            list.AddBase(field);
                         }
-                        var textBox = new TextingBox(new DocumentReferenceController(doc.Id, key),
+                        var textBox = new TextingBox(new DocumentReferenceController(doc, key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
-                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
+                        (textBox.Document.GetField(KeyStore.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
                         layoutDocs.Add(textBox.Document);
                     }
@@ -315,7 +307,7 @@ namespace Dash
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             if (list != null)
             {
-                doc.SetField(KeyStore.ParsedFieldKey, list, true);
+                doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
@@ -486,12 +478,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(Guid.NewGuid().ToString(), keystring);
+                key = new KeyController(keystring, Guid.NewGuid().ToString());
             }
             else
             {
                 value = str;
-                key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
+                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
             }
 
         }

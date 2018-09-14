@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -8,6 +9,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
 using DashShared;
+using static Dash.AnchorableAnnotation;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -98,6 +101,17 @@ namespace Dash
             };
         }
 
+        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        {
+            //Set width and height
+            BindWidth(element, docController, context);
+            BindHeight(element, docController, context);
+
+            //Set alignments
+            BindHorizontalAlignment(element, docController, context);
+            BindVerticalAlignment(element, docController, context);
+        }
+
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
@@ -122,20 +136,6 @@ namespace Dash
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
-        }
-
-        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<PointController> binding = new FieldBinding<PointController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.PositionFieldKey,
-                Context = context,
-                Converter = new PointToTranslateTransformConverter()
-            };
-
-            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
@@ -168,15 +168,18 @@ namespace Dash
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
-        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            FieldBinding<PointController> binding = new FieldBinding<PointController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new PointToTranslateTransformConverter()
+            };
 
-            //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         /// <summary>
@@ -240,8 +243,27 @@ namespace Dash
         #endregion
     }
 
+    public enum LinkBehavior {
+        Zoom,
+        Annotate,
+        Dock,
+        Float,
+        Overlay
+    }
+
     public static class CourtesyDocumentExtensions
     {
+        public static void SetLinkBehavior(this DocumentController document, LinkBehavior behavior)
+        {
+            document.SetField<TextController>(KeyStore.LinkBehaviorKey, behavior.ToString(), true);
+        }
+        public static LinkBehavior GetLinkBehavior(this DocumentController document)
+        {
+            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
+        }
+
+
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
             document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);
@@ -262,6 +284,11 @@ namespace Dash
             return data == null ? VerticalAlignment.Stretch : Enum.Parse<VerticalAlignment>(data);
         }
 
+        public static bool GetFitToParent(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null);
+            return data?.Data == "true";
+        }
         public static void    SetFitToParent(this DocumentController document, bool fit)
         {
             document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
@@ -312,21 +339,42 @@ namespace Dash
 
         public static bool    GetHidden(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.HiddenKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.HiddenKey, null);
+            return data?.Data ?? false;
         }
         public static void    SetHidden(this DocumentController document, bool hidden)
         {
-            document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
+            //TODO This should use a BoolController
+            document.SetField<BoolController>(KeyStore.HiddenKey, hidden, true);
         }
 
-        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        public static void ToggleHidden(this DocumentController document)
         {
-            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
+            var hiddenField = document.GetFieldOrCreateDefault<BoolController>(KeyStore.HiddenKey);
+            hiddenField.Data = !hiddenField.Data;
         }
-        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+
+        public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
         {
-            var todocs = document.GetLinks(LinkFromOrToKey);
+            if (linkFromOrToKey == null)
+            {
+                var fromLinks = document.GetLinks(KeyStore.LinkFromKey);
+                var toLinks   = document.GetLinks(KeyStore.LinkToKey);
+                var allinks   = new List<DocumentController>(fromLinks);
+                allinks.AddRange(toLinks);
+                return allinks;
+            }
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
+        }
+
+        public static TextController GetLinkTag(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
+        }
+
+        public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        {
+            var todocs = document.GetDereferencedField<ListController<DocumentController>>(LinkFromOrToKey, null);
             if (todocs == null)
             {
                 document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);
@@ -335,42 +383,109 @@ namespace Dash
                 todocs.AddRange(docs);
         }
 
+        public static ListController<DocumentController> GetRegions(this DocumentController document)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+        }
+
+        public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
+        {
+            var curRegions = document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            if (curRegions == null)
+            {
+                document.SetField(KeyStore.RegionsKey, new ListController<DocumentController>(regions), true);
+            }
+            else
+                curRegions.AddRange(regions);
+        }
+
         public static DocumentController GetRegionDefinition(this DocumentController document)
         {
-            return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
+            return document.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
         }
-        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        public static void SetRegionDefinition(this DocumentController document, DocumentController regionParent)
         {
-            document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+            document.GetDataDocument().SetField(KeyStore.RegionDefinitionKey, regionParent, true);
         }
 
-        public static bool    GetTransient(this DocumentController document)
+        public static void SetAnnotationType(this DocumentController document, AnnotationType annotationType)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
-            return data?.Data == "true";
-        }
-        public static void    SetTransient(this DocumentController document, bool hidden)
-        {
-            document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
+            document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static int ?   GetSideCount(this DocumentController document)
+        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
+        {
+            var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            var annoType = t == null
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
+
+            switch (annoType) { 
+            
+                case AnnotationType.Pin:       return new PinAnnotation(overlay, new Selection(regionDocumentController,
+                                                             new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
+                case AnnotationType.Region:    return new RegionAnnotation(overlay, new Selection(regionDocumentController));
+                case AnnotationType.Selection: return new TextAnnotation(overlay, new Selection(regionDocumentController));
+            }
+            return null;
+        }
+
+        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
+        {
+            var key = (direction == LinkDirection.ToDestination ^ inverse) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
+            return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
+        }
+
+        public static void GotoRegion(this DocumentController document, DocumentController region, DocumentController link = null)
+        {
+            if (!document.Equals(region))
+            {
+                document.RemoveField(KeyStore.GoToRegionLinkKey);
+                document.RemoveField(KeyStore.GoToRegionKey);
+                document.SetFields(new[] {
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
+                }, true);
+            }
+        }
+
+        public static bool GetTransient(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.TransientKey, null)?.Data;
+            return data ?? false;
+        }
+        public static void SetTransient(this DocumentController document, bool hidden)
+        {
+            document.SetField<BoolController>(KeyStore.TransientKey, hidden, true);
+        }
+
+        public static int? GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void    SetSideCount(this DocumentController document, int count)
+        public static void SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
 
-        public static void    SetWidth(this DocumentController document, double width)
+        public static void SetWidth(this DocumentController document, double width)
         {
             document.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
         }
 
-        public static void    SetHeight(this DocumentController document, double height)
+        public static double GetWidth(this DocumentController document)
+        {
+            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 0;
+        }
+
+        public static void SetHeight(this DocumentController document, double height)
         {
             document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
+        }
+
+        public static double GetHeight(this DocumentController document)
+        {
+            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
         }
         
     }

@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Dash.Converters;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dash
 {
@@ -33,7 +34,6 @@ namespace Dash
                         case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
                             return Windows.UI.Xaml.TextWrapping.NoWrap;
                     }
-
                 }
                 double width = (double)data[1];
                 return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
@@ -59,8 +59,8 @@ namespace Dash
                 };
                 element.AddFieldBinding(RichTextView.TextProperty, binding);
 
-                var textWrapRef = new DocumentFieldReference(docController.Id, KeyStore.TextWrappingKey);
-                var widthRef = new DocumentFieldReference(docController.Id, KeyStore.WidthFieldKey);
+                var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
+                var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
                 var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
                 {
                     Mode = BindingMode.OneWay,
@@ -72,20 +72,7 @@ namespace Dash
                 element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
             }
         }
-        protected static void BindBackgroundColor(RichTextView element, DocumentController docController, Context context)
-        {
-            var backgroundBinding = new FieldBinding<TextController>()
-            {
-                Key = KeyStore.BackgroundColorKey,
-                Document = docController,
-                Converter = new StringToBrushConverter(),
-                Mode = BindingMode.TwoWay,
-                Context = context,
-                FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
-            };
-            element.xRichEditBox.AddFieldBinding(RichEditBox.BackgroundProperty, backgroundBinding);
-        }
-        public static DocumentController MakeRegionDocument(DocumentView richTextBox)
+        public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return rtv.GetRegionDocument();
@@ -95,9 +82,6 @@ namespace Dash
             RichTextView rtv = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
-            var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as RichTextController;
-            if (fieldModelController != null)
-            {
                 rtv = new RichTextView()
                 {
                     LayoutDocument = docController.GetActiveLayout() ?? docController,
@@ -112,9 +96,7 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
                 SetupBindings(rtv, docController, context);
-                BindBackgroundColor(rtv, docController, context);
-            }
-
+			
             return rtv;
         }
 

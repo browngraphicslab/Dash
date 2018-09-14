@@ -1,0 +1,14 @@
+﻿<local:AnchorableAnnotation
+    x:Class="Dash.PinAnnotation"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    mc:Ignorable="d"   uiControls:Mouse.Cursor="Arrow"
+    IsDoubleTapEnabled="false">
+
+    <Ellipse x:Name="xShape" Width="10" Height="10" Margin="-5 -5 0 0" PointerMoved="xShape_PointerMoved"/>
+
+</local:AnchorableAnnotation>

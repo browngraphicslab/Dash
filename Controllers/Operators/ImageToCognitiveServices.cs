@@ -23,10 +23,10 @@ namespace Dash.Controllers.Operators
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("6910154D-3B22-4C3B-824A-D3E03F02B1E9", "Image Cog Services");
+        private static readonly KeyController TypeKey = new KeyController("Image Cog Services");
 
-        public static readonly KeyController ImageKey = new KeyController("2HGGH89D-SH43-SDGF-25HD-DAFI9E8HF8HF", "Image");
-        public static readonly KeyController DescriptorKey = new KeyController("HL3H9R8K-634H-FDHG-4HWH-RG5IORGPHS33", "Descriptor");
+        public static readonly KeyController ImageKey = new KeyController("Image");
+        public static readonly KeyController DescriptorKey = new KeyController("Descriptor");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -48,7 +48,7 @@ namespace Dash.Controllers.Operators
         /// <param name="state"></param>
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var tags = "";
             var value = inputs.ElementAt(0).Value;

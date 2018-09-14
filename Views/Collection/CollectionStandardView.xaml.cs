@@ -14,6 +14,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -40,7 +42,6 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Loaded += OnLoad;
-            Unloaded += OnUnload;
             xOuterGrid.PointerEntered += OnPointerEntered;
             xOuterGrid.PointerExited += OnPointerExited;
             xOuterGrid.SizeChanged += OnSizeChanged;
@@ -50,18 +51,17 @@ namespace Dash
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
-        protected override void OnLoad(object sender, RoutedEventArgs e)
+        private void OnLoad(object sender, RoutedEventArgs e)
         {
-            base.OnLoad(sender,e);
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewManipulationControls.IsScaleDiscrete = true;
             UpdateViewLevel();
         }
 
-        public override Canvas GetCanvas()
+        public override Panel GetCanvas()
         {
-            return xItemsControl.ItemsPanelRoot as Canvas;
+            return xItemsControl.ItemsPanelRoot as Panel;
         }
 
         public override ItemsControl GetItemsControl()
@@ -69,9 +69,9 @@ namespace Dash
             return xItemsControl;
         }
 
-        public override CanvasControl GetBackgroundCanvas()
+        public override ContentPresenter GetBackgroundContentPresenter()
         {
-            return xBackgroundCanvas;
+            return xBackgroundContentPresenter;
         }
 
         public override Grid GetOuterGrid()
@@ -99,7 +99,30 @@ namespace Dash
             return InkHostCanvas;
         }
 
+        protected override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            base.OnPointerPressed(sender, e);
+        }
+
+        protected override void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (ViewModel.ViewLevel == CollectionViewModel.StandardViewLevel.Detail)
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            else
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+            base.OnPointerReleased(sender, e);
+        }
+
+        protected override void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            base.OnPointerMoved(sender, args);
+        }
         private int zoom = 0;
+        private Storyboard _storyboard;
+        private MatrixTransform _animatedTransform;
+
         protected override void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation,
             bool abs)
         {
@@ -110,7 +133,6 @@ namespace Dash
             double newScale = 1;
             if (scaleX < 1 && scaleY < 1)
             {
-                //zoomOut++;
                 zoom--;
                 if (zoom < -3)
                 {
@@ -124,7 +146,6 @@ namespace Dash
             }
             else if (scaleX > 1 && scaleY > 1)
             {
-                //zoomIn++;
                 zoom++;
                 if (zoom > 3)
                 {
@@ -136,7 +157,6 @@ namespace Dash
                     zoom = 0;
                 }
             }
-
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
@@ -161,13 +181,93 @@ namespace Dash
             composite.Children.Add(translateDelta); // add the new translate
 
             var matrix = composite.Value;
-            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-
+            if (newScale != 1)
+                AnimateZoom(matrix);
+            else
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
             if (newView != currentView)
             {
                 ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
                 MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
             }
+            if (newView == 3)
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            else
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+        }
+
+        /// <summary>
+        /// Returns whether or not 
+        /// </summary>
+        /// <param name="offsetX"></param>
+        /// <param name="offsetY"></param>
+        /// <param name="endScaleX"></param>
+        /// <param name="endScaleY"></param>
+        /// <returns></returns>
+        private bool AnimateZoom(Matrix matrix)
+        {
+            var oldMatrix = (GetCanvas().RenderTransform as MatrixTransform)?.Matrix;
+            if (oldMatrix == null) return false;
+            _animatedTransform = new MatrixTransform() { Matrix = (Matrix)oldMatrix };
+            var newMatrix = new MatrixTransform() { Matrix = matrix };
+
+            var milliseconds = 250;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+
+            _storyboard?.SkipToFill();
+            _storyboard?.Stop();
+            _storyboard?.Children.Clear();
+            _storyboard = new Storyboard() { Duration = duration };
+
+            var startX = _animatedTransform.Matrix.OffsetX;
+            var startY = _animatedTransform.Matrix.OffsetY;
+            var endX = newMatrix.Matrix.OffsetX;
+            var endY = newMatrix.Matrix.OffsetY;
+
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(_animatedTransform, startX, endX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_animatedTransform, startY, endY, "MatrixTransform.Matrix.OffsetY", duration);
+            translateAnimationX.AutoReverse = false;
+            translateAnimationY.AutoReverse = false;
+
+            var startScaleX = _animatedTransform.Matrix.M11;
+            var startScaleY = _animatedTransform.Matrix.M22;
+            var endScaleX = newMatrix.Matrix.M11;
+            var endScaleY = newMatrix.Matrix.M22;
+
+            var zoomAnimationX = MakeAnimationElement(_animatedTransform, startScaleX, endScaleX, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_animatedTransform, startScaleY, endScaleY, "MatrixTransform.Matrix.M22", duration);
+
+            zoomAnimationX.AutoReverse = false;
+            zoomAnimationY.AutoReverse = false;
+
+            _storyboard.Children.Add(translateAnimationX);
+            _storyboard.Children.Add(translateAnimationY);
+            _storyboard.Children.Add(zoomAnimationX);
+            _storyboard.Children.Add(zoomAnimationY);
+
+            CompositionTarget.Rendering -= CompositionTargetRendering;
+            CompositionTarget.Rendering += CompositionTargetRendering;
+
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+            _storyboard.Begin();
+            _storyboard.Completed -= StoryboardCompleted;
+            _storyboard.Completed += StoryboardCompleted;
+            return true;
+        }
+
+        private void StoryboardCompleted(object sender, object e)
+        {
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            CompositionTarget.Rendering -= CompositionTargetRendering;
+            _storyboard.Completed -= StoryboardCompleted;
+        }
+
+        void CompositionTargetRendering(object sender, object e)
+        {
+            var matrix = _animatedTransform.Matrix;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
         private double SetScale(CollectionViewModel.StandardViewLevel viewLevel)
@@ -196,21 +296,23 @@ namespace Dash
         private void UpdateViewLevel()
         {
             var scale = ViewModel.PrevScale;
+            CollectionViewModel.StandardViewLevel level;
             if (scale <= 0.5)
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
+                level = CollectionViewModel.StandardViewLevel.Overview;
             }
             else if (scale <= 1)
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
+                level = CollectionViewModel.StandardViewLevel.Region;
             }
             else
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
+                level = CollectionViewModel.StandardViewLevel.Detail;
             }
+            ViewModel.ViewLevel = level;
+            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = level;
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = level;
         }
+
     }
 }

@@ -1,38 +1,156 @@
 ﻿<UserControl
-    x:Class="Dash.Views.PresentationView"
+    x:Class="Dash.PresentationView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
+    xmlns:system="using:System"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid Padding="20">
-        <StackPanel>
-            <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
-            <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
-                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
-                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="ResetButton" Icon="Undo" Label="Reset" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height ="30"/>
+            <RowDefinition Height ="*"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Button x:Name="xClosePresentation"  Margin="241,-30,0,0" Click="XClosePresentation_OnClick" Background="LightGray">
+          <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />
+        </Button>
+        <StackPanel Grid.Row="1" Margin="0,-10,0,0" x:Name="xOuterStack" x:FieldModifier="public">
+            <StackPanel.Resources>
+                <Storyboard x:Name="xContentIn" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xTransportControls"
+                        Storyboard.TargetProperty="MinHeight"
+                        To="60"
+                        Duration="0:0:0.3"
+                        EnableDependentAnimation="True"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xPinnedNodesListView"
+                        Storyboard.TargetProperty="Opacity"
+                        To="1"
+                        Duration="0:0:0.5"
+                        EnableDependentAnimation="True"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xNumberList"
+                        Storyboard.TargetProperty="Opacity"
+                        To="1"
+                        Duration="0:0:0.5"
+                        EnableDependentAnimation="True"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xPresentationTitle"
+                        Storyboard.TargetProperty="Opacity"
+                        To="1"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xContentOut" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xTransportControls"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"
+                        Completed="Timeline_OnCompleted"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xPinnedNodesListView"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xNumberList"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xPresentationTitle"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xSettingsIn" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xSettingsPanel"
+                        Storyboard.TargetProperty="Opacity"
+                        To="1"
+                        Duration="0:0:0.4"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xSettingsOut" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xSettingsPanel"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xHelpIn" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0.5"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+                <Storyboard x:Name="xHelpOut" x:FieldModifier="public">
+                    <DoubleAnimation 
+                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0"
+                        Duration="0:0:0.2"
+                        EnableDependentAnimation="True"/>
+                </Storyboard>
+            </StackPanel.Resources>
+            <TextBlock x:Name="xPresentationTitle" Opacity="0"  TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
+            <CommandBar x:Name="xTransportControls" Height="0"  Opacity="1" HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed" x:FieldModifier="public">
+
+                <AppBarButton x:Name="xBackButton" x:FieldModifier="public" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="xPlayStopButton" x:FieldModifier="public" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
+                <AppBarButton x:Name="xNextButton" x:FieldModifier="public" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+
             </CommandBar>
+            <TextBlock x:Name="xHelpPrompt" x:FieldModifier="public" Visibility="Collapsed" Opacity="0"  TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <ListView ItemsSource="{x:Bind ViewModel.PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                <ListView 
+                    x:Name="xNumberList"
+                    ItemsSource="{Binding PinNumbers}" 
+                    SelectionMode="None" 
+                    IsItemClickEnabled="False" 
+                    Margin="7, -26, 0, 0"
+                    Grid.Column="0"
+                    Opacity="0">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:IntWrapper">
-                            <TextBlock Text="{x:Bind Number}" FontSize="20" Foreground="LightGray"/>
+                        <DataTemplate x:DataType="dash:PresentationNumberViewModel">
+                            <TextBlock Text="{x:Bind Num}" FontSize="20" Foreground="LightGray" FontWeight="{x:Bind FontWeight, Mode=OneWay}"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
-                          AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click" RightTapped="PinnedNodesListView_OnRightTapped">
+                <ListView 
+                    x:Name="xPinnedNodesListView" 
+                    ItemsSource="{Binding PinnedNodes}" 
+                    ReorderMode="Enabled" 
+                    Margin="0, -26, 0, 0"
+                    CanReorderItems="True"
+                    AllowDrop="True" 
+                    HorizontalAlignment="Stretch" 
+                    Grid.Column="1" 
+                    Opacity="0"
+                    x:FieldModifier="public"
+                    SelectionMode="None" 
+                    IsItemClickEnabled="True" 
+                    ItemClick="PinnedNode_Click" 
+                    RightTapped="PinnedNodesListView_OnRightTapped">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -47,19 +165,52 @@
                         </MenuFlyout>
                     </ListView.Resources>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="dash:DocumentViewModel">
+                        <DataTemplate x:DataType="dash:DocumentController">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="2">
+                                    <SymbolIcon Symbol="Delete"/>
+                                    </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
+        </StackPanel>
+        <StackPanel x:Name="xSettingsPanel" Opacity="0" HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="2">
+            <AppBarButton 
+                x:Name="xResetButton"
+                Icon="Zoom" 
+                Label="Re-Focus" 
+                Click="ResetButton_Click" 
+                IsEnabled="False" 
+                Opacity="0.3" 
+                IsCompact="False" 
+                Margin="10"/>
+            <AppBarToggleButton 
+                x:Name="xLoopButton" 
+                Icon="RepeatAll" 
+                Label="Loop" 
+                Checked="RepeatButton_OnChecked" 
+                Unchecked="RepeatButton_OnUnchecked" 
+                Margin="0,10,0,0"/>
+            <AppBarToggleButton 
+                x:Name="xShowLinesButton" 
+                Icon="Go" 
+                Label="Show Lines" 
+                IsEnabled="True" 
+                IsCompact="False" 
+                Margin="10" 
+                Checked="ShowLinesButton_OnChecked"
+                Unchecked="ShowLinesButton_OnUnchecked"
+                Background="White" 
+                Foreground="Black"
+                x:FieldModifier="public"/>
         </StackPanel>
     </Grid>
 </UserControl>

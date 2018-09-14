@@ -25,9 +25,9 @@ namespace Dash.Views.Document_Menu.Toolbar
 		private int _pos;
 		private ObservableCollection<string> fonts;
 		private bool _isCompact;
-		private TextSubtoolbar _toolbar;
+		private RichTextSubtoolbar _toolbar;
 
-		public DropDownTextButton(TextSubtoolbar toolbar, int pos)
+		public DropDownTextButton(RichTextSubtoolbar toolbar, int pos)
 		{
 			this.InitializeComponent();
 			_toolbar = toolbar;
