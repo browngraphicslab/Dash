@@ -47,7 +47,8 @@ namespace Dash.Controllers.Operators.Point
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            throw new NotImplementedException();
+            var p = ((PointController)inputs[PointKey]).Data;
+            outputs[YCoordKey] = new NumberController(p.Y);
         }
 
     }

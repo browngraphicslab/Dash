@@ -8,6 +8,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType(Op.Name.point)]
     public sealed class PointOperator : OperatorController
     {
 

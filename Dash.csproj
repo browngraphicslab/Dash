@@ -163,6 +163,7 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
