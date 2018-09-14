@@ -783,7 +783,11 @@ namespace Dash
             VirtualKey.Delete,
             VirtualKey.G,
             VirtualKey.R,
-            VirtualKey.T
+            VirtualKey.T,
+            VirtualKey.Left,
+            VirtualKey.Right,
+            VirtualKey.Up,
+            VirtualKey.Down
         };
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -923,6 +927,66 @@ namespace Dash
                             }
                         });
                     deselect = true;
+                    break;
+                case VirtualKey.Up:
+                case VirtualKey.Down:
+                    DoAction((views, where, size) =>
+                    {
+                        views.Sort((dv1, dv2) =>
+                        {
+                            var dv1y = dv1.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
+                            var dv2y = dv2.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
+                            if (dv1y < dv2y)
+                                return -1;
+                            else if (dv1y > dv2y)
+                                return 1;
+                            return 0;
+                        });
+
+                        Rect bounds = Rect.Empty;
+                        double usedHeight = 0;
+                        foreach (var v in views)
+                        {
+                            var vb = v.ViewModel.Bounds;
+                            usedHeight += vb.Height;
+                            bounds.Union(new Point(vb.Left, vb.Top));
+                            bounds.Union(new Point(vb.Right, vb.Bottom));
+                        }
+                        var spacing = (bounds.Height -usedHeight) / (views.Count -1);
+                        double placement = bounds.Top;
+                        foreach (var v in views)
+                        {
+                            if (modifier == VirtualKey.Up)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
+                                placement += v.ViewModel.Bounds.Height + spacing;
+                            }
+                        }
+                    });
+                    break;
+                case VirtualKey.Left:
+                case VirtualKey.Right:
+                    DoAction((views, where, size) =>
+                    {
+                        Rect bounds = Rect.Empty;
+                        foreach (var v in views)
+                        {
+                            var vb = v.ViewModel.Bounds;
+                            bounds.Union(new Point(vb.Left, vb.Top));
+                            bounds.Union(new Point(vb.Right, vb.Bottom));
+                        }
+                        foreach (var v in views)
+                        {
+                            if (modifier == VirtualKey.Left)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Left, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                            }
+                            else if (modifier == VirtualKey.Right)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Right-v.ViewModel.Bounds.Width, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                            }
+                        }
+                    });
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
