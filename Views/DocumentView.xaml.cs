@@ -1289,7 +1289,7 @@ namespace Dash
         private void xBackgroundPin_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ViewModel.IsNotBackgroundPinned = !ViewModel.IsNotBackgroundPinned;
-            xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE842 : 0xE77A);
+            xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE840 : 0xE77A);
             e.Handled = true;
         }
     }
