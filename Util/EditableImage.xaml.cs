@@ -230,9 +230,9 @@ namespace Dash
         /// </param>
         public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-            StorageFile file = await GetImageFile();
+            var file = await GetImageFile();
 
-            ImageProperties fileProperties = await file.Properties.GetImagePropertiesAsync();
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
             if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
@@ -240,57 +240,39 @@ namespace Dash
                 LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
             }
 
-            //_originalWidth is original width of owl, not replaced image
-            var scale = fileProperties.Width / Image.ActualWidth;
-
             // retrieves data from rectangle
-            var startPointX = (uint)rectangleGeometry.X;
-            var startPointY = (uint)rectangleGeometry.Y;
-            var height = (uint)rectangleGeometry.Height;
-            var width = (uint)rectangleGeometry.Width;
+            var startPointX = (uint)(rectangleGeometry.X      / Image.ActualWidth  * fileProperties.Width);
+            var startPointY = (uint)(rectangleGeometry.Y      / Image.ActualHeight * fileProperties.Height);
+            var height      = (uint)(rectangleGeometry.Height / Image.ActualHeight * fileProperties.Height);
+            var width       = (uint)(rectangleGeometry.Width  / Image.ActualWidth  * fileProperties.Width);
 
             Debug.Assert(file != null); // if neither works, something's hecked up
-            WriteableBitmap cropBmp;
 
             // opens the uri path and reads it
-            using (IRandomAccessStream stream = await file.OpenReadAsync())
+            using (var stream = await file.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
 
-                // finds scaled size of the new bitmap image
-                var scaledWidth = (uint)Math.Ceiling(decoder.PixelWidth / scale);
-                var scaledHeight = (uint)Math.Ceiling(decoder.PixelHeight / scale);
-
-                if (flip != BitmapFlip.None && (height != scaledHeight || width != scaledWidth))
+                if (flip != BitmapFlip.None && (height != decoder.PixelHeight || width != decoder.PixelWidth))
                 {
-                    height = scaledHeight;
-                    width = scaledWidth;
-                    rectangleGeometry.Height = scaledHeight;
-                    rectangleGeometry.Width = scaledWidth;
+                    height = decoder.PixelHeight;
+                    width = decoder.PixelWidth;
                 }
 
-                if (rot == BitmapRotation.Clockwise90Degrees && (height != scaledWidth || width != scaledHeight))
+                if (rot == BitmapRotation.Clockwise90Degrees && (height != decoder.PixelWidth || width != decoder.PixelHeight))
                 {
-                    height = scaledWidth;
-                    width = scaledHeight;
-                    rectangleGeometry.Height = scaledWidth;
-                    rectangleGeometry.Width = scaledHeight;
+                    height = decoder.PixelWidth;
+                    width = decoder.PixelHeight;
                 }
 
                 // sets the boundaries for how we are cropping the bitmap image
-                var bitmapTransform = new BitmapTransform();
-                var bounds = new BitmapBounds
-                {
-                    X = startPointX,
-                    Y = startPointY,
-                    Width = width,
-                    Height = height
-                };
-                bitmapTransform.Rotation = rot;
-                bitmapTransform.Flip = flip;
-                bitmapTransform.Bounds = bounds;
-                bitmapTransform.ScaledWidth = scaledWidth;
-                bitmapTransform.ScaledHeight = scaledHeight;
+                var bitmapTransform = new BitmapTransform() { Rotation = rot, Flip = flip, ScaledHeight = decoder.PixelHeight, ScaledWidth = decoder.PixelWidth };
+                bitmapTransform.Bounds = new BitmapBounds {
+                        X = startPointX,
+                        Y = startPointY,
+                        Width = width,
+                        Height = height
+                    };
 
                 // creates a new bitmap image with those boundaries
                 var pix = await decoder.GetPixelDataAsync(
@@ -300,26 +282,20 @@ namespace Dash
                     ExifOrientationMode.IgnoreExifOrientation,
                     ColorManagementMode.ColorManageToSRgb
                 );
-
-                var pixels = pix.DetachPixelData();
-
-                // dis is it, the new bitmap image
-                cropBmp = new WriteableBitmap((int)width, (int)height);
-                var pixStream = cropBmp.PixelBuffer.AsStream();
-                pixStream.Write(pixels, 0, (int)(width * height * 4));
-
-                SaveCroppedImageAsync(cropBmp, decoder, rectangleGeometry, pixels);
+                
+                SaveCroppedImageAsync(width, height, decoder, pix.DetachPixelData());
             }
         }
 
-        private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
-            byte[] pixels)
+        private async void SaveCroppedImageAsync(uint width, uint height, BitmapDecoder decoder, byte[] pixels)
         {
             using (UndoManager.GetBatchHandle())
             {
-
-                var width = (uint)rectgeo.Width;
-                var height = (uint)rectgeo.Height;
+                // dis is it, the new bitmap image
+                var cropBmp = new WriteableBitmap((int)width, (int)height);
+                cropBmp.PixelBuffer.AsStream().Write(pixels, 0, (int)(width * height * 4));
+                // update the image source, width, and positions
+                Image.Source = cropBmp;
 
                 // randomly generate a new guid for the filename
                 var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
@@ -349,22 +325,21 @@ namespace Dash
                 var uri = new Uri(path);
                 LayoutDocument.SetField<ImageController>(KeyStore.DataKey, uri, true);
 
-                // update the image source, width, and positions
-                Image.Source = cropBmp;
-                Image.Width = width;
-
                 // store new image information so that multiple crops can be made
                 _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
 
                 var oldpoint = LayoutDocument.GetPosition() ?? new Point();
                 var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
-                Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
-                    oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
+                var oldAspect = LayoutDocument.GetActualSize().Value.X / LayoutDocument.GetActualSize().Value.Y;
+                var newaspect = width / (double)height;
+                if (newaspect > oldAspect)
+                     LayoutDocument.SetHeight(LayoutDocument.GetActualSize().Value.X / newaspect);
+                else LayoutDocument.SetWidth (LayoutDocument.GetActualSize().Value.Y * newaspect);
+                var point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
+                                      oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
                 LayoutDocument.SetPosition(point);
                 _cropControl = new StateCropControl(LayoutDocument, this);
-
-                // TODO: Test that replace button works with cropping when merged with master
             }
         }
 
