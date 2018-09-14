@@ -474,9 +474,9 @@ namespace Dash
                                 // if we've reached a different line
                                 if (Math.Abs(Canvas.GetTop(currRect) -
                                              TextSelectableElements[index + 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2 ||
-                                    Math.Abs(Canvas.GetLeft(currRect) - TextSelectableElements[index + 1].Bounds.Left) > TextSelectableElements[index].Bounds.Width * 2)
+                                    Math.Abs(Canvas.GetLeft(currRect) - TextSelectableElements[index + 1].Bounds.Left) > TextSelectableElements[index].Bounds.Width * 4)
                                 {
-                                    currRect.Width = 0;
+                                    currRect.Visibility = Visibility.Collapsed;
                                     XAnnotationCanvas.Children.Remove(currRect);
                                 } else
                                 {
@@ -492,7 +492,7 @@ namespace Dash
                                 if (Math.Abs(Canvas.GetTop(currRect) -
                                              TextSelectableElements[index - 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2)
                                 {
-                                    currRect.Width = 0;
+                                    currRect.Visibility = Visibility.Collapsed;
                                     XAnnotationCanvas.Children.Remove(currRect);
                                 } else
                                 {
@@ -502,12 +502,6 @@ namespace Dash
                             }
                         }
                     }
-                    /*else*/
-                    // if we're deselecting something in the middle
-                    //else
-                    //{
-
-                    //}
 
                     //if (!_selectedRectangles.ContainsValue(_selectedRectangles[index]))
                     //{
@@ -550,14 +544,25 @@ namespace Dash
             }
 
             var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                              ele.Bounds.Width * 2 && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
+                              ele.Bounds.Width * 4 && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
                               ele.Bounds.Height / 2;
             var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
             if (closeEnough && similarSize)
             {
-                Canvas.SetLeft(_currRect, Math.Min(Canvas.GetLeft(_currRect), ele.Bounds.Left));
-                _currRect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(_currRect));
-                Canvas.SetTop(_currRect, Math.Min(Canvas.GetTop(_currRect), ele.Bounds.Top));
+                var left = Canvas.GetLeft(_currRect);
+                var right = Canvas.GetLeft(_currRect) + _currRect.Width;
+                if (ele.Bounds.Left < left)
+                {
+                    Canvas.SetLeft(_currRect, ele.Bounds.Left);
+                    _currRect.Width = right - ele.Bounds.Left;
+                }
+                else
+                {
+                    _currRect.Width = Math.Max(_currRect.Width, ele.Bounds.Right - left);
+                }
+                //Canvas.SetLeft(_currRect, Math.Min(Canvas.GetLeft(_currRect), ele.Bounds.Left));
+                //_currRect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(_currRect));
+                //Canvas.SetTop(_currRect, Math.Min(Canvas.GetTop(_currRect), ele.Bounds.Top));
                 _currRect.Height = Math.Max(_currRect.Height, ele.Bounds.Bottom - Canvas.GetTop(_currRect));
             }
             else
@@ -727,7 +732,7 @@ namespace Dash
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
                         }
-                        else if (/*rect.IsInVisualTree() &&*/ (new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height).Contains(ele.Bounds)))
+                        else if (/*rect.IsInVisualTree() &&*/ new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height).Contains(ele.Bounds))
                         {
                             found = true; 
                             _selectedRectangles[ele.Index] = rect;
