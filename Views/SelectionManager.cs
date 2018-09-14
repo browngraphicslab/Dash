@@ -224,6 +224,33 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
+
+        public static bool TryInitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe, ManipulationStartedRoutedEventArgs e)
+        {
+            var parents = draggedView.GetAncestorsOfType<DocumentView>().ToList();
+            if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(draggedView) ||
+                SelectionManager.GetSelectedDocs().Contains(draggedView.GetFirstAncestorOfType<DocumentView>()))
+            {
+                SelectionManager.InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
+                return true;
+            }
+            else
+            {
+                var prevParent = parents.FirstOrDefault();
+                foreach (var parent in parents)// bcz: Ugh.. this is ugly.
+                {
+                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.DocumentType) &&
+                        parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
+                        (SelectionManager.GetSelectedDocs().Contains(parent) || parent == parents.Last()))
+                    {
+                        SelectionManager.InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
+                        return true;
+                    }
+                    prevParent = parent;
+                }
+            }
+            return false;
+        }
         public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null)
@@ -291,6 +318,7 @@ namespace Dash
                 br.X = Math.Max(br.X, bounds.Right * scaling);
                 br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
                 doc.IsHitTestVisible = false;
+                doc.Tag = "INVISIBLE";
             }
 
             var width = (br.X - tl.X);

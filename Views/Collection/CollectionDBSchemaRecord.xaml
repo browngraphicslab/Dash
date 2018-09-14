@@ -19,17 +19,12 @@
                     CanDrag="False" AllowDrop="False" CanReorderItems="False" >
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <ItemsStackPanel CanDrag="False" AllowDrop="False" Orientation="Horizontal"  Margin="0"/>
+                <ItemsStackPanel CanDrag="False" AllowDrop="False" Orientation="Horizontal" Margin="0"/>
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <local:CollectionDBSchemaRecordField DataContext="{Binding}" 
-                                                         CanDrag="True"
-                                                         ManipulationMode="All"
-                                                         ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
-                                                         PointerPressed="CollectionDBSchemaRecordField_PointerPressed"
-                                                         />
+                <local:EditableScriptView></local:EditableScriptView>
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

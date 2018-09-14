@@ -225,9 +225,11 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                var parents = this.GetAncestorsOfType<DocumentView>().Count();
-                if (parents < 2 || SelectionManager.GetSelectedDocs().Contains(this))
-                    SelectionManager.InitiateDragDrop(this, null, e);
+                if (this.IsRightBtnPressed())
+                {
+                    if (SelectionManager.TryInitiateDragDrop(this, null, e))
+                        e.Handled = true;
+                }
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);

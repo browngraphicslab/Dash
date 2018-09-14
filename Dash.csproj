@@ -506,6 +506,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionDBSchemaColumn.xaml.cs">
+      <DependentUpon>CollectionDBSchemaColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\PinAnnotation.xaml.cs">
       <DependentUpon>PinAnnotation.xaml</DependentUpon>
     </Compile>
@@ -1069,6 +1072,10 @@
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\CollectionDBSchemaColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>

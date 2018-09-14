@@ -82,7 +82,7 @@ namespace Dash
             var columnVariables = inputs[ColumnVariables] as ListController<KeyController>;
             Debug.Assert(columnVariables != null);
             var columnKeys = columnVariables.TypedData;
-            var allHeaderKeys = Util.GetTypedHeaders(collection);
+            var allHeaderKeys = Util.GetDisplayableTypedHeaders(collection);
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
