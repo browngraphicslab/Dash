@@ -167,6 +167,12 @@
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
+      <DependentUpon>ActionMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ActionMenu\ActionMenuItem.xaml.cs">
+      <DependentUpon>ActionMenuItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
     <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
@@ -1039,6 +1045,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\ActionMenu\ActionMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ActionMenu\ActionMenuItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Annotations\AnnotationOverlay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
