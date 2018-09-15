@@ -611,6 +611,9 @@
     <Compile Include="Views\DocumentDecorations.xaml.cs">
       <DependentUpon>DocumentDecorations.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DocumentPathView.xaml.cs">
+      <DependentUpon>DocumentPathView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
@@ -1221,6 +1224,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentDecorations.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DocumentPathView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

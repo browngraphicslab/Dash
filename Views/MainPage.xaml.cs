@@ -276,27 +276,15 @@ namespace Dash
                 return false;
             }
             var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            if (currentWorkspace.Equals(workspace))
-            {
-                return true;
-            }
 
-            if (currentWorkspace.GetDataDocument().Equals(workspace.GetDataDocument()))
+            SplitFrame.OpenInActiveFrame(workspace);
+            if (workspace.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                return true;
-            }
-            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
-            workspaceView.SetWidth(double.NaN);
-            workspaceView.SetHeight(double.NaN);
-            SplitFrame.OpenInActiveFrame(workspaceView);
-            if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
-            {
-                workspaceView.SetFitToParent(false);
-                setupMapView(workspaceView);
+                setupMapView(workspace);
             }
 
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
         }
 
@@ -759,7 +747,6 @@ namespace Dash
         Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
-            return;
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;

@@ -150,7 +150,7 @@ namespace Dash
                 ActiveFrame = this;
             }
 
-            //XDocView.RemoveResizeHandlers();
+            XPathView.UseDataDocument = true;
         }
 
         private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
@@ -441,9 +441,12 @@ namespace Dash
                 return;
             }
 
+            XPathView.Document = DocumentController;
+
             if (_changingView)
             {
                 _changingView = false;
+                _oldViewModel = ViewModel;
                 return;
             }
 

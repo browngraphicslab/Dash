@@ -18,8 +18,6 @@ namespace Dash
 
         public DocumentTree(DocumentController headRef)
         {
-            var title = headRef.GetField<TextController>(KeyStore.TitleKey);
-            headRef.SetField<TextController>(KeyStore.TitleKey, $"*{title}*", true);
             Head = new DocumentNode(headRef, null, Nodes);
         }
 
