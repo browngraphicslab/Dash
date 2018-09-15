@@ -15,7 +15,7 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     x:Name="Control"
     >
-    <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All" PointerMoved="xOuterGrid_PointerMoved">
+    <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All" PointerMoved="xOuterGrid_PointerMoved" KeyUp="XOuterGrid_OnKeyUp">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>

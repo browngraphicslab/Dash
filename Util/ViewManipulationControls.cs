@@ -95,6 +95,8 @@ namespace Dash
             }
         }
 
+     
+
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))

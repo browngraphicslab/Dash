@@ -23,6 +23,7 @@ using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 using System.Web;
+using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 
@@ -641,22 +642,13 @@ namespace Dash
 
             }
 
+            
+       
+
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
-                //var selected = SelectionManager.GetSelectedDocs();
-                //if (selected.Count > 0)
-                //{
-                //    using (UndoManager.GetBatchHandle())
-                //    {
-                //        foreach (var doc in SelectionManager.GetSelectedDocs())
-                //        {
-                //            LinkActivationManager.ActivateDoc(doc);
-                //        }
-                //    }
-
-                //}
-
+               
                 var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
                 SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
             }
