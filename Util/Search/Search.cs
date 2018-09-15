@@ -248,10 +248,10 @@ namespace Dash
                 return res.Select(node => new SearchResult(node, new List<string> { $" >> { name }" }, new List<string> { "\"" + paramName + "\"" }));
             }
 
-                //If the user didn't input a DSL recognized function, then they probably intended to search for a
-                // Key-value pair.
-                //this returns a string that more closely follows function syntax
-                if (!DSL.FuncNameExists(name))
+            //If the user didn't input a DSL recognized function, then they probably intended to search for a
+            // Key-value pair.
+            //this returns a string that more closely follows function syntax
+            if (!DSL.FuncNameExists(name))
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName.Trim('"'));
             }
@@ -368,10 +368,8 @@ namespace Dash
         // of quotes/parenthesis
         public static IEnumerable<SearchResult> Parse(string inputString)
         {
-            if (string.IsNullOrEmpty(inputString))
-            {
-                return new List<SearchResult>();
-            }
+            if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
+
             int dividerIndex = FindNextDivider(inputString);
             string searchTerm = inputString.Substring(0, dividerIndex);
             int negate = 0;
