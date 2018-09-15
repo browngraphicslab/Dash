@@ -174,7 +174,7 @@
 
                 <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
                 <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
-                <ScrollViewer x:Name="xContentScrollViewer" ZoomMode="Enabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" MinZoomFactor="1">
+                <ScrollViewer x:Name="xContentScrollViewer" ZoomMode="Enabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" MinZoomFactor="1" ViewChanged="XContentScrollViewer_OnViewChanged" ViewChanging="XContentScrollViewer_OnViewChanging">
                     <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
                 </ScrollViewer>
                

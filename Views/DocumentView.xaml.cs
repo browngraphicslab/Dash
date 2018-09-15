@@ -1332,5 +1332,15 @@ namespace Dash
 
             //TODO:CHECK HORIZONTAL/VERTICAL OFFSET-> SOMEHOW THEY ARE BEING SET TO 0??
         }
+
+        private void XContentScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+           
+        }
+
+        private void XContentScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        {
+           
+        }
     }
 }
