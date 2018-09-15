@@ -431,7 +431,7 @@ namespace Dash
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
 
-            var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
+            var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
             {// add a hyperlink that points to the source webpage.
 

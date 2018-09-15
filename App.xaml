@@ -1901,25 +1901,25 @@
                 </Setter>
             </Style>
 
-            <!-- schema list view -->
-            <Style TargetType="ListView" x:Key="xSchemaListView">
-                <Setter Property="ItemContainerStyle">
-                    <Setter.Value>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Left" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="Margin" Value="0,0,0,0" />
-                            <Setter Property="Padding" Value="0,0,0,0" />
-                            <Setter Property="MinWidth" Value="0" />
-                            <Setter Property="MinHeight" Value="0" />
-                        </Style>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="CanDragItems" Value="True"></Setter>
-                <Setter Property="CanReorderItems" Value="True"></Setter>
-                <Setter Property="AllowDrop" Value="True"></Setter>
-                <Setter Property="ShowsScrollingPlaceholders" Value="False"></Setter>
-            </Style>
+        <!-- schema list view -->
+        <Style TargetType="ListView" x:Key="xSchemaListView">
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="Margin" Value="0,0,0,0" />
+                        <Setter Property="Padding" Value="0,0,0,0" />
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CanDragItems" Value="True"></Setter>
+            <Setter Property="CanReorderItems" Value="True"></Setter>
+            <Setter Property="AllowDrop" Value="True"></Setter>
+            <Setter Property="ShowsScrollingPlaceholders" Value="False"></Setter>
+        </Style>
 
             <!--Collection Grid View-->
             <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
@@ -1970,18 +1970,18 @@
                 </Setter>
             </Style>
 
-            <!-- CONVERTERS-->
-            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
-            <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-            <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
-            <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
-            <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
-            <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
-            <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
-            <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
-            <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
-            <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
+        <!-- CONVERTERS-->
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
+        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
+        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
+        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
+        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
+        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
+        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
+        <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
 
             <!-- MISC. STYLES-->
             <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">

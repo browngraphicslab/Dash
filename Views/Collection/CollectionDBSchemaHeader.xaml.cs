@@ -1,4 +1,5 @@
 ﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
@@ -14,6 +15,11 @@ namespace Dash
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
+
+            public Border HeaderBorder = new Border()
+            {
+                BorderThickness = new Thickness(1)
+            };
 
             public override string ToString() { return FieldKey.Name; }
             public double Width

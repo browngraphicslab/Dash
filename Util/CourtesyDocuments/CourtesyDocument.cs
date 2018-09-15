@@ -300,12 +300,12 @@ namespace Dash
 
         public static bool    GetIsAdornment(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.IsAdornmentKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
+            return data?.Data == true;
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
+            document.SetField<BoolController>(KeyStore.IsAdornmentKey, adornment, true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)
