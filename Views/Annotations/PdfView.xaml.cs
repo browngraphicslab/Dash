@@ -15,6 +15,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -69,9 +70,9 @@ namespace Dash
 
         public event EventHandler DocumentLoaded;
 
-        public DataVirtualizationSource<ImageSource> TopPages { get; set; }
+        public DataVirtualizationSource TopPages { get; set; }
 
-        public DataVirtualizationSource<ImageSource> BottomPages { get; set; }
+        public DataVirtualizationSource BottomPages { get; set; }
 
         private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
 
@@ -121,8 +122,6 @@ namespace Dash
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             this.KeyDown += CustomPdfView_KeyDown;
-            _bottomAnnotationOverlay.LoadPinAnnotations(this);
-            _topAnnotationOverlay.LoadPinAnnotations(this);
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
         }
 
@@ -140,13 +139,10 @@ namespace Dash
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
             if (this.IsCtrlPressed())
             {
-                var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.Where(i => i is TextAnnotation)
-                    .Cast<TextAnnotation>();
-                var bottomSelections =
-                    bottomTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
+                var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
+                var bottomSelections = bottomTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
                 var bottomClipRects = bottomTextAnnos.Select(i => i.ClipRect);
-                var topTextAnnos = _topAnnotationOverlay.CurrentAnchorableAnnotations.Where(i => i is TextAnnotation)
-                    .Cast<TextAnnotation>();
+                var topTextAnnos = _topAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
                 var topSelections = topTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
                 var topClipRects = topTextAnnos.Select(i => i.ClipRect);
 
@@ -237,8 +233,8 @@ namespace Dash
             SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
         }
 
-        private readonly NewAnnotationOverlay _topAnnotationOverlay;
-        private readonly NewAnnotationOverlay _bottomAnnotationOverlay;
+        private readonly AnnotationOverlay _topAnnotationOverlay;
+        private readonly AnnotationOverlay _bottomAnnotationOverlay;
 
         public PdfView(DocumentController document)
         {
@@ -246,22 +242,14 @@ namespace Dash
             SetUpToolTips();
             LayoutDocument = document.GetActiveLayout() ?? document;
             DataDocument = document.GetDataDocument();
-            TopPages = new DataVirtualizationSource<ImageSource>(this, TopScrollViewer, TopPageItemsControl);
-            BottomPages = new DataVirtualizationSource<ImageSource>(this, BottomScrollViewer, BottomPageItemsControl);
+            TopPages = new DataVirtualizationSource(this, TopScrollViewer, TopPageItemsControl);
+            BottomPages = new DataVirtualizationSource(this, BottomScrollViewer, BottomPageItemsControl);
 
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
 
-            _bottomAnnotationOverlay =
-                new NewAnnotationOverlay(LayoutDocument, RegionGetter)
-                {
-                    DataContext = new NewAnnotationOverlayViewModel()
-                };
-            _topAnnotationOverlay =
-                new NewAnnotationOverlay(LayoutDocument, RegionGetter)
-                {
-                    DataContext = new NewAnnotationOverlayViewModel()
-                };
+            _bottomAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+            _topAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
             xTopPdfGrid.Children.Add(_topAnnotationOverlay);
             xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
@@ -367,22 +355,21 @@ namespace Dash
                 foreach (var child in _bottomAnnotationOverlay.XAnnotationCanvas.Children.OfType<FrameworkElement>())
                 {
                     //get linked annotations
-                    var regionDoc = (child.DataContext as AnchorableAnnotation.SelectionViewModel)?.RegionDocument;
+                    var regionDoc = (child.DataContext as AnchorableAnnotation.Selection)?.RegionDocument;
 
                     if (regionDoc == null)
                         continue;
-
-                    var allLinks = regionDoc.GetDataDocument().GetLinks(null);
-
+                    
                     //bool for checking whether child is currently in view of scrollviewer
                     var inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-                    foreach (var link in allLinks)
+                    foreach (var link in regionDoc.GetDataDocument().GetLinks(null))
                     {
-                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
+                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? 
+                                        !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)      is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
                     }
                 }
             }
@@ -438,29 +425,32 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController GetRegionDocument(Point? point = null)
+        /// <summary>
+        /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
+        /// </summary>
+        /// <param name="docViewPoint"></param>
+        /// <returns></returns>
+        public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
-            if (point == null)
-                return _bottomAnnotationOverlay.GetRegionDoc() ?? LayoutDocument;
+            var regionDoc = _bottomAnnotationOverlay.CreateRegionFromPreviewOrSelection();
+            if (regionDoc == null) {
+                if (docViewPoint != null) {
 
-            //if point !null & region is selected, return region 
-            var regionDoc = _bottomAnnotationOverlay.GetRegionDoc();
+                    //else, make a new push pin region closest to given point
+                    var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
+                    var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
-            if (regionDoc != null)
-                return regionDoc;
-
-            //else, make a new push pin region closest to given point
-            var newPoint = calculateClosestPointOnPDF(point ?? new Point());
-
-            var makeAnnotationPinDoc = _bottomAnnotationOverlay.MakeAnnotationPinDoc(newPoint);
-            return makeAnnotationPinDoc;
+                    regionDoc = _bottomAnnotationOverlay.CreatePinRegion(newPoint);
+                } else
+                    regionDoc = LayoutDocument;
+            }
+            return regionDoc;
         }
 
-        private Point calculateClosestPointOnPDF(Point from)
+        private Point calculateClosestPointOnPDF(Point p)
         {
-            var p = Util.PointTransformFromVisual(from, MainPage.Instance, this._bottomAnnotationOverlay);
-            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
-                                    p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
+            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth  ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
+                             p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
@@ -494,8 +484,7 @@ namespace Dash
                     return;
                 }
             }
-
-            ;
+            
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
@@ -534,19 +523,15 @@ namespace Dash
             });
 
             var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
-            _bottomAnnotationOverlay.SetSelectableElements(selectableElements.Item1);
+            _topAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
+            _bottomAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
 
             reader.Close();
             pdfDocument.Close();
             PdfTotalHeight = offset - 10;
-			DataDocument.SetField(KeyStore.PdfHeightKey, new PointController(pageSize.GetWidth(), pageSize.GetHeight()), true);
-			DocumentLoaded?.Invoke(this, new EventArgs());
-
-            _bottomAnnotationOverlay.LoadPinAnnotations(this);
-            _topAnnotationOverlay.LoadPinAnnotations(this);
+            DocumentLoaded?.Invoke(this, new EventArgs());            
             MainPage.Instance.ClosePopup();
         }
 
@@ -575,7 +560,7 @@ namespace Dash
                 using (UndoManager.GetBatchHandle())
                 {
                     var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                    overlay.CreatePin(e.GetPosition(overlay));
+                    overlay.EmbedDocumentWithPin(e.GetPosition(overlay));
                 }
             }
 
@@ -633,7 +618,7 @@ namespace Dash
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                overlay.StartAnnotation(e.GetCurrentPoint(overlay).Position);
+                overlay.StartAnnotation(CurrentAnnotationType, e.GetCurrentPoint(overlay).Position);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }
@@ -692,10 +677,10 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target, DocumentController source = null)
         {
-            var absoluteOffsets = target.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey);
+            var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets == null) return;
 
-            var relativeOffsets = absoluteOffsets.TypedData.Select(i => i.Data * (ActualWidth / PdfMaxWidth)).ToList();
+            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (ActualWidth / PdfMaxWidth)).ToList();
 
             var currOffset = relativeOffsets.First();
             var firstOffset = relativeOffsets.First();
@@ -715,7 +700,7 @@ namespace Dash
                     }
                 }
 
-                var off = source.GetField<ListController<NumberController>>(KeyStore.PDFSubregionKey)[0].Data *
+                var off = source.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey)[0].Data.Y *
                           BottomScrollViewer.ExtentHeight;
                 splits.Insert(1, off);
                 relativeOffsets.Insert(1, off);
@@ -769,8 +754,8 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
+                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
             }
             else
             {
@@ -953,7 +938,7 @@ namespace Dash
 
         private void PagePrev(ScrollViewer scroller)
         {
-            DataVirtualizationSource<ImageSource> pages;
+            DataVirtualizationSource pages;
             double annoWidth = 0;
             if (scroller.Equals(TopScrollViewer))
             {
@@ -994,7 +979,7 @@ namespace Dash
 
         private void PageNext(ScrollViewer scroller)
         {
-            DataVirtualizationSource<ImageSource> pages;
+            DataVirtualizationSource pages;
             double annoWidth;
             if (scroller.Equals(TopScrollViewer))
             {
@@ -1118,20 +1103,20 @@ namespace Dash
 
         public void ShowRegions()
         {
-            _topAnnotationOverlay.AnnotationVisibility = true;
-            _bottomAnnotationOverlay.AnnotationVisibility = true;
+            _topAnnotationOverlay.Visibility = Visibility.Visible;
+            _bottomAnnotationOverlay.Visibility = Visibility.Visible;
         }
 
         public void HideRegions()
         {
-            _topAnnotationOverlay.AnnotationVisibility = false;
-            _bottomAnnotationOverlay.AnnotationVisibility = false;
+            _topAnnotationOverlay.Visibility = Visibility.Collapsed;
+            _bottomAnnotationOverlay.Visibility = Visibility.Collapsed;
         }
 
         public bool AreAnnotationsVisible()
         {
             //This makes the assumption that both overlays are kept in sync
-            return _bottomAnnotationOverlay.AnnotationVisibility;
+            return _bottomAnnotationOverlay.Visibility == Visibility.Visible;
         }
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
@@ -1302,15 +1287,16 @@ namespace Dash
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+                tip.IsOpen = true;
         }
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
         }
 
@@ -1323,7 +1309,7 @@ namespace Dash
             foreach (var child in allChildren.OfType<FrameworkElement>())
             {
                 //get linked annotations
-                if ((child.DataContext as AnchorableAnnotation.SelectionViewModel)?.RegionDocument is DocumentController regionDoc)
+                if ((child.DataContext as AnchorableAnnotation.Selection)?.RegionDocument is DocumentController regionDoc)
                 {
                     var allLinks = regionDoc.GetDataDocument().GetLinks(null);
 
@@ -1343,6 +1329,19 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
+        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
+        }
+
+        public void SetActivationMode(bool onoff)
+        {
+            xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
+            if (onoff)
+                LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+            else
+                LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+        }
     }
 }
 

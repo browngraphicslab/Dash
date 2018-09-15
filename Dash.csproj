@@ -18,10 +18,10 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>98DB1B12D47C5E4609E7D10FFC216AB2AC95AE4E</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>AD0550088CF7CFE386EDB842EA5B2F00A60D8569</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
@@ -154,6 +154,7 @@
     <Content Include="Assets\PublishStyle.css" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -163,6 +164,16 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\XOperator.cs" />
+    <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
+      <DependentUpon>ActionMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ActionMenu\ActionMenuItem.xaml.cs">
+      <DependentUpon>ActionMenuItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
     <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
@@ -182,6 +193,7 @@
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
+    <Compile Include="Controllers\HtmlController.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
@@ -201,6 +213,7 @@
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
@@ -218,14 +231,17 @@
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
     <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\PdfController.cs" />
+    <Compile Include="Models\HtmlModel.cs" />
+    <Compile Include="Models\PdfModel.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
     <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
     <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
     <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
-    <Compile Include="Views\Annotations\NewAnnotationOverlay.xaml.cs">
-      <DependentUpon>NewAnnotationOverlay.xaml</DependentUpon>
+    <Compile Include="Views\Annotations\AnnotationOverlay.xaml.cs">
+      <DependentUpon>AnnotationOverlay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\DashPopup.cs" />
     <Compile Include="Popups\HTMLRTFPopup.xaml.cs">
@@ -502,6 +518,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionDBSchemaColumn.xaml.cs">
+      <DependentUpon>CollectionDBSchemaColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\PinAnnotation.xaml.cs">
       <DependentUpon>PinAnnotation.xaml</DependentUpon>
     </Compile>
@@ -512,9 +531,6 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
-    <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
-      <DependentUpon>CollectionStandardView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -565,14 +581,8 @@
     <Compile Include="Views\Annotations\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DockingFrame.xaml.cs">
-      <DependentUpon>DockingFrame.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DockedView.xaml.cs">
-      <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
@@ -651,6 +661,9 @@
     </Compile>
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LinkButton.xaml.cs">
+      <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
@@ -765,6 +778,12 @@
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SplitFrame.xaml.cs">
+      <DependentUpon>SplitFrame.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplitManager.xaml.cs">
+      <DependentUpon>SplitManager.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
@@ -825,7 +844,6 @@
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
-    <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />
@@ -1035,7 +1053,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Views\Annotations\NewAnnotationOverlay.xaml">
+    <Page Include="Views\ActionMenu\ActionMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ActionMenu\ActionMenuItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\AnnotationOverlay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1071,6 +1097,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\Collection\CollectionDBSchemaColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1094,10 +1124,6 @@
     <Page Include="ViewModels\ReplLineNode.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Collection\CollectionStandardView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\EditableMarkdownBlock.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -1163,15 +1189,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DockingFrame.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1260,6 +1278,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\KeyValueScriptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LinkButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1376,6 +1398,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SplitFrame.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SplitManager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1515,6 +1545,9 @@
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
     </PackageReference>
+    <PackageReference Include="HtmlAgilityPack">
+      <Version>1.8.7</Version>
+    </PackageReference>
     <PackageReference Include="itext7">
       <Version>7.1.2</Version>
     </PackageReference>
@@ -1577,6 +1610,12 @@
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.23.0</Version>
+    </PackageReference>
+    <PackageReference Include="Windows.Andy.Code4App">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="WriteableBitmapEx">
+      <Version>1.5.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

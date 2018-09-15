@@ -1,21 +1,20 @@
 ﻿<UserControl
-    x:Class="Dash.NewAnnotationOverlay"
+    x:Class="Dash.AnnotationOverlay"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DataContext="{d:DesignInstance local:NewAnnotationOverlayViewModel}"
+    xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-        <Grid DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True">
-                <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
-
+    <Grid x:Name="LayoutRoot" x:FieldModifier="public" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
+        <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
             <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
-                      ItemsSource="{Binding ViewModels}">
+                      ItemsSource="{Binding EmbeddedViewModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas 
@@ -37,8 +36,8 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
-                       x:FieldModifier="public"></Rectangle>
-          
+                       x:FieldModifier="public"/>
+
         </Canvas>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>

@@ -36,7 +36,7 @@ namespace Dash
         public HtmlNote(string text = "", string title = "", Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new TextController(text ?? "Html stuff here"));
+            var dataDocument = makeDataDelegate(new HtmlController(text ?? "Html stuff here"));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
         }
         public HtmlNote(DocumentController dataDocument, Point where = new Point(), Size size = new Size()) :

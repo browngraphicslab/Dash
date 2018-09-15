@@ -9,6 +9,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
 using DashShared;
+using static Dash.AnchorableAnnotation;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -242,8 +244,27 @@ namespace Dash
         #endregion
     }
 
+    public enum LinkBehavior {
+        Zoom,
+        Annotate,
+        Dock,
+        Float,
+        Overlay
+    }
+
     public static class CourtesyDocumentExtensions
     {
+        public static void SetLinkBehavior(this DocumentController document, LinkBehavior behavior)
+        {
+            document.SetField<TextController>(KeyStore.LinkBehaviorKey, behavior.ToString(), true);
+        }
+        public static LinkBehavior GetLinkBehavior(this DocumentController document)
+        {
+            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
+        }
+
+
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
             document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);
@@ -280,12 +301,12 @@ namespace Dash
 
         public static bool    GetIsAdornment(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.IsAdornmentKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
+            return data?.Data == true;
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
+            document.SetField<BoolController>(KeyStore.IsAdornmentKey, adornment, true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)
@@ -347,9 +368,9 @@ namespace Dash
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
         }
 
-        public static ListController<TextController> GetLinkTags(this DocumentController document)
+        public static TextController GetLinkTag(this DocumentController document)
         {
-            return document.GetDereferencedField<ListController<TextController>>(KeyStore.LinkTagKey, null);
+            return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
         }
 
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
@@ -370,7 +391,7 @@ namespace Dash
 
         public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
         {
-            var curRegions = document.GetLinks(KeyStore.RegionsKey);
+            var curRegions = document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (curRegions == null)
             {
                 document.SetField(KeyStore.RegionsKey, new ListController<DocumentController>(regions), true);
@@ -393,12 +414,21 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static AnnotationType GetAnnotationType(this DocumentController document)
+        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
-            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
-            return t == null
+            var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            var annoType = t == null
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);
+
+            switch (annoType) { 
+            
+                case AnnotationType.Pin:       return new PinAnnotation(overlay, new Selection(regionDocumentController,
+                                                             new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
+                case AnnotationType.Region:    return new RegionAnnotation(overlay, new Selection(regionDocumentController));
+                case AnnotationType.Selection: return new TextAnnotation(overlay, new Selection(regionDocumentController));
+            }
+            return null;
         }
 
         public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
@@ -407,20 +437,17 @@ namespace Dash
             return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
 
-        public static void GotoRegion(this DocumentController document, DocumentController region,
-            DocumentController link = null)
+        public static void GotoRegion(this DocumentController document, DocumentController region, DocumentController link = null)
         {
-            if (document.Equals(region))
+            if (!document.Equals(region))
             {
-                return;
+                document.RemoveField(KeyStore.GoToRegionLinkKey);
+                document.RemoveField(KeyStore.GoToRegionKey);
+                document.SetFields(new[] {
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
+                    new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
+                }, true);
             }
-            document.RemoveField(KeyStore.GoToRegionLinkKey);
-            document.RemoveField(KeyStore.GoToRegionKey);
-            document.SetFields(new []
-            {
-                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionLinkKey, link),
-                new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.GoToRegionKey, region)
-            }, true);
         }
 
         public static bool GetTransient(this DocumentController document)

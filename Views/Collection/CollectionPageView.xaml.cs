@@ -424,7 +424,7 @@ namespace Dash
             e.AllowedOperations       = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             e.Data.Properties.Add("Width", xDocView.ActualWidth);
             e.Data.Properties.Add("Height", xDocView.ActualHeight);
-            e.Data.AddDragModel(new DragDocumentModel(CurPage.DocumentController, true));
+            e.Data.AddDragModel(new DragDocumentModel(CurPage.DocumentController));
         }
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -481,7 +481,7 @@ namespace Dash
             foreach (object m in e.Items)
             {
                 int ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.AddDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true));
+                e.Data.AddDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
             }
         }
 
@@ -562,7 +562,7 @@ namespace Dash
 
                 i++;
             }
-            args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document, true));
+            args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

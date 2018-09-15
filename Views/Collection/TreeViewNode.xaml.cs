@@ -119,7 +119,7 @@ namespace Dash
 
             if (image == null)
             {
-                image = await Util.ExportAsImage(MainPage.Instance.MainDocView, "snapshot.png", true);
+                image = await Util.ExportAsImage(SplitFrame.ActiveFrame.Document, "snapshot.png", true);
                 doc?.SetField<TextController>(KeyStore.SnapshotImage, image, true);
                 time = DateTime.Now.ToString(new CultureInfo("en-US"));
                 doc?.SetField<TextController>(KeyStore.DateModifiedKey, time, true);
@@ -332,7 +332,7 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController, true));
+            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 
@@ -511,7 +511,7 @@ namespace Dash
             if (e.Items.Count.Equals(0)) return;
             var first = (SnapshotView) e.Items.First();
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index], true));
+            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index]));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 

@@ -172,7 +172,7 @@ namespace Dash
                         if (docCollection != null)
                         {
                             // get the keys for fields that are associated with types we have as input
-                            var validHeaderKeys = Util.GetTypedHeaders(docCollection)
+                            var validHeaderKeys = Util.GetDisplayableTypedHeaders(docCollection)
                                 /*.Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti)))*/.Select(kt => kt.Key);
                             // add the keys as collection field pairs
                             suggestions.AddRange(

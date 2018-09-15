@@ -42,7 +42,9 @@ namespace Dash
 		public static KeyController LinkToKey = new KeyController("LinkTo", "649A7F35-C428-49EC-B914-5746E2590DAC");
 		public static KeyController LinkDestinationKey = new KeyController("LinkDestination", "FFF41A1C-9924-44FB-9109-F0CE843D9B96");
 		public static KeyController LinkSourceKey = new KeyController("LinkSource", "ED8119BB-F6C1-4FCB-9DF7-547D06091249");
-		public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
+	    public static KeyController LinkBehaviorKey = new KeyController("LinkBehavior", "1B87D286-826E-466D-A076-06C313CFD7DE");
+	    public static KeyController LinkContextKey = new KeyController("LinkContext", "A8FD93F3-0C39-44AE-9B69-B28F0787D32B");
+        public static KeyController PdfVOffsetFieldKey = new KeyController("_PdfVOffset", "8990098B-83D2-4817-A275-82D8282ECD79");
 		public static KeyController ReferencesDictKey = new KeyController("_PDF Reference Mapping", "6B06B539-614C-486F-97C7-7CDAA729C421");
 		public static KeyController ReferenceNumKey = new KeyController("Reference #", "FD61D5F0-8C31-4132-A6B2-02C58067B5EA");
 		public static KeyController ReferenceDateKey = new KeyController("Date Published", "57BC205D-B2E0-4E55-8114-A993A9376E1B");
@@ -130,19 +132,16 @@ namespace Dash
 		public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
 		public static KeyController GoToRegionKey = new KeyController("GotoRegion", "5A19BC33-4A83-4961-A230-4A0F8C949022");
 		public static KeyController GoToRegionLinkKey = new KeyController("GotoRegionLink", "150C5291-0830-4095-9C18-FAE1F315599F");
-		public static KeyController LinkTargetPlacement = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
 		public static KeyController PresentationTitleKey = new KeyController("PresTitle", "3A153DAA-C2E1-40D9-9EE8-18CB09439EDD");
 		public static KeyController PresentationViewVisibleKey = new KeyController("_Presentation Active", "7D999F66-A6A9-4A74-B2B3-AD12812FAAB6");
 		public static KeyController PresLinesVisibleKey = new KeyController("_Presentation Lines Visible", "60BC478B-DBA3-4373-A344-CD8B7398F74F");
 		public static KeyController PresLoopOnKey = new KeyController("_Presentation Loop Engaged", "DDC59860-27C9-42BF-A557-A2D97E047EB2");
 		public static KeyController PresTextRenamedKey = new KeyController("_Presentation Textbox Renamed", "AC13DAAF-5ED2-47F9-BFE5-98673ECEFFEF");
-		public static KeyController PDFSubregionKey = new KeyController("_PDF Subregion Y-Offets", "C9DE4B35-D859-43AF-B431-3FCEDA4DF333");
-		public static KeyController PinAnnotationsKey = new KeyController("_Pin Annotations", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
+		public static KeyController EmbeddedDocumentsKey = new KeyController("_EmbeddedDocuments", "814C3A09-3CC5-44DB-BDAC-ED5790D8F3AA");
 		public static KeyController AnonymousGroupsKey = new KeyController("Anonymous Groups", "A35F8DA4-5471-4EA7-90D1-8F76F501FFB5");
 		public static KeyController TitleMatchKey = new KeyController("Title Match", "FEBBA568-0DC5-4E8E-8FFE-339CC3E0B1D2");
 		public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
 		public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
-		public static KeyController AnnotationVisibilityKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController LinkTagKey =
 			new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
 		/// <summary>

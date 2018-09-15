@@ -1,15 +1,28 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Web;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash;
 using Dash.Annotations;
+using MyToolkit.Multimedia;
+using static Dash.DataTransferTypeInfo;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Dash
 {
@@ -31,30 +44,30 @@ namespace Dash
 
     public abstract class AnchorableAnnotation : UserControl
     {
-        public DocumentController DocumentController;
+        public DocumentController RegionDocumentController;
         public AnnotationType AnnotationType = AnnotationType.None;
-        protected readonly NewAnnotationOverlay ParentOverlay;
+        protected readonly AnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
-
-        protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay)
+        public Selection ViewModel => DataContext as Selection;
+        
+        protected AnchorableAnnotation(AnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
+            RegionDocumentController = regionDocumentController;
         }
-
-        public abstract void Render(SelectionViewModel vm);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
-        public abstract double AddSubregionToRegion(DocumentController region);
+        public abstract double AddToRegion(DocumentController region);
 
         public void FormatRegionOptionsFlyout(DocumentController region, UIElement regionGraphic)
         {
             // context menu that toggles whether annotations should be show/ hidden on scroll
 
-            MenuFlyout flyout = new MenuFlyout();
-            MenuFlyoutItem visOnScrollON = new MenuFlyoutItem();
-            MenuFlyoutItem visOnScrollOFF = new MenuFlyoutItem();
+            var flyout = new MenuFlyout();
+            var visOnScrollON = new MenuFlyoutItem();
+            var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
             visOnScrollOFF.Text = "Pin Annotation";
 
@@ -63,7 +76,7 @@ namespace Dash
                 var allLinks = region.GetDataDocument().GetLinks(null);
                 var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
-                foreach (DocumentController link in allLinks)
+                foreach (var link in allLinks)
                 {
                     link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
                 }
@@ -83,125 +96,133 @@ namespace Dash
             };
         }
 
-        public void SelectRegionFromParent(ISelectable selectable, Point? mousePos)
+        public void SelectRegionFromParent(Selection selectable, Point? mousePos)
         {
             // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = ParentOverlay.GetAncestorsOfType<ILinkHandler>().ToList();
-            // NewAnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
+            // AnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, ParentOverlay);
             ParentOverlay.AnnotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
-            if (ParentOverlay.SelectedRegion != selectable)
+            if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
-                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
-                foreach (var r in nvo.Regions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
-                {
-                    nvo.SelectedRegion?.Deselect();
+                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<AnnotationOverlay>())
+                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
+                { 
+                    if (nvo.SelectedRegion != null)
+                        nvo.SelectedRegion.IsSelected = false;
                     nvo.SelectedRegion = r;
-                    r.Select();
+                    r.IsSelected = true;
                 }
             }
         }
 
-        protected virtual void InitializeAnnotationObject(Shape shape, Point pos, PlacementMode mode, SelectionViewModel vm)
+        protected virtual void InitializeAnnotationObject(Shape shape, Point? pos, PlacementMode mode)
         {
-            shape.SetBinding(Shape.FillProperty, new Binding
-            {
-                Path = new PropertyPath(nameof(vm.SelectionColor)),
-                Mode = BindingMode.OneWay
-            });
-            Canvas.SetLeft(shape, pos.X);
-            Canvas.SetTop(shape, pos.Y);
+            shape.SetBinding(Shape.FillProperty, ViewModel.GetFillBinding());
             shape.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())
                 {
-                    ParentOverlay.XAnnotationCanvas.Children.Remove(shape);
+                    ParentOverlay.XAnnotationCanvas.Children.Remove(this);
+                    ParentOverlay.RegionDocsList.Remove(RegionDocumentController);
                 }
-                SelectRegionFromParent(vm, args.GetPosition(this));
+                else SelectRegionFromParent(ViewModel, args.GetPosition(this));
                 args.Handled = true;
             };
             //TOOLTIP TO SHOW TAGS
-            var tip = new ToolTip { Placement = mode };
+            var tip = new ToolTip { Placement = mode  };
             ToolTipService.SetToolTip(shape, tip);
+            tip.IsHitTestVisible = false;
             shape.PointerExited += (s, e) => tip.IsOpen = false;
             shape.PointerEntered += (s, e) =>
             {
                 tip.IsOpen = true;
-                var regionDoc = vm.RegionDocument.GetDataDocument();
+                var regionDoc = ViewModel.RegionDocument.GetDataDocument();
 
                 var allLinkSets = new List<IEnumerable<DocumentController>>
                 {
                      regionDoc.GetLinks(KeyStore.LinkFromKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { },
                      regionDoc.GetLinks(KeyStore.LinkToKey)?.Select(l => l.GetDataDocument()) ?? new DocumentController[] { }
                 };
-                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTags()));
-                var allTags = regionDoc.GetLinks(null).SelectMany((l) => l.GetDataDocument().GetLinkTags().Select((tag) => tag.Data));
+                var allTagSets = allLinkSets.SelectMany(lset => lset.Select(l => l.GetLinkTag()));
+                var allTags = regionDoc.GetLinks(null).Select((l) => l.GetDataDocument().GetLinkTag().Data);
 
                 //update tag content based on current tags of region
                 tip.Content = allTags.Where((t, i) => i > 0).Aggregate(allTags.FirstOrDefault(), (input, str) => input += ", " + str);
             };
-            shape.SetBinding(VisibilityProperty, new Binding
+
+            if (pos != null)
             {
-                Source = this,
-                Path = new PropertyPath(nameof(NewAnnotationOverlay.AnnotationVisibility)),
-                Converter = new BoolToVisibilityConverter()
-            });
+                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+            }
+            else
+            {
+                var bindingX = new FieldBinding<PointController>()
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = RegionDocumentController,
+                    Key = KeyStore.PositionFieldKey,
+                    Converter = new PointToCoordinateConverter(false)
+                };
+                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
+                var bindingY = new FieldBinding<PointController>()
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = RegionDocumentController,
+                    Key = KeyStore.PositionFieldKey,
+                    Converter = new PointToCoordinateConverter(true)
+                };
+                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+            }
 
-            FormatRegionOptionsFlyout(vm.RegionDocument, shape);
-            ParentOverlay.XAnnotationCanvas.Children.Add(shape);
+            if (RegionDocumentController != null)
+            {
+                FormatRegionOptionsFlyout(RegionDocumentController, this);
+            }
         }
-
-        public sealed class SelectionViewModel : INotifyPropertyChanged, ISelectable
+        
+        public sealed class Selection : INotifyPropertyChanged
         {
-            private SolidColorBrush _selectionColor;
-            public SolidColorBrush SelectionColor
+            SolidColorBrush _selectedBrush, _unselectedBrush;
+            bool            _isSelected = false;
+            public bool IsSelected
             {
                 [UsedImplicitly]
-                get => _selectionColor;
-                private set
+                get => _isSelected;
+                set
                 {
-                    if (_selectionColor == value)
+                    if (_isSelected != value)
                     {
-                        return;
+                        _isSelected = value;
+                        OnPropertyChanged();
                     }
-                    _selectionColor = value;
-                    OnPropertyChanged();
                 }
             }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
-            public SolidColorBrush SelectedBrush { get; set; }
+            public Binding GetFillBinding()
+            {
+                return new Binding
+                {
+                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
+                    Mode = BindingMode.OneWay,
+                    Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
+                };
+            }
 
-            public SolidColorBrush UnselectedBrush { get; set; }
-
-            public SelectionViewModel(DocumentController region,
-                SolidColorBrush selectedBrush,
-                SolidColorBrush unselectedBrush)
+            public Selection(DocumentController region,
+                SolidColorBrush selectedBrush=null,
+                SolidColorBrush unselectedBrush=null)
             {
                 RegionDocument = region;
-                UnselectedBrush = unselectedBrush;
-                SelectedBrush = selectedBrush;
-                _selectionColor = UnselectedBrush;
+                _unselectedBrush = unselectedBrush ?? new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0));
+                _selectedBrush   = selectedBrush   ?? new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0));
             }
-
-            public bool Selected { get; private set; }
 
             public DocumentController RegionDocument { get; }
-
-            public void Select()
-            {
-                SelectionColor = SelectedBrush;
-                Selected = true;
-            }
-
-            public void Deselect()
-            {
-                SelectionColor = UnselectedBrush;
-                Selected = false;
-            }
 
             [NotifyPropertyChangedInvocator]
             private void OnPropertyChanged([CallerMemberName] string propertyName = null)

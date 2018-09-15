@@ -55,6 +55,8 @@ namespace Dash
             _currentPdfView = _currentDocView.GetFirstDescendantOfType<PdfView>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 
+            if (_currentPdfView == null)
+                return;
             xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
 
             //update selected annotation type according to this newly selected PDF

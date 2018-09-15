@@ -2,47 +2,57 @@
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
+using Windows.Graphics.Display;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class DragDocumentModel : DragModelBase
     {
-       /*
-        * if the drag is going to result in a view copy, false if the drag will result in a key value pane
-        */
-        public bool ShowViewCopy;
+        /// <summary>
+        /// Flags whether documents or their link buttons are being dragged.
+        /// </summary>
+        public bool                     DraggingLinkButton = false;
+        public string                   DraggedLinkType = null; // type of link to be created
 
-       /*
-        * The XAML view that originated the drag operation - not required
-        */
-        public List<DocumentView> LinkSourceViews;
+        /// <summary>
+        /// When DraggingLinkButton is false, this stores the collection views that contained each of the documents
+        /// at the start of the drag.  When the documents are dropped, this allows us to remove the documents
+        /// from where they were (in the case of a Move operation)
+        /// </summary>
+        public List<CollectionView>     DraggedDocCollectionViews;
 
-        public List<DocumentController> DraggedDocuments;
-
-        public string LinkType = null;
-
-        public bool MakeCollection { get; set; }
+        public List<DocumentView>       DraggedDocumentViews;   // The Document views being dragged
+        public List<DocumentController> DraggedDocuments; // The Documents being dragged (they correspond to the DraggedDocumentViews when specified)
+        public List<Point>              DocOffsets; // offsets of documents from set of dragged documents
+        public Point                    Offset; // offset of dragged document from pointer
+        /// <summary>
+        /// Flags whether the dropped set of documents should be wrapped in a collection
+        /// </summary>
+        public bool                     MakeCollection   { get; set; } = false;
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
-
-        public DragDocumentModel(DocumentController draggedDocument, bool showView, DocumentView sourceView = null)
+        
+        public DragDocumentModel(DocumentController draggedDocument)
         {
             DraggedDocuments = new List<DocumentController> { draggedDocument };
-            ShowViewCopy = showView;
-            if (sourceView != null) LinkSourceViews = new List<DocumentView>() { sourceView };
-            MakeCollection = false;
+        }
+        public DragDocumentModel(DocumentView draggedDocumentView)
+        {
+            DraggedDocuments = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
+            DraggedDocumentViews = new List<DocumentView> { draggedDocumentView };
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, bool showView, List<DocumentView> sourceViews = null)
+        public DragDocumentModel(List<DocumentView> draggedDocumentViews, List<CollectionView> draggedDocCollectionViews, List<Point> off, Point offset)
         {
-            DraggedDocuments = draggedDocuments;
-            ShowViewCopy = showView;
-            if (sourceViews != null) LinkSourceViews = sourceViews;
-            MakeCollection = false;
-
-            Debug.Assert(LinkSourceViews == null || DraggedDocuments.Count == LinkSourceViews.Count);
+            DraggedDocuments = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            DraggedDocumentViews = draggedDocumentViews;
+            DraggedDocCollectionViews = draggedDocCollectionViews;
+            DocOffsets = off;
+            Offset = offset;
+            Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
         public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionView.CollectionViewType viewType)
@@ -50,19 +60,14 @@ namespace Dash
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;
             MakeCollection = true;
-
-            Debug.Assert(LinkSourceViews == null || DraggedDocuments.Count == LinkSourceViews.Count);
         }
-
-
-
 
         /*
          * Tests whether dropping the document would create a cycle and, if so, returns false
          */
         public bool CanDrop(FrameworkElement sender)
         {
-            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() || ShowViewCopy || MainPage.Instance.IsCtrlPressed()))
+            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() ||  MainPage.Instance.IsCtrlPressed()))
                 return !cview.ViewModel.CreatesCycle(DraggedDocuments);
             return true;
         }
@@ -70,48 +75,79 @@ namespace Dash
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override List<DocumentController> GetDropDocuments(Point where, bool forceShowViewCopy = false)
+        public override List<DocumentController> GetDropDocuments(Point where, FrameworkElement target)
         {
             // For each dragged document...
-            List<DocumentController> docs;
+            var docs = new List<DocumentController>();
 
+            double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             // ...if CTRL pressed, create a key value pane
             if (MainPage.Instance.IsCtrlPressed())
             {
-                docs = DraggedDocuments.Select(d => d.GetDataInstance(where)).ToList();
-            } 
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetDataInstance(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                        where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y)));
+                }
+            }
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
-                docs = DraggedDocuments.Select(d => d.GetKeyValueAlias(where)).ToList();
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                        where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y)));
+                }
             }
             else if (MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
-                docs = DraggedDocuments.Select(d =>
+                for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    DocumentController vcopy = d.GetViewCopy(where);
+                    DocumentController vcopy = DraggedDocuments[i]
+                        .GetViewCopy(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                            where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y));
 
                     // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
                     // an arbitrary size for it and zero out its pan position so that it will FitToParent
                     if (vcopy.DocumentType.Equals(RichTextBox.DocumentType) ||
                         !double.IsNaN(vcopy.GetWidthField().Data) ||
                         !double.IsNaN(vcopy.GetHeightField().Data))
-                        return vcopy;
-
-                    vcopy.SetWidth(500);
-                    vcopy.SetHeight(300);
-                    vcopy.SetFitToParent(true);
-                    return vcopy;
-                }).ToList();
+                        docs.Add(vcopy);
+                    else
+                    {
+                        vcopy.SetWidth(500);
+                        vcopy.SetHeight(300);
+                        vcopy.SetFitToParent(true);
+                        docs.Add(vcopy);
+                    }
+                }
             }
-            else if (LinkSourceViews != null)
+            else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
                 docs = GetLinkDocuments(where);
             }
             else
             {
-                docs = DraggedDocuments;
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    if (DraggedDocumentViews == null ||
+                        DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>() == // bcz: this is hacky -- better to make AnnotationOverlay's be Collections?  
+                        target?.GetFirstAncestorOfType<AnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
+                    {
+                        var draggedDoc = DraggedDocuments[i];
+                        if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))
+                        {
+                            draggedDoc = draggedDoc.GetViewCopy();
+                            draggedDoc.SetWidth(400);
+                            draggedDoc.SetHeight(300);
+                            draggedDoc.SetFitToParent(true);
+                        }
+                        draggedDoc.SetPosition(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                            where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y));
+                        docs.Add(draggedDoc);
+                    }
+                }
             }
 
             return MakeCollection ? new List<DocumentController>{ new CollectionNote(where, ViewType, collectedDocuments: docs).Document } : docs;
@@ -119,14 +155,15 @@ namespace Dash
 
         //TODO do we want to create link here?
         //TODO Add back ability to drag off collection of links/link targets if we want that.
+        //TODO: this doesn't account for offsets
         private List<DocumentController> GetLinkDocuments(Point where)
         {
-            DocumentController anno = new RichTextNote(where: where).Document;
+            var anno = new RichTextNote(where: where).Document;
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
-                DocumentController dragDoc = DraggedDocuments[i];
-                DocumentView view = LinkSourceViews[i];
+                var dragDoc = DraggedDocuments[i];
+                var view = DraggedDocumentViews[i];
 
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
@@ -134,7 +171,7 @@ namespace Dash
                     dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
                 }
 
-                dragDoc.Link(anno, LinkTargetPlacement.Default);
+                dragDoc.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
             }
             return new List<DocumentController>{ anno };
         }

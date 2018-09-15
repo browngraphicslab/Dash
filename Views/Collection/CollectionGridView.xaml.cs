@@ -18,7 +18,6 @@ namespace Dash
         public CollectionGridView()
         {
             this.InitializeComponent();
-            AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
             Loaded += CollectionGridView_Loaded;
@@ -43,22 +42,6 @@ namespace Dash
             {
                 SelectionManager.Select(this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.Equals((e.AddedItems.First() as DocumentViewModel).DocumentController)), false);
             }
-        }
-
-        private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
-            {
-                docview.ManipulationMode = ManipulationModes.All;
-            }
-            else
-            {
-                docview.ManipulationMode = ManipulationModes.None;
-                //SelectionManager.Select(docview);
-            }
-
-            e.Handled = true;
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -95,7 +78,7 @@ namespace Dash
             DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm == null) return;
 
-            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController, true));
+            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController));
         }
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

@@ -114,6 +114,7 @@ namespace Dash
 
         private string GetExpression()
         {
+            if (ViewModel.Context == null) return null;
             return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
         }
 

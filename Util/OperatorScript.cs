@@ -20,7 +20,7 @@ namespace Dash
         private OperatorScript()
         {
             FunctionDocumentation = "";
-            PrintAllFuncDocumentation = true;
+            PrintAllFuncDocumentation = false;
             Init();
         }
 

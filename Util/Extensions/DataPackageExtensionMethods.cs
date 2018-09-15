@@ -84,6 +84,10 @@ namespace Dash
             {
                 DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where);
                 if (documentController != null) dropDocs.Add(documentController);
+                else if(transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
+                {
+                    dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+                }
             }
 
             // HTML
@@ -130,7 +134,8 @@ namespace Dash
         {
             var dragModels = packageView.GetDragModels();
             var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
-            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where)).ToList();
+
+            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where, sender)).ToList();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)
@@ -215,7 +220,7 @@ namespace Dash
             if (dragModels.Count == 1 && dragModels.First() is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
             {
                 doc = ddm.DraggedDocuments.First();
-                linkView = ddm.LinkSourceViews.FirstOrDefault();
+                linkView = ddm.DraggedDocumentViews?.FirstOrDefault();
                 return true;
             }
 

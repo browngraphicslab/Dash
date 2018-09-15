@@ -285,6 +285,14 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
                             }
+                            else if (target.Value.Type == TypeInfo.Html)
+                            {
+                                opModel.SetField(target.Key, new HtmlController(a), true);
+                            }
+                            else if (target.Value.Type == TypeInfo.Pdf)
+                            {
+                                opModel.SetField(target.Key, new PdfController(new Uri(a)), true);
+                            }
                         }
                     }
                     SetField(key, new DocumentReferenceController(opModel, opFieldController.Outputs.First().Key), true, false);
@@ -319,6 +327,25 @@ namespace Dash
                         catch (Exception)
                         {
                             ic.Data = null;
+                        }
+                    }
+                    else if (curField is HtmlController hc)
+                    {
+                        if (copy)
+                            SetField(key, new HtmlController(textInput), true);
+                        else hc.Data = textInput;
+                    }
+                    else if (curField is PdfController pc)
+                    {
+                        try
+                        {
+                            if (copy)
+                                SetField(key, new PdfController(new Uri(textInput)), true);
+                            else pc.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            pc.Data = null;
                         }
                     }
                     else if (curField is DateTimeController)
@@ -379,10 +406,10 @@ namespace Dash
         }
 
 		//links this => target
-        public void Link(DocumentController target, LinkTargetPlacement targetPlacement, string specTitle = null)
+        public DocumentController Link(DocumentController target, LinkBehavior behavior, string specTitle = null)
         {
 			//document that represents the actual link
-            DocumentController linkDocument = new RichTextNote("link").Document;
+            var linkDocument = new RichTextNote("New link description...").Document;
 
 	        if (specTitle == null)
 	        {
@@ -390,12 +417,14 @@ namespace Dash
                 specTitle = "Annotation";
 	        }
 
-            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<TextController>>(KeyStore.LinkTagKey).Add(new TextController(specTitle));
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
+            linkDocument.GetDataDocument().SetLinkBehavior(behavior);
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey, this, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
-            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTargetPlacement, targetPlacement.ToString(), true);
             target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>{ linkDocument });
             GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>{ linkDocument });
+            return linkDocument;
         }
 		
 
@@ -967,10 +996,9 @@ namespace Dash
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             // TODO this should cause an operator to execute and return the proper value
-            var fieldController = GetField(key);
             context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
             context.AddDocumentContext(this);
-            return fieldController?.DereferenceToRoot(context ?? new Context(this));
+            return new DocumentFieldReference(this, key).DereferenceToRoot(context);
         }
 
         /// <summary>
@@ -1055,14 +1083,34 @@ namespace Dash
         public Context ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update=true)
         {
             context = context ?? new Context(this);
-            var opFields = GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
-            if (opFields != null)
-                foreach (var opField in opFields.TypedData)
+            HashSet<Type> usedOperators = new HashSet<Type>();
+            List<OperatorController> ops = new List<OperatorController>();
+            var proto = this;
+            while (proto != null)
+            {
+                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true);
+                if (opFields != null)
                 {
-                    var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
-                    if (exec)
-                        context = Execute(opField, context, update, args);
+                    foreach (var operatorController in opFields)
+                    {
+                        if (usedOperators.Contains(operatorController.GetType()))
+                        {
+                            continue;
+                        }
+
+                        ops.Add(operatorController);
+                    }
                 }
+
+                proto = proto.GetPrototype();
+            }
+
+            foreach (var opField in ops)
+            {
+                var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
+                if (exec)
+                    context = Execute(opField, context, update, args);
+            }
             return context;
         }
 

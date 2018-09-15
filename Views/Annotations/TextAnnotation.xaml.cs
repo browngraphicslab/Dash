@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -26,64 +27,60 @@ namespace Dash
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
 
-        public TextAnnotation(NewAnnotationOverlay parent) : base(parent)
+        public TextAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
+            base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
 
+            DataContext = selectionViewModel;
+
             AnnotationType = AnnotationType.Selection;
-        }
 
-        public override void Render(SelectionViewModel vm)
-        {
-            if (DocumentController.GetField(KeyStore.PDFSubregionKey) == null)
+            if (selectionViewModel != null)
             {
-                var currentSelections = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-
-                var indices = new List<int>();
-                double minRegionY = double.PositiveInfinity;
-                foreach (PointController selection in currentSelections)
-                {
-                    for (double i = selection.Data.X; i <= selection.Data.Y; i++)
-                    {
-                        if (!indices.Contains((int)i)) indices.Add((int)i);
-                    }
-                }
-
-                var subRegionsOffsets = new List<double>();
-                int prevIndex = -1;
-                foreach (int index in indices)
-                {
-                    SelectableElement elem = ParentOverlay.TextSelectableElements[index];
-                    if (prevIndex + 1 != index)
-                    {
-                        subRegionsOffsets.Add(elem.Bounds.Y);
-                    }
-                    minRegionY = Math.Min(minRegionY, elem.Bounds.Y);
-                    prevIndex = index;
-                }
-
-                if (this.GetFirstAncestorOfType<PdfView>() != null)
-                {
-                    DocumentController.SetField(KeyStore.PDFSubregionKey,
-                        new ListController<NumberController>(
-                            subRegionsOffsets.ConvertAll(i => new NumberController(i))), true);
-                }
+                HelpRenderRegion(selectionViewModel);
             }
-
-            HelpRenderRegion(vm);
         }
 
         public override void StartAnnotation(Point p)
         {
-            if (!this.IsCtrlPressed())
+            _selectionStartPoint = p;
+        }
+        public SelectableElement GetClosestElementInDirection(Point p, Point dir)
+        {
+            SelectableElement ele = null;
+            double closestDist = double.PositiveInfinity;
+            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
             {
-                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
+                var b = selectableElement.Bounds;
+                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
-                    ParentOverlay.ClearSelection();
+                    return selectableElement;
+                }
+                var dist = GetMinRectDist(b, p, out var closest);
+                if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
+                {
+                    ele = selectableElement;
+                    closestDist = dist;
                 }
             }
 
-            _selectionStartPoint = p;
+            return ele;
+        }
+
+        private double GetMinRectDist(Rect r, Point p, out Point closest)
+        {
+            var x1Dist = p.X - r.Left;
+            var x2Dist = p.X - r.Right;
+            var y1Dist = p.Y - r.Top;
+            var y2Dist = p.Y - r.Bottom;
+            x1Dist *= x1Dist;
+            x2Dist *= x2Dist;
+            y1Dist *= y1Dist;
+            y2Dist *= y2Dist;
+            closest.X = x1Dist < x2Dist ? r.Left : r.Right;
+            closest.Y = y1Dist < y2Dist ? r.Top : r.Bottom;
+            return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
         }
 
         public override void UpdateAnnotation(Point p)
@@ -115,70 +112,18 @@ namespace Dash
             }
         }
 
-        private SelectableElement GetClosestElementInDirection(Point p, Point dir)
-        {
-            SelectableElement ele = null;
-            double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
-            {
-                var b = selectableElement.Bounds;
-                if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
-                {
-                    return selectableElement;
-                }
-                var dist = GetMinRectDist(b, p, out var closest);
-                if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
-                {
-                    ele = selectableElement;
-                    closestDist = dist;
-                }
-            }
-
-            return ele;
-        }
-        private double GetMinRectDist(Rect r, Point p, out Point closest)
-        {
-            var x1Dist = p.X - r.Left;
-            var x2Dist = p.X - r.Right;
-            var y1Dist = p.Y - r.Top;
-            var y2Dist = p.Y - r.Bottom;
-            x1Dist *= x1Dist;
-            x2Dist *= x2Dist;
-            y1Dist *= y1Dist;
-            y2Dist *= y2Dist;
-            closest.X = x1Dist < x2Dist ? r.Left : r.Right;
-            closest.Y = y1Dist < y2Dist ? r.Top : r.Bottom;
-            return Math.Min(x1Dist, x2Dist) + Math.Min(y1Dist, y2Dist);
-        }
-
         public override void EndAnnotation(Point p)
         {
-            if (StartIndex == -1 || EndIndex == -1) return;//Not currently selecting anything
             _selectionStartPoint = null;
-            ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            if (StartIndex != -1 && EndIndex != -1)
+            {
+                ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            }
         }
 
-        private void HelpRenderRegion(SelectionViewModel vm)
+        private void HelpRenderRegion(Selection vm)
         {
-            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-            var indexList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-
-            //Debug.Assert(posList.Count == sizeList.Count);
-
-            //for (var i = 0; i < posList.Count; ++i)
-            //{
-            //    var r = new Rectangle
-            //    {
-            //        Width = sizeList[i].Data.X,
-            //        Height = sizeList[i].Data.Y,
-            //        Fill = vm.UnselectedBrush,
-            //        DataContext = vm,
-            //        IsDoubleTapEnabled = false
-            //    };
-
-            //    InitializeAnnotationObject(r, posList[i].Data, PlacementMode.Bottom, vm);
-            //}
+            var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             if (ParentOverlay.TextSelectableElements != null && indexList.Any())
             {
@@ -207,16 +152,14 @@ namespace Dash
                 {
                     Data = geometryGroup,
                     DataContext = vm,
-                    IsDoubleTapEnabled = false,
-                    Fill = vm.UnselectedBrush
+                    IsDoubleTapEnabled = false
                 };
-                InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse, vm);
+                InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
+                LayoutRoot.Children.Add(path);
             }
-
-            ParentOverlay.Regions.Add(vm);
         }
 
-        public override double AddSubregionToRegion(DocumentController region)
+        public override double AddToRegion(DocumentController region)
         {
             var prevUsedIndex = -1;
             var prevStartIndex = StartIndex;
@@ -252,7 +195,20 @@ namespace Dash
 				region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
 			}
 
-			return YPos;
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));
+            
+            return YPos;
+        }
+
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
+
+                e.Handled = true;
+            }
         }
     }
 }

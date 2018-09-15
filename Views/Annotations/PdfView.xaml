@@ -40,11 +40,15 @@
                     <Grid x:Name="xTopAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                         <!--<ToolTipService.ToolTip>
                             <ToolTip Content="Open Annotations" Placement="Bottom" VerticalOffset="20"
                             />
                         </ToolTipService.ToolTip>-->
+                    </Grid>
+
+                    <Grid x:Name="xToggleActivationButton" PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                        <Ellipse />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     </Grid>
 
                     <Grid x:Name="xTopNextPageButton" PointerPressed="XTopNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
@@ -169,6 +173,11 @@
                         </ToolTipService.ToolTip>-->
                     </Grid>
 
+                    <Grid x:Name="xBottomToggleActivationButton" PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                        <Ellipse />
+                        <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xBottomToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    </Grid>
+
                     <Grid x:Name="xBottomNextPageButton" PointerPressed="XBottomNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                         <Ellipse />
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
@@ -288,13 +297,14 @@
         <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
             <controls:GridSplitter.Element>
-                <Canvas>
+                <Canvas> 
                     <StackPanel Orientation="Vertical">
-
-
                         <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
-
                         <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlueBrush}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                        <Grid x:Name="xActivationMode" Visibility="Collapsed" Margin="0 -20 0 0"  PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                            <Ellipse Fill="Red" />
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                        </Grid>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>

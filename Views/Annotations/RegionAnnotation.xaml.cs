@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -25,56 +26,51 @@ namespace Dash
     {
         private Point _previewStartPoint;
 
-        public RegionAnnotation(NewAnnotationOverlay parent) : base(parent)
+        public RegionAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
+            base(parent, selectionViewModel?.RegionDocument)
         {
             this.InitializeComponent();
 
+            DataContext = selectionViewModel;
+
             AnnotationType = AnnotationType.Region;
-        }
 
-        public override void Render(SelectionViewModel vm)
-        {
-            var posList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            var sizeList = DocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
-
-            Debug.Assert(posList.Count == sizeList.Count);
-
-            for (var i = 0; i < posList.Count; ++i)
+            if (selectionViewModel != null)
             {
-                var r = new Rectangle
-                {
-                    Width = sizeList[i].Data.X,
-                    Height = sizeList[i].Data.Y,
-                    Fill = vm.UnselectedBrush,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false
-                };
-                RenderSubRegion(posList[i].Data, PlacementMode.Bottom, r, vm);
-            }
+                var posList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                var sizeList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
 
-            ParentOverlay.Regions.Add(vm);
+                Debug.Assert(posList.Count == sizeList.Count);
+
+                for (var i = 0; i < posList.Count; ++i)
+                {
+                    var r = new Rectangle
+                    {
+                        Width = sizeList[i].Data.X,
+                        Height = sizeList[i].Data.Y,
+                        DataContext = selectionViewModel,
+                        IsDoubleTapEnabled = false
+                    };
+                    RenderSubRegion(posList[i].Data, PlacementMode.Top, r, selectionViewModel);
+                }
+            }
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, SelectionViewModel vm)
+        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
         {
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
-            InitializeAnnotationObject(r, pos, mode, vm);
+            InitializeAnnotationObject(r, pos, mode);
+            LayoutRoot.Children.Add(r);
         }
 
         public override void StartAnnotation(Point p)
         {
-            if (!this.IsCtrlPressed())
-            {
-                if (ParentOverlay.CurrentAnchorableAnnotations.Any())
-                {
-                    ParentOverlay.ClearSelection();
-                }
-            }
             _previewStartPoint = p;
             Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
             Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+            Debug.WriteLine("start" + p.X + " " + p.Y);
             XPos = p.X;
             YPos = p.Y;
             ParentOverlay.XPreviewRect.Width = 0;
@@ -110,35 +106,50 @@ namespace Dash
             ParentOverlay.XPreviewRect.Visibility = Visibility.Visible;
         }
 
+        Rectangle XRegionRect;
+
         public override void EndAnnotation(Point p)
         {
-            Canvas.SetLeft(this, XPos);
-            Canvas.SetTop(this, YPos);
-            Width = ParentOverlay.XPreviewRect.Width;
-            Height = ParentOverlay.XPreviewRect.Height;
-
-            if (Width < 4 || Height < 4)
-            {
-                return;
-            }
-
+            XRegionRect = new Rectangle();
+            XRegionRect.StrokeThickness = 2;
+            XRegionRect.StrokeDashArray = new DoubleCollection();
+            XRegionRect.StrokeDashArray.Add(2);
+            XRegionRect.Fill = ParentOverlay.XPreviewRect.Fill;
+            XRegionRect.Opacity = ParentOverlay.XPreviewRect.Opacity;
+            XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
             XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
             XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
-            ParentOverlay.XAnnotationCanvas.Children.Add(this);
-            ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            Canvas.SetLeft(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Left);
+            Canvas.SetTop(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Top);
+
+            if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
+            {
+                ParentOverlay.XAnnotationCanvas.Children.Add(XRegionRect);
+                ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            }
+        }
+        public override double AddToRegion(DocumentController region)
+        {
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(XRegionRect), Canvas.GetTop(XRegionRect)));
+            region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
+
+            return YPos;
+        }
+        
+        private void LayoutRoot_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 49);
         }
 
-        public override double AddSubregionToRegion(DocumentController region)
+        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
-            region.AddToListField(KeyStore.SelectionRegionSizeKey,
-                new PointController(XRegionRect.Width, XRegionRect.Height));
-			// hello wanderer please do not delete the next two lines despite them looking repetitive: the publisher needs this!!
-	        region.GetDataDocument().AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(this), Canvas.GetTop(this)));
-	        region.GetDataDocument().AddToListField(KeyStore.SelectionRegionSizeKey,
-		        new PointController(XRegionRect.Width, XRegionRect.Height));
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = Arrow;
 
-			return YPos;
+                e.Handled = true;
+            }
         }
     }
 }

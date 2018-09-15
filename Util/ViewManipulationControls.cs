@@ -34,11 +34,7 @@ namespace Dash
         public double ElementScale
         {
             get => _elementScale;
-            set
-            {
-                _elementScale = value;
-                _freeformView.ViewModel.PrevScale = value;
-            }
+            set =>_elementScale = value;
         }
 
         public PointerDeviceType BlockedInputType { get; set; }
@@ -86,6 +82,7 @@ namespace Dash
 
                 // get the scale amount from the mousepoint in canvas space
                 float scaleAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta >= 0 ? 1.07f : 1 / 1.07f;
+
                 
                 if (!IsScaleDiscrete)
                     //Clamp the scale factor 
@@ -95,11 +92,6 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(
                         new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
                         false);
-
-                foreach (var view in _freeformView.GetDescendantsOfType<DocumentView>())
-                {
-                    view.UpdateResizers();
-                }
             }
         }
 
@@ -107,18 +99,20 @@ namespace Dash
         {
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
             {
-                e.Complete();
+                //e.Complete();
                 _processManipulation = false;
-            } else
+            }
+            else
+            {
                 _processManipulation = true;
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-           
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

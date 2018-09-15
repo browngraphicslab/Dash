@@ -9,12 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock x:Name="TextBlock" Grid.Row="1" x:FieldModifier="public" Visibility="Collapsed">Website from
-        </TextBlock>
+    <Grid x:Name="xOuterGrid" Background="Gray">
+        <Image x:Name="xCacheBitmap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Stretch="Fill" />
     </Grid>
 </UserControl>

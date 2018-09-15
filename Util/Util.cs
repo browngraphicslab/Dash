@@ -88,7 +88,10 @@ namespace Dash
         /// </summary>
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            if (to == null) to = Window.Current.Content;
+            if (to == null)
+                to = Window.Current.Content;
+            if (from == null)
+                from = Window.Current.Content;
             return @from.TransformToVisual(to).TransformPoint(p);
         }
 
@@ -216,6 +219,45 @@ namespace Dash
             return result;
         }
 
+        public static async Task<StorageFile> SaveSoftwareBitmapToFile(SoftwareBitmap softwareBitmap, StorageFile outputFile)
+        {
+            using (var stream = await outputFile.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                // Create an encoder with the desired format
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+
+                // Set the software bitmap
+                encoder.SetSoftwareBitmap(softwareBitmap);
+
+                // Set additional encoding parameters, if needed
+                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
+                encoder.IsThumbnailGenerated = true;
+
+                try
+                {
+                    await encoder.FlushAsync();
+                } catch (Exception err)
+                {
+                    const int WINCODEC_ERR_UNSUPPORTEDOPERATION = unchecked((int)0x88982F81);
+                    switch (err.HResult)
+                    {
+                    case WINCODEC_ERR_UNSUPPORTEDOPERATION:
+                        // If the encoder does not support writing a thumbnail, then try again
+                        // but disable thumbnail generation.
+                        encoder.IsThumbnailGenerated = false;
+                        break;
+                    default:
+                        throw;
+                    }
+                }
+
+                if (encoder.IsThumbnailGenerated == false)
+                {
+                    await encoder.FlushAsync();
+                }
+            }
+            return outputFile;
+        }
 
         /// <summary>
         ///     Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController
@@ -548,7 +590,7 @@ namespace Dash
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(ListController<DocumentController> collection)
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(ListController<DocumentController> collection)
         {
             // create the new list of headers
             var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
@@ -583,6 +625,35 @@ namespace Dash
             var dotProduct = a.X * b.X + a.Y * b.Y;
             var aMagSq = Math.Pow(a.X, 2) + Math.Pow(a.Y, 2);
             return new Point(a.X * dotProduct / aMagSq, a.Y * dotProduct / aMagSq);
+        }
+        /// <summary>
+        ///  clamps a point to lie within a rectangle
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public static Point Clamp(Point point, Rect rect)
+        {
+            if (point.X < rect.Left)
+            {
+                point.X = rect.Left;
+            }
+            else if (point.X > rect.Right)
+            {
+                point.X = rect.Right;
+            }
+
+            if (point.Y < rect.Top)
+            {
+                point.Y = rect.Top;
+            }
+            else if (point.Y > rect.Bottom)
+            {
+                point.Y = rect.Bottom;
+            }
+
+
+            return point;
         }
     }
 }

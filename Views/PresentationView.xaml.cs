@@ -218,7 +218,23 @@ namespace Dash
         }
 
         // helper method for moving the mainpage screen
-        private static void NavigateToDocument(DocumentController dc) => MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true);
+        private static void NavigateToDocument(DocumentController dc)
+        {
+            //if navigation failed, it wasn't in current workspace or something
+            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true))
+            {
+                var tree = DocumentTree.MainPageTree;
+                if (tree.Nodes.ContainsKey(dc))//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                {
+                    var docNode = tree.Nodes[dc];
+                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                }
+                else
+                {
+                    MainPage.Instance.SetCurrentWorkspace(dc);
+                }
+            }
+        } 
 
         // these buttons are only enabled when the presentation is playing
         private void ResetBackNextButtons()
@@ -330,11 +346,11 @@ namespace Dash
             }
 
             //get right collection
-            var docViewA = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
                 .GetCanvas();
-            var docViewB = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>()
+            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
                 .GetCanvas();
-            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>()
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>()
                 .Reverse();
             foreach (var col in allCollections)
             {
@@ -559,7 +575,7 @@ namespace Dash
         public void ShowLines()
         {
             //show lines
-            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>();
             //xShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
 
             DrawLines();
@@ -582,7 +598,7 @@ namespace Dash
         private void ShowLinesButton_OnUnchecked(object sender, RoutedEventArgs e)
         {
             //hide lines
-            var allCollections = MainPage.Instance.MainDocView.GetDescendantsOfType<CollectionFreeformBase>();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>();
             //xShowLinesButton.Background = new SolidColorBrush(Colors.White);
 
             //remove all paths

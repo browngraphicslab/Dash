@@ -49,7 +49,8 @@ namespace Dash
                             continue;
                         }
                         toSearch.Add(docField);
-                    } else if(enumDisplayableField.Value is ListController<DocumentController> listField)
+                    }
+                    else if (enumDisplayableField.Value is ListController<DocumentController> listField)
                     {
                         foreach (var documentController in listField)
                         {
@@ -100,8 +101,40 @@ namespace Dash
          */
         public static DocumentTree MainPageTree => new DocumentTree(MainPage.Instance.MainDocument);
 
+        public static List<List<DocumentController>> GetPathsToDocuments(DocumentController doc, bool useDataDoc = true)
+        {
+            List<DocumentNode> nodes;
+
+            if (useDataDoc)
+            {
+                var dataDoc = doc.GetDataDocument();
+                nodes = MainPageTree.Where(node => node.DataDocument.Equals(dataDoc)).ToList();
+            }
+            else
+            {
+                nodes = MainPageTree.Where(node => node.ViewDocument.Equals(doc)).ToList();
+            }
+
+            var paths = new List<List<DocumentController>>(nodes.Count);
+            foreach (var node in nodes)
+            {
+                var path = new List<DocumentController>();
+                var currentNode = node;
+                while (currentNode != null)
+                {
+                    path.Add(currentNode.ViewDocument);
+                    currentNode = currentNode.Parent;
+                }
+
+                path.Reverse();
+                paths.Add(path);
+            }
+
+            return paths;
+        }
+
         public IEnumerator<DocumentNode> GetEnumerator() => Head.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
     }
-}

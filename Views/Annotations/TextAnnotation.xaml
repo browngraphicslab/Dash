@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid x:Name="LayoutRoot" PointerMoved="LayoutRoot_PointerMoved">
 
     </Grid>
 </local:AnchorableAnnotation>

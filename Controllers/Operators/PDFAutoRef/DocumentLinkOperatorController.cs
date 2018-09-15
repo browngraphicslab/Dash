@@ -63,7 +63,7 @@ namespace Dash
 
             var linkType = (TextController) inputs[LinkTypeKey];
 
-            NewAnnotationOverlay.LinkRegion(sourceDoc, targetDoc, sStart, sEnd, tStart, tEnd, linkType.Data);
+            AnnotationOverlay.LinkRegion(sourceDoc, targetDoc, sStart, sEnd, tStart, tEnd, linkType.Data);
         }
     }
 }

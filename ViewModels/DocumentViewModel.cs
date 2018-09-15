@@ -17,23 +17,20 @@ namespace Dash
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
         // == MEMBERS, GETTERS, SETTERS ==
-        DocumentController _lastLayout = null;
-        TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
-        bool _showLocalContext;
-        bool _decorationState = false;
-        public bool _isDeletedTemplate;
-        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
-        Thickness _searchHighlightState = new Thickness(0);
-        FrameworkElement _content = null;
+        private DocumentController _lastLayout = null;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
+        private bool               _showLocalContext;
+        private bool               _decorationState = false;
+        private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
+        private FrameworkElement   _content = null;
+
+        public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
             _lastLayout = LayoutDocument;
-            _isDeletedTemplate = false;
-            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
-            InteractiveManipulationScale = Scale;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
             IsSearchHighlighted = false;
@@ -47,14 +44,12 @@ namespace Dash
         public void Load()
         {
             //UnLoad();
-            Debug.WriteLine("Load" + DocumentController.Tag);
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
         public void UnLoad()
         {
-            Debug.WriteLine("UnLoad" + DocumentController.Tag);
             DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
@@ -71,19 +66,14 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
 
-        /// <summary>
-        /// The cached Position of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Position instead
-        /// </summary>
-        public Point InteractiveManipulationPosition;
-        /// <summary>
-        /// The cached Scale of the document **during** a ManipulationControls interaction.
-        /// When not interacting, use Scale instead
-        /// </summary>
-        public Point InteractiveManipulationScale;
-
         private SolidColorBrush _searchHighlightBrush;
+        private bool _isNotBackgroundPinned = true;
 
+        public bool IsNotBackgroundPinned
+        {
+            get => _isNotBackgroundPinned;
+            set => SetProperty(ref _isNotBackgroundPinned, value);
+        }
         public bool IsAdornmentGroup
         {
             get => DocumentController.GetIsAdornment();
@@ -95,7 +85,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetPosition() ?? new Point();
-            set => LayoutDocument.SetPosition(InteractiveManipulationPosition = value);
+            set => LayoutDocument.SetPosition(value);
         }
         public double XPos
         {
@@ -120,7 +110,7 @@ namespace Dash
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
         public RectangleGeometry DragBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
@@ -176,15 +166,10 @@ namespace Dash
             set => SetProperty(ref _searchHighlightBrush, value);
         }
 
-        public CollectionViewModel.StandardViewLevel ViewLevel
-        {
-            get => _standardViewLevel;
-            set => SetProperty(ref _standardViewLevel, value);
-        }
 
         public async void ExpandBorder()
         {
-            while (SearchHighlightState.Bottom <= 7.5)
+            while (SearchHighlightState.Bottom <= Highlighted.Bottom - 0.5)
             {
                 SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
                 await Task.Delay(TimeSpan.FromMilliseconds(7));
