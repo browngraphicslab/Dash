@@ -9,14 +9,14 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Border Background="{StaticResource DashDarkDarkBlueBrush}" CornerRadius="10" Padding="5">
+    <Border Background="White" CornerRadius="10" Padding="5" BorderBrush="DarkGray" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <Border CornerRadius="7" BorderThickness="1" BorderBrush="#66FFFFFF">
-                <TextBox BorderBrush="Transparent" x:Name="XFilterBox" PlaceholderText="Search" Style="{StaticResource xSearchTextBox}" TextChanged="XFilterBox_OnTextChanged"></TextBox>
+            <Border CornerRadius="7" BorderThickness="1" BorderBrush="#66AAAAAA" Visibility="{x:Bind UseFilterBox, Mode=OneWay}">
+                <TextBox x:Name="XFilterBox" PlaceholderText="Search" FontSize="12" BorderThickness="0" TextChanged="XFilterBox_OnTextChanged"></TextBox>
             </Border>
             <ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{x:Bind BindableGroups, Mode=OneWay}">
@@ -28,11 +28,11 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="local:ActionGroupViewModel">
                             <StackPanel>
-                                <TextBlock Text="{Binding GroupTitle}"></TextBlock>
+                                <TextBlock Text="{Binding GroupTitle}" Foreground="Gray" FontFamily="Tahoma" FontSize="16"  Style="{StaticResource TitleTextBlockStyle}" Margin="5,0,0,0"></TextBlock>
                                 <ListView ItemsSource="{Binding BindableActions}" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="local:ActionViewModel">
-                                            <local:ActionMenuItem/>
+                                            <local:ActionMenuItem Margin="0,0,0,5"/>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>

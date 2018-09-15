@@ -23,6 +23,7 @@ using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 using System.Web;
+using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 
 
@@ -1378,6 +1379,45 @@ namespace Dash
         }
 
 
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ActionMenu GetMenu()
+            {
+                ActionMenu menu = new ActionMenu
+                {
+                    Width = 400,
+                    Height = 500
+                };
+                ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
+                menu.AddGroup("BASIC", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
+                    new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
+                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), source),
+                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), source),
+                });
+                menu.AddGroup("DATABASE", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                });
+                menu.AddGroup("TEST1", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                });
+                menu.AddGroup("TEST2", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                });
+                return menu;
+            }
 
+            xCanvas.Children.Add(GetMenu());
+        }
     }
 }

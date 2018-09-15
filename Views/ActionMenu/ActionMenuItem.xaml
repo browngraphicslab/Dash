@@ -11,17 +11,19 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="3*"></RowDefinition>
-            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="25"></RowDefinition>
+            <RowDefinition Height="20"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        
-        <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Source="{x:Bind ViewModel.ThumbnailSource, Mode=OneWay}"></Image>
-        <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.Title, Mode=OneWay}"></TextBlock>
-        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.HelpText, Mode=OneWay}"></TextBlock>
+
+        <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5" Margin="3" Padding="5">
+        <Image Source="{Binding ThumbnailSource, Mode=OneWay}" VerticalAlignment="Stretch"></Image>
+</Border>
+        <TextBlock Grid.Row="0" Grid.Column="1" Foreground="Black" FontSize="16" Text="{Binding Title, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}"></TextBlock>
+        <TextBlock Grid.Row="1" Grid.Column="1" Foreground="DarkGray" FontSize="13"  Text="{Binding HelpText, Mode=OneWay}" Style="{StaticResource SubheaderTextBlockStyle}"></TextBlock>
 
     </Grid>
 </UserControl>

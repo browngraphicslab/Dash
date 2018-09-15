@@ -49,9 +49,36 @@ namespace Dash
 
     public sealed partial class ActionMenu : UserControl, INotifyPropertyChanged
     {
+        private bool _useFilterBox = true;
         public ObservableCollection<ActionGroupViewModel> Groups { get; } = new ObservableCollection<ActionGroupViewModel>();
 
         public AdvancedCollectionView BindableGroups { get; }
+
+        public bool UseFilterBox
+        {
+            get => _useFilterBox;
+            set
+            {
+                if (value == _useFilterBox) return;
+                _useFilterBox = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _filterString;
+        public string FilterString
+        {
+            get => _filterString;
+            set
+            {
+                _filterString = value;
+                var predicate = GetFilterPredicate(value);
+                foreach (var vm in Groups)
+                {
+                    vm.BindableActions.Filter = predicate;
+                }
+            }
+        }
 
         public ActionMenu()
         {
@@ -59,9 +86,8 @@ namespace Dash
             BindableGroups = new AdvancedCollectionView(Groups);
         }
 
-        private Predicate<object> GetFilterPredicate()
+        private Predicate<object> GetFilterPredicate(string filterText)
         {
-            var filterText = XFilterBox.Text;
             Predicate<object> predicate;
             if (string.IsNullOrWhiteSpace(filterText))
             {
@@ -69,7 +95,7 @@ namespace Dash
             }
             else
             {
-                predicate = obj => obj is ActionViewModel avm && avm.Title.Contains(filterText);
+                predicate = obj => obj is ActionViewModel avm && avm.Title.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0;
             }
 
             return predicate;
@@ -77,12 +103,7 @@ namespace Dash
 
         private void XFilterBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var predicate = GetFilterPredicate();
-            foreach (var vm in Groups)
-            {
-                vm.BindableActions.Filter = predicate;
-            }
-            BindableGroups.Filter = obj => obj is ActionGroupViewModel agvm && agvm.BindableActions.Any();
+            FilterString = XFilterBox.Text;
         }
 
         public void AddGroup(string groupName, List<ActionViewModel> actions)
@@ -91,7 +112,7 @@ namespace Dash
             if (existingGroup == null)
             {
                 var vm = new ActionGroupViewModel(groupName, new ObservableCollection<ActionViewModel>(actions));
-                vm.BindableActions.Filter = GetFilterPredicate();
+                vm.BindableActions.Filter = GetFilterPredicate(_filterString);
                 Groups.Add(vm);
             }
             else
