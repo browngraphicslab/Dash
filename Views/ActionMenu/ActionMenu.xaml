@@ -11,6 +11,10 @@
 
     <Border Background="White" CornerRadius="10" Padding="5" BorderBrush="DarkGray" BorderThickness="1">
         <Grid>
+            <Grid.Resources>
+                <CollectionViewSource x:Name="GroupCVS" IsSourceGrouped="True"></CollectionViewSource>
+            </Grid.Resources>
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
@@ -18,7 +22,23 @@
             <Border CornerRadius="7" BorderThickness="1" BorderBrush="#66AAAAAA" Visibility="{x:Bind UseFilterBox, Mode=OneWay}">
                 <TextBox x:Name="XFilterBox" PlaceholderText="Search" FontSize="12" BorderThickness="0" TextChanged="XFilterBox_OnTextChanged"></TextBox>
             </Border>
-            <ScrollViewer Grid.Row="1">
+            <ListView Grid.Row="1" ItemsSource="{Binding Source={StaticResource GroupCVS}}">
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GroupTitle}" Foreground="Gray" FontFamily="Tahoma" FontSize="16"  Style="{StaticResource TitleTextBlockStyle}" Margin="5,0,0,0"></TextBlock>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ActionViewModel">
+                        <local:ActionMenuItem Margin="0,0,0,5"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <!--<ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{x:Bind BindableGroups, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -28,7 +48,6 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="local:ActionGroupViewModel">
                             <StackPanel>
-                                <TextBlock Text="{Binding GroupTitle}" Foreground="Gray" FontFamily="Tahoma" FontSize="16"  Style="{StaticResource TitleTextBlockStyle}" Margin="5,0,0,0"></TextBlock>
                                 <ListView ItemsSource="{Binding BindableActions}" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="local:ActionViewModel">
@@ -40,7 +59,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer>
+            </ScrollViewer>-->
         </Grid>
     </Border>
 </UserControl>

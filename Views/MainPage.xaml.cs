@@ -1344,24 +1344,24 @@ namespace Dash
                 {
                     new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
                     new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
-                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), source),
-                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), source),
+                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
+                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
                 });
                 menu.AddGroup("DATABASE", new List<ActionViewModel>
                 {
                     new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
                 });
                 menu.AddGroup("TEST1", new List<ActionViewModel>
                 {
                     new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
                     new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
                 });
                 menu.AddGroup("TEST2", new List<ActionViewModel>
                 {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
                     new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
                     new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
                 });
