@@ -42,7 +42,7 @@ namespace Dash
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
-        
+
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
         public DocumentViewModel ViewModel
@@ -769,7 +769,9 @@ namespace Dash
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (!MainPage.Instance.IsRightBtnPressed())
+                {
                     SelectionManager.Select(this, this.IsShiftPressed());
+                }
 
                 if (SelectionManager.GetSelectedDocs().Count > 1)
                 {
@@ -789,8 +791,12 @@ namespace Dash
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
-            if (collection == null) return;
-            var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+            if (collection == null)
+            {
+                return;
+            }
+
+            var where = TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
 
             // special case for search operators
             if (ViewModel.DataDocument.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
@@ -822,40 +828,56 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
                     doc.CopyDocument();
+                }
             }
         }
 
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
                     doc.CopyViewDocument();
+                }
+            }
         }
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
                     doc.DeleteDocument();
+                }
+            }
         }
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
                     doc.KeyValueViewDocument();
+                }
+            }
         }
 
 
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
+            {
                 foreach (var docView in SelectionManager.GetSelectedSiblings(this))
                 {
                     docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
                     SetZLayer();
                 }
+            }
         }
 
         public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
@@ -878,9 +900,9 @@ namespace Dash
             ShowContext();
         }
 
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        private async void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
-            Util.ExportAsImage(LayoutRoot);
+            await Util.ExportAsImage(LayoutRoot);
         }
 
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)

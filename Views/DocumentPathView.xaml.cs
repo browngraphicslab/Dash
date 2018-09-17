@@ -76,7 +76,7 @@ namespace Dash
             var shortestPath = paths.First();
 
             InitStackPanelWithPath(XMainPathStackPanel, shortestPath);
-            foreach (var path in paths.Skip(1))
+            foreach (var path in paths.Skip(1)) //Skip shortest
             {
                 var p = new StackPanel
                 {
