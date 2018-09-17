@@ -509,15 +509,17 @@ namespace Dash
             var h = ActualHeight - extraOffsetY;
 
             // clamp the drag position to the available Bounds
-            if (ViewModel.DragBounds != null)
+            var parent = this.GetFirstAncestorOfType<AnnotationOverlay>();
+            var dragBounds = parent == null ? Rect.Empty : new Rect(new Point(), new Size(parent.ActualWidth, parent.ActualHeight));
+            if (dragBounds != Rect.Empty)
             {
                 var width = ActualWidth;
                 var height = ActualHeight;
                 var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
                     ViewModel.YPos + height * (1 - moveYScale));
-                if (!ViewModel.DragBounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
+                if (!dragBounds.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
                     return;
-                var clamped = Util.Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), ViewModel.DragBounds.Rect);
+                var clamped = Util.Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), dragBounds);
                 delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
             }
 
@@ -572,10 +574,10 @@ namespace Dash
 
 
             // re-clamp the position to keep it in bounds
-            if (ViewModel.DragBounds != null)
+            if (dragBounds != Rect.Empty)
             {
-                if (!ViewModel.DragBounds.Rect.Contains(newPos) ||
-                    !ViewModel.DragBounds.Rect.Contains(new Point(newPos.X + newSize.Width,
+                if (!dragBounds.Contains(newPos) ||
+                    !dragBounds.Contains(new Point(newPos.X + newSize.Width,
                         newPos.Y + DesiredSize.Height)))
                 {
                     ViewModel.Position = oldPos;
@@ -584,11 +586,11 @@ namespace Dash
                     return;
                 }
 
-                var clamp = Util.Clamp(newPos, ViewModel.DragBounds.Rect);
+                var clamp = Util.Clamp(newPos, dragBounds);
                 newSize.Width += newPos.X - clamp.X;
                 newSize.Height += newPos.Y - clamp.Y;
                 newPos = clamp;
-                var br = Util.Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), ViewModel.DragBounds.Rect);
+                var br = Util.Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), dragBounds);
                 newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
             }
 
