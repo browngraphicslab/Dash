@@ -180,10 +180,6 @@ namespace Dash
                 xThumbs.SelectedIndex = 0;
         }
 
-        KeyController CaptionKey = null;
-        KeyController DisplayKey = null;
-        string DisplayString = "";
-
         public void SetHackCaptionText(FieldControllerBase caption)
         {
             var textBox = xTextBox;
@@ -193,73 +189,6 @@ namespace Dash
             var docView = dataBox.Document.MakeViewUI(null);
             Grid.SetRow(docView, 0);
             xDocContainer.Children.Add(docView);
-            //captionKey = captionKey ?? KeyStore.TitleKey;
-            //if (captionKey != null && CurPage != null)
-            //{
-            //    var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument();
-            //    xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    CaptionKey = captionKey;
-
-            //    var currPageBinding = new FieldBinding<TextController>()
-            //    {
-            //        Mode = BindingMode.TwoWay,
-            //        Document = CurPage.DataDocument,
-            //        Key = CaptionKey,
-            //        FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
-            //        Converter = new ObjectToStringConverter()
-            //    };
-            //    xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
-
-            //    //if (bodyDoc?.Equals(CurPage.DataDocument) == false)
-            //    //    bodyDoc?.SetField(CaptionKey,
-            //    //        new DocumentReferenceController(CurPage.DataDocument.GetId(),
-            //    //            CaptionKey), true);
-
-            //    xDocTitle.Height = 50;
-            //    xDocCaptionRow.Height = new GridLength(50);
-            //}
-        }
-        public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
-        {
-            documentKey = documentKey ?? KeyStore.DataKey;
-            if (documentKey != null && CurPage != null)
-            {
-                DisplayString = keyasgn;
-                DisplayKey = documentKey;
-                //xDocView.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                var data = CurPage.DataDocument.GetDereferencedField(DisplayKey,null);
-                if (!string.IsNullOrEmpty(DisplayString))
-                {
-                    var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
-                    var replacedString = DisplayString;
-                    foreach (var keyToReplace in keysToReplace)
-                    {
-                        var k = new KeyController(keyToReplace.ToString().Substring(1));
-                        var value = CurPage.DataDocument.GetDereferencedField<TextController>(k, null)?.Data;
-                        if (value != null)
-                            replacedString = replacedString.Replace(keyToReplace.ToString(), value);
-                    }
-
-                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DataDocument);
-                    if (img != null && (!(data is DocumentController) || !img.GetDataDocument().Equals((data as DocumentController).GetDataDocument())))
-                    {
-                        var imgView = img.GetViewCopy();
-                        imgView.GetWidthField().NumberFieldModel.Data = double.NaN;
-                        imgView.GetHeightField().NumberFieldModel.Data = double.NaN;
-                        data = imgView;
-                    }
-                }
-                if (data != null)
-                {
-                    CurPage.DataDocument.SetField(DisplayKey, data, true);
-                    var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
-                    
-                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
-                    _scope = new OuterReplScope();
-                    _scope.DeclareVariable("this", db.Document);
-                    _dsl = new DSL(_scope);
-                }
-            }
         }
         public DocumentViewModel CurPage
         {

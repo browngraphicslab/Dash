@@ -87,6 +87,16 @@ namespace Dash
 
         }
 
+        private async void XExplodePages_OnChecked(object sender, RoutedEventArgs e)
+        {
+            var pages = await _currentPdfView.ExplodePages();
+
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 200, 200, pages).Document;
+
+            xExplodePages.IsChecked = false;
+            MainPage.Instance.AddFloatingDoc(cnote);
+        }
+
         private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
         {
             xRegionToggle.IsChecked = false;
