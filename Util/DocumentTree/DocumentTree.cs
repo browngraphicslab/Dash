@@ -128,6 +128,8 @@ namespace Dash
                 paths.Add(path);
             }
 
+            paths.Sort((l1, l2) => l1.Count - l2.Count);
+
             return paths;
         }
 

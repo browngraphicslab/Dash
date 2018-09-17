@@ -69,19 +69,14 @@ namespace Dash
             }
 
             var paths = DocumentTree.GetPathsToDocuments(Document, UseDataDocument);
-            List<DocumentController> shortestPath = null;
-            foreach (var path in paths)
+            if (paths.Count == 0)
             {
-                if (shortestPath == null || path.Count < shortestPath.Count)
-                {
-                    shortestPath = path;
-                }
+                return;
             }
-
-            paths.Remove(shortestPath);
+            var shortestPath = paths.First();
 
             InitStackPanelWithPath(XMainPathStackPanel, shortestPath);
-            foreach (var path in paths)
+            foreach (var path in paths.Skip(1))
             {
                 var p = new StackPanel
                 {
