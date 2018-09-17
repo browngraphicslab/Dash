@@ -135,7 +135,22 @@
         </Border>
 
         <Border x:Name="xTargetBorder" x:FieldModifier="public" Grid.Row="1" >
-            <Grid x:Name="LayoutRoot" BorderThickness="0" PointerMoved="LayoutRoot_OnPointerMoved">
+            <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
+                </Grid.Clip>
+                <Grid.Resources>
+                    <Storyboard x:Name="xContentZoomAnimation">
+                        <DoubleAnimation x:Name="xContentZoomX" Storyboard.TargetName="xContentTransform" 
+                                         Storyboard.TargetProperty="ScaleX"
+                                         From="0" To="0" Duration="0:0:.1" >
+                        </DoubleAnimation>
+                        <DoubleAnimation x:Name="xContentZoomY" Storyboard.TargetName="xContentTransform" 
+                                         Storyboard.TargetProperty="ScaleY"
+                                         From="0" To="0" Duration="0:0:.1">
+                        </DoubleAnimation>
+                    </Storyboard>
+                </Grid.Resources>
                 <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                 <Grid.ContextFlyout>
                     <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
@@ -174,9 +189,24 @@
 
                 <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
                 <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
-                <ScrollViewer x:Name="xContentScrollViewer" ZoomMode="Enabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" MinZoomFactor="1" ViewChanged="XContentScrollViewer_OnViewChanged" ViewChanging="XContentScrollViewer_OnViewChanging">
-                    <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
+                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
+                    <ContentPresenter.RenderTransform>
+                        <CompositeTransform x:Name="xContentTransform" > </CompositeTransform>
+                    </ContentPresenter.RenderTransform>
+                </ContentPresenter>
+
+                <!-- 
+                <ScrollViewer x:Name="xContentScrollViewer" ZoomMode="Enabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" MinZoomFactor="1" LayoutUpdated="XContentScrollViewer_OnLayoutUpdated" ViewChanging="XContentScrollViewer_OnViewChanging" ViewChanged="XContentScrollViewer_OnViewChanged" Width="1000" Height="1000">
+                    <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
+                        <ContentPresenter.RenderTransform>
+                            <CompositeTransform x:Name="ContentTransform"></CompositeTransform>
+                        </ContentPresenter.RenderTransform>
+                    </ContentPresenter>
+                                                      
                 </ScrollViewer>
+                
+                
+                -->
                
                 <Ellipse x:Name="xActivationMode" HorizontalAlignment="Right" VerticalAlignment="Top" Tapped="xActivationMode_Tapped" Visibility="Collapsed" Margin="0 -40 -40 0" Width="40" Height="40" Fill="Green" />
             </Grid>

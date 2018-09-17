@@ -1,32 +1,22 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
+using Dash.Converters;
+using DashShared;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
-using Windows.Graphics.Display;
-using Windows.Storage.Streams;
-using Windows.Graphics.Imaging;
-using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Shapes;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -156,6 +146,8 @@ namespace Dash
                 }
             }
 
+            
+
             int id = DOCID++;
             int count = 0;
             Loaded += (sender, e) =>
@@ -185,7 +177,7 @@ namespace Dash
             PointerPressed += (sender, e) =>
             {
                 //store this point to calculate pointer movement for content panning
-                _pointerPoint = e.GetCurrentPoint(this).Position;
+                //_pointerPoint = e.GetCurrentPoint(this).Position;
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -268,30 +260,12 @@ namespace Dash
             };
 
             ToFront();
+            xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
         }
 
 
 
-        void wheelChangedHandler(object sender, PointerRoutedEventArgs e)
-        {
-            //if control is pressed, zoom content of document
-            /*
-            if (this.IsCtrlPressed())
-            {
-                //set render scale transform of content to zoom based on wheel changed value
-                var wheelValue = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
-                //(this.RenderTransform as CompositeTransform).ScaleX += wheelValue;
-                //(this.RenderTransform as CompositeTransform).ScaleY += wheelValue;
-                ViewModel.Content.RenderTransform = new CompositeTransform();
-
-                (ViewModel.Content.RenderTransform as CompositeTransform).ScaleX += (wheelValue) / 100;
-                (ViewModel.Content.RenderTransform as CompositeTransform).ScaleY += (wheelValue) / 100;
-
-                e.Handled = true;
-            }
-            */
-        }
-
+        
         
 
         void updateRenderTransformBinding(object sender, DependencyProperty dp)
@@ -1306,41 +1280,160 @@ namespace Dash
         {
             SetActivationMode(this.xActivationMode.Visibility == Visibility.Collapsed);
         }
-
+        
         /// <summary>
         /// Pans content of a document view
         /// </summary>
         private void PanContent(double deltaX, double deltaY)
         {
+            //TODO:FINISH BOUNDING
+            if ((xContentTransform.TranslateX + deltaX < 0 && xContentTransform.TranslateY + deltaY < 0))
+            {
+                //|| (xContentTransform.ScaleX * ViewModel.Width + (xContentTransform.TranslateX + deltaX) > ViewModel.Width)
+                xContentTransform.TranslateX += deltaX;
+                xContentTransform.TranslateY += deltaY;
+            }
+            /*
             if (xContentScrollViewer.ChangeView(xContentScrollViewer.HorizontalOffset + deltaX,
                 xContentScrollViewer.VerticalOffset - deltaY, null))
             {
-                _pointerPoint = new Point(_pointerPoint.X + deltaX, _pointerPoint.Y + deltaY);
+                //_pointerPoint = new Point(_pointerPoint.X + deltaX, _pointerPoint.Y + deltaY);
             }
+            */
         }
 
         //checks if we should be panning content
         private void LayoutRoot_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            
             //if ctrl is pressed and either or both of left/right btns, we should pan content
-            if (this.IsCtrlPressed() && (this.IsLeftBtnPressed() || this.IsRightBtnPressed()))
+            if (this.IsCtrlPressed() && this.IsLeftBtnPressed() 
+                                     && (e.GetCurrentPoint(LayoutRoot).Position.X <= ViewModel.Width && e.GetCurrentPoint(LayoutRoot).Position.Y <= ViewModel.Height))
             {
-                double deltaX = _pointerPoint.X - e.GetCurrentPoint(this).Position.X;
-                double deltaY = _pointerPoint.Y - e.GetCurrentPoint(this).Position.Y;
+                //double deltaX = e.GetCurrentPoint(LayoutRoot).Position.X * xContentTransform.ScaleX;
+                // foreach (var point in e.GetIntermediatePoints(LayoutRoot)[0])
+                //   {
+                //
+                //  }
+                //  double deltaY = _pointerPoint.Y - e.GetCurrentPoint(this).Position.Y;
+                //double deltaX = e.GetIntermediatePoints(LayoutRoot)[0].Position.X - e.GetIntermediatePoints(LayoutRoot)[e.GetIntermediatePoints(LayoutRoot).Count - 1].Position.X;
+                //double deltaY = e.GetIntermediatePoints(LayoutRoot)[0].Position.Y - e.GetIntermediatePoints(LayoutRoot)[e.GetIntermediatePoints(LayoutRoot).Count - 1].Position.Y;
+                double deltaX = - _pointerPoint.X + e.GetCurrentPoint(LayoutRoot).Position.X;
+                double deltaY = - _pointerPoint.Y + e.GetCurrentPoint(LayoutRoot).Position.Y;
+
+                //bounds checking
+               // if (e.GetCurrentPoint(LayoutRoot).Position.X + deltaX )
                 PanContent(deltaX, deltaY);
             }
 
+            _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
+            e.Handled = true;
+
             //TODO:CHECK HORIZONTAL/VERTICAL OFFSET-> SOMEHOW THEY ARE BEING SET TO 0??
         }
-
+        /*
         private void XContentScrollViewer_OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-           
+            //if (!(xContentScrollViewer.HorizontalOffset == 0 && xContentScrollViewer.VerticalOffset == 0))
+            // {
+            //     xContentScrollViewer.UpdateLayout();
+            /// }
+            ///
+            xContentScrollViewer.UpdateLayout();
+            
+        }
+
+
+        private void XContentScrollViewer_OnLayoutUpdated(object sender, object e)
+        {
+            xContentScrollViewer.ChangeView(xContentScrollViewer.ScrollableWidth / 2,
+                xContentScrollViewer.ScrollableHeight / 2, xContentScrollViewer.ZoomFactor, true);
         }
 
         private void XContentScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-           
+            //xContentScrollViewer.UpdateLayout();
+            if (e.NextView.VerticalOffset == 0 && e.NextView.HorizontalOffset == 0)
+            {
+                //xContentScrollViewer.ChangeView(e.NextView.HorizontalOffset, e.)
+               
+            }
+            //e.NextView.HorizontalOffset == 0        
         }
+
+        private void XContentPresenter_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (this.IsCtrlPressed())
+            {
+                ContentTransform.TranslateX -= e.Delta.Translation.X;
+               ContentTransform.TranslateY -= e.Delta.Translation.Y;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+        */
+        private void LayoutRoot_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xContentClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+        }
+
+        private void wheelChangedHandler(object sender, PointerRoutedEventArgs e)
+        {
+            //if control is pressed, zoom content of document
+            if (this.IsCtrlPressed())
+            {
+                //set render scale transform of content to zoom based on wheel changed value
+                double wheelValue = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
+
+                if (xContentZoomAnimation.GetCurrentState() == ClockState.Active)
+                {
+                   // xContentZoomX.To += (wheelValue / 200);
+                   // xContentZoomY.To += (wheelValue / 200);
+                    //if (xContentZoomX.To < 1) xContentZoomX.To = 1;
+                    //if (xContentZoomY.To < 1) xContentZoomY.To = 1;
+                }
+                else
+                {
+                    //xContentTransform.ScaleX += (wheelValue) / 300;
+                    //xContentTransform.ScaleY += (wheelValue) / 300;
+                    //double delta = wheelValue / 100;
+
+                    //update center x/y to mouse
+                    if (wheelValue < 0)
+                    {
+                        //xContentTransform.CenterX = LayoutRoot.Width / 2;
+                        //xContentTransform.CenterY = LayoutRoot.Height / 2;
+                    }
+                    else
+                    {
+                        //xContentTransform.CenterX = e.GetCurrentPoint(LayoutRoot).Position.X * xContentTransform.ScaleX;
+                        //xContentTransform.CenterY = e.GetCurrentPoint(LayoutRoot).Position.Y * xContentTransform.ScaleY;
+                    }
+
+                    xContentZoomX.From = xContentTransform.ScaleX;
+                    xContentZoomX.To = xContentTransform.ScaleX + (wheelValue / 200);
+                    xContentZoomY.From = xContentTransform.ScaleY;
+                    xContentZoomY.To = xContentTransform.ScaleY + (wheelValue / 200);
+
+                    if (xContentZoomX.To < 1) xContentZoomX.To = 1;
+                    if (xContentZoomY.To < 1) xContentZoomY.To = 1;
+
+                    //how to ensure this animation 
+                    xContentZoomAnimation.Begin();
+
+                    //TODO: HOW TO bound zooming in & out with centerx?? panning is messing it up
+                }
+
+                
+
+                
+
+                e.Handled = true;
+            }
+        }
+
+       
     }
 }
