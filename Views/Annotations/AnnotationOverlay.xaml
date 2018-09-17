@@ -10,35 +10,24 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" x:FieldModifier="public" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
-        <Canvas x:Name="XAnnotationCanvas" x:FieldModifier="public">
-            <ItemsControl x:Name="xItemsControl"
-                      x:FieldModifier="public"
-                      ItemsSource="{Binding EmbeddedViewModels}">
+    <Grid x:Name="LayoutRoot" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
+        <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public">
+            <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding EmbeddedViewModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas 
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Top"
-                           Width="0"
-                           Height="0"
-                            >
-                        </Canvas>
+                        <Canvas/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <local:DocumentView
-                            BindRenderTransform="True"
-                            BindVisibility="True"
-                        />
+                        <local:DocumentView BindRenderTransform="True" BindVisibility="True" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
                        x:FieldModifier="public"/>
 
-        </Canvas>
+        </Grid>
         <Canvas x:Name="XSelectionCanvas" />
         <InkCanvas x:Name="XInkCanvas"></InkCanvas>
     </Grid>

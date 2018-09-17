@@ -202,7 +202,7 @@ namespace Dash
                 {
                     Undecorated = true,
                     ResizersVisible = true,
-                    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
+                    DragWithinParentBounds = true
                 }));
         }
 
@@ -215,7 +215,7 @@ namespace Dash
                     {
                         Undecorated = true,
                         ResizersVisible = true,
-                        DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
+                        DragWithinParentBounds = true
                     }));
         }
         void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)

@@ -1136,9 +1136,7 @@ namespace Dash
 			docView.MaxWidth = xWorkspace.ActualWidth - 2;
 
 			//updates and generates bounds for the children inside the template canvas
-			var bounds = new Rect(0, 0, xWorkspace.Width,
-				xWorkspace.Height);
-			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
+            docView.ViewModel.DragWithinParentBounds = true;
 			docView.DocumentSelected += DocView_DocumentSelected;
 
 			docView.DocumentDeleted += DocView_DocumentDeleted;
@@ -1246,7 +1244,7 @@ namespace Dash
 
 		private void DocView_DocumentSelected(DocumentView sender)
 		{
-			sender.ViewModel.DragBounds = new RectangleGeometry { Rect = xWorkspace.GetBoundingRect(xWorkspace) };
+            sender.ViewModel.DragWithinParentBounds = true;
 
 			xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 			_selectedDocument = sender;
@@ -1669,11 +1667,12 @@ namespace Dash
 		{
 			var docView = sender as DocumentView;
 
-			//if document view contains a text block, ensure its dimensions are within bounds
-			var textBlock = docView?.GetFirstDescendantOfType<EditableTextBlock>();
-			if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.ViewModel.DragBounds.Rect.Width &&
-									  docView.ActualHeight + docView.ViewModel.YPos < docView.ViewModel.DragBounds.Rect.Height))
-				return;
+            // bcz: this code needs to be updated 
+			////if document view contains a text block, ensure its dimensions are within bounds
+			//var textBlock = docView?.GetFirstDescendantOfType<EditableTextBlock>();
+			//if (textBlock == null || (docView.ActualWidth + docView.ViewModel.XPos < docView.ViewModel.DragBounds.Rect.Width &&
+			//						  docView.ActualHeight + docView.ViewModel.YPos < docView.ViewModel.DragBounds.Rect.Height))
+			//	return;
 
 			//start by updating position to fit entire contents of text box on the canvas
 			if (docView.ActualWidth + docView.ViewModel.XPos >= xWorkspace.ActualWidth)
@@ -1696,7 +1695,7 @@ namespace Dash
 			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
 				xWorkspace.Height - docView.ActualHeight);
 
-			docView.ViewModel.DragBounds = new RectangleGeometry { Rect = bounds };
+            docView.ViewModel.DragWithinParentBounds = true;
 
 			//      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
 			//{

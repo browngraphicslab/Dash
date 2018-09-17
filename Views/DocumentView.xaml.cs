@@ -509,8 +509,10 @@ namespace Dash
             var h = ActualHeight - extraOffsetY;
 
             // clamp the drag position to the available Bounds
-            var parent = this.GetFirstAncestorOfType<AnnotationOverlay>();
-            var dragBounds = parent == null ? Rect.Empty : new Rect(new Point(), new Size(parent.ActualWidth, parent.ActualHeight));
+            var parentViewPresenter = this.GetFirstAncestorOfType<ItemsPresenter>(); // presenter of this document which defines the drag area bounds
+            var parentViewTransformationCanvas = parentViewPresenter.GetFirstDescendantOfType<Canvas>(); // bcz: assuming the content being presented has a Canvas ItemsPanelTemplate which may contain a RenderTransformation of the parent (which affects the drag area)
+            var rect = parentViewTransformationCanvas.RenderTransform.Inverse.TransformBounds(new Rect(0, 0, parentViewPresenter.ActualWidth, parentViewPresenter.ActualHeight));
+            var dragBounds = ViewModel.DragWithinParentBounds ? rect : Rect.Empty;
             if (dragBounds != Rect.Empty)
             {
                 var width = ActualWidth;
