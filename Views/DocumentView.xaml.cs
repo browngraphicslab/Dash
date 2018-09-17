@@ -467,6 +467,7 @@ namespace Dash
             }
 
             var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
+                          (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType) && ViewModel.DocumentController.GetFitToParent()) ||
                           ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
@@ -544,7 +545,7 @@ namespace Dash
 
             var proportional = (!isImage && maintainAspectRatio)
                 ? this.IsShiftPressed()
-                : (this.IsShiftPressed() ^ maintainAspectRatio);
+                :(this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
             {
                 aspect = 1 / aspect;
