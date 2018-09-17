@@ -48,8 +48,8 @@ namespace Dash
                 _currAnnotationType = value;
                 OnPropertyChanged();
 
-                XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
-                XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                //XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
+                //XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
             }
         }
 
@@ -66,12 +66,12 @@ namespace Dash
             EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
             _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            XInkCanvas.InkPresenter.IsInputEnabled = false;
-            XInkCanvas.IsHitTestVisible = false;
-            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            //XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            //XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+            //XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            //XInkCanvas.InkPresenter.IsInputEnabled = false;
+            //XInkCanvas.IsHitTestVisible = false;
+            //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             Loaded += onLoaded;
             Unloaded += onUnloaded;
             
@@ -241,8 +241,8 @@ namespace Dash
         {
             if (!_maskInkUpdates)
             {
-                XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+                //XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
 
@@ -398,16 +398,16 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
-            _maskInkUpdates = true;
-            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            _maskInkUpdates = false;
+            //_maskInkUpdates = true;
+            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            //_maskInkUpdates = false;
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            _maskInkUpdates = true;
-            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            _maskInkUpdates = false;
+            //_maskInkUpdates = true;
+            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            //_maskInkUpdates = false;
         }
 
         #endregion

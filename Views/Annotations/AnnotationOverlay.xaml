@@ -29,6 +29,6 @@
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />
-        <InkCanvas x:Name="XInkCanvas"></InkCanvas>
+        <!--InkCanvas x:Name="XInkCanvas"></-->
     </Grid>
 </UserControl>
