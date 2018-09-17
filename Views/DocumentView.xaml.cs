@@ -98,8 +98,38 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
+            if (doc != null)
+            {
+                BindWidth(this, doc, null);
+                BindHeight(this, doc, null);
+            }
+
+        }
+        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.WidthFieldKey,
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
         }
 
+        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.HeightFieldKey,
+                Context = context
+            };
+
+            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
+        }
         private void UpdateVisibilityBinding()
         {
             var doc = ViewModel?.LayoutDocument;

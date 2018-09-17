@@ -56,7 +56,6 @@ namespace Dash
         public DocumentController ContainerDocument { get; private set; }
         public KeyController CollectionKey { get; set; }
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
         public CollectionView.CollectionViewType ViewType
         {
@@ -75,6 +74,11 @@ namespace Dash
 
             SetCollectionRef(containerDocument, fieldKey);
 
+            DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+        }
+
+        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
         }
 
         ~CollectionViewModel()
@@ -111,8 +115,7 @@ namespace Dash
         {
             if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
-                var realPar = cview?.CurrentView?.UserControl;
-                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                var parSize = ContainerDocument.GetActualSize() ?? new Point();
 
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
@@ -664,7 +667,7 @@ namespace Dash
                 e.Handled = true;
                 var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem && !MainPage.Instance.IsShiftPressed()
                     ? DataPackageOperation.Move :
                     e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ?
                         DataPackageOperation.Copy

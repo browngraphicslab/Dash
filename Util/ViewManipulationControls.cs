@@ -67,10 +67,10 @@ namespace Dash
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            e.Handled = true;
             // bcz: don't zoom the contents of collections when FitToParent is set -- instead, it would be better if the container document size changed...
             if (this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
                 return;
+            e.Handled = true;
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;

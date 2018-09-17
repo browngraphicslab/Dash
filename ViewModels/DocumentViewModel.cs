@@ -69,6 +69,7 @@ namespace Dash
         private SolidColorBrush _searchHighlightBrush;
         private bool _isNotBackgroundPinned = true;
 
+        public bool IsDimensionless = false;
         public bool IsNotBackgroundPinned
         {
             get => _isNotBackgroundPinned;
@@ -99,12 +100,12 @@ namespace Dash
         }
         public double Width
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
             set => LayoutDocument.SetHeight(value);
         }
         public Point Scale
@@ -115,6 +116,7 @@ namespace Dash
         public bool DragWithinParentBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
+        public string Title { get => DataDocument.Title; }
 
         protected bool Equals(DocumentViewModel other)
         {

@@ -40,7 +40,7 @@ namespace Dash
         {
             // create the image
 
-           var editableImage = new EditableImage(docController, context);
+            var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
             

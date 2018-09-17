@@ -135,8 +135,11 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
-            _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            if (_backgroundCanvas != null)
+            {
+                _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
+                _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            }
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;

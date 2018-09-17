@@ -104,8 +104,8 @@ namespace Dash
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            //BindWidth(element, docController, context);
+            //BindHeight(element, docController, context);
 
             //Set alignments
             BindHorizontalAlignment(element, docController, context);
