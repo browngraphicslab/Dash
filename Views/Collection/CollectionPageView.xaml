@@ -96,6 +96,8 @@
                 ScrollViewer.IsVerticalRailEnabled="True"
                 Tapped="xThumbs_Tapped"
                 CanDragItems="True"
+                CanReorderItems="True"
+                AllowDrop="True"
                 DragItemsStarting="XThumbs_DragItemsStarting"
                 ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
@@ -110,7 +112,8 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid PointerPressed="xThumbs_PointerPressed">
-                            <local:DocumentView IsHitTestVisible="False"/>
+                            <TextBlock Text="xxx" />
+                            <!--<local:DocumentView IsHitTestVisible="False"/>-->
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
