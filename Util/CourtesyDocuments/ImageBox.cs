@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
-using Windows.UI.Xaml.Media;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
-using Windows.Storage;
-using Windows.Graphics.Imaging;
-using Windows.UI.Xaml.Media.Imaging;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Dash
 {

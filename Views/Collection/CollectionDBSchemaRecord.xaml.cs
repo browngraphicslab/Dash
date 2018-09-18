@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Input;
 using Windows.UI.Xaml;

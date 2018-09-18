@@ -2,7 +2,6 @@
 using Dash.Views.TemplateEditor;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Animations;
-using Syncfusion.UI.Xaml.Controls.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +21,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using Syncfusion.UI.Xaml.Controls.Media;
 using Line = Windows.UI.Xaml.Shapes.Line;
 using Point = Windows.Foundation.Point;
 

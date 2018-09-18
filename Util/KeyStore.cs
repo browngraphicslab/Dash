@@ -2,7 +2,6 @@
 using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
-using Dash.Annotations;
 
 namespace Dash
 {

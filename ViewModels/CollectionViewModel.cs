@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
-using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Windows.Foundation;
-using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash

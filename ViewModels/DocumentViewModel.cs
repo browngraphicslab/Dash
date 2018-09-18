@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Drawing;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
-using Windows.UI.Xaml.Media.Animation;
 using static Dash.DocumentController;
-using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
-using System.Diagnostics;
 
 namespace Dash
 {

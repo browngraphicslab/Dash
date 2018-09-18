@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
-using Windows.Storage.FileProperties;
-using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -18,7 +16,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 

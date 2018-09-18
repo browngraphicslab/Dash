@@ -2,31 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
-using Windows.Graphics.Display;
-using Windows.Storage.Streams;
-using Windows.Graphics.Imaging;
-using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
 
 

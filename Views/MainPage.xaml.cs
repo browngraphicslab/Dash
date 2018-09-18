@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using Windows.Storage;
 using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;

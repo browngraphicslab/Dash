@@ -7,7 +7,6 @@ using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Windows.System;
 using Dash.Converters;
-using Windows.UI.Core;
 
 namespace Dash
 {
