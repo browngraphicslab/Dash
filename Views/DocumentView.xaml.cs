@@ -697,6 +697,20 @@ namespace Dash
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
+        /// <summary>
+        /// Copies the Document.
+        /// </summary>
+        public void MakeInstance()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                // will this screw things up?
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+                var doc = ViewModel.DocumentController.GetDataInstance(null);
+                ParentCollection?.ViewModel.AddDocument(doc);
+            }
+        }
+
 
         /// <summary>
         /// Copes the DocumentView for the document

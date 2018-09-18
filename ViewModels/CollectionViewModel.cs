@@ -685,6 +685,9 @@ namespace Dash
             }
         }
 
+        static KeyController _key1 = new KeyController("Input1", "D2CFAC03-363B-4703-A8EC-51FFFF163C8E");
+        static KeyController _key2 = new KeyController("Input2", "8EC7C42D-8AB0-476F-8F4F-02E82DC438C7");
+        static KeyController _key3 = new KeyController("Input3", "501B3951-C17E-4CD7-8D60-C5A5CF855A94");
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -722,44 +725,16 @@ namespace Dash
 
                 var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
 
-
-                //SelectionManager.DeselectAll();
-                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                var key1 = new KeyController("Input1", "D2CFAC03-363B-4703-A8EC-51FFFF163C8E");
-                var key2 = new KeyController("Input2", "8EC7C42D-8AB0-476F-8F4F-02E82DC438C7");
-                var key3 = new KeyController("Input3", "501B3951-C17E-4CD7-8D60-C5A5CF855A94");
-                KeyController key = null;
                 var cpar = ContainerDocument.GetDataDocument();
 
-                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true)
+                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed())
                 {
-                    cpar.SetField(key = key1, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
+                    cpar.SetField(_key1, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
                     return;
                 }
-                if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)
-                {
-                    foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
-                    {
-                        var xd = doc.GetDataDocument();
-                        var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                        var ddd = dd?.GetDocumentController(null);
-                        var input1 = cpar.GetField<DocumentController>(key1);
-                        var input2 = cpar.GetField<DocumentController>(key2);
-                        var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                        if (input1?.Equals(ddd) == true)
-                            key = key1;
-                        else if (input2?.Equals(ddd) == true)
-                            key = key2;
-                        else if (input1 == null)
-                            cpar.SetField(key = key1, refdoc.DocumentController, true);
-                        else if (input2 == null)
-                            cpar.SetField(key = key2, refdoc.DocumentController, true);
-                        else
-                            cpar.SetField(key = key3, refdoc.DocumentController, true);
-                        xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, key), refdoc.FieldKey), true);
-                    }
-                }
+                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
 
                 if (!MainPage.Instance.IsShiftPressed())
                 {
@@ -769,7 +744,7 @@ namespace Dash
                         {
                             if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
 
-                                {
+                            {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
                                 if (d.DraggedDocumentViews[i] != null)
                                 {
@@ -787,6 +762,34 @@ namespace Dash
                 }
                 AddDocuments(docsToAdd);
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+            }
+        }
+
+        private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        {
+            if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)
+            {
+                foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+                {
+                    KeyController key = null;
+                    var xd = doc.GetDataDocument();
+                    var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                    var ddd = dd?.GetDocumentController(null);
+                    var input1 = cpar.GetField<DocumentController>(_key1);
+                    var input2 = cpar.GetField<DocumentController>(_key2);
+                    var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                    if (input1?.Equals(ddd) == true)
+                        key = _key1;
+                    else if (input2?.Equals(ddd) == true)
+                        key = _key2;
+                    else if (input1 == null)
+                        cpar.SetField(key = _key1, refdoc.DocumentController, true);
+                    else if (input2 == null)
+                        cpar.SetField(key = _key2, refdoc.DocumentController, true);
+                    else
+                        cpar.SetField(key = _key3, refdoc.DocumentController, true);
+                    xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, key), refdoc.FieldKey), true);
+                }
             }
         }
 
