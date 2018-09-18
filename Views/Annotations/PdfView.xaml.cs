@@ -527,6 +527,7 @@ namespace Dash
             _bottomAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
+            DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
 
             reader.Close();
             pdfDocument.Close();

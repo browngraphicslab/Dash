@@ -164,7 +164,7 @@ namespace Dash
 
 	    public static async Task<WPdf.PdfDocument> GetPdf(DocumentController pdf)
 	    {
-		    var pdfUri = pdf.GetDataDocument().GetField<ImageController>(KeyStore.DataKey).Data;
+		    var pdfUri = new Uri(pdf.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey).Data);
 		    StorageFile file;
 		    try
 		    {

@@ -414,6 +414,14 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
+        public static AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
+        }
+
         public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
             var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);

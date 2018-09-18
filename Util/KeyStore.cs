@@ -114,7 +114,6 @@ namespace Dash
 		public static KeyController IsAnnotationScrollVisibleKey = new KeyController("Is the annotation pinned", "95734D71-5EC6-46EF-9744-608E2D8EA109");
 		public static KeyController ReplLineTextKey = new KeyController("_Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
         public static KeyController AnnotationsKey = new KeyController("TopAnnotations for PDF views", "93AF49F8-C4E7-47D8-9AF0-170021D9913B");
-        public static KeyController LinkContextKey = new KeyController("_Link Context", "D5B43425-DBD8-4DC7-ACAF-55600AA04BDB");
 	    public static KeyController YouTubeUrlKey = new KeyController("YouTube video URL", "FB18F301-36BA-4D6F-A5D0-5C031DB2946A");
 		public static KeyController PdfHeightKey = new KeyController("Pdf native height", "6B0F3DE3-89F8-44F9-ADEB-2C0E67341CCE");
 		public static KeyController ReplValuesKey = new KeyController("_Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");

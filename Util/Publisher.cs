@@ -70,7 +70,7 @@ namespace Dash
 				// create a new file for every DocumentController
 				foreach (var dc in dcs)
 				{
-					var fileName = _fileNames[dc];
+					var fileName = _fileNames[dc.GetDataDocument()];
 					var fileContents = GetFileContents(dc);
 					await CreateFile(fileContents, fileName);
 				}
@@ -98,7 +98,7 @@ namespace Dash
 				
 				// ADD IN MAIN CONTENT
 				"<div id=\"main\">",
-				"<div class=\"heading\" style=\"border-bottom:4px solid " + _colorPairs[dc] + "\">" + dc.Title + "</div>",
+				"<div class=\"heading\" style=\"border-bottom:4px solid " + _colorPairs[dc.GetDataDocument()] + "\">" + dc.Title + "</div>",
 				"<div id=\"noteContent\">" + RenderNoteToHtml(dc) + "</div>",
 				"</div>",
 
@@ -127,7 +127,7 @@ namespace Dash
 
 			sidebar.Add("<div class=\"heading\">NOTES</div>");
 			sidebar.Add("<ul>");
-			sidebar.AddRange(dcs.Select(dc => "<li><i class=\"" + GetIconClass(dc) + " icon\"></i><a href=\"" + _fileNames[dc] + ".html\">" + (dc.Title.Length > 25 ? dc.Title.Substring(0, 25) + "..." : dc.Title) + "</a></li>"));
+			sidebar.AddRange(dcs.Select(dc => "<li><i class=\"" + GetIconClass(dc) + " icon\"></i><a href=\"" + _fileNames[dc.GetDataDocument()] + ".html\">" + (dc.Title.Length > 25 ? dc.Title.Substring(0, 25) + "..." : dc.Title) + "</a></li>"));
 			sidebar.Add("</ul>");
 
 			sidebar.Add("</div>");
@@ -183,6 +183,7 @@ namespace Dash
 		private string RenderNoteToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
 			var content = "";
+
 			switch (dc.DocumentType.Type)
 			{
 				case "Rich Text Note":
@@ -217,7 +218,7 @@ namespace Dash
 	    {
 	        //Debug.Assert(htmlDoc.DocumentType == HtmlNote.DocumentType);
 
-	        var htmlString = (htmlDoc.GetDataDocument().GetField(KeyStore.DataKey) as TextController)?.Data;
+	        var htmlString = (htmlDoc.GetField(KeyStore.DataKey) as TextController)?.Data;
 	        var startIndex = htmlString?.IndexOf("<body>");
 	        var endIndex = htmlString?.IndexOf("</body>") + 7;
 	        if (startIndex > 0)
@@ -293,8 +294,8 @@ namespace Dash
 			// render the whole pdf
 			foreach (var i in pageNums)
 			{
-				var fileName = _fileNames[dc] + "_page" + i + ".jpg";
-				var path = "media\\" + _fileNames[dc] + "/" + fileName;
+				var fileName = _fileNames[dc.GetDataDocument()] + "_page" + i + ".jpg";
+				var path = "media\\" + _fileNames[dc.GetDataDocument()] + "/" + fileName;
 				html.Add("<div class=\"pdf\">");
 				html.Add("<img src=\"" + path + "\">");
 				html.Add("</div>");
@@ -313,7 +314,7 @@ namespace Dash
 							{
 								var offsets = GetPercentileOffsets(pos.Data.X, pos.Data.Y);
 
-								var indexToInsert = html.IndexOf("<img src=\"media\\" + _fileNames[dc] + "/" + _fileNames[dc] + "_page" + GetPageAtOffset(pos.Data.Y) + ".jpg\">");
+								var indexToInsert = html.IndexOf("<img src=\"media\\" + _fileNames[dc.GetDataDocument()] + "/" + _fileNames[dc.GetDataDocument()] + "_page" + GetPageAtOffset(pos.Data.Y) + ".jpg\">");
 								if (indexToInsert < 0)
 								{
 									Debug.WriteLine("UH OH");
@@ -321,8 +322,8 @@ namespace Dash
 								}
 
 								var insert = "<div class=\"tooltip\" style=\"position:absolute; top:" + offsets.Y + "%; left:" + offsets.X +
-								             "%;\"><i style=\"font-size: 200%; color:" + _colorPairs[dc] + ";\" class=\"fas fa-thumbtack\"></i>";
-								insert += "<span class=\"tooltipItem\">" + RenderNoteToHtml(GetOppositeLinkTarget(region)) + "</span></div>";
+								             "%;\"><i style=\"font-size: 200%; color:" + _colorPairs[dc.GetDataDocument()] + ";\" class=\"fas fa-thumbtack\"></i>";
+								insert += "<span class=\"tooltipItem\">" + RenderNoteToHtml(GetOppositeLinkTarget(region).GetDataDocument()) + "</span></div>";
 								//var insert = "<div class=\"pdfPinAnnotation\" style=\"top:" + offsets.Y + "%; left:" +
 								//             offsets.X + "%; background-color:" + _colorPairs[dc] + ";\">" + RenderNoteToHtml(GetOppositeLinkTarget(region)) + "</div>";
 								//if (!truncate)
@@ -338,15 +339,15 @@ namespace Dash
 							var oneTarget = GetOppositeLinkTarget(region);
 							if (oneTarget != null)
 							{
-								var index = html.IndexOf("<img src=\"media\\" + _fileNames[dc] + "/" + _fileNames[dc] + "_page" + GetPageAtOffset(point.Y) + ".jpg\">");
+								var index = html.IndexOf("<img src=\"media\\" + _fileNames[dc.GetDataDocument()] + "/" + _fileNames[dc.GetDataDocument()] + "_page" + GetPageAtOffset(point.Y) + ".jpg\">");
 								if (index < 0)
 								{
 									Debug.WriteLine("UH OH");
 									continue;
 								}
 
-								var rect = "<a href=\"" + _fileNames[oneTarget] + ".html\"><svg class=\"pdfOverlay\" height=\"" + size.Y / pageSize.Height * 100 + "%\" width=\"" + size.X / pageSize.Width * 100 + "%\" style=\"position:absolute; top:" + 
-								           offset.Y + "%; left:" + offset.X + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget] + "\"></rect></svg></a>";
+								var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" + size.Y / pageSize.Height * 100 + "%\" width=\"" + size.X / pageSize.Width * 100 + "%\" style=\"position:absolute; top:" + 
+								           offset.Y + "%; left:" + offset.X + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget.GetDataDocument()] + "\"></rect></svg></a>";
 								html.Insert(index + 1, rect);
 							}
 
@@ -393,11 +394,11 @@ namespace Dash
 			// trying to see if the one target is linkTo or linkFrom, and if it's one of them, set it to that target
 			if ((regionLinkTo == null || regionLinkTo.Count == 0) && regionLinkFrom != null && regionLinkFrom.Count == 1)
 			{
-				oneTarget = regionLinkFrom.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument();
+				oneTarget = regionLinkFrom.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null);
 			}
 			else if ((regionLinkFrom == null || regionLinkFrom.Count == 0) && regionLinkTo != null && regionLinkTo.Count == 1)
 			{
-				oneTarget = regionLinkTo.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+				oneTarget = regionLinkTo.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null);
 			}
 
 			return oneTarget;
@@ -405,12 +406,12 @@ namespace Dash
 
 		private string RenderRichTextToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
-			var plainText = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-			var richText = dc.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
+			var plainText = dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+			var richText = dc.GetDataDocument().GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
 			// TODO: replace URLs linked to actual websites as well
 			
 			// do the regioning
-			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
+			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions()?.TypedData;
 			var stringsToInsert = new SortedDictionary<int, string>();
 			if (regions != null)
 			{
@@ -424,10 +425,10 @@ namespace Dash
 						// if we found a oneTarget, that might actually be a region, so check for that here and make sure we're looking at the big document.
 						if (oneTarget.GetRegionDefinition() != null)
 						{
-							oneTarget = oneTarget.GetRegionDefinition().GetDataDocument();
+							oneTarget = oneTarget.GetRegionDefinition();
 						}
 						// insert the appropriate color pair.
-						htmlToInsert = "<a href=\"" + _fileNames[oneTarget] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget] + "\">";
+						htmlToInsert = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget.GetDataDocument()] + "\">";
 					}
 					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 
@@ -524,7 +525,7 @@ namespace Dash
 
 		private string RenderMarkdownToHtml(DocumentController dc, List<DocumentController> regionsToRender = null, bool truncate = false)
 		{
-			var content = dc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+			var content = dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 			var result = CommonMark.CommonMarkConverter.Convert(content);
 			if (result.Length > 500 && truncate)
 			{
@@ -536,15 +537,15 @@ namespace Dash
 
 		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
-			var audioTitle = "aud_" + _fileNames[dc] + ".mp3";
+			var audioTitle = "aud_" + _fileNames[dc.GetDataDocument()] + ".mp3";
 			var path = "Media\\" + audioTitle;
 			return "<audio controls><source src=\"" + path + "\"> Your browser doesn't support the audio tag :( </audio>";
 		}
 
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
-			var regions = regionsToRender ?? dc.GetRegions()?.Select(region => region.GetDataDocument());
-			var imgTitle = "img_" + _fileNames[dc] + ".jpg";
+			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions().TypedData;
+			var imgTitle = "img_" + _fileNames[dc.GetDataDocument()] + ".jpg";
 			var path = "Media\\" + imgTitle;
 			var html = "<div class=\"imgNote\"><img src=\"" + path + "\">";
 
@@ -563,10 +564,10 @@ namespace Dash
 								.GetDereferencedField<PointController>(KeyStore.InitialSizeKey, null).Data;
 							if (oneTarget != null)
 							{
-								var rect = "<a href=\"" + _fileNames[oneTarget] + ".html\"><svg class=\"pdfOverlay\" height=\"" +
+								var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" +
 								           size.Y / imgSize.Y * 100 + "%\" width=\"" + size.X / imgSize.X * 100 +
 								           "%\" style=\"position:absolute; top:" +
-								           point.Y / imgSize.Y * 100 + "%; left:" + point.X / imgSize.X * 100 + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget] + "\"></rect></svg></a>";
+								           point.Y / imgSize.Y * 100 + "%; left:" + point.X / imgSize.X * 100 + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget.GetDataDocument()] + "\"></rect></svg></a>";
 								html += rect;
 							}
 							break;
@@ -583,14 +584,14 @@ namespace Dash
 		private string RenderVideoToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			// distinguish between YouTube and file-linked videos
-			if (dc.GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null)
+			if (dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null)
 			{
-				var url = dc.GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null).Data;
+				var url = dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null).Data;
 				return "<iframe src=\"" + url + "\"></iframe></div>";
 			}
 
 			// if not a YouTube video, the it's on here
-			var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
+			var vidTitle = "vid_" + _fileNames[dc.GetDataDocument()] + ".mp4";
 			var path = "Media\\" + vidTitle;
 			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
 		}
@@ -610,7 +611,7 @@ namespace Dash
 			var html = new List<string> {RenderImmediateLinksToHtml(dc)};
 
 			// then add in its regions
-			var regions = dc.GetRegions()?.Select(region => region.GetDataDocument());
+		    var regions = dc.GetDataDocument().GetRegions()?.TypedData;
 			if (regions != null)
 			{
 				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
@@ -618,7 +619,7 @@ namespace Dash
 
 			//if (dc.DocumentType.Type.Equals("Pdf Note"))
 			//{
-			//	var annotations = dc.GetDereferencedField<ListController<DocumentController>>(KeyStore.PinAnnotationsKey, null)?.Select(pin => pin.GetDataDocument());
+			//	var annotations = dc.GetDereferencedField<ListController<DocumentController>>(KeyStore.PinAnnotationsKey, null)?.Select(pin => pin);
 			//	if (annotations != null)
 			//	{
 			//		html.AddRange(annotations.Select(RenderLinkToHtml));
@@ -645,14 +646,14 @@ namespace Dash
 				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					var linkDestination = link.GetDataDocument()
-						.GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument();
+					var linkDestination = link
+						.GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null);
 					//if (linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null) != null && linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data.Equals("link"))
 					//{
 					//	// if the link says "link", it's just some unexposed link document, and we should skip directly to what's on the other side
 						
 					//}
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null).GetDataDocument()));
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null)));
 				}
 			}
 
@@ -662,7 +663,7 @@ namespace Dash
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null).GetDataDocument()));
+					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null)));
 				}
 			}
 
@@ -681,10 +682,10 @@ namespace Dash
 			DocumentController parentAnnotation = annotation;
 			bool hasOwnPage = true;
 			List<string> html;
-			if (!_fileNames.ContainsKey(annotation))
+			if (!_fileNames.ContainsKey(annotation.GetDataDocument()))
 			{
 				// if it wasn't found in the filename, then it means that we're annotating to a region.
-				var parent = annotation.GetDataDocument().GetRegionDefinition()?.GetDataDocument();
+				var parent = annotation.GetRegionDefinition();
 				// if the parent is also null, then this annotation doesn't have a file to link to. In that case, we don't actually link it to anything.
 				if (parent != null && _fileNames.ContainsKey(parent))
 				{
@@ -703,12 +704,12 @@ namespace Dash
 				{
 					"<div class=\"annotationWrapper\">",
 					"<div>",
-					"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation] + "\"/>",
+					"<div style=\"border-left:3px solid " + _colorPairs[parentAnnotation.GetDataDocument()] + "\"/>",
 					"<div class=\"annotation\">",
-					RenderNoteToHtml(parentAnnotation, region == null ? new List<DocumentController>() : new List<DocumentController> {region}, true),
+					RenderNoteToHtml(parentAnnotation.GetDataDocument(), region == null ? new List<DocumentController>() : new List<DocumentController> {region}, true),
 					"</div>", // close annotation tag
 					"</div>", // close top area div tag
-					"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation] + ".html\">" + parentAnnotation.Title + "</a></div>",
+					"<div class=\"annotationLink\"><a href=\"" + _fileNames[parentAnnotation.GetDataDocument()] + ".html\">" + parentAnnotation.Title + "</a></div>",
 					"</div>" //close the annotationWrapper tag
 				};
 			}
@@ -720,7 +721,7 @@ namespace Dash
 					"<div>",
 					"<div><i class=\"fas fa-thumbtack\"></i></div>",
 					"<div class=\"annotation\">",
-					RenderNoteToHtml(parentAnnotation, new List<DocumentController>(), true),
+					RenderNoteToHtml(parentAnnotation.GetDataDocument(), new List<DocumentController>(), true),
 					"</div>",
 					"</div>",
 					"</div>"
@@ -741,8 +742,8 @@ namespace Dash
 		private string GetDecoratedSidebar(DocumentController dc)
 		{
 			string newSidebar = _sidebarText;
-			return newSidebar.Replace("<a href=\"" + _fileNames[dc] + ".html\">",
-				"<a href =\"" + _fileNames[dc] + ".html\" class=\"activeNote\">");
+			return newSidebar.Replace("<a href=\"" + _fileNames[dc.GetDataDocument()] + ".html\">",
+				"<a href =\"" + _fileNames[dc.GetDataDocument()] + ".html\" class=\"activeNote\">");
 		}
 
 		/// <summary>
@@ -781,7 +782,7 @@ namespace Dash
 		/// <returns></returns>
 		private string GetFileName(DocumentController dc)
 		{
-			var rawTitle = dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data ?? "Untitled";
+			var rawTitle = dc.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data ?? "Untitled";
 			if (_fileCollisions.ContainsKey(rawTitle))
 			{
 				// get the last collision number associated with this title
@@ -945,16 +946,16 @@ namespace Dash
 			var media = await _folder.GetFolderAsync("Media");
 			var folder = await media.CreateFolderAsync(_fileNames[dc]);
 
-			var pdf = await DataVirtualizationSource<DocumentController>.GetPdf(dc);
+			var pdf = await DataVirtualizationSource.GetPdf(dc);
 			var numPages = pdf.PageCount;
 			_pdfNumbers[dc] = (int) numPages;
 			var sizee = dc.GetDereferencedField<PointController>(KeyStore.PdfHeightKey, null).Data;
 			_pdfPageSize[dc] = new Size(sizee.X, sizee.Y);
 
 			// get selectableelements
-			var pdfUri = dc.GetDataDocument().GetField<ImageController>(KeyStore.DataKey).Data;
-			var file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
-			var reader = new PdfReader(await file.OpenStreamForReadAsync());
+			var pdfUri = dc.GetField<PdfController>(KeyStore.DataKey).Data;
+			var file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
+            var reader = new PdfReader(await file.OpenStreamForReadAsync());
 			var pdfDocument = new PdfDocument(reader);
 			var strategy = new BoundsExtractionStrategy();
 			var processor = new PdfCanvasProcessor(strategy);
@@ -977,8 +978,8 @@ namespace Dash
 
 			for (var i = 0; i < numPages; i++)
 			{
-				var bitmap = await DataVirtualizationSource<DocumentController>.GetImageFromPdf(pdf, (uint)i);
-				var newFile = await folder.CreateFileAsync(_fileNames[dc] + "_page" + (i + 1) + ".jpg",
+				var bitmap = await DataVirtualizationSource.GetImageFromPdf(pdf, (uint)i);
+				var newFile = await folder.CreateFileAsync(_fileNames[dc.GetDataDocument()] + "_page" + (i + 1) + ".jpg",
 					CreationCollisionOption.GenerateUniqueName);
 				using (var stream = await newFile.OpenStreamForWriteAsync())
 				{
@@ -1002,7 +1003,7 @@ namespace Dash
 				var olduri = uriRaw.ToString();
 
 				// create file with unique title
-				var audTitle = "aud_" + _fileNames[dc] + ".mp3";
+				var audTitle = "aud_" + _fileNames[dc.GetDataDocument()] + ".mp3";
 				await CopyMedia(olduri, audTitle);
 			}
 		}
@@ -1010,14 +1011,14 @@ namespace Dash
 		private async Task CopyVideo(DocumentController dc)
 		{
 			// youtube videos don't have a saved file for copying
-			if (dc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null) return;
+			if (dc.GetDereferencedField<TextController>(KeyStore.YouTubeUrlKey, null) != null) return;
 			var uriRaw = dc.GetDereferencedField(KeyStore.DataKey, null);
 			if (uriRaw != null)
 			{
 				var olduri = uriRaw.ToString();
 
 				// create file with unique title
-				var vidTitle = "vid_" + _fileNames[dc] + ".mp4";
+				var vidTitle = "vid_" + _fileNames[dc.GetDataDocument()] + ".mp4";
 				await CopyMedia(olduri, vidTitle);
 			}
 		}
@@ -1031,7 +1032,7 @@ namespace Dash
 				var olduri = uriRaw.ToString();
 
 				// create file with unique title
-				var imgTitle = "img_" + _fileNames[dc] + ".jpg";
+				var imgTitle = "img_" + _fileNames[dc.GetDataDocument()] + ".jpg";
 				await CopyMedia(olduri, imgTitle);
 			}
 		}
