@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -25,6 +24,7 @@ namespace Dash
         public abstract TypeInfo TypeInfo { get; }
         public virtual TypeInfo RootTypeInfo => TypeInfo;
         public event FieldUpdatedHandler FieldModelUpdated;
+
         public object Tag = null;
 
         protected FieldControllerBase(FieldModel model) : base(model)

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Windows.Foundation;
-using Windows.UI.Input;
+﻿using System.Linq;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -27,12 +20,8 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                var parents = _manipulationDocumentTarget.GetAncestorsOfType<DocumentView>().ToList();
-                if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(_manipulationDocumentTarget))
-                    SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e?.GetCurrentPoint(_manipulationDocumentTarget), null);
-                else if (parents.LastOrDefault()?.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.DocumentType) == true &&
-                         parents.Last().GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView) // bcz: Ugh.. this is ugly.
-                    SelectionManager.InitiateDragDrop(parents[parents.Count - 2], e?.GetCurrentPoint(parents[parents.Count-2]), null);
+                if (SelectionManager.TryInitiateDragDrop(_manipulationDocumentTarget, e, null))
+                    e.Handled = true;
             }
         }
     }

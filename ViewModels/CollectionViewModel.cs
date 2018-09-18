@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
-using iText.IO.Font.Constants;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.DataTransferTypeInfo;
 
@@ -56,7 +55,6 @@ namespace Dash
         public DocumentController ContainerDocument { get; private set; }
         public KeyController CollectionKey { get; set; }
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
         public CollectionView.CollectionViewType ViewType
         {
@@ -75,6 +73,11 @@ namespace Dash
 
             SetCollectionRef(containerDocument, fieldKey);
 
+            DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+        }
+
+        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
         }
 
         ~CollectionViewModel()
@@ -111,15 +114,23 @@ namespace Dash
         {
             if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
-                var realPar = cview?.CurrentView?.UserControl;
-                var parSize = realPar != null ? new Point(realPar.ActualWidth, realPar.ActualHeight): ContainerDocument.GetActualSize() ?? new Point();
+                var parSize = ContainerDocument.GetActualSize() ?? new Point();
 
-                var r = Rect.Empty;
+                var rl = Rect.Empty;
+                var rr = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
-                    r.Union(d.Bounds);
+                    var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
+                    var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
+                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth());
+                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth());
+                    if (!halin && !autoWidth)
+                        rl.Union(d.Bounds);
+                    if (!valin && !autoHeight)
+                        rr.Union(d.Bounds);
                 }
-                if (r.Width != 0 && r.Height != 0)
+                var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
+                if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
@@ -130,6 +141,30 @@ namespace Dash
                     {
                         TransformGroup = new TransformGroupData(trans, scale);
                     }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(r.Left, d.LayoutDocument.GetPosition().Value.Y));
+                        d.LayoutDocument.SetWidth(rect.Width /scale.X);
+                    }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(d.LayoutDocument.GetPosition().Value.X, r.Top));
+                        d.LayoutDocument.SetHeight(rect.Height / scale.Y);
+                    }
+                } else
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(rect.Left, d.LayoutDocument.GetPosition().Value.Y));
+                        d.LayoutDocument.SetWidth(rect.Width);
+                    }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(d.LayoutDocument.GetPosition().Value.X, rect.Top));
+                        d.LayoutDocument.SetHeight(rect.Height);
+                    }
+
                 }
             }
         }
@@ -316,7 +351,10 @@ namespace Dash
                 {
                     doc.CaptureNeighboringContext();
 
-                    ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
+                    var collectionField = ContainerDocument.GetField<ListController<DocumentController>>(CollectionKey);
+                    if (collectionField == null)
+                        ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
+                    else ContainerDocument.AddToListField(CollectionKey, doc);
                 }
             }
         }
@@ -340,7 +378,10 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 // just update the collection, the colllection will update our view automatically
-                ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
+                var collectionField = ContainerDocument.GetField<ListController<DocumentController>>(CollectionKey);
+                if (collectionField == null)
+                    ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
+                else ContainerDocument.RemoveFromListField(CollectionKey, document);
 
                 if (document.IsMovingCollections)
                 {
@@ -651,7 +692,7 @@ namespace Dash
                 return droppedDoc;
             }
         }
-
+        
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -664,7 +705,7 @@ namespace Dash
                 e.Handled = true;
                 var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
                 // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem
+                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem && !MainPage.Instance.IsShiftPressed()
                     ? DataPackageOperation.Move :
                     e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ?
                         DataPackageOperation.Copy
@@ -689,9 +730,19 @@ namespace Dash
 
                 var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
 
+                var cpar = ContainerDocument;
 
-                //SelectionManager.DeselectAll();
+                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed()) // bcz: hack -- shift-dropping a KeyValuepane to fill in Input1 field
+                {
+                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
+                    e.DataView.ReportOperationCompleted(DataPackageOperation.None);
+                    return;
+                }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)  // dropping a DataBox
+                {
+                    RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
+                }
 
                 if (!MainPage.Instance.IsShiftPressed())
                 {
@@ -700,6 +751,7 @@ namespace Dash
                         for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
                             if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
+
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
                                 if (d.DraggedDocumentViews[i] != null)
@@ -711,12 +763,27 @@ namespace Dash
                             {
                                 MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
                                 d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+
                             }
                         }
                     }
                 }
                 AddDocuments(docsToAdd);
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+            }
+        }
+
+        private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        {
+            cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
+            foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+            {
+                var xd = doc.GetDataDocument();
+                var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                var ddd = dd?.GetDocumentController(null);
+                cpar.SetField(KeyStore.DocumentContextKey, ddd, true);
+                var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), refdoc.FieldKey), true);
             }
         }
 

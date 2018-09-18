@@ -4,7 +4,6 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash

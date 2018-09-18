@@ -3,9 +3,6 @@ using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
-using Syncfusion.Windows.PdfViewer;
-using System.Linq;
-using Dash.Views;
 
 namespace Dash
 {

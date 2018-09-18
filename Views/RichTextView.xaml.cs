@@ -149,12 +149,17 @@ namespace Dash
                 if (getDocView() != null)
                     getDocView().CacheMode = new BitmapCache();
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                var readableText= getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
                     if (!SelectionManager.IsSelected(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
+                }
+                else if (readableText.StartsWith("#"))
+                {
+                    Text = new RichTextModel.RTD(readableText.Substring(1));
                 }
             };
 

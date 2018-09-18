@@ -1,11 +1,7 @@
-﻿using System;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using DashShared;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.Foundation;
-using Dash.Converters;
-using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {

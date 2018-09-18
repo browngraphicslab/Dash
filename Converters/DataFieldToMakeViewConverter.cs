@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 using Dash.Controllers;
 using DashShared;
 
@@ -50,10 +44,11 @@ namespace Dash.Converters
             }
             if (data is ImageController img)
             {
-                if (img.Data.LocalPath.EndsWith(".pdf"))
-                    return PdfBox.MakeView(_docController, _context);
-
                 currView = ImageBox.MakeView(_docController, _context);
+            }
+            if (data is PdfController)
+            {
+                currView = PdfBox.MakeView(_docController, _context);
             }
             if (data is VideoController)
             {

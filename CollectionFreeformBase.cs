@@ -8,7 +8,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -124,7 +123,8 @@ namespace Dash
             {
                 var storedPath = settingsView.CustomImagePath;
                 if (storedPath != null) _background = storedPath;
-            } else
+            }
+            else
             {
                 _background = settingsView.EnumToPathDict[settingsView.ImageState];
             }
@@ -134,8 +134,11 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
-            _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            if (_backgroundCanvas != null)
+            {
+                _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
+                _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            }
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -391,7 +394,9 @@ namespace Dash
         /// </summary>
         public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
         private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private static object _backgroundDot = "ms-appx:///Assets/transparent_dot_tilable.png";
         private CanvasBitmap _bgImage;
+        private CanvasBitmap _bgImageDot;
 
         /// <summary>
         /// Collection background tiling image
@@ -469,6 +474,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, new Uri(s));
             else
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, (IRandomAccessStream)_background);
+            _bgImageDot = await CanvasBitmap.LoadAsync(canvas, new Uri((string)_backgroundDot));
             // NOTE *** At this point, _backgroundTask will be marked completed. This has bearing on the IsLoadInProgress bool and how that dictates the rendered drawing (see immediately below).
             // Indicates that the contents of the CanvasControl need to be redrawn. Calling Invalidate results in the Draw event being raised shortly afterward (see immediately below).
             canvas.Invalidate();
@@ -481,15 +487,18 @@ namespace Dash
             {
                 // If the image failed to load in time, simply display a blank white background
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
-            } else
+            }
+            else
             {
+                var ff    = this as CollectionFreeformView;
+                var mat   = ff?._itemsPanelCanvas?.RenderTransform as MatrixTransform;
+                var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = _bgImage;
+                _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var session = args.DrawingSession;
-                session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
 
@@ -570,7 +579,7 @@ namespace Dash
 
                     var matrix = composite.Value;
 
-                    var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    var aliasSafeScale = matrix.M11;// clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
                     _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
                         (float)matrix.M12,
                         (float)matrix.M21,
@@ -783,7 +792,11 @@ namespace Dash
             VirtualKey.Delete,
             VirtualKey.G,
             VirtualKey.R,
-            VirtualKey.T
+            VirtualKey.T,
+            VirtualKey.Left,
+            VirtualKey.Right,
+            VirtualKey.Up,
+            VirtualKey.Down
         };
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -923,6 +936,66 @@ namespace Dash
                             }
                         });
                     deselect = true;
+                    break;
+                case VirtualKey.Up:
+                case VirtualKey.Down:
+                    DoAction((views, where, size) =>
+                    {
+                        views.Sort((dv1, dv2) =>
+                        {
+                            var dv1y = dv1.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
+                            var dv2y = dv2.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
+                            if (dv1y < dv2y)
+                                return -1;
+                            else if (dv1y > dv2y)
+                                return 1;
+                            return 0;
+                        });
+
+                        Rect bounds = Rect.Empty;
+                        double usedHeight = 0;
+                        foreach (var v in views)
+                        {
+                            var vb = v.ViewModel.Bounds;
+                            usedHeight += vb.Height;
+                            bounds.Union(new Point(vb.Left, vb.Top));
+                            bounds.Union(new Point(vb.Right, vb.Bottom));
+                        }
+                        var spacing = (bounds.Height -usedHeight) / (views.Count -1);
+                        double placement = bounds.Top;
+                        foreach (var v in views)
+                        {
+                            if (modifier == VirtualKey.Up)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
+                                placement += v.ViewModel.Bounds.Height + spacing;
+                            }
+                        }
+                    });
+                    break;
+                case VirtualKey.Left:
+                case VirtualKey.Right:
+                    DoAction((views, where, size) =>
+                    {
+                        Rect bounds = Rect.Empty;
+                        foreach (var v in views)
+                        {
+                            var vb = v.ViewModel.Bounds;
+                            bounds.Union(new Point(vb.Left, vb.Top));
+                            bounds.Union(new Point(vb.Right, vb.Bottom));
+                        }
+                        foreach (var v in views)
+                        {
+                            if (modifier == VirtualKey.Left)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Left, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                            }
+                            else if (modifier == VirtualKey.Right)
+                            {
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Right-v.ViewModel.Bounds.Width, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                            }
+                        }
+                    });
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
@@ -1072,7 +1145,8 @@ namespace Dash
                 Width = 200,
                 Height = 50,
                 Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Visibility.Collapsed
+                Visibility = Visibility.Collapsed,
+                ManipulationMode = ManipulationModes.All
             };
             previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);

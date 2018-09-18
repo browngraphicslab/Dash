@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using DashShared;
+﻿using DashShared;
 
 namespace Dash
 {

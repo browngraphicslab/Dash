@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Dash.Converters;
 
 namespace Dash
 {

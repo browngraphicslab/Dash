@@ -15,13 +15,14 @@ namespace Dash
     {
 
         private PointerPoint _downPt;
+        private DocumentController _dataContextDocument;
 
 
         public CollectionDBSchemaRecord()
         {
             this.InitializeComponent();
         }
-        
+
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
@@ -73,7 +74,7 @@ namespace Dash
         /// <summary>
         /// All the different fields on this record
         /// </summary>
-        public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; }
+        public ObservableCollection<EditableScriptViewModel> RecordFields { get; }
 
         /// <summary>
         /// 
@@ -81,11 +82,11 @@ namespace Dash
         /// <param name="parentDoc">The document which contains this list of records, basically the doc containing the collection this record is a part of</param>
         /// <param name="document">The document that this record is going to represent (think of the document as a row in a database table)</param>
         /// <param name="fields">List of view models for fields that are in this row (think cell in a database table)</param>
-        public CollectionDBSchemaRecordViewModel(DocumentController parentDoc, DocumentController document, IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
+        public CollectionDBSchemaRecordViewModel(DocumentController parentDoc, DocumentController document, IEnumerable<EditableScriptViewModel> fields)
         {
             ParentDoc = parentDoc;
             Document = document;
-            RecordFields = new ObservableCollection<CollectionDBSchemaRecordFieldViewModel>(fields);
+            RecordFields = new ObservableCollection<EditableScriptViewModel>(fields);
         }
 
     }

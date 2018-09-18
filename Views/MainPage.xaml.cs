@@ -18,11 +18,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using Windows.Storage;
 using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 using System.Web;
+using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 
 
@@ -275,27 +275,15 @@ namespace Dash
                 return false;
             }
             var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            if (currentWorkspace.Equals(workspace))
-            {
-                return true;
-            }
 
-            if (currentWorkspace.GetDataDocument().Equals(workspace.GetDataDocument()))
+            SplitFrame.OpenInActiveFrame(workspace);
+            if (workspace.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                return true;
-            }
-            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
-            workspaceView.SetWidth(double.NaN);
-            workspaceView.SetHeight(double.NaN);
-            SplitFrame.OpenInActiveFrame(workspaceView);
-            if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
-            {
-                workspaceView.SetFitToParent(false);
-                setupMapView(workspaceView);
+                setupMapView(workspace);
             }
 
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
         }
 
@@ -691,7 +679,13 @@ namespace Dash
             }
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
-                MainDocView_OnDoubleTapped(null, null);
+                var pos = this.RootPointerPos();
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
+                if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformBase freeformView)
+                {
+                    TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
+                    TabMenu.Instance?.AddGoToTabItems();
+                }
             }
 
             // TODO propagate the event to the tab menu
@@ -706,48 +700,6 @@ namespace Dash
             }
 
             e.Handled = true;
-        }
-
-        private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            var pos = this.RootPointerPos();
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
-            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformBase freeformView)
-            {
-                if (e != null)
-                {
-                    foreach (var d in freeformView?.GetItemsControl().ItemsPanelRoot.Children)
-                    {
-                        if (d is ContentPresenter presenter)
-                        {
-                            if (presenter.Content is DocumentViewModel dvm)
-                            {
-                                if (dvm.IsAdornmentGroup)
-                                {
-                                    var dv = d.GetFirstDescendantOfType<DocumentView>();
-                                    var hit = dv.IsHitTestVisible;
-                                    dv.IsHitTestVisible = true;
-                                    var hits = VisualTreeHelper.FindElementsInHostCoordinates(pos, dv).ToList();
-                                    e.Handled = hits.Count > 0;
-                                    dv.IsHitTestVisible = hits.Count > 0 ? !hit : hit;
-                                    if (!dv.IsHitTestVisible)
-                                        dvm.DecorationState = dv.IsHitTestVisible;
-                                    if (e.Handled)
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (e == null || !e.Handled && this.IsCtrlPressed())
-                {
-                    TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
-                    TabMenu.Instance?.AddGoToTabItems();
-                    if (e != null)
-                        e.Handled = true;
-                }
-            }
         }
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
@@ -794,7 +746,6 @@ namespace Dash
         Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
-            return;
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
@@ -820,7 +771,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
-                    cview?.ViewModel?.FitContents(cview);
+                    //cview?.ViewModel?.FitContents(cview);
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
@@ -1378,6 +1329,45 @@ namespace Dash
         }
 
 
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ActionMenu GetMenu()
+            {
+                ActionMenu menu = new ActionMenu
+                {
+                    Width = 400,
+                    Height = 500
+                };
+                ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
+                menu.AddGroup("BASIC", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
+                    new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
+                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
+                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
+                });
+                menu.AddGroup("DATABASE", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
+                });
+                menu.AddGroup("TEST1", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                });
+                menu.AddGroup("TEST2", new List<ActionViewModel>
+                {
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                });
+                return menu;
+            }
 
+            xCanvas.Children.Add(GetMenu());
+        }
     }
 }

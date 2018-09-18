@@ -53,7 +53,7 @@ namespace Dash
             //docController for old DocumentId
             var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-                DocumentController = doc;
+            DocumentController = doc;
             //docController for given DocumentId
             var docController2 = GetDocumentController(null);
             docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);

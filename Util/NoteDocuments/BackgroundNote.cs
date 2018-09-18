@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using DashShared;
 using Windows.Foundation;
 using static Dash.BackgroundShape;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI;
-using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
 
 namespace Dash
 {

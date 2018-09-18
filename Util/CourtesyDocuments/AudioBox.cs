@@ -5,7 +5,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
-using Windows.Management.Deployment;
 using Windows.System;
 using Dash.Converters;
 
