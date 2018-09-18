@@ -727,14 +727,17 @@ namespace Dash
 
                 var cpar = ContainerDocument.GetDataDocument();
 
-                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed())
+                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed()) // bcz: hack -- shift-dropping a KeyValuepane to fill in Input1 field
                 {
                     cpar.SetField(_key1, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
+                if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)  // dropping a DataBox
+                {
+                    RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
+                }
 
                 if (!MainPage.Instance.IsShiftPressed())
                 {
@@ -767,29 +770,26 @@ namespace Dash
 
         private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
-            if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)
+            foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
             {
-                foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
-                {
-                    KeyController key = null;
-                    var xd = doc.GetDataDocument();
-                    var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                    var ddd = dd?.GetDocumentController(null);
-                    var input1 = cpar.GetField<DocumentController>(_key1);
-                    var input2 = cpar.GetField<DocumentController>(_key2);
-                    var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                    if (input1?.Equals(ddd) == true)
-                        key = _key1;
-                    else if (input2?.Equals(ddd) == true)
-                        key = _key2;
-                    else if (input1 == null)
-                        cpar.SetField(key = _key1, refdoc.DocumentController, true);
-                    else if (input2 == null)
-                        cpar.SetField(key = _key2, refdoc.DocumentController, true);
-                    else
-                        cpar.SetField(key = _key3, refdoc.DocumentController, true);
-                    xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, key), refdoc.FieldKey), true);
-                }
+                KeyController key = null;
+                var xd = doc.GetDataDocument();
+                var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                var ddd = dd?.GetDocumentController(null);
+                var input1 = cpar.GetField<DocumentController>(_key1);
+                var input2 = cpar.GetField<DocumentController>(_key2);
+                var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                if (input1?.Equals(ddd) == true)
+                    key = _key1;
+                else if (input2?.Equals(ddd) == true)
+                    key = _key2;
+                else if (input1 == null)
+                    cpar.SetField(key = _key1, refdoc.DocumentController, true);
+                else if (input2 == null)
+                    cpar.SetField(key = _key2, refdoc.DocumentController, true);
+                else
+                    cpar.SetField(key = _key3, refdoc.DocumentController, true);
+                xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, key), refdoc.FieldKey), true);
             }
         }
 
