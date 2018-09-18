@@ -22,6 +22,8 @@ namespace Dash
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
             fields[KeyStore.InkDataKey] = new InkController();
             fields[KeyStore.BackgroundColorKey] = new TextController(Colors.White.ToString());
+            fields[KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString());
+            fields[KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString());
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
 
             SetupDocument(DocumentType, PrototypeId, "Collection Box Prototype Layout", fields);

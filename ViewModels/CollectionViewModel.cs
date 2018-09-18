@@ -116,12 +116,19 @@ namespace Dash
             {
                 var parSize = ContainerDocument.GetActualSize() ?? new Point();
 
-                var r = Rect.Empty;
+                var rl = Rect.Empty;
+                var rr = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
-                    r.Union(d.Bounds);
+                    var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
+                    var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
+                    if (!halin)
+                        rl.Union(d.Bounds);
+                    if (!valin)
+                        rr.Union(d.Bounds);
                 }
-                if (r.Width != 0 && r.Height != 0)
+                var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
+                if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
@@ -132,6 +139,30 @@ namespace Dash
                     {
                         TransformGroup = new TransformGroupData(trans, scale);
                     }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(r.Left, d.LayoutDocument.GetPosition().Value.Y));
+                        d.LayoutDocument.SetWidth(rect.Width /scale.X);
+                    }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(d.LayoutDocument.GetPosition().Value.X, r.Top));
+                        d.LayoutDocument.SetHeight(rect.Height / scale.Y);
+                    }
+                } else
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(rect.Left, d.LayoutDocument.GetPosition().Value.Y));
+                        d.LayoutDocument.SetWidth(rect.Width);
+                    }
+                    foreach (var d in DocumentViewModels.Where((dvm) => dvm.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch))
+                    {
+                        d.LayoutDocument.SetPosition(new Point(d.LayoutDocument.GetPosition().Value.X, rect.Top));
+                        d.LayoutDocument.SetHeight(rect.Height);
+                    }
+
                 }
             }
         }

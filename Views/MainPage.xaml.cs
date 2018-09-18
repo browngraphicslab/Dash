@@ -771,7 +771,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
-                    cview?.ViewModel?.FitContents(cview);
+                    //cview?.ViewModel?.FitContents(cview);
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
