@@ -8,11 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using DashShared;
 using Microsoft.Data.Sqlite;
-using Timer = System.Threading.Timer;
 
 namespace Dash
 {

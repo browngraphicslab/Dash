@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
-using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash {
@@ -20,7 +19,8 @@ namespace Dash {
 
             DocumentController RefToDBox(DocumentFieldReference reference)
             {
-                var dbox = new DataBox(reference.GetReferenceController(), where.X, where.Y).Document;
+                var type = reference.DereferenceToRoot(null);
+                var dbox = new DataBox(reference.GetReferenceController(), where.X, where.Y, type is TextController ? double.NaN : 300).Document;
 
                 if (reference.FieldKey != null)
                 {

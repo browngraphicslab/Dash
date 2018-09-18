@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
+﻿using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;

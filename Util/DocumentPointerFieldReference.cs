@@ -1,5 +1,4 @@
-﻿using Dash.Controllers;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Dash
 {

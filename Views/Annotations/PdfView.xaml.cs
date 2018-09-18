@@ -15,13 +15,11 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -447,6 +445,35 @@ namespace Dash
             return regionDoc;
         }
 
+        public async Task<List<DocumentController>> ExplodePages()
+        {
+            var pages = new List<DocumentController>();
+            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
+            var pdfDocument = new PdfDocument(reader);
+            int n = pdfDocument.GetNumberOfPages();
+            var title = DataDocument.GetTitleFieldOrSetDefault().Data;
+            var psplit = new iText.Kernel.Utils.PdfSplitter(pdfDocument);
+            for (int i = 1; i <= n; i++)
+            {
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var uniqueFilePath = _file.Path.Replace(".pdf", "-"+i+".pdf");
+                var exists = await localFolder.TryGetItemAsync(Path.GetFileName(uniqueFilePath)) != null;
+                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(uniqueFilePath), CreationCollisionOption.OpenIfExists);
+                if (!exists)
+                {
+                    var pw = new PdfWriter(new FileInfo(localFolder.Path + "/"+ Path.GetFileName(uniqueFilePath)));
+                    var outDoc = new PdfDocument(pw);
+                    pdfDocument.CopyPagesTo(new List<int>(new int[] { i }), outDoc);
+                    outDoc.Close();
+                }
+                var doc = new PdfToDashUtil().GetPDFDoc(localFile, title.Substring(0,title.IndexOf(".pdf"))+":"+i+".pdf");
+                pages.Add(doc);
+            }
+            reader.Close();
+            pdfDocument.Close();
+            return pages;
+        }
+
         private Point calculateClosestPointOnPDF(Point p)
         {
             return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth  ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
@@ -461,23 +488,23 @@ namespace Dash
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
+        StorageFile _file;
         private async Task OnPdfUriChanged()
         {
             if (PdfUri == null)
             {
                 return;
             }
-
-            StorageFile file;
+            
             try
             {
-                file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
             }
             catch (ArgumentException)
             {
                 try
                 {
-                    file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
+                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
                 }
                 catch (ArgumentException)
                 {
@@ -485,7 +512,7 @@ namespace Dash
                 }
             }
             
-            var reader = new PdfReader(await file.OpenStreamForReadAsync());
+            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
@@ -501,7 +528,7 @@ namespace Dash
 
             PdfMaxWidth = maxWidth;
 
-            PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
             bool add = PDFdoc.PageCount != _currentPageCount;
             if (add)
             {
@@ -562,7 +589,6 @@ namespace Dash
                     overlay.EmbedDocumentWithPin(e.GetPosition(overlay));
                 }
             }
-
         }
 
         #region Region/Selection Events
@@ -842,11 +868,6 @@ namespace Dash
             xAnnotationNavigation.Opacity = 0;
         }
 
-        public void DisplayFlyout(MenuFlyout linkFlyout)
-        {
-            linkFlyout.ShowAt(this);
-        }
-
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xTopAnnotationBox.Width.Equals(0))
@@ -861,8 +882,6 @@ namespace Dash
                 xBottomAnnotationBox.Width = 0;
             }
         }
-
-
 
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {

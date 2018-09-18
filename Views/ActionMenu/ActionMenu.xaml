@@ -1,0 +1,65 @@
+﻿<UserControl
+    x:Class="Dash.ActionMenu"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Border Background="White" CornerRadius="10" Padding="5" BorderBrush="DarkGray" BorderThickness="1">
+        <Grid>
+            <Grid.Resources>
+                <CollectionViewSource x:Name="GroupCVS" IsSourceGrouped="True"></CollectionViewSource>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border CornerRadius="7" BorderThickness="1" BorderBrush="#66AAAAAA" Visibility="{x:Bind UseFilterBox, Mode=OneWay}">
+                <TextBox x:Name="XFilterBox" PlaceholderText="Search" FontSize="12" BorderThickness="0" TextChanged="XFilterBox_OnTextChanged"></TextBox>
+            </Border>
+            <ListView Grid.Row="1" ItemsSource="{Binding Source={StaticResource GroupCVS}}">
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GroupTitle}" Foreground="Gray" FontFamily="Tahoma" FontSize="16"  Style="{StaticResource TitleTextBlockStyle}" Margin="5,0,0,0"></TextBlock>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ActionViewModel">
+                        <local:ActionMenuItem Margin="0,0,0,5"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <!--<ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{x:Bind BindableGroups, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel></VirtualizingStackPanel>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:ActionGroupViewModel">
+                            <StackPanel>
+                                <ListView ItemsSource="{Binding BindableActions}" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="local:ActionViewModel">
+                                            <local:ActionMenuItem Margin="0,0,0,5"/>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>-->
+        </Grid>
+    </Border>
+</UserControl>

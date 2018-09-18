@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Drawing;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
-using Windows.UI.Xaml.Media.Animation;
 using static Dash.DocumentController;
-using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
-using System.Diagnostics;
 
 namespace Dash
 {
@@ -67,7 +63,14 @@ namespace Dash
         }
 
         private SolidColorBrush _searchHighlightBrush;
+        private bool _isNotBackgroundPinned = true;
 
+        public bool IsDimensionless = false;
+        public bool IsNotBackgroundPinned
+        {
+            get => _isNotBackgroundPinned;
+            set => SetProperty(ref _isNotBackgroundPinned, value);
+        }
         public bool IsAdornmentGroup
         {
             get => DocumentController.GetIsAdornment();
@@ -93,12 +96,12 @@ namespace Dash
         }
         public double Width
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
-            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
             set => LayoutDocument.SetHeight(value);
         }
         public Point Scale
@@ -106,9 +109,10 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
-        public RectangleGeometry DragBounds;
+        public bool DragWithinParentBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
+        public string Title { get => DataDocument.Title; }
 
         protected bool Equals(DocumentViewModel other)
         {
