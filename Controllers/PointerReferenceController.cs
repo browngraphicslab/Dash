@@ -12,6 +12,7 @@ namespace Dash
         {
             DisposeField();
             Init();
+            DocFieldUpdated(null, args, context);
         }
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))

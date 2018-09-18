@@ -92,7 +92,6 @@ namespace Dash
                 BindWidth(this, doc, null);
                 BindHeight(this, doc, null);
             }
-
         }
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
