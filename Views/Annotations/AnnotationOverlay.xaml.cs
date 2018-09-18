@@ -720,7 +720,7 @@ namespace Dash
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        if (found || _selectedRectangles.ContainsKey(ele.Index)) break;
+                        if (found) break;
                         //var ahhh = ele.Bounds.Left < Canvas.GetLeft(rect) + rect.Width + ele.Bounds.Width && Canvas.GetLeft(rect) < ele.Bounds.Left && ele.Bounds.Left - rect.Width < Canvas.GetLeft(rect) + ele.Bounds.Width;
                         //var fromRight = Canvas.GetLeft(rect) - ele.Bounds.Left < ele.Bounds.Width * 2 && Canvas.GetLeft(rect) > ele.Bounds.Left && Canvas.GetLeft(rect) - ele.Bounds.Right < ele.Bounds.Width;
                         //var closeEnough = (ahhh || fromRight) &&
@@ -729,7 +729,7 @@ namespace Dash
                         var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect)) <
                                           ele.Bounds.Width + rect.Width &&
                                           Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
-                                          ele.Bounds.Height / 2;
+                                          ele.Bounds.Height / 5;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
                         if (closeEnough && similarSize)
                         {
