@@ -19,7 +19,7 @@ namespace Dash {
 
             DocumentController RefToDBox(DocumentFieldReference reference)
             {
-                var dbox = new DataBox(reference.GetReferenceController(), where.X, where.Y).Document;
+                var dbox = new DataBox(reference.GetReferenceController(), where.X, where.Y, 300).Document;
 
                 if (reference.FieldKey != null)
                 {

@@ -39,6 +39,8 @@ namespace Dash
             // setup bindings on the image
             SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
+            editableImage.HorizontalAlignment = HorizontalAlignment.Left;
+            editableImage.VerticalAlignment = VerticalAlignment.Top;
 
             var border = new Border();
             border.Child = editableImage;

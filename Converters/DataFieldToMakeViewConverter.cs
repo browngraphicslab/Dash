@@ -44,10 +44,11 @@ namespace Dash.Converters
             }
             if (data is ImageController img)
             {
-                if (img.Data.LocalPath.EndsWith(".pdf"))
-                    return PdfBox.MakeView(_docController, _context);
-
                 currView = ImageBox.MakeView(_docController, _context);
+            }
+            if (data is PdfController)
+            {
+                currView = PdfBox.MakeView(_docController, _context);
             }
             if (data is VideoController)
             {

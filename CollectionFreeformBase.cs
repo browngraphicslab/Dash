@@ -487,18 +487,18 @@ namespace Dash
             {
                 // If the image failed to load in time, simply display a blank white background
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
-            } else
+            }
+            else
             {
-                var ff = this as CollectionFreeformView;
-                var mat = ff?._itemsPanelCanvas.RenderTransform as MatrixTransform;
+                var ff    = this as CollectionFreeformView;
+                var mat   = ff?._itemsPanelCanvas?.RenderTransform as MatrixTransform;
                 var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
+                _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var session = args.DrawingSession;
-                session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
 
