@@ -385,7 +385,18 @@ namespace Dash
 			return ConcatenateList(html);
 		}
 
-		private DocumentController GetOppositeLinkTarget(DocumentController link)
+	    private DocumentController ValidateLink(DocumentController link, KeyController sourceOrDestination)
+	    {
+	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
+	        if (linkOperator == null || linkOperator.Data == false)
+	        {
+	            link = link.GetDataDocument().GetDereferencedField<DocumentController>(sourceOrDestination, null);
+            }
+
+	        return link;
+	    }
+
+        private DocumentController GetOppositeLinkTarget(DocumentController link)
 		{
 			DocumentController oneTarget = null; // most of the time, each region will only link to one target, and this variable describes it.
 
@@ -395,11 +406,11 @@ namespace Dash
 			if ((regionLinkTo == null || regionLinkTo.Count == 0) && regionLinkFrom != null && regionLinkFrom.Count == 1)
 			{
 				oneTarget = regionLinkFrom.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null);
-			}
+            }
 			else if ((regionLinkFrom == null || regionLinkFrom.Count == 0) && regionLinkTo != null && regionLinkTo.Count == 1)
 			{
 				oneTarget = regionLinkTo.First().GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null);
-			}
+            }
 
 			return oneTarget;
 		}
@@ -637,23 +648,30 @@ namespace Dash
 		/// <returns></returns>
 		private string RenderImmediateLinksToHtml(DocumentController dc)
 		{
+		    dc = dc.GetDataDocument(); // precaution
 			var html = new List<string>();
 
-			// cycle through each link/region's links as necessary, building a new HTML segment as we go
-			var linksTo = dc.GetLinks(KeyStore.LinkToKey);
+            // in the case we're rendering an intermediate document
+		    var linkSource = dc.GetLinkedDocument(LinkDirection.ToDestination);
+		    if (linkSource != null)
+		    {
+		        html.Add(RenderLinkToHtml(linkSource));
+		    }
+
+		    var linkDestination = dc.GetLinkedDocument(LinkDirection.ToSource);
+		    if (linkSource != null)
+		    {
+                html.Add(RenderLinkToHtml(linkDestination));
+		    }
+
+            // cycle through each link/region's links as necessary, building a new HTML segment as we go
+            var linksTo = dc.GetLinks(KeyStore.LinkToKey);
 			if (linksTo != null)
 			{
 				// linksFrom uses LinkDestination to get the opposite document
 				foreach (var link in linksTo)
 				{
-					var linkDestination = link
-						.GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null);
-					//if (linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null) != null && linkDestination.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data.Equals("link"))
-					//{
-					//	// if the link says "link", it's just some unexposed link document, and we should skip directly to what's on the other side
-						
-					//}
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkDestinationKey, null)));
+					html.Add(RenderLinkToHtml(ValidateLink(link, KeyStore.LinkDestinationKey)));
 				}
 			}
 
@@ -663,7 +681,7 @@ namespace Dash
 				// linksFrom uses LinkSource to get the opposite document
 				foreach (var link in linksFrom)
 				{
-					html.Add(RenderLinkToHtml(link.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.LinkSourceKey, null)));
+					html.Add(RenderLinkToHtml(ValidateLink(link, KeyStore.LinkSourceKey)));
 				}
 			}
 
