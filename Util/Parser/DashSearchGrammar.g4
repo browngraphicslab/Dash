@@ -1,63 +1,77 @@
-grammar Search
+grammar DashSearchGrammar;
 
 /*
  * PARSER RULES
  */
 
- 	LOGICAL_EXPRESSION		: (WORD (AND_TOKEN | OR_TOKEN))+ WORD 
+	// LOGICAL OPERATORS
+
+	and_token				: WHITESPACE 
+							;
+
+	or_token				: WHITESPACE? '|' WHITESPACE? 
+							;
+
+	operator 				: and_token | or_token ; 
+
+ 	term					: ALPHANUM
+							| '!' ALPHANUM 
+							;
+
+	phrase					: term
+							| '"' (term WHITESPACE)+ term? '"' 
+							;
+
+	chain					: phrase
+							| (phrase operator)+ phrase 
+							;
+
+	logical_expr			: chain													// base case
+							| logical_expr operator logical_expr		// intermediate recursion
+							| '(' logical_expr ')'									// accounts for grouping
+							;									
+
+	// FUNCTIONS
+
+	name					: WORD 
+							;
+
+	arguments				: (ALPHANUM ',')+ ALPHANUM 
+							;
+
+	input					:
+							| arguments 
+							;
+
+	function_expr			: name '(' input ')' 
+							;
+
+	// KEY VALUE
+
+	kv_search				: ALPHANUM ':' ALPHANUM 
+							;
 
 /*
  * LEXER RULES
  */
 
-// TEXT, DIGITS AND WHITESPACE
+	// TEXT, DIGITS AND WHITESPACE
 
-fragment LOWERCASE		: [a-z] ;
+	fragment LOWERCASE		: [a-z] 
+							;
 
-fragment UPPERCASE 		: [A-Z] ;
+	fragment UPPERCASE 		: [A-Z] 
+							;
 
-fragment WORD			: (LOWERCASE | UPPERCASE | '_')+ ;
+	fragment WORD			: (LOWERCASE | UPPERCASE | '_')+ 
+							;
 
-fragment DIGIT			: [0-9] ;
+	fragment NUMBER			: [0-9]+ 
+							;
 
-fragment WHITESPACE 	: '\t' 
-						| " " ;
+	fragment ALPHANUM 		: WORD | NUMBER 
+							;
 
-
-// LOGICAL OPERATORS
-
-fragment A				: 'A' 
-						| 'a' ;
-
-fragment N				: 'N'
-						: 'n' ;
-
-fragment D				: 'D'
-						: 'd' ;
-
-fragment O				: 'O' 
-						| 'o' ;
-
-fragment R				: 'R'
-						: 'r' ;
-
-fragment N				: 'N' 
-						| 'n' ;
-
-fragment T				: 'T'
-						: 't' ;
-
-AND 					: A N D ;
-
-OR 						: O R ;
-
-NOT 					: N O T ;
-
-AND_TOKEN				: (WHITESPACE+)? '&' (WHITESPACE+)?
-						| (WHITESPACE+)? AND (WHITESPACE+)? ;
-
-OR_TOKEN				: (WHITESPACE+)? '|' (WHITESPACE+)?
-						| (WHITESPACE+)? OR (WHITESPACE+)?;
-
-NOT_TOKEN				: (WHITESPACE+)? '!'
-						| (WHITESPACE+)? NOT (WHITESPACE+)? ;
+	fragment WHITESPACE 	: '\t' 
+							| ' ' 
+							;
