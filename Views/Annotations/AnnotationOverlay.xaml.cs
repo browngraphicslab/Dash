@@ -668,7 +668,7 @@ namespace Dash
 
             var startPage = GetPageOf(currentClipRect.Top);
             var endPage = GetPageOf(currentClipRect.Bottom);
-            var startIndex = PageInformation[startPage - 1] + 1;
+            var startIndex = startPage > 0 ? PageInformation[startPage - 1] + 1 : 0;
             var endIndex = PageInformation[endPage];
             
             //Debug.WriteLine(_clipRectSelections.Count);
