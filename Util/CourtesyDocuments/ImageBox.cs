@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
-using Windows.UI.Xaml.Media;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
-using Windows.Storage;
-using Windows.Graphics.Imaging;
-using Windows.UI.Xaml.Media.Imaging;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Dash
 {
@@ -40,7 +31,7 @@ namespace Dash
         {
             // create the image
 
-           var editableImage = new EditableImage(docController, context);
+            var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
             
@@ -48,6 +39,8 @@ namespace Dash
             // setup bindings on the image
             SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
+            editableImage.HorizontalAlignment = HorizontalAlignment.Left;
+            editableImage.VerticalAlignment = VerticalAlignment.Top;
 
             var border = new Border();
             border.Child = editableImage;

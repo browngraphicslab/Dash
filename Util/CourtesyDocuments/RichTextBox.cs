@@ -4,10 +4,8 @@ using DashShared;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.Foundation;
-using Dash.Converters;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Dash
 {

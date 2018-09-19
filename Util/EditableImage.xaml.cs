@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
-using Windows.Storage.FileProperties;
-using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -17,8 +15,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
+using Windows.Storage.FileProperties;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -172,15 +170,7 @@ namespace Dash
 
         public async Task Rotate()
         {
-            Rect rect = new Rect
-            {
-                X = 0,
-                Y = 0,
-                Width = Math.Floor(Image.ActualHeight),
-                Height = Math.Floor(Image.ActualWidth)
-            };
-
-            await Crop(rect, BitmapRotation.Clockwise90Degrees);
+            await transformImage(Rect.Empty, BitmapRotation.Clockwise90Degrees, BitmapFlip.None);
         }
 
         public async Task MirrorHorizontal()
@@ -195,14 +185,7 @@ namespace Dash
 
         private async Task MirrorImage(BitmapFlip flip)
         {
-            Rect rect = new Rect
-            {
-                X = 0,
-                Y = 0,
-                Height = Math.Floor(Image.ActualHeight),
-                Width = Math.Floor(Image.ActualWidth)
-            };
-            await Crop(rect, BitmapRotation.None, flip);
+            await transformImage(Rect.Empty, BitmapRotation.None, flip);
         }
 
         // called when the cropclick action is invoked in the image subtoolbar
@@ -222,17 +205,70 @@ namespace Dash
             if (IsCropping) e.Handled = true;
         }
 
+        public async Task Crop(Rect rectangleGeometry)
+        {
+            transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
+        }
         /// <summary>
         ///     crops the image with respect to the values of the rectangle passed in
         /// </summary>
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
+        private async Task transformImage(Rect rect, BitmapRotation rot, BitmapFlip flip)
         {
+            var rectangleGeometry = rect != Rect.Empty ? rect : new Rect(0,0, Math.Floor(Image.ActualHeight),Math.Floor(Image.ActualWidth));
             var file = await GetImageFile();
-
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            var fileRot = fileProperties.Orientation;
+
+            // retrieves data from rectangle
+            var startPointX = (uint)(rectangleGeometry.X      / Image.ActualWidth  * fileProperties.Width);
+            var startPointY = (uint)(rectangleGeometry.Y      / Image.ActualHeight * fileProperties.Height);
+            var height      = (uint)(rectangleGeometry.Height / Image.ActualHeight * fileProperties.Height);
+            var width       = (uint)(rectangleGeometry.Width  / Image.ActualWidth  * fileProperties.Width);
+            switch (rot)
+            {
+            case BitmapRotation.None:
+                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                     rot = BitmapRotation.None;
+                else if (fileRot == PhotoOrientation.Rotate90)
+                     rot = BitmapRotation.Clockwise270Degrees;
+                else if (fileRot == PhotoOrientation.Rotate180)
+                     rot = BitmapRotation.Clockwise180Degrees;
+                else rot = BitmapRotation.Clockwise90Degrees;
+                break;
+            case BitmapRotation.Clockwise90Degrees:
+                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                     rot = BitmapRotation.Clockwise90Degrees;
+                else if (fileRot == PhotoOrientation.Rotate90)
+                     rot = BitmapRotation.None;
+                else if (fileRot == PhotoOrientation.Rotate180)
+                     rot = BitmapRotation.Clockwise270Degrees;
+                else rot = BitmapRotation.Clockwise180Degrees;
+                break;
+            case BitmapRotation.Clockwise180Degrees:
+                var tmp = width; // bcz: can't quite figure out why I need to flip width/height, but I do...
+                width  = height;
+                height = tmp;
+                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                     rot = BitmapRotation.Clockwise180Degrees;
+                else if (fileRot == PhotoOrientation.Rotate90)
+                     rot = BitmapRotation.Clockwise90Degrees;
+                else if (fileRot == PhotoOrientation.Rotate180)
+                     rot = BitmapRotation.None;
+                else rot = BitmapRotation.Clockwise270Degrees;
+                break;
+            case BitmapRotation.Clockwise270Degrees:
+                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                     rot = BitmapRotation.Clockwise270Degrees;
+                else if (fileRot == PhotoOrientation.Rotate90)
+                     rot = BitmapRotation.Clockwise180Degrees;
+                else if (fileRot == PhotoOrientation.Rotate180)
+                     rot = BitmapRotation.Clockwise90Degrees;
+                else rot = BitmapRotation.None;
+                break;
+            }
 
             if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
@@ -240,30 +276,10 @@ namespace Dash
                 LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
             }
 
-            // retrieves data from rectangle
-            var startPointX = (uint)(rectangleGeometry.X      / Image.ActualWidth  * fileProperties.Width);
-            var startPointY = (uint)(rectangleGeometry.Y      / Image.ActualHeight * fileProperties.Height);
-            var height      = (uint)(rectangleGeometry.Height / Image.ActualHeight * fileProperties.Height);
-            var width       = (uint)(rectangleGeometry.Width  / Image.ActualWidth  * fileProperties.Width);
-
-            Debug.Assert(file != null); // if neither works, something's hecked up
-
             // opens the uri path and reads it
             using (var stream = await file.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-
-                if (flip != BitmapFlip.None && (height != decoder.PixelHeight || width != decoder.PixelWidth))
-                {
-                    height = decoder.PixelHeight;
-                    width = decoder.PixelWidth;
-                }
-
-                if (rot == BitmapRotation.Clockwise90Degrees && (height != decoder.PixelWidth || width != decoder.PixelHeight))
-                {
-                    height = decoder.PixelWidth;
-                    width = decoder.PixelHeight;
-                }
 
                 // sets the boundaries for how we are cropping the bitmap image
                 var bitmapTransform = new BitmapTransform() { Rotation = rot, Flip = flip, ScaledHeight = decoder.PixelHeight, ScaledWidth = decoder.PixelWidth };
@@ -296,13 +312,9 @@ namespace Dash
                 cropBmp.PixelBuffer.AsStream().Write(pixels, 0, (int)(width * height * 4));
                 // update the image source, width, and positions
                 Image.Source = cropBmp;
-
-                // randomly generate a new guid for the filename
-                var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
+                
+                var newFile = await ImageToDashUtil.CreateUniqueLocalFile();
                 var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-                // create the file
-                var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
-                    CreationCollisionOption.ReplaceExisting);
 
                 // load the file with the iamge information
                 using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
@@ -319,10 +331,8 @@ namespace Dash
                         pixels);
                     await encoder.FlushAsync();
                 }
-
-                // retrieve the uri from the file to update the image controller
-                var path = "ms-appdata:///local/" + newFile.Name;
-                var uri = new Uri(path);
+                
+                var uri = new Uri(newFile.Path);
                 LayoutDocument.SetField<ImageController>(KeyStore.DataKey, uri, true);
 
                 // store new image information so that multiple crops can be made

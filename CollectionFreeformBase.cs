@@ -8,7 +8,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -135,8 +134,11 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
-            _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            if (_backgroundCanvas != null)
+            {
+                _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
+                _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            }
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -485,18 +487,18 @@ namespace Dash
             {
                 // If the image failed to load in time, simply display a blank white background
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
-            } else
+            }
+            else
             {
-                var ff = this as CollectionFreeformView;
-                var mat = ff?._itemsPanelCanvas.RenderTransform as MatrixTransform;
+                var ff    = this as CollectionFreeformView;
+                var mat   = ff?._itemsPanelCanvas?.RenderTransform as MatrixTransform;
                 var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
+                _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var session = args.DrawingSession;
-                session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
 

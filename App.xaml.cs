@@ -9,7 +9,6 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using Microsoft.HockeyApp;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 

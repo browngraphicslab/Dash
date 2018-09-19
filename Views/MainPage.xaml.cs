@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using Windows.Storage;
 using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
@@ -276,27 +275,15 @@ namespace Dash
                 return false;
             }
             var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            if (currentWorkspace.Equals(workspace))
-            {
-                return true;
-            }
 
-            if (currentWorkspace.GetDataDocument().Equals(workspace.GetDataDocument()))
+            SplitFrame.OpenInActiveFrame(workspace);
+            if (workspace.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                return true;
-            }
-            var workspaceView = double.IsNaN(workspace.GetWidthField()?.Data ?? 0) ?  workspace.GetActiveLayout() ?? workspace : workspace.GetViewCopy();
-            workspaceView.SetWidth(double.NaN);
-            workspaceView.SetHeight(double.NaN);
-            SplitFrame.OpenInActiveFrame(workspaceView);
-            if (workspaceView.DocumentType.Equals(CollectionBox.DocumentType))
-            {
-                workspaceView.SetFitToParent(false);
-                setupMapView(workspaceView);
+                setupMapView(workspace);
             }
 
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
         }
 
@@ -759,7 +746,6 @@ namespace Dash
         Button _mapActivateBtn = new Button() { Content = "^:" };
         void setupMapView(DocumentController mainDocumentCollection)
         {
-            return;
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
@@ -785,7 +771,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
-                    cview?.ViewModel?.FitContents(cview);
+                    //cview?.ViewModel?.FitContents(cview);
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
@@ -1372,24 +1358,24 @@ namespace Dash
                 {
                     new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
                     new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
-                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), source),
-                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), source),
+                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
+                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
                 });
                 menu.AddGroup("DATABASE", new List<ActionViewModel>
                 {
                     new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
                 });
                 menu.AddGroup("TEST1", new List<ActionViewModel>
                 {
                     new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
                     new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
                 });
                 menu.AddGroup("TEST2", new List<ActionViewModel>
                 {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
                     new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
                     new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
                 });

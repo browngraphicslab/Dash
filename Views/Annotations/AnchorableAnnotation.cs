@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
 using Dash.Annotations;
-using MyToolkit.Multimedia;
-using static Dash.DataTransferTypeInfo;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 

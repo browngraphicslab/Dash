@@ -8,7 +8,6 @@ using HtmlAgilityPack;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
 
 // ReSharper disable once CheckNamespace
 namespace Dash

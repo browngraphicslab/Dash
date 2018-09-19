@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
@@ -104,12 +102,12 @@ namespace Dash
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            //BindWidth(element, docController, context);
+            //BindHeight(element, docController, context);
 
             //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
+            //BindHorizontalAlignment(element, docController, context);
+            //BindVerticalAlignment(element, docController, context);
         }
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
@@ -201,8 +199,8 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
-                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
-                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
+                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Left.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Top.ToString()),
                 [KeyStore.ActualSizeKey] = new PointController(double.NaN, double.NaN),
                 
             };

@@ -2,7 +2,6 @@
 using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
-using Dash.Annotations;
 
 namespace Dash
 {
@@ -125,8 +124,8 @@ namespace Dash
 		public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
 		public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
 		public static KeyController CollectionFitToParentKey = new KeyController("CollectionFitToParent", "61CA156E-F959-4607-A2F3-BFEFA5D00B64");
-		public static readonly KeyController HorizontalAlignmentKey = new KeyController("_Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
-		public static readonly KeyController VerticalAlignmentKey = new KeyController("_Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
+		public static readonly KeyController HorizontalAlignmentKey = new KeyController("Horizontal Alignment", "B43231DA-5A22-45A3-8476-005A62396686");
+		public static readonly KeyController VerticalAlignmentKey = new KeyController("Vertical Alignment", "227B9887-BC09-40E4-A3F0-AD204D00E48D");
 		public static readonly KeyController SnapshotImage = new KeyController("SnapshotImage", "1D3D649D-A29D-41DF-8608-3822D8546EEA");
 		public static KeyController AutoPlayKey = new KeyController("Is the mediaelementplayer autoplaying", "092983DC-266E-4F91-8935-1BE5CFE86A78");
 		public static KeyController GoToRegionKey = new KeyController("GotoRegion", "5A19BC33-4A83-4961-A230-4A0F8C949022");

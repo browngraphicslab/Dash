@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.System;
-using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
-using Windows.UI.Core;
-using Dash.Converters;
 using System.Diagnostics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
