@@ -10,6 +10,8 @@
     d:DesignWidth="400">
 
     <Grid>
-        <local:TreeViewList x:Name="XRootList"></local:TreeViewList>
+        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+            <local:TreeViewList x:Name="XRootList"></local:TreeViewList>
+        </ScrollViewer>
     </Grid>
 </UserControl>

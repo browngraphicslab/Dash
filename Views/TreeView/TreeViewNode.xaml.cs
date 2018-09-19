@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -112,6 +113,10 @@ namespace Dash.Views.TreeView
 
             if (ViewModel != null)
             {
+                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>{Document = ViewModel.DataDocument, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay});
+
+                SplitDocumentOnActiveDocumentChanged(SplitFrame.ActiveFrame);
+
                 var collectionField = ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 if (collectionField != null)
                 {
@@ -120,6 +125,31 @@ namespace Dash.Views.TreeView
                     XTreeViewList.DataContext = new CollectionViewModel(ViewModel.DocumentController, KeyStore.DataKey);
                 }
             }
+        }
+
+        private void XTitleBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            
+        }
+
+        private void XTitleBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+        }
+
+        private void TreeViewNode_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveDocumentChanged += SplitDocumentOnActiveDocumentChanged;
+        }
+
+        private void TreeViewNode_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveDocumentChanged -= SplitDocumentOnActiveDocumentChanged;
+        }
+
+        private void SplitDocumentOnActiveDocumentChanged(SplitFrame splitFrame)
+        {
+            XTitleBlock.FontWeight = ViewModel.DataDocument.Equals(splitFrame.DocumentController.GetDataDocument()) ? FontWeights.Bold : FontWeights.Normal;
         }
     }
 }

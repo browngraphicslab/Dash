@@ -43,6 +43,7 @@ namespace Dash.Views.TreeView
                 return;
             }
 
+            Bindings.Update();
             bool wasLoaded = _oldViewModel?.IsLoaded ?? true;
             if (wasLoaded)
             {

@@ -20,6 +20,8 @@ namespace Dash
 
         public DocumentView Document => XDocView;
 
+        public static event Action<SplitFrame> ActiveDocumentChanged; 
+
         public static SplitFrame ActiveFrame
         {
             get => _activeFrame;
@@ -28,6 +30,8 @@ namespace Dash
                 _activeFrame?.SetActive(false);
                 _activeFrame = value;
                 _activeFrame.SetActive(true);
+
+                OnActiveDocumentChanged(_activeFrame);
             }
         }
 
@@ -447,6 +451,11 @@ namespace Dash
                 _history.Add(_oldViewModel.DocumentController);
             }
 
+            if (this == ActiveFrame)//If we are the active frame, our document just changed, so the active document changed
+            {
+                OnActiveDocumentChanged(this);
+            }
+
             _oldViewModel = ViewModel;
         }
 
@@ -473,6 +482,11 @@ namespace Dash
                 _changingView = true;
                 DataContext = new DocumentViewModel(doc);
             }
+        }
+
+        private static void OnActiveDocumentChanged(SplitFrame frame)
+        {
+            ActiveDocumentChanged?.Invoke(frame);
         }
     }
 }

@@ -172,9 +172,10 @@ namespace Dash
         private int _refCount = 0;
         public void Loaded(bool isLoaded)
         {
-            if (isLoaded)
+            bool wasLoaded = IsLoaded;
+            _refCount += isLoaded ? 1 : -1;
+            if (IsLoaded && !wasLoaded)
             {
-                _refCount++;
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -198,9 +199,8 @@ namespace Dash
 
                 _lastContainerDocument = ContainerDocument;
             }
-            else
+            else if(!IsLoaded && wasLoaded)
             {
-                _refCount--;
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
