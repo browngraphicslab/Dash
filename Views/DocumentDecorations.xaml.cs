@@ -538,9 +538,10 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (DocumentView docView in SelectedDocs)
+            foreach (var docView in SelectedDocs)
             {
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true });
+                var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
+                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionView>(new CollectionView[] { docCollectionView } ) });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =

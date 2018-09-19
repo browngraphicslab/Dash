@@ -732,7 +732,7 @@ namespace Dash
 
                 var cpar = ContainerDocument;
 
-                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed()) // bcz: hack -- shift-dropping a KeyValuepane to fill in Input1 field
+                if (MainPage.Instance.IsAltPressed() && dragDocModels.FirstOrDefault().DraggedDocCollectionViews?.FirstOrDefault()?.ViewModel != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
                     cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
