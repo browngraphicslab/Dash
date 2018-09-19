@@ -172,7 +172,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
-            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
+            _oldDataBox = new TableBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);
         }

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
 using DashShared;
 
@@ -60,6 +63,31 @@ namespace Dash
             else if (data is AudioController)
             {
                 currView = AudioBox.MakeView(_docController, _context);
+            }
+            else if (data is BoolController val)
+            {
+                Grid grid = new Grid();
+               
+                grid.Width = 60;
+                grid.Height = 24;
+                grid.Margin = new Thickness(0, 15, 0, 0);
+                TextBlock text = new TextBlock();
+               
+                text.Foreground = new SolidColorBrush(Colors.White);
+                text.Margin = new Thickness(8, -6, 0, 0);
+
+                if (val.Data)
+                {
+                    text.Text = "true";
+                    grid.Background = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
+                }
+                else
+                {
+                    text.Text = "false";
+                    grid.Background = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
+                }
+                currView = grid;
+                grid.Children.Add(text);
             }
             else if (data is ListController<DocumentController> docList)
             {
