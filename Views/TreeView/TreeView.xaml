@@ -11,7 +11,7 @@
 
     <Grid>
         <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
-            <local:TreeViewList x:Name="XRootList"></local:TreeViewList>
+            <local:TreeViewList x:Name="XRootList" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
         </ScrollViewer>
     </Grid>
 </UserControl>

@@ -26,6 +26,6 @@
         </Grid.RowDefinitions>
         <TextBlock x:Name="XArrowBlock" FontFamily="{StaticResource FontAwesome}" Text="{x:Bind IsExpanded, Converter={StaticResource ExpandedToArrowConverter}, Mode=OneWay}" Tapped="XArrowBlock_OnTapped" Visibility="{x:Bind IsCollection, Mode=OneWay}"></TextBlock>
         <TextBlock x:Name="XTitleBlock" Grid.Column="1" Grid.Row="0" Tapped="XTitleBlock_OnTapped" DoubleTapped="XTitleBlock_OnDoubleTapped" IsDoubleTapEnabled="True"></TextBlock>
-        <local:TreeViewList x:Name="XTreeViewList" Grid.Row="1" Grid.Column="1" Visibility="{x:Bind IsExpanded, Mode=OneWay}"></local:TreeViewList>
+        <local:TreeViewList x:Name="XTreeViewList" Grid.Row="1" Grid.Column="1" Visibility="{x:Bind IsExpanded, Mode=OneWay}" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
     </Grid>
 </UserControl>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -22,12 +23,17 @@ namespace Dash.Views.TreeView
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public static readonly DependencyProperty FilterFuncProperty = DependencyProperty.Register(
-            "FilterFunc", typeof(Func<DocumentController, bool>), typeof(TreeViewList), new PropertyMetadata(default(Func<DocumentController, bool>)));
+            "FilterFunc", typeof(Func<DocumentController, bool>), typeof(TreeViewList), new PropertyMetadata(default(Func<DocumentController, bool>), FilterFuncChanged));
+
+        private static void FilterFuncChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        {
+            ((TreeViewList)dependencyObject).OnFilterChanged();
+        }
 
         public Func<DocumentController, bool> FilterFunc
         {
-            get { return (Func<DocumentController, bool>)GetValue(FilterFuncProperty); }
-            set { SetValue(FilterFuncProperty, value); }
+            get => (Func<DocumentController, bool>)GetValue(FilterFuncProperty);
+            set => SetValue(FilterFuncProperty, value);
         }
 
         public TreeViewList()
@@ -67,6 +73,29 @@ namespace Dash.Views.TreeView
         private void TreeView_OnUnloaded(object sender, RoutedEventArgs e)
         {
             ViewModel?.Loaded(false);
+        }
+
+        private void OnFilterChanged()
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.BindableDocumentViewModels.Filter =
+                    o => MatchesFilter(((DocumentViewModel)o).DocumentController);
+                ViewModel.BindableDocumentViewModels.RefreshFilter();
+            }
+        }
+
+        private bool MatchesFilter(DocumentController controller)
+        {
+            bool matches = FilterFunc?.Invoke(controller) ?? true;
+
+            var col = controller.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (col != null)
+            {
+                matches |= col.Any(MatchesFilter);
+            }
+
+            return matches;
         }
     }
 }

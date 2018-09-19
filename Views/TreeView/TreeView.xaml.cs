@@ -22,6 +22,14 @@ namespace Dash.Views.TreeView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
+        public static readonly DependencyProperty FilterFuncProperty = DependencyProperty.Register(
+            "FilterFunc", typeof(Func<DocumentController, bool>), typeof(TreeView), new PropertyMetadata(default(Func<DocumentController, bool>)));
+
+        public Func<DocumentController, bool> FilterFunc
+        {
+            get => (Func<DocumentController, bool>)GetValue(FilterFuncProperty);
+            set => SetValue(FilterFuncProperty, value);
+        }
 
         public TreeView()
         {

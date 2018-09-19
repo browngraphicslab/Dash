@@ -45,11 +45,11 @@ namespace Dash.Views.TreeView
         private bool _isExpanded;
 
         public static readonly DependencyProperty FilterFuncProperty = DependencyProperty.Register(
-            "FilterFunc", typeof(Func<DocumentController>), typeof(TreeViewNode), new PropertyMetadata(default(Func<DocumentController>)));
+            "FilterFunc", typeof(Func<DocumentController, bool>), typeof(TreeViewNode), new PropertyMetadata(default(Func<DocumentController, bool>)));
 
-        public Func<DocumentController> FilterFunc
+        public Func<DocumentController, bool> FilterFunc
         {
-            get => (Func<DocumentController>)GetValue(FilterFuncProperty);
+            get => (Func<DocumentController, bool>)GetValue(FilterFuncProperty);
             set => SetValue(FilterFuncProperty, value);
         }
 
@@ -121,7 +121,7 @@ namespace Dash.Views.TreeView
                 if (collectionField != null)
                 {
                     IsCollection = true;
-                    IsExpanded = false;
+                    IsExpanded = true;
                     XTreeViewList.DataContext = new CollectionViewModel(ViewModel.DocumentController, KeyStore.DataKey);
                 }
             }

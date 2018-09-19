@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
@@ -176,5 +177,10 @@ namespace Dash
         }
 
         public void SetDropIndicationFill(Brush fill) { }
+
+        private void XFilterBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            XTreeView.FilterFunc = controller => controller.Title.IndexOf(XFilterBox.Text, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
     }
 }

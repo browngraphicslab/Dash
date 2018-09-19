@@ -52,7 +52,8 @@
                 Margin="0 0 0 0"
                 Style="{StaticResource TextBoxStyler}" 
                 BorderBrush="{StaticResource DashBorderColorBrush}" 
-                PlaceholderText="Filter notes"/>
+                PlaceholderText="Filter notes"
+                TextChanged="XFilterBox_OnTextChanged"/>
 
             <Grid x:Name="xSnapshotButton" Margin="16 9 8 0">
                 <TextBlock 
@@ -72,7 +73,7 @@
        
         <local:TreeViewCollectionNode Visibility="Collapsed" Margin="8 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"/>
         
-        <treeView:TreeView Grid.Row="2"></treeView:TreeView>
+        <treeView:TreeView x:Name="XTreeView" Grid.Row="2"></treeView:TreeView>
 
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3" Padding="20, 0">
             <StackPanel.Resources>
