@@ -956,6 +956,15 @@
     <Compile Include="Views\TemplateEditor\TemplateRecord.xaml.cs">
       <DependentUpon>TemplateRecord.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TreeView\TreeView.xaml.cs">
+      <DependentUpon>TreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeView\TreeViewList.xaml.cs">
+      <DependentUpon>TreeViewList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeView\TreeViewNode.xaml.cs">
+      <DependentUpon>TreeViewNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
     <Compile Include="WebBoxView.xaml.cs">
@@ -1509,6 +1518,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TemplateEditor\TemplateRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeViewList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeViewNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

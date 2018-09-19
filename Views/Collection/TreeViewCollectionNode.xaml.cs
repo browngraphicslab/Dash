@@ -94,8 +94,6 @@ namespace Dash
 
             _oldViewModel = ViewModel;
             
-            ViewModel.Loaded(true);
-
             if (!string.IsNullOrEmpty(SortCriterion))
                 ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription(SortCriterion, SortDirection.Ascending));
             ViewModel.BindableDocumentViewModels.Filter = Filter;

@@ -28,7 +28,7 @@ namespace Dash
     {
         static ICollectionView _previousDragEntered;
         bool _canDragItems = true;
-        private bool _isLoaded => _refCount > 0;
+        public bool IsLoaded => _refCount > 0;
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
@@ -44,7 +44,7 @@ namespace Dash
                 {
                     trans = new Point(trans.X, 0);
                 }
-                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
+                return new TransformGroupData(trans, IsLoaded ? scale : new Point(1, 1));
             }
             set
             {
@@ -92,15 +92,15 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
-            var wasLoaded = _isLoaded;
-            if (_isLoaded)
+            var wasLoaded = IsLoaded;
+            if (IsLoaded)
             {
                 Loaded(false);
             }
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            if (_isLoaded && wasLoaded)
+            if (IsLoaded && wasLoaded)
             {
                 Loaded(true);
             }
