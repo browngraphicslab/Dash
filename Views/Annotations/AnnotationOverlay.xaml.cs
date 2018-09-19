@@ -447,26 +447,11 @@ namespace Dash
                 var ele = TextSelectableElements[index];
                 if (clipRect == null || clipRect == Rect.Empty || clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
                         ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
-                {
-                    //var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                    //                  ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
-                    //var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
-                    //if (closeEnough && similarSize || true)
-                    //{
-
-                    var currRect = _selectedRectangles[index];
+                {                    var currRect = _selectedRectangles[index];
                     var left = Canvas.GetLeft(currRect);
                     var right = Canvas.GetLeft(currRect) + currRect.Width;
                     if (endIndex != -1)
                     {
-                        //if (currRect.GetBoundingRect(this).Top - _selectedRectangles[endIndex].GetBoundingRect(this).Top > currRect.Height / 2)
-                        //{
-                        //    if (currRect.Width != 0)
-                        //    {
-                        //        currRect.Width = 0;
-                        //        XAnnotationCanvas.Children.Remove(currRect);
-                        //    }
-                        //} else
                         {
                             // if we're deselecting text backwards
                             if (ele.Bounds.Left - left < ele.Bounds.Width)
@@ -502,15 +487,8 @@ namespace Dash
                             }
                         }
                     }
-
-                    //if (!_selectedRectangles.ContainsValue(_selectedRectangles[index]))
-                    //{
-                    //    XAnnotationCanvas.Children.Remove(_selectedRectangles[index]);
-                    //}
-
                     _selectedRectangles.Remove(index);
 
-                    //}
                 }
             }
         }
@@ -560,9 +538,6 @@ namespace Dash
                 {
                     _currRect.Width = Math.Max(_currRect.Width, ele.Bounds.Right - left);
                 }
-                //Canvas.SetLeft(_currRect, Math.Min(Canvas.GetLeft(_currRect), ele.Bounds.Left));
-                //_currRect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(_currRect));
-                //Canvas.SetTop(_currRect, Math.Min(Canvas.GetTop(_currRect), ele.Bounds.Top));
                 _currRect.Height = Math.Max(_currRect.Height, ele.Bounds.Bottom - Canvas.GetTop(_currRect));
             }
             else
@@ -585,18 +560,6 @@ namespace Dash
             }
 
             _selectedRectangles[index] = _currRect;
-            //var rect = new Rectangle
-            //{
-            //    Width = ele.Bounds.Width,
-            //    Height = ele.Bounds.Height
-            //};
-            //Canvas.SetLeft(rect, ele.Bounds.Left);
-            //Canvas.SetTop(rect, ele.Bounds.Top);
-            //rect.Fill = _selectionBrush;
-
-            //XSelectionCanvas.Children.Add(rect);
-
-            //_selectedRectangles[index] = rect;
         }
 
         public void SelectElements(int startIndex, int endIndex, Point start, Point end) 
@@ -630,14 +593,6 @@ namespace Dash
                 if (this.IsAltPressed())
                 {
                     SelectFromClipRect(currentClipRect);
-                    //for (var i = currentSelectionStart; i <= currentSelectionEnd; ++i)
-                    //{
-                    //    DeselectIndex(i, currentClipRect);
-                    //}
-                    //for (var i = startIndex; i <= endIndex; ++i)
-                    //{
-                    //    SelectIndex(i, currentClipRect);
-                    //}
                 }
                 else
                 {
@@ -726,21 +681,23 @@ namespace Dash
                         //var closeEnough = (ahhh || fromRight) &&
                         //                  Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
                         //                  ele.Bounds.Height / 2;
-                        var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect)) <
+                        var rLeft = Canvas.GetLeft(rect);
+                        var rTop = Canvas.GetTop(rect);
+                        var closeEnough = Math.Abs(ele.Bounds.Left - rLeft) <
                                           ele.Bounds.Width + rect.Width &&
-                                          Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
+                                          Math.Abs(ele.Bounds.Top - rTop) <
                                           ele.Bounds.Height / 5;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
                         if (closeEnough && similarSize)
                         {
-                            Canvas.SetLeft(rect, Math.Min(Canvas.GetLeft(rect), ele.Bounds.Left));
-                            rect.Width = Math.Max(rect.Width, ele.Bounds.Right - Canvas.GetLeft(rect));
-                            Canvas.SetTop(rect, Math.Min(Canvas.GetTop(rect), ele.Bounds.Top));
-                            rect.Height = Math.Abs(ele.Bounds.Bottom - Canvas.GetTop(rect));
+                            Canvas.SetLeft(rect, Math.Min(rLeft, ele.Bounds.Left));
+                            rect.Width = Math.Max(rect.Width, ele.Bounds.Right - rLeft);
+                            Canvas.SetTop(rect, Math.Min(rTop, ele.Bounds.Top));
+                            rect.Height = Math.Abs(ele.Bounds.Bottom - rTop);
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
                         }
-                        else if (/*rect.IsInVisualTree() &&*/ new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height).Contains(ele.Bounds))
+                        else if (new Rect(rLeft, rTop, rect.Width, rect.Height).Contains(ele.Bounds))
                         {
                             found = true;
                             _selectedRectangles[ele.Index] = rect;
@@ -770,12 +727,12 @@ namespace Dash
                             (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                              rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
                         {
-                            if (ele.Bounds.Left - Canvas.GetLeft(rect) > ele.Bounds.Width)
+                            if (ele.Bounds.Left - rbounds.Left > ele.Bounds.Width)
                             {
-                                rect.Width = ele.Bounds.Left - Canvas.GetLeft(rect);
+                                rect.Width = ele.Bounds.Left - rbounds.Left;
                             } else
                             {
-                                rect.Width = Math.Abs(Canvas.GetLeft(rect) + rect.Width - ele.Bounds.Right);
+                                rect.Width = Math.Abs(rbounds.Left + rect.Width - ele.Bounds.Right);
                                 Canvas.SetLeft(rect, ele.Bounds.Right);
                             }
                             _selectedRectangles.Remove(ele.Index);
