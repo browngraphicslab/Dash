@@ -61,16 +61,6 @@ public interface IDashSearchGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitOperator([NotNull] DashSearchGrammarParser.OperatorContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.term"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterTerm([NotNull] DashSearchGrammarParser.TermContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.term"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitTerm([NotNull] DashSearchGrammarParser.TermContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.phrase"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

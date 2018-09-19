@@ -71,18 +71,6 @@ public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener 
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitOperator([NotNull] DashSearchGrammarParser.OperatorContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.term"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterTerm([NotNull] DashSearchGrammarParser.TermContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.term"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitTerm([NotNull] DashSearchGrammarParser.TermContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.phrase"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
