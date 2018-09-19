@@ -416,35 +416,35 @@ namespace Dash
             xValueBox.Text = "";
         }
 
-        public void ToggleTemplateEditor()
-        {
-            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
-            {
-                var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
-                    (RenderTransform as MatrixTransform).Matrix.OffsetY);
-                if (_templateEditor != null)
-                {
-                    Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+        //public void ToggleTemplateEditor()
+        //{
+        //    if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
+        //    {
+        //        var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
+        //            (RenderTransform as MatrixTransform).Matrix.OffsetY);
+        //        if (_templateEditor != null)
+        //        {
+        //            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
 
-                    _templateEditor.SetHidden(!_templateEditor.GetHidden());
-                    ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                    return;
-                }
+        //            _templateEditor.SetHidden(!_templateEditor.GetHidden());
+        //            ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //            return;
+        //        }
 
-                _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540))
-                    .Document;
+        //        _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540))
+        //            .Document;
 
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                //creates a doc controller for the image(s)
-                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-            }
-            else
-            {
-                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                _templateEditor.SetHidden(!_templateEditor.GetHidden());
-            }
-        }
+        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //        //creates a doc controller for the image(s)
+        //        Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+        //    }
+        //    else
+        //    {
+        //        _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //        _templateEditor.SetHidden(!_templateEditor.GetHidden());
+        //    }
+        //}
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
@@ -1121,19 +1121,19 @@ namespace Dash
             ellipse.Height = length;
         }
 
-        private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
-        {
-            var applier = new TemplateApplier(ViewModel.LayoutDocument);
-            _flyout.Content = applier;
-            if (_flyout.IsInVisualTree())
-            {
-                _flyout.Hide();
-            }
-            else
-            {
-                _flyout.ShowAt(this);
-            }
-        }
+        //private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var applier = new TemplateApplier(ViewModel.LayoutDocument);
+        //    _flyout.Content = applier;
+        //    if (_flyout.IsInVisualTree())
+        //    {
+        //        _flyout.Hide();
+        //    }
+        //    else
+        //    {
+        //        _flyout.ShowAt(this);
+        //    }
+        //}
 
         //binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
         void BindBackgroundColor()

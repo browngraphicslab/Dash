@@ -550,14 +550,14 @@ namespace Dash
             }
         }
 
-        private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-                doc.ToggleTemplateEditor();
-            }
-        }
+        //private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    foreach (var doc in SelectedDocs)
+        //    {
+        //        doc.ManipulationMode = ManipulationModes.None;
+        //        doc.ToggleTemplateEditor();
+        //    }
+        //}
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
