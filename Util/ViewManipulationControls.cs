@@ -112,7 +112,7 @@ namespace Dash
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
-                (e.PointerDeviceType == PointerDeviceType.Touch))/* && CollectionFreeformBase.num_fingers == 4))*/
+                (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2))
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -129,9 +129,10 @@ namespace Dash
                     }
                 }
                 e.Handled = true;
-            } else if (e.PointerDeviceType == PointerDeviceType.Touch)
+            } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
-                //handle touch interactions with just one finger - equivalent to drag without ctrl
+                //handle touch interactions with just one finger - equivalent to drag without ctr
+                _freeformView.StartMarquee(e.Position);
             }
         }
         

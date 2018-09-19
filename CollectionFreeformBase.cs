@@ -84,7 +84,8 @@ namespace Dash
         public abstract Canvas GetInkHostCanvas();
 
         //records number of fingers on screen for touch interactions
-        public static int num_fingers;
+        public static int NumFingers;
+        private List<PointerRoutedEventArgs> handledTouch = new List<PointerRoutedEventArgs>();
 
         protected CollectionFreeformBase()
         {
@@ -684,9 +685,10 @@ namespace Dash
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
-                num_fingers--;
+                handledTouch.Add(e);
+                NumFingers--;
             }
             if (_marquee != null)
             {
@@ -704,16 +706,20 @@ namespace Dash
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
-        /// <summary>
-        /// Handles mouse movement.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            {
+                handledTouch.Add(e);
+                NumFingers--;
+            }
+        }
+
+        public bool StartMarquee(Point pos)
         {
             if (_isMarqueeActive)
             {
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                // var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
@@ -733,7 +739,11 @@ namespace Dash
                     {
                         Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
                         StrokeThickness = 1.5 / Zoom,
-                        StrokeDashArray = new DoubleCollection { 4, 1 },
+                        StrokeDashArray = new DoubleCollection
+                        {
+                            4,
+                            1
+                        },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
                     this.IsTabStop = true;
@@ -751,12 +761,25 @@ namespace Dash
                     Canvas.SetTop(_marquee, newAnchor.Y);
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
-                    args.Handled = true;
+                    return true;
 
                     Canvas.SetLeft(mInfo, newAnchor.X);
                     Canvas.SetTop(mInfo, newAnchor.Y - 32);
                 }
             }
+            return false;
+        }
+
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+            if (StartMarquee(pos))
+                args.Handled = true;
         }
 
 		/// <summary>
@@ -766,9 +789,10 @@ namespace Dash
 		/// <param name="args"></param>
 		protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
 		{
-		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
 		    {
-		        num_fingers++;
+                handledTouch.Add(args);
+		        NumFingers++;
 		    }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
