@@ -132,6 +132,7 @@ namespace Dash
             } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
                 //handle touch interactions with just one finger - equivalent to drag without ctr
+                //TODO: convert pos to canvas pos
                 _freeformView.StartMarquee(e.Position);
             }
         }

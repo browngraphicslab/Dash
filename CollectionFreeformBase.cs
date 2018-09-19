@@ -719,7 +719,6 @@ namespace Dash
         {
             if (_isMarqueeActive)
             {
-                // var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
@@ -739,11 +738,7 @@ namespace Dash
                     {
                         Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
                         StrokeThickness = 1.5 / Zoom,
-                        StrokeDashArray = new DoubleCollection
-                        {
-                            4,
-                            1
-                        },
+                        StrokeDashArray = new DoubleCollection { 4, 1 },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
                     this.IsTabStop = true;
@@ -761,10 +756,11 @@ namespace Dash
                     Canvas.SetTop(_marquee, newAnchor.Y);
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
-                    return true;
 
                     Canvas.SetLeft(mInfo, newAnchor.X);
                     Canvas.SetTop(mInfo, newAnchor.Y - 32);
+
+                    return true;
                 }
             }
             return false;
@@ -780,14 +776,15 @@ namespace Dash
             var pos = args.GetCurrentPoint(SelectionCanvas).Position;
             if (StartMarquee(pos))
                 args.Handled = true;
+
         }
 
-		/// <summary>
-		/// Handles mouse movement. Starts drawing Marquee selection.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
 		{
 		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
 		    {
