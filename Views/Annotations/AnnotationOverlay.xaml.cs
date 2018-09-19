@@ -53,6 +53,8 @@ namespace Dash
             }
         }
 
+        public List<int> PageInformation { get; set; }
+
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
             InitializeComponent();
@@ -263,7 +265,7 @@ namespace Dash
             var linkTarget = (tStartIndex is double tStart && tEndIndex is double tEnd)
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
-
+            
             if (linkTag != null)
                 linkSource.Link(linkTarget, LinkBehavior.Zoom, linkTag);
             else linkSource.Link(linkTarget, LinkBehavior.Zoom);
@@ -663,10 +665,16 @@ namespace Dash
                     _selectedRectangles.Remove(key);
                 }
             });
+
+            var startPage = GetPageOf(currentClipRect.Top);
+            var endPage = GetPageOf(currentClipRect.Bottom);
+            var startIndex = PageInformation[startPage - 1] + 1;
+            var endIndex = PageInformation[endPage];
             
             //Debug.WriteLine(_clipRectSelections.Count);
-            foreach (var ele in TextSelectableElements)
+            for (var index = startIndex; index <= endIndex; index++)
             {
+                var ele = TextSelectableElements[index];
                 if (currentClipRect.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
                         ele.Bounds.Y + ele.Bounds.Height / 2))
                     /*currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
@@ -718,28 +726,44 @@ namespace Dash
                         _clipRectSelections.Add(newRect);
                         _selectedRectangles[ele.Index] = newRect;
                     }
-                } else if (_selectedRectangles.ContainsKey(ele.Index))
+                }
+                else if (_selectedRectangles.ContainsKey(ele.Index))
                 {
                     foreach (var rect in _clipRectSelections)
                     {
                         var rbounds = new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height);
-                        if (// rect.IsInVisualTree() &&
+                        if ( // rect.IsInVisualTree() &&
                             (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                              rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
                         {
                             if (ele.Bounds.Left - rbounds.Left > ele.Bounds.Width)
                             {
                                 rect.Width = ele.Bounds.Left - rbounds.Left;
-                            } else
+                            }
+                            else
                             {
                                 rect.Width = Math.Abs(rbounds.Left + rect.Width - ele.Bounds.Right);
                                 Canvas.SetLeft(rect, ele.Bounds.Right);
                             }
+
                             _selectedRectangles.Remove(ele.Index);
                         }
                     }
                 }
             }
+        }
+
+        private int GetPageOf(double yOffset)
+        {
+            var pages = this.GetFirstAncestorOfType<PdfView>().BottomPages.PageSizes;
+            var currOffset = 0.0;
+            var i = 0;
+            do
+            {
+                currOffset += pages[i].Height;
+            } while (currOffset < yOffset && ++i < pages.Count);
+
+            return i;
         }
 
         #endregion
