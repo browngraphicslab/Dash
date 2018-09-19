@@ -1,5 +1,7 @@
 grammar DashSearchGrammar;
 
+// TERMINAL REGENERATION COMMAND: cd "C:\Program Files\Java" && java -jar antlr-4.7.1-complete.jar -Dlanguage=CSharp "C:\Users\GFX Lab\Desktop\Hannah\Dash\Util\Parser\DashSearchGrammar.g4"
+
 /*
  * PARSER RULES
  */
