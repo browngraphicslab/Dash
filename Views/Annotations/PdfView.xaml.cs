@@ -549,9 +549,9 @@ namespace Dash
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;
-            _topAnnotationOverlay.PageInformation = pages;
+            _topAnnotationOverlay.PageEndIndices = pages;
             _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
-            _bottomAnnotationOverlay.PageInformation = pages;
+            _bottomAnnotationOverlay.PageEndIndices = pages;
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
