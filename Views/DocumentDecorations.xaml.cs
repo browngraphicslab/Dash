@@ -411,7 +411,7 @@ namespace Dash
             //}
             return tag;
         }
-        
+        static public KeyController HeaderFieldKey = KeyStore.TitleKey;
         //rebuilds the different link dots when the menu is refreshed or one is added
         public void rebuildMenuIfNeeded()
         {
@@ -425,6 +425,20 @@ namespace Dash
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
+            var title = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data;
+            if (!string.IsNullOrEmpty(title))
+            {
+                xTitle.Background = new SolidColorBrush(Colors.LightBlue);
+                xTitle.Foreground = new SolidColorBrush(Colors.Black);
+                xTitle.Text = title;
+                xTitle.Visibility = Visibility.Visible;
+            } else
+            {
+                xTitle.Background = new SolidColorBrush(Colors.Pink);
+                xTitle.Foreground = new SolidColorBrush(Colors.Black);
+                xTitle.Text = "";
+                xTitle.Visibility = Visibility.Visible;
+            }
 
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
@@ -437,12 +451,24 @@ namespace Dash
                     hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
                     xURISource.Inlines.Add(hyperlink);
-                } catch (Exception)
+                }
+                catch (Exception)
                 {
 
                 }
                 xURISource.Visibility = Visibility.Visible;
-            } else xURISource.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                var author = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.AuthorKey,null)?.Data;
+                if (!string.IsNullOrEmpty(author))
+                {// add a hyperlink that points to the source webpage.
+
+                    xURISource.Text = "Authored by: " + author;
+                    xURISource.Visibility = Visibility.Visible;
+                }
+                else xURISource.Visibility = Visibility.Collapsed;
+            }
         }
 
         private Dictionary<string, List<DocumentController>> UpdateTags()
@@ -920,5 +946,25 @@ namespace Dash
         void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
         void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
         void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
+        
+        private void xTitle_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                xTitle.Foreground = new SolidColorBrush(Colors.Black);
+                xTitle.Background = new SolidColorBrush(Colors.LightBlue);
+                if (xTitle.Text.StartsWith("#") && KeyController.IsPresent(xTitle.Text.Substring(1))) {
+                    HeaderFieldKey = new KeyController(xTitle.Text.Substring(1));
+                    var title = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data;
+                    xTitle.Text = title ?? "";
+                    if (string.IsNullOrEmpty(title))
+                        xTitle.Background = new SolidColorBrush(Colors.Pink);
+                    return;
+                }
+                SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.SetField<TextController>(HeaderFieldKey, xTitle.Text, true);
+            }
+            else
+                xTitle.Foreground = new SolidColorBrush(Colors.Red);
+        }
     }
 }

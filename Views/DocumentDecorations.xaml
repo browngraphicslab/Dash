@@ -59,7 +59,12 @@
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
                 <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
-                <TextBlock x:Name="xURISource" Margin="0 0 0 -40" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                <Canvas Margin="-15 0 0 0"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
+                    <TextBlock x:Name="xURISource" FontSize="9"/>
+                </Canvas>
+                <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <TextBox Background="LightBlue" x:Name="xTitle" Style="{ThemeResource  xSearchTextBox}" KeyDown="xTitle_KeyDown"/>
+                </Canvas>
             </Grid>
 
             <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
