@@ -224,29 +224,32 @@ namespace Dash
 
             KeyDown += (sender, args) =>
             {
-                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+                if (this.GetFirstAncestorOfType<DocumentView>() != null)
                 {
-                    if (!_isQuickEntryOpen)
+                    if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
                     {
-                        _clearByClose = true;
-                        ClearQuickEntryBoxes();
-                        xKeyBox.Focus(FocusState.Keyboard);
-                    }
+                        if (!_isQuickEntryOpen)
+                        {
+                            _clearByClose = true;
+                            ClearQuickEntryBoxes();
+                            xKeyBox.Focus(FocusState.Keyboard);
+                        }
 
-                    ToggleQuickEntry();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
-                {
-                    if (xKeyBox.FocusState != FocusState.Unfocused)
-                    {
-                        _articialChange = true;
-                        int pos = xKeyBox.SelectionStart;
-                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
-                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
-                        xKeyBox.SelectionStart = pos;
+                        ToggleQuickEntry();
+                        args.Handled = true;
                     }
-                    args.Handled = true;
+                    else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                    {
+                        if (xKeyBox.FocusState != FocusState.Unfocused)
+                        {
+                            _articialChange = true;
+                            int pos = xKeyBox.SelectionStart;
+                            if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+                            else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+                            xKeyBox.SelectionStart = pos;
+                        }
+                        args.Handled = true;
+                    }
                 }
             };
 
