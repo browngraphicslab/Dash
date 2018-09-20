@@ -25,7 +25,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
-                       x:FieldModifier="public"/>
+                       x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />
