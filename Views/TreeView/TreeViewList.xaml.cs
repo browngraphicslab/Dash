@@ -105,20 +105,7 @@ namespace Dash.Views.TreeView
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link;
 
             var node = (TreeViewNode) sender;
-            args.Data.AddDragModel(new DragDocumentModel(node.ViewModel.DocumentController));
-
-            sender.DropCompleted += TreeViewNode_DropCompleted;
-        }
-
-        private void TreeViewNode_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            sender.DropCompleted -= TreeViewNode_DropCompleted;
-
-            var node = (TreeViewNode)sender;
-            if (args.DropResult == DataPackageOperation.Move)
-            {
-                ViewModel.RemoveDocument(node.ViewModel.DocumentController);
-            }
+            args.Data.AddDragModel(new DragDocumentModel(node.ViewModel.DocumentController){DraggedDocCollectionViews = new List<CollectionViewModel>{ViewModel}});
         }
 
         private int _dropIndex = -1;
@@ -130,6 +117,8 @@ namespace Dash.Views.TreeView
             {
                 return;
             }
+
+            e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
 
             var pos = e.GetPosition(XListControl);
 
@@ -178,8 +167,20 @@ namespace Dash.Views.TreeView
                 return;
             }
 
+            e.Handled = true;
+
+            e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
             var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Internal, this);
-            e.DataView.ReportOperationCompleted(this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move);
+            if (!this.IsShiftPressed())
+            {
+                foreach (var d in e.DataView.GetDragModels().OfType<DragDocumentModel>())
+                {
+                    for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
+                    {
+                        d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                    }
+                }
+            }
 
             foreach (var doc in docs)
             {

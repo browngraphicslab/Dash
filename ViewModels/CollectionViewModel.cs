@@ -751,7 +751,7 @@ namespace Dash
 
                 var cpar = ContainerDocument;
 
-                if (dragDocModels?.FirstOrDefault()?.DraggedDocuments?.FirstOrDefault()?.DocumentType.Equals(KeyValueDocumentBox.DocumentType) == true && MainPage.Instance.IsShiftPressed()) // bcz: hack -- shift-dropping a KeyValuepane to fill in Input1 field
+                if (MainPage.Instance.IsAltPressed() && dragDocModels.FirstOrDefault().DraggedDocCollectionViews?.FirstOrDefault() != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
                     cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
@@ -769,7 +769,7 @@ namespace Dash
                     {
                         for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
+                            if (d.DraggedDocCollectionViews[i] == this)
 
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
@@ -781,7 +781,7 @@ namespace Dash
                             else
                             {
                                 MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                                d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
 
                             }
                         }

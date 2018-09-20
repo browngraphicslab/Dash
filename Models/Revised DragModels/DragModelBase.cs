@@ -10,7 +10,7 @@ namespace Dash
          * These are the documents being dragged. Use GetDropDocuments() to get the documents to drop.
          */
 
-        public abstract List<DocumentController> GetDropDocuments(Point where, Windows.UI.Xaml.FrameworkElement target);
+        public abstract List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target);
         
     }
 }

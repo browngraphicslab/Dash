@@ -538,9 +538,10 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (DocumentView docView in SelectedDocs)
+            foreach (var docView in SelectedDocs)
             {
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true });
+                var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
+                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionViewModel>(new[] { docCollectionView.ViewModel } ) });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
@@ -549,14 +550,14 @@ namespace Dash
             }
         }
 
-        private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-                doc.ToggleTemplateEditor();
-            }
-        }
+        //private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    foreach (var doc in SelectedDocs)
+        //    {
+        //        doc.ManipulationMode = ManipulationModes.None;
+        //        doc.ToggleTemplateEditor();
+        //    }
+        //}
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {

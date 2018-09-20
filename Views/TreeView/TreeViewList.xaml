@@ -25,6 +25,6 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Line x:Name="XPreviewLine" HorizontalAlignment="Left" VerticalAlignment="Top"></Line>
+        <Line x:Name="XPreviewLine" HorizontalAlignment="Left" VerticalAlignment="Top" Stroke="Black" StrokeThickness="4"></Line>
     </Grid>
 </UserControl>

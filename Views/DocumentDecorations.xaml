@@ -82,7 +82,7 @@
                         </ToolTipService.ToolTip>
                     </Grid>
                     <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-                    <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
+                    <!--<Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
                         <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
                             PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
                         HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
@@ -99,7 +99,7 @@
 
                             </Grid>
                         </Border>
-                    </Grid>
+                    </Grid>-->
                 </Grid>
             </Canvas>
 
