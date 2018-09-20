@@ -54,7 +54,7 @@ namespace Dash
 
         public TreeViewNode()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
             focusOnSelected();
             SetupTooltips();

@@ -11,15 +11,20 @@
     x:Name="XList"
     DataContextChanged="TreeView_OnDataContextChanged"
     Loaded="TreeView_OnLoaded"
-    Unloaded="TreeView_OnUnloaded">
+    Unloaded="TreeView_OnUnloaded"
+    AllowDrop="True"
+    DragOver="TreeViewList_OnDragOver"
+    DragLeave="TreeViewList_OnDragLeave"
+    Drop="TreeViewList_OnDrop">
 
     <Grid>
-        <ItemsControl ItemsSource="{x:Bind ViewModel.BindableDocumentViewModels, Mode=OneWay}">
+        <ItemsControl x:Name="XListControl" ItemsSource="{x:Bind ViewModel.BindableDocumentViewModels, Mode=OneWay}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <local:TreeViewNode FilterFunc="{Binding ElementName=XList, Path=FilterFunc}"></local:TreeViewNode>
+                    <local:TreeViewNode x:Name="XNode" FilterFunc="{Binding ElementName=XList, Path=FilterFunc}" CanDrag="True" DragStarting="TreeViewNode_OnDragStarting"></local:TreeViewNode>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <Line x:Name="XPreviewLine" HorizontalAlignment="Left" VerticalAlignment="Top"></Line>
     </Grid>
 </UserControl>

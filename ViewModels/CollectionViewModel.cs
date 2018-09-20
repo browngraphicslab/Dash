@@ -336,7 +336,10 @@ namespace Dash
             return false;
         }
 
-        public bool CreatesCycle(List<DocumentController> docs) => docs.Where(CreatesCycle).Any();
+        public bool CreatesCycle(List<DocumentController> docs)
+        {
+            return docs.Where(CreatesCycle).Any();
+        }
 
         /// <summary>
         /// Adds a document to the given collectionview.
@@ -355,6 +358,22 @@ namespace Dash
                     if (collectionField == null)
                         ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                     else ContainerDocument.AddToListField(CollectionKey, doc);
+                }
+            }
+        }
+
+        public void InsertDocument(DocumentController doc, int i)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (!CreatesCycle(doc))
+                {
+                    doc.CaptureNeighboringContext();
+
+                    var collectionField = ContainerDocument.GetField<ListController<DocumentController>>(CollectionKey);
+                    if (collectionField == null)
+                        ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc, i);
+                    else ContainerDocument.AddToListField(CollectionKey, doc, i);
                 }
             }
         }
@@ -863,6 +882,5 @@ namespace Dash
             _previousDragEntered = null;
         }
         #endregion
-
     }
 }
