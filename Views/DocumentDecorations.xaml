@@ -17,11 +17,11 @@
 
     <Grid >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition x:Name="ContentColumn" x:FieldModifier="public" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="ContentRow"/>
+            <RowDefinition x:Name="ContentRow" x:FieldModifier="public"/>
             <RowDefinition x:Name="XSuggestRow" Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.Resources>

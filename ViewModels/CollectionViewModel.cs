@@ -100,7 +100,7 @@ namespace Dash
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            if (IsLoaded && wasLoaded)
+            if (wasLoaded)
             {
                 Loaded(true);
             }
