@@ -122,8 +122,8 @@ namespace Dash
                 {
                     var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
                     var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
-                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth());
-                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth());
+                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth())&& !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth()) && !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
                     if (!halin && !autoWidth)
                         rl.Union(d.Bounds);
                     if (!valin && !autoHeight)

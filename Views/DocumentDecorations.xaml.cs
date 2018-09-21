@@ -439,7 +439,7 @@ namespace Dash
             if (!string.IsNullOrEmpty(htmlAddress))
             {// add a hyperlink that points to the source webpage.
 
-                xURISource.Text = "From website";
+                xURISource.Text = "From:";
                 try
                 {
                     var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
@@ -449,7 +449,16 @@ namespace Dash
                 }
                 catch (Exception)
                 {
+                    var theDoc = ContentController<DashShared.FieldModel>.GetController<DocumentController>(htmlAddress);
+                    if (theDoc != null)
+                    {
+                        var regDef = theDoc.GetDataDocument().GetRegionDefinition() ?? theDoc;
+                        xURISource.Text += " " + regDef?.Title;
+                        //var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
+                        //hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
+                        //xURISource.Inlines.Add(hyperlink);
+                    }
                 }
                 xURISource.Visibility = Visibility.Visible;
             }
