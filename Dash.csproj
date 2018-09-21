@@ -172,9 +172,12 @@
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="Util\Parser\DashSearchGrammarBaseListener.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarBaseVisitor.cs" />
     <Compile Include="Util\Parser\DashSearchGrammarLexer.cs" />
     <Compile Include="Util\Parser\DashSearchGrammarListener.cs" />
     <Compile Include="Util\Parser\DashSearchGrammarParser.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarVisitor.cs" />
+    <Compile Include="Util\Parser\SearchGrammarVisitor.cs" />
     <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
     <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />

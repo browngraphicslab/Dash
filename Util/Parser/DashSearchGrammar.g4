@@ -48,13 +48,15 @@ grammar DashSearchGrammar;
 							;
 
 	search_term				: function_expr
+							| '(' query ')'
 							| phrase
 							| kv_search
-							| '!' search_term
-							| '(' query ')'
 							;
 
-	query					: (search_term operator)* search_term
+	not_search_term			: '!'? search_term
+							;
+
+	query					: (not_search_term operator)* not_search_term
 							;
 
 /*

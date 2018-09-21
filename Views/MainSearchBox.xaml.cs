@@ -339,10 +339,8 @@ namespace Dash
             try {
                 var searchBoxLexer = new DashSearchGrammarLexer(new AntlrInputStream(text));
                 var parser = new DashSearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
-                DashSearchGrammarParser.Logical_exprContext logExpContext = parser.logical_expr();
-                
-                IParseTree parseTree = parser.logical_expr();
-                WriteLine(parseTree.ToStringTree(parser));
+                var visitor = new SearchGrammarVisitor();
+                visitor.
 
                 searchRes = Search.Parse(text).ToList();
             }
