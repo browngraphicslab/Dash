@@ -169,7 +169,7 @@ namespace Dash
         {
             Point size = await GetImageSize(localFile);
             double imgWidth = size.X;
-            double imgHeight = size.Y;
+            double imgHeight = double.NaN;
 
             return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }

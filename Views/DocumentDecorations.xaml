@@ -59,7 +59,7 @@
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
                 <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
-                <Canvas Margin="-15 0 0 0"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
+                <Canvas Margin="-20 0 0 -8"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
                     <TextBlock x:Name="xURISource" FontSize="9"/>
                 </Canvas>
                 <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
