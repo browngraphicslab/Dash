@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:\Users\GFX Lab\Desktop\Hannah\Dash\Util\Parser\DashSearchGrammar.g4 by ANTLR 4.7.1
+// Generated from DashSearchGrammar.g4 by ANTLR 4.7.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -34,6 +34,42 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.7.1")]
 [System.CLSCompliant(false)]
 public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener {
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInput([NotNull] DashSearchGrammarParser.InputContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInput([NotNull] DashSearchGrammarParser.InputContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.and_token"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -106,54 +142,6 @@ public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener 
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.name"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterName([NotNull] DashSearchGrammarParser.NameContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.name"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitName([NotNull] DashSearchGrammarParser.NameContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterInput([NotNull] DashSearchGrammarParser.InputContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitInput([NotNull] DashSearchGrammarParser.InputContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.kv_search"/>.
 	/// <para>The default implementation does nothing.</para>

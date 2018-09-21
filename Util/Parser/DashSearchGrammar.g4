@@ -1,10 +1,22 @@
 grammar DashSearchGrammar;
 
-// TERMINAL REGENERATION COMMAND: cd "C:\Program Files\Java" && java -jar antlr-4.7.1-complete.jar -Dlanguage=CSharp "C:\Users\GFX Lab\Desktop\Hannah\Dash\Util\Parser\DashSearchGrammar.g4"
+// EXAMPLE logical_expr: ((a b) | ("cat dog" | (dog cat)) | inside(collection1, collection2, collection3))
 
 /*
  * PARSER RULES
  */
+
+	// FUNCTIONS
+
+	arguments				: (ALPHANUM ',' WHITESPACE?)+? ALPHANUM 
+							;
+
+	input					:
+							| arguments 
+							;
+
+	function_expr			: ALPHANUM '(' input ')' 
+							;
 
 	// LOGICAL OPERATORS
 
@@ -14,10 +26,11 @@ grammar DashSearchGrammar;
 	or_token				: WHITESPACE? '|' WHITESPACE? 
 							;
 
-	operator 				: and_token | or_token ; 
+	operator 				: and_token 
+							| or_token ; 
 
 	phrase					: ALPHANUM
-							| '"' .*? '"' 
+							| STRING
 							;
 
 	chain					: '!'? phrase
@@ -29,24 +42,21 @@ grammar DashSearchGrammar;
 							| '(' logical_expr ')'									// accounts for grouping
 							;									
 
-	// FUNCTIONS
-
-	name					: WORD 
-							;
-
-	arguments				: (ALPHANUM ',')+ ALPHANUM 
-							;
-
-	input					:
-							| arguments 
-							;
-
-	function_expr			: name '(' input ')' 
-							;
-
 	// KEY VALUE
 
 	kv_search				: phrase ':' phrase
+							;
+
+	search_term				: function_expr
+							| '(' query ')'
+							| phrase
+							| kv_search
+							;
+
+	not_search_term			: '!'? search_term
+							;
+
+	query					: (not_search_term operator)* not_search_term
 							;
 
 /*
@@ -61,15 +71,15 @@ grammar DashSearchGrammar;
 	fragment UPPERCASE 		: [A-Z] 
 							;
 
-	fragment NUMBER			: [0-9]+ 
+	fragment ESCAPED_QUOTE : '\\"';
+
+	NEWLINE					: [\n\r]+ -> skip ;
+
+	ALPHANUM		 		: (LOWERCASE | UPPERCASE | '_')+ 
+							| [0-9]+
 							;
 
-	WORD					: (LOWERCASE | UPPERCASE | '_')+ 
+	STRING					: '"' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '"'
 							;
 
-	ALPHANUM		 		: WORD | NUMBER 
-							;
-
-	WHITESPACE 				: '\t' 
-							| ' ' 
-							;
+	WHITESPACE 				: [ \t]+ ;

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:\Users\GFX Lab\Desktop\Hannah\Dash\Util\Parser\DashSearchGrammar.g4 by ANTLR 4.7.1
+// Generated from DashSearchGrammar.g4 by ANTLR 4.7.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -30,6 +30,36 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.7.1")]
 [System.CLSCompliant(false)]
 public interface IDashSearchGrammarListener : IParseTreeListener {
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterInput([NotNull] DashSearchGrammarParser.InputContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitInput([NotNull] DashSearchGrammarParser.InputContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.and_token"/>.
 	/// </summary>
@@ -90,46 +120,6 @@ public interface IDashSearchGrammarListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.name"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterName([NotNull] DashSearchGrammarParser.NameContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.name"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitName([NotNull] DashSearchGrammarParser.NameContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterInput([NotNull] DashSearchGrammarParser.InputContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitInput([NotNull] DashSearchGrammarParser.InputContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.kv_search"/>.
 	/// </summary>

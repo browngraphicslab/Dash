@@ -11,6 +11,9 @@ using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Threading.Tasks;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
+using static System.Diagnostics.Debug;
 using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -333,8 +336,14 @@ namespace Dash
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
-            try
-            {
+            try {
+                var searchBoxLexer = new DashSearchGrammarLexer(new AntlrInputStream(text));
+                var parser = new DashSearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
+                DashSearchGrammarParser.Logical_exprContext logExpContext = parser.logical_expr();
+                
+                IParseTree parseTree = parser.logical_expr();
+                WriteLine(parseTree.ToStringTree(parser));
+
                 searchRes = Search.Parse(text).ToList();
             }
             catch (Exception)

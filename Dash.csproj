@@ -161,11 +161,20 @@
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />
     <None Include="Dash_TemporaryKey.pfx" />
+    <None Include="Util\Parser\DashSearchGrammar.g4" />
+    <None Include="Util\Parser\DashSearchGrammar.interp" />
+    <None Include="Util\Parser\DashSearchGrammar.tokens" />
+    <None Include="Util\Parser\DashSearchGrammarLexer.interp" />
+    <None Include="Util\Parser\DashSearchGrammarLexer.tokens" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarBaseListener.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarLexer.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarListener.cs" />
+    <Compile Include="Util\Parser\DashSearchGrammarParser.cs" />
     <Compile Include="Views\Annotations\AnchorableAnnotation.cs" />
     <Compile Include="Views\Annotations\AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
@@ -1499,6 +1508,9 @@
     <Folder Include="Push\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard">
+      <Version>4.7.1.1</Version>
+    </PackageReference>
     <PackageReference Include="CsvHelper">
       <Version>7.1.1</Version>
     </PackageReference>

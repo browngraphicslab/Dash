@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:\Users\GFX Lab\Desktop\Hannah\Dash\Util\Parser\DashSearchGrammar.g4 by ANTLR 4.7.1
+// Generated from DashSearchGrammar.g4 by ANTLR 4.7.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -36,22 +36,23 @@ public partial class DashSearchGrammarParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, WORD=8, ALPHANUM=9, 
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, NEWLINE=8, ALPHANUM=9, 
 		WHITESPACE=10;
 	public const int
-		RULE_and_token = 0, RULE_or_token = 1, RULE_operator = 2, RULE_phrase = 3, 
-		RULE_chain = 4, RULE_logical_expr = 5, RULE_name = 6, RULE_arguments = 7, 
-		RULE_input = 8, RULE_function_expr = 9, RULE_kv_search = 10;
+		RULE_arguments = 0, RULE_input = 1, RULE_function_expr = 2, RULE_and_token = 3, 
+		RULE_or_token = 4, RULE_operator = 5, RULE_phrase = 6, RULE_chain = 7, 
+		RULE_logical_expr = 8, RULE_kv_search = 9;
 	public static readonly string[] ruleNames = {
-		"and_token", "or_token", "operator", "phrase", "chain", "logical_expr", 
-		"name", "arguments", "input", "function_expr", "kv_search"
+		"arguments", "input", "function_expr", "and_token", "or_token", "operator", 
+		"phrase", "chain", "logical_expr", "kv_search"
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, "'|'", "'\"'", "'!'", "'('", "')'", "','", "':'"
+		null, "','", "'('", "')'", "'|'", "'\"'", "'!'", "':'"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, null, null, null, null, null, null, null, "WORD", "ALPHANUM", "WHITESPACE"
+		null, null, null, null, null, null, null, null, "NEWLINE", "ALPHANUM", 
+		"WHITESPACE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -84,6 +85,194 @@ public partial class DashSearchGrammarParser : Parser {
 	{
 		Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
 	}
+	public partial class ArgumentsContext : ParserRuleContext {
+		public ITerminalNode[] ALPHANUM() { return GetTokens(DashSearchGrammarParser.ALPHANUM); }
+		public ITerminalNode ALPHANUM(int i) {
+			return GetToken(DashSearchGrammarParser.ALPHANUM, i);
+		}
+		public ITerminalNode[] WHITESPACE() { return GetTokens(DashSearchGrammarParser.WHITESPACE); }
+		public ITerminalNode WHITESPACE(int i) {
+			return GetToken(DashSearchGrammarParser.WHITESPACE, i);
+		}
+		public ArgumentsContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_arguments; } }
+		public override void EnterRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.EnterArguments(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.ExitArguments(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitArguments(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public ArgumentsContext arguments() {
+		ArgumentsContext _localctx = new ArgumentsContext(Context, State);
+		EnterRule(_localctx, 0, RULE_arguments);
+		int _la;
+		try {
+			int _alt;
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 25;
+			ErrorHandler.Sync(this);
+			_alt = 1+1;
+			do {
+				switch (_alt) {
+				case 1+1:
+					{
+					{
+					State = 20; Match(ALPHANUM);
+					State = 21; Match(T__0);
+					State = 23;
+					ErrorHandler.Sync(this);
+					_la = TokenStream.LA(1);
+					if (_la==WHITESPACE) {
+						{
+						State = 22; Match(WHITESPACE);
+						}
+					}
+
+					}
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
+				State = 27;
+				ErrorHandler.Sync(this);
+				_alt = Interpreter.AdaptivePredict(TokenStream,1,Context);
+			} while ( _alt!=1 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER );
+			State = 29; Match(ALPHANUM);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class InputContext : ParserRuleContext {
+		public ArgumentsContext arguments() {
+			return GetRuleContext<ArgumentsContext>(0);
+		}
+		public InputContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_input; } }
+		public override void EnterRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.EnterInput(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.ExitInput(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitInput(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public InputContext input() {
+		InputContext _localctx = new InputContext(Context, State);
+		EnterRule(_localctx, 2, RULE_input);
+		try {
+			State = 33;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case T__2:
+				EnterOuterAlt(_localctx, 1);
+				{
+				}
+				break;
+			case ALPHANUM:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 32; arguments();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class Function_exprContext : ParserRuleContext {
+		public ITerminalNode ALPHANUM() { return GetToken(DashSearchGrammarParser.ALPHANUM, 0); }
+		public InputContext input() {
+			return GetRuleContext<InputContext>(0);
+		}
+		public Function_exprContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_function_expr; } }
+		public override void EnterRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.EnterFunction_expr(this);
+		}
+		public override void ExitRule(IParseTreeListener listener) {
+			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
+			if (typedListener != null) typedListener.ExitFunction_expr(this);
+		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitFunction_expr(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public Function_exprContext function_expr() {
+		Function_exprContext _localctx = new Function_exprContext(Context, State);
+		EnterRule(_localctx, 4, RULE_function_expr);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 35; Match(ALPHANUM);
+			State = 36; Match(T__1);
+			State = 37; input();
+			State = 38; Match(T__2);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
 	public partial class And_tokenContext : ParserRuleContext {
 		public ITerminalNode WHITESPACE() { return GetToken(DashSearchGrammarParser.WHITESPACE, 0); }
 		public And_tokenContext(ParserRuleContext parent, int invokingState)
@@ -99,16 +288,21 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitAnd_token(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitAnd_token(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public And_tokenContext and_token() {
 		And_tokenContext _localctx = new And_tokenContext(Context, State);
-		EnterRule(_localctx, 0, RULE_and_token);
+		EnterRule(_localctx, 6, RULE_and_token);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 22; Match(WHITESPACE);
+			State = 40; Match(WHITESPACE);
 			}
 		}
 		catch (RecognitionException re) {
@@ -140,32 +334,37 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitOr_token(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitOr_token(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public Or_tokenContext or_token() {
 		Or_tokenContext _localctx = new Or_tokenContext(Context, State);
-		EnterRule(_localctx, 2, RULE_or_token);
+		EnterRule(_localctx, 8, RULE_or_token);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 25;
+			State = 43;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==WHITESPACE) {
 				{
-				State = 24; Match(WHITESPACE);
+				State = 42; Match(WHITESPACE);
 				}
 			}
 
-			State = 27; Match(T__0);
-			State = 29;
+			State = 45; Match(T__3);
+			State = 47;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==WHITESPACE) {
 				{
-				State = 28; Match(WHITESPACE);
+				State = 46; Match(WHITESPACE);
 				}
 			}
 
@@ -202,26 +401,31 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitOperator(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitOperator(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public OperatorContext @operator() {
 		OperatorContext _localctx = new OperatorContext(Context, State);
-		EnterRule(_localctx, 4, RULE_operator);
+		EnterRule(_localctx, 10, RULE_operator);
 		try {
-			State = 33;
+			State = 51;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,2,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,5,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 31; and_token();
+				State = 49; and_token();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 32; or_token();
+				State = 50; or_token();
 				}
 				break;
 			}
@@ -252,44 +456,49 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitPhrase(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitPhrase(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public PhraseContext phrase() {
 		PhraseContext _localctx = new PhraseContext(Context, State);
-		EnterRule(_localctx, 6, RULE_phrase);
+		EnterRule(_localctx, 12, RULE_phrase);
 		try {
 			int _alt;
-			State = 44;
+			State = 62;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case ALPHANUM:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 35; Match(ALPHANUM);
+				State = 53; Match(ALPHANUM);
 				}
 				break;
-			case T__1:
+			case T__4:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 36; Match(T__1);
-				State = 40;
+				State = 54; Match(T__4);
+				State = 58;
 				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,3,Context);
+				_alt = Interpreter.AdaptivePredict(TokenStream,6,Context);
 				while ( _alt!=1 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
 					if ( _alt==1+1 ) {
 						{
 						{
-						State = 37;
+						State = 55;
 						MatchWildcard();
 						}
 						} 
 					}
-					State = 42;
+					State = 60;
 					ErrorHandler.Sync(this);
-					_alt = Interpreter.AdaptivePredict(TokenStream,3,Context);
+					_alt = Interpreter.AdaptivePredict(TokenStream,6,Context);
 				}
-				State = 43; Match(T__1);
+				State = 61; Match(T__4);
 				}
 				break;
 			default:
@@ -333,37 +542,42 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitChain(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitChain(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public ChainContext chain() {
 		ChainContext _localctx = new ChainContext(Context, State);
-		EnterRule(_localctx, 8, RULE_chain);
+		EnterRule(_localctx, 14, RULE_chain);
 		int _la;
 		try {
 			int _alt;
-			State = 59;
+			State = 77;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,7,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,10,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 47;
+				State = 65;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				if (_la==T__2) {
+				if (_la==T__5) {
 					{
-					State = 46; Match(T__2);
+					State = 64; Match(T__5);
 					}
 				}
 
-				State = 49; phrase();
+				State = 67; phrase();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 53;
+				State = 71;
 				ErrorHandler.Sync(this);
 				_alt = 1;
 				do {
@@ -371,19 +585,19 @@ public partial class DashSearchGrammarParser : Parser {
 					case 1:
 						{
 						{
-						State = 50; phrase();
-						State = 51; @operator();
+						State = 68; phrase();
+						State = 69; @operator();
 						}
 						}
 						break;
 					default:
 						throw new NoViableAltException(this);
 					}
-					State = 55;
+					State = 73;
 					ErrorHandler.Sync(this);
-					_alt = Interpreter.AdaptivePredict(TokenStream,6,Context);
+					_alt = Interpreter.AdaptivePredict(TokenStream,9,Context);
 				} while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER );
-				State = 57; phrase();
+				State = 75; phrase();
 				}
 				break;
 			}
@@ -425,6 +639,11 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitLogical_expr(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitLogical_expr(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
@@ -437,36 +656,36 @@ public partial class DashSearchGrammarParser : Parser {
 		int _parentState = State;
 		Logical_exprContext _localctx = new Logical_exprContext(Context, _parentState);
 		Logical_exprContext _prevctx = _localctx;
-		int _startState = 10;
-		EnterRecursionRule(_localctx, 10, RULE_logical_expr, _p);
+		int _startState = 16;
+		EnterRecursionRule(_localctx, 16, RULE_logical_expr, _p);
 		try {
 			int _alt;
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 67;
+			State = 85;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
-			case T__1:
-			case T__2:
+			case T__4:
+			case T__5:
 			case ALPHANUM:
 				{
-				State = 62; chain();
+				State = 80; chain();
 				}
 				break;
-			case T__3:
+			case T__1:
 				{
-				State = 63; Match(T__3);
-				State = 64; logical_expr(0);
-				State = 65; Match(T__4);
+				State = 81; Match(T__1);
+				State = 82; logical_expr(0);
+				State = 83; Match(T__2);
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
 			Context.Stop = TokenStream.LT(-1);
-			State = 75;
+			State = 93;
 			ErrorHandler.Sync(this);
-			_alt = Interpreter.AdaptivePredict(TokenStream,9,Context);
+			_alt = Interpreter.AdaptivePredict(TokenStream,12,Context);
 			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( ParseListeners!=null )
@@ -476,16 +695,16 @@ public partial class DashSearchGrammarParser : Parser {
 					{
 					_localctx = new Logical_exprContext(_parentctx, _parentState);
 					PushNewRecursionContext(_localctx, _startState, RULE_logical_expr);
-					State = 69;
+					State = 87;
 					if (!(Precpred(Context, 2))) throw new FailedPredicateException(this, "Precpred(Context, 2)");
-					State = 70; @operator();
-					State = 71; logical_expr(3);
+					State = 88; @operator();
+					State = 89; logical_expr(3);
 					}
 					} 
 				}
-				State = 77;
+				State = 95;
 				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,9,Context);
+				_alt = Interpreter.AdaptivePredict(TokenStream,12,Context);
 			}
 			}
 		}
@@ -496,205 +715,6 @@ public partial class DashSearchGrammarParser : Parser {
 		}
 		finally {
 			UnrollRecursionContexts(_parentctx);
-		}
-		return _localctx;
-	}
-
-	public partial class NameContext : ParserRuleContext {
-		public ITerminalNode WORD() { return GetToken(DashSearchGrammarParser.WORD, 0); }
-		public NameContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_name; } }
-		public override void EnterRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.EnterName(this);
-		}
-		public override void ExitRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.ExitName(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public NameContext name() {
-		NameContext _localctx = new NameContext(Context, State);
-		EnterRule(_localctx, 12, RULE_name);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 78; Match(WORD);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class ArgumentsContext : ParserRuleContext {
-		public ITerminalNode[] ALPHANUM() { return GetTokens(DashSearchGrammarParser.ALPHANUM); }
-		public ITerminalNode ALPHANUM(int i) {
-			return GetToken(DashSearchGrammarParser.ALPHANUM, i);
-		}
-		public ArgumentsContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_arguments; } }
-		public override void EnterRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.EnterArguments(this);
-		}
-		public override void ExitRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.ExitArguments(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public ArgumentsContext arguments() {
-		ArgumentsContext _localctx = new ArgumentsContext(Context, State);
-		EnterRule(_localctx, 14, RULE_arguments);
-		try {
-			int _alt;
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 82;
-			ErrorHandler.Sync(this);
-			_alt = 1;
-			do {
-				switch (_alt) {
-				case 1:
-					{
-					{
-					State = 80; Match(ALPHANUM);
-					State = 81; Match(T__5);
-					}
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				State = 84;
-				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,10,Context);
-			} while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER );
-			State = 86; Match(ALPHANUM);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class InputContext : ParserRuleContext {
-		public ArgumentsContext arguments() {
-			return GetRuleContext<ArgumentsContext>(0);
-		}
-		public InputContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_input; } }
-		public override void EnterRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.EnterInput(this);
-		}
-		public override void ExitRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.ExitInput(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public InputContext input() {
-		InputContext _localctx = new InputContext(Context, State);
-		EnterRule(_localctx, 16, RULE_input);
-		try {
-			State = 90;
-			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case T__4:
-				EnterOuterAlt(_localctx, 1);
-				{
-				}
-				break;
-			case ALPHANUM:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 89; arguments();
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Function_exprContext : ParserRuleContext {
-		public NameContext name() {
-			return GetRuleContext<NameContext>(0);
-		}
-		public InputContext input() {
-			return GetRuleContext<InputContext>(0);
-		}
-		public Function_exprContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_function_expr; } }
-		public override void EnterRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.EnterFunction_expr(this);
-		}
-		public override void ExitRule(IParseTreeListener listener) {
-			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
-			if (typedListener != null) typedListener.ExitFunction_expr(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Function_exprContext function_expr() {
-		Function_exprContext _localctx = new Function_exprContext(Context, State);
-		EnterRule(_localctx, 18, RULE_function_expr);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 92; name();
-			State = 93; Match(T__3);
-			State = 94; input();
-			State = 95; Match(T__4);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
 		}
 		return _localctx;
 	}
@@ -719,18 +739,23 @@ public partial class DashSearchGrammarParser : Parser {
 			IDashSearchGrammarListener typedListener = listener as IDashSearchGrammarListener;
 			if (typedListener != null) typedListener.ExitKv_search(this);
 		}
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IDashSearchGrammarVisitor<TResult> typedVisitor = visitor as IDashSearchGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitKv_search(this);
+			else return visitor.VisitChildren(this);
+		}
 	}
 
 	[RuleVersion(0)]
 	public Kv_searchContext kv_search() {
 		Kv_searchContext _localctx = new Kv_searchContext(Context, State);
-		EnterRule(_localctx, 20, RULE_kv_search);
+		EnterRule(_localctx, 18, RULE_kv_search);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 97; phrase();
-			State = 98; Match(T__6);
-			State = 99; phrase();
+			State = 96; phrase();
+			State = 97; Match(T__6);
+			State = 98; phrase();
 			}
 		}
 		catch (RecognitionException re) {
@@ -746,7 +771,7 @@ public partial class DashSearchGrammarParser : Parser {
 
 	public override bool Sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 5: return logical_expr_sempred((Logical_exprContext)_localctx, predIndex);
+		case 8: return logical_expr_sempred((Logical_exprContext)_localctx, predIndex);
 		}
 		return true;
 	}
@@ -759,86 +784,86 @@ public partial class DashSearchGrammarParser : Parser {
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', '\f', 'h', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', '\t', 
+		'\x5964', '\x3', '\f', 'g', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', '\t', 
 		'\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', '\x6', 
 		'\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', '\x4', 
-		'\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', '\x4', 
-		'\f', '\t', '\f', '\x3', '\x2', '\x3', '\x2', '\x3', '\x3', '\x5', '\x3', 
-		'\x1C', '\n', '\x3', '\x3', '\x3', '\x3', '\x3', '\x5', '\x3', ' ', '\n', 
-		'\x3', '\x3', '\x4', '\x3', '\x4', '\x5', '\x4', '$', '\n', '\x4', '\x3', 
-		'\x5', '\x3', '\x5', '\x3', '\x5', '\a', '\x5', ')', '\n', '\x5', '\f', 
-		'\x5', '\xE', '\x5', ',', '\v', '\x5', '\x3', '\x5', '\x5', '\x5', '/', 
-		'\n', '\x5', '\x3', '\x6', '\x5', '\x6', '\x32', '\n', '\x6', '\x3', '\x6', 
-		'\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x6', '\x6', '\x38', '\n', 
-		'\x6', '\r', '\x6', '\xE', '\x6', '\x39', '\x3', '\x6', '\x3', '\x6', 
-		'\x5', '\x6', '>', '\n', '\x6', '\x3', '\a', '\x3', '\a', '\x3', '\a', 
-		'\x3', '\a', '\x3', '\a', '\x3', '\a', '\x5', '\a', '\x46', '\n', '\a', 
-		'\x3', '\a', '\x3', '\a', '\x3', '\a', '\x3', '\a', '\a', '\a', 'L', '\n', 
-		'\a', '\f', '\a', '\xE', '\a', 'O', '\v', '\a', '\x3', '\b', '\x3', '\b', 
-		'\x3', '\t', '\x3', '\t', '\x6', '\t', 'U', '\n', '\t', '\r', '\t', '\xE', 
-		'\t', 'V', '\x3', '\t', '\x3', '\t', '\x3', '\n', '\x3', '\n', '\x5', 
-		'\n', ']', '\n', '\n', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
-		'\x3', '\v', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
-		'\f', '\x3', '*', '\x3', '\f', '\r', '\x2', '\x4', '\x6', '\b', '\n', 
-		'\f', '\xE', '\x10', '\x12', '\x14', '\x16', '\x2', '\x2', '\x2', 'h', 
-		'\x2', '\x18', '\x3', '\x2', '\x2', '\x2', '\x4', '\x1B', '\x3', '\x2', 
-		'\x2', '\x2', '\x6', '#', '\x3', '\x2', '\x2', '\x2', '\b', '.', '\x3', 
-		'\x2', '\x2', '\x2', '\n', '=', '\x3', '\x2', '\x2', '\x2', '\f', '\x45', 
-		'\x3', '\x2', '\x2', '\x2', '\xE', 'P', '\x3', '\x2', '\x2', '\x2', '\x10', 
-		'T', '\x3', '\x2', '\x2', '\x2', '\x12', '\\', '\x3', '\x2', '\x2', '\x2', 
-		'\x14', '^', '\x3', '\x2', '\x2', '\x2', '\x16', '\x63', '\x3', '\x2', 
-		'\x2', '\x2', '\x18', '\x19', '\a', '\f', '\x2', '\x2', '\x19', '\x3', 
-		'\x3', '\x2', '\x2', '\x2', '\x1A', '\x1C', '\a', '\f', '\x2', '\x2', 
-		'\x1B', '\x1A', '\x3', '\x2', '\x2', '\x2', '\x1B', '\x1C', '\x3', '\x2', 
-		'\x2', '\x2', '\x1C', '\x1D', '\x3', '\x2', '\x2', '\x2', '\x1D', '\x1F', 
-		'\a', '\x3', '\x2', '\x2', '\x1E', ' ', '\a', '\f', '\x2', '\x2', '\x1F', 
-		'\x1E', '\x3', '\x2', '\x2', '\x2', '\x1F', ' ', '\x3', '\x2', '\x2', 
-		'\x2', ' ', '\x5', '\x3', '\x2', '\x2', '\x2', '!', '$', '\x5', '\x2', 
-		'\x2', '\x2', '\"', '$', '\x5', '\x4', '\x3', '\x2', '#', '!', '\x3', 
-		'\x2', '\x2', '\x2', '#', '\"', '\x3', '\x2', '\x2', '\x2', '$', '\a', 
-		'\x3', '\x2', '\x2', '\x2', '%', '/', '\a', '\v', '\x2', '\x2', '&', '*', 
-		'\a', '\x4', '\x2', '\x2', '\'', ')', '\v', '\x2', '\x2', '\x2', '(', 
-		'\'', '\x3', '\x2', '\x2', '\x2', ')', ',', '\x3', '\x2', '\x2', '\x2', 
-		'*', '+', '\x3', '\x2', '\x2', '\x2', '*', '(', '\x3', '\x2', '\x2', '\x2', 
-		'+', '-', '\x3', '\x2', '\x2', '\x2', ',', '*', '\x3', '\x2', '\x2', '\x2', 
-		'-', '/', '\a', '\x4', '\x2', '\x2', '.', '%', '\x3', '\x2', '\x2', '\x2', 
-		'.', '&', '\x3', '\x2', '\x2', '\x2', '/', '\t', '\x3', '\x2', '\x2', 
-		'\x2', '\x30', '\x32', '\a', '\x5', '\x2', '\x2', '\x31', '\x30', '\x3', 
+		'\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', '\x3', 
+		'\x2', '\x3', '\x2', '\x3', '\x2', '\x5', '\x2', '\x1A', '\n', '\x2', 
+		'\x6', '\x2', '\x1C', '\n', '\x2', '\r', '\x2', '\xE', '\x2', '\x1D', 
+		'\x3', '\x2', '\x3', '\x2', '\x3', '\x3', '\x3', '\x3', '\x5', '\x3', 
+		'$', '\n', '\x3', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', 
+		'\x3', '\x4', '\x3', '\x5', '\x3', '\x5', '\x3', '\x6', '\x5', '\x6', 
+		'.', '\n', '\x6', '\x3', '\x6', '\x3', '\x6', '\x5', '\x6', '\x32', '\n', 
+		'\x6', '\x3', '\a', '\x3', '\a', '\x5', '\a', '\x36', '\n', '\a', '\x3', 
+		'\b', '\x3', '\b', '\x3', '\b', '\a', '\b', ';', '\n', '\b', '\f', '\b', 
+		'\xE', '\b', '>', '\v', '\b', '\x3', '\b', '\x5', '\b', '\x41', '\n', 
+		'\b', '\x3', '\t', '\x5', '\t', '\x44', '\n', '\t', '\x3', '\t', '\x3', 
+		'\t', '\x3', '\t', '\x3', '\t', '\x6', '\t', 'J', '\n', '\t', '\r', '\t', 
+		'\xE', '\t', 'K', '\x3', '\t', '\x3', '\t', '\x5', '\t', 'P', '\n', '\t', 
+		'\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', 
+		'\n', '\x5', '\n', 'X', '\n', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', 
+		'\x3', '\n', '\a', '\n', '^', '\n', '\n', '\f', '\n', '\xE', '\n', '\x61', 
+		'\v', '\n', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x4', '\x1D', '<', '\x3', '\x12', '\f', '\x2', '\x4', '\x6', '\b', 
+		'\n', '\f', '\xE', '\x10', '\x12', '\x14', '\x2', '\x2', '\x2', 'i', '\x2', 
+		'\x1B', '\x3', '\x2', '\x2', '\x2', '\x4', '#', '\x3', '\x2', '\x2', '\x2', 
+		'\x6', '%', '\x3', '\x2', '\x2', '\x2', '\b', '*', '\x3', '\x2', '\x2', 
+		'\x2', '\n', '-', '\x3', '\x2', '\x2', '\x2', '\f', '\x35', '\x3', '\x2', 
+		'\x2', '\x2', '\xE', '@', '\x3', '\x2', '\x2', '\x2', '\x10', 'O', '\x3', 
+		'\x2', '\x2', '\x2', '\x12', 'W', '\x3', '\x2', '\x2', '\x2', '\x14', 
+		'\x62', '\x3', '\x2', '\x2', '\x2', '\x16', '\x17', '\a', '\v', '\x2', 
+		'\x2', '\x17', '\x19', '\a', '\x3', '\x2', '\x2', '\x18', '\x1A', '\a', 
+		'\f', '\x2', '\x2', '\x19', '\x18', '\x3', '\x2', '\x2', '\x2', '\x19', 
+		'\x1A', '\x3', '\x2', '\x2', '\x2', '\x1A', '\x1C', '\x3', '\x2', '\x2', 
+		'\x2', '\x1B', '\x16', '\x3', '\x2', '\x2', '\x2', '\x1C', '\x1D', '\x3', 
+		'\x2', '\x2', '\x2', '\x1D', '\x1E', '\x3', '\x2', '\x2', '\x2', '\x1D', 
+		'\x1B', '\x3', '\x2', '\x2', '\x2', '\x1E', '\x1F', '\x3', '\x2', '\x2', 
+		'\x2', '\x1F', ' ', '\a', '\v', '\x2', '\x2', ' ', '\x3', '\x3', '\x2', 
+		'\x2', '\x2', '!', '$', '\x3', '\x2', '\x2', '\x2', '\"', '$', '\x5', 
+		'\x2', '\x2', '\x2', '#', '!', '\x3', '\x2', '\x2', '\x2', '#', '\"', 
+		'\x3', '\x2', '\x2', '\x2', '$', '\x5', '\x3', '\x2', '\x2', '\x2', '%', 
+		'&', '\a', '\v', '\x2', '\x2', '&', '\'', '\a', '\x4', '\x2', '\x2', '\'', 
+		'(', '\x5', '\x4', '\x3', '\x2', '(', ')', '\a', '\x5', '\x2', '\x2', 
+		')', '\a', '\x3', '\x2', '\x2', '\x2', '*', '+', '\a', '\f', '\x2', '\x2', 
+		'+', '\t', '\x3', '\x2', '\x2', '\x2', ',', '.', '\a', '\f', '\x2', '\x2', 
+		'-', ',', '\x3', '\x2', '\x2', '\x2', '-', '.', '\x3', '\x2', '\x2', '\x2', 
+		'.', '/', '\x3', '\x2', '\x2', '\x2', '/', '\x31', '\a', '\x6', '\x2', 
+		'\x2', '\x30', '\x32', '\a', '\f', '\x2', '\x2', '\x31', '\x30', '\x3', 
 		'\x2', '\x2', '\x2', '\x31', '\x32', '\x3', '\x2', '\x2', '\x2', '\x32', 
-		'\x33', '\x3', '\x2', '\x2', '\x2', '\x33', '>', '\x5', '\b', '\x5', '\x2', 
-		'\x34', '\x35', '\x5', '\b', '\x5', '\x2', '\x35', '\x36', '\x5', '\x6', 
-		'\x4', '\x2', '\x36', '\x38', '\x3', '\x2', '\x2', '\x2', '\x37', '\x34', 
-		'\x3', '\x2', '\x2', '\x2', '\x38', '\x39', '\x3', '\x2', '\x2', '\x2', 
-		'\x39', '\x37', '\x3', '\x2', '\x2', '\x2', '\x39', ':', '\x3', '\x2', 
-		'\x2', '\x2', ':', ';', '\x3', '\x2', '\x2', '\x2', ';', '<', '\x5', '\b', 
-		'\x5', '\x2', '<', '>', '\x3', '\x2', '\x2', '\x2', '=', '\x31', '\x3', 
-		'\x2', '\x2', '\x2', '=', '\x37', '\x3', '\x2', '\x2', '\x2', '>', '\v', 
-		'\x3', '\x2', '\x2', '\x2', '?', '@', '\b', '\a', '\x1', '\x2', '@', '\x46', 
-		'\x5', '\n', '\x6', '\x2', '\x41', '\x42', '\a', '\x6', '\x2', '\x2', 
-		'\x42', '\x43', '\x5', '\f', '\a', '\x2', '\x43', '\x44', '\a', '\a', 
-		'\x2', '\x2', '\x44', '\x46', '\x3', '\x2', '\x2', '\x2', '\x45', '?', 
-		'\x3', '\x2', '\x2', '\x2', '\x45', '\x41', '\x3', '\x2', '\x2', '\x2', 
-		'\x46', 'M', '\x3', '\x2', '\x2', '\x2', 'G', 'H', '\f', '\x4', '\x2', 
-		'\x2', 'H', 'I', '\x5', '\x6', '\x4', '\x2', 'I', 'J', '\x5', '\f', '\a', 
-		'\x5', 'J', 'L', '\x3', '\x2', '\x2', '\x2', 'K', 'G', '\x3', '\x2', '\x2', 
-		'\x2', 'L', 'O', '\x3', '\x2', '\x2', '\x2', 'M', 'K', '\x3', '\x2', '\x2', 
-		'\x2', 'M', 'N', '\x3', '\x2', '\x2', '\x2', 'N', '\r', '\x3', '\x2', 
-		'\x2', '\x2', 'O', 'M', '\x3', '\x2', '\x2', '\x2', 'P', 'Q', '\a', '\n', 
-		'\x2', '\x2', 'Q', '\xF', '\x3', '\x2', '\x2', '\x2', 'R', 'S', '\a', 
-		'\v', '\x2', '\x2', 'S', 'U', '\a', '\b', '\x2', '\x2', 'T', 'R', '\x3', 
-		'\x2', '\x2', '\x2', 'U', 'V', '\x3', '\x2', '\x2', '\x2', 'V', 'T', '\x3', 
-		'\x2', '\x2', '\x2', 'V', 'W', '\x3', '\x2', '\x2', '\x2', 'W', 'X', '\x3', 
-		'\x2', '\x2', '\x2', 'X', 'Y', '\a', '\v', '\x2', '\x2', 'Y', '\x11', 
-		'\x3', '\x2', '\x2', '\x2', 'Z', ']', '\x3', '\x2', '\x2', '\x2', '[', 
-		']', '\x5', '\x10', '\t', '\x2', '\\', 'Z', '\x3', '\x2', '\x2', '\x2', 
-		'\\', '[', '\x3', '\x2', '\x2', '\x2', ']', '\x13', '\x3', '\x2', '\x2', 
-		'\x2', '^', '_', '\x5', '\xE', '\b', '\x2', '_', '`', '\a', '\x6', '\x2', 
-		'\x2', '`', '\x61', '\x5', '\x12', '\n', '\x2', '\x61', '\x62', '\a', 
-		'\a', '\x2', '\x2', '\x62', '\x15', '\x3', '\x2', '\x2', '\x2', '\x63', 
-		'\x64', '\x5', '\b', '\x5', '\x2', '\x64', '\x65', '\a', '\t', '\x2', 
-		'\x2', '\x65', '\x66', '\x5', '\b', '\x5', '\x2', '\x66', '\x17', '\x3', 
-		'\x2', '\x2', '\x2', '\xE', '\x1B', '\x1F', '#', '*', '.', '\x31', '\x39', 
-		'=', '\x45', 'M', 'V', '\\',
+		'\v', '\x3', '\x2', '\x2', '\x2', '\x33', '\x36', '\x5', '\b', '\x5', 
+		'\x2', '\x34', '\x36', '\x5', '\n', '\x6', '\x2', '\x35', '\x33', '\x3', 
+		'\x2', '\x2', '\x2', '\x35', '\x34', '\x3', '\x2', '\x2', '\x2', '\x36', 
+		'\r', '\x3', '\x2', '\x2', '\x2', '\x37', '\x41', '\a', '\v', '\x2', '\x2', 
+		'\x38', '<', '\a', '\a', '\x2', '\x2', '\x39', ';', '\v', '\x2', '\x2', 
+		'\x2', ':', '\x39', '\x3', '\x2', '\x2', '\x2', ';', '>', '\x3', '\x2', 
+		'\x2', '\x2', '<', '=', '\x3', '\x2', '\x2', '\x2', '<', ':', '\x3', '\x2', 
+		'\x2', '\x2', '=', '?', '\x3', '\x2', '\x2', '\x2', '>', '<', '\x3', '\x2', 
+		'\x2', '\x2', '?', '\x41', '\a', '\a', '\x2', '\x2', '@', '\x37', '\x3', 
+		'\x2', '\x2', '\x2', '@', '\x38', '\x3', '\x2', '\x2', '\x2', '\x41', 
+		'\xF', '\x3', '\x2', '\x2', '\x2', '\x42', '\x44', '\a', '\b', '\x2', 
+		'\x2', '\x43', '\x42', '\x3', '\x2', '\x2', '\x2', '\x43', '\x44', '\x3', 
+		'\x2', '\x2', '\x2', '\x44', '\x45', '\x3', '\x2', '\x2', '\x2', '\x45', 
+		'P', '\x5', '\xE', '\b', '\x2', '\x46', 'G', '\x5', '\xE', '\b', '\x2', 
+		'G', 'H', '\x5', '\f', '\a', '\x2', 'H', 'J', '\x3', '\x2', '\x2', '\x2', 
+		'I', '\x46', '\x3', '\x2', '\x2', '\x2', 'J', 'K', '\x3', '\x2', '\x2', 
+		'\x2', 'K', 'I', '\x3', '\x2', '\x2', '\x2', 'K', 'L', '\x3', '\x2', '\x2', 
+		'\x2', 'L', 'M', '\x3', '\x2', '\x2', '\x2', 'M', 'N', '\x5', '\xE', '\b', 
+		'\x2', 'N', 'P', '\x3', '\x2', '\x2', '\x2', 'O', '\x43', '\x3', '\x2', 
+		'\x2', '\x2', 'O', 'I', '\x3', '\x2', '\x2', '\x2', 'P', '\x11', '\x3', 
+		'\x2', '\x2', '\x2', 'Q', 'R', '\b', '\n', '\x1', '\x2', 'R', 'X', '\x5', 
+		'\x10', '\t', '\x2', 'S', 'T', '\a', '\x4', '\x2', '\x2', 'T', 'U', '\x5', 
+		'\x12', '\n', '\x2', 'U', 'V', '\a', '\x5', '\x2', '\x2', 'V', 'X', '\x3', 
+		'\x2', '\x2', '\x2', 'W', 'Q', '\x3', '\x2', '\x2', '\x2', 'W', 'S', '\x3', 
+		'\x2', '\x2', '\x2', 'X', '_', '\x3', '\x2', '\x2', '\x2', 'Y', 'Z', '\f', 
+		'\x4', '\x2', '\x2', 'Z', '[', '\x5', '\f', '\a', '\x2', '[', '\\', '\x5', 
+		'\x12', '\n', '\x5', '\\', '^', '\x3', '\x2', '\x2', '\x2', ']', 'Y', 
+		'\x3', '\x2', '\x2', '\x2', '^', '\x61', '\x3', '\x2', '\x2', '\x2', '_', 
+		']', '\x3', '\x2', '\x2', '\x2', '_', '`', '\x3', '\x2', '\x2', '\x2', 
+		'`', '\x13', '\x3', '\x2', '\x2', '\x2', '\x61', '_', '\x3', '\x2', '\x2', 
+		'\x2', '\x62', '\x63', '\x5', '\xE', '\b', '\x2', '\x63', '\x64', '\a', 
+		'\t', '\x2', '\x2', '\x64', '\x65', '\x5', '\xE', '\b', '\x2', '\x65', 
+		'\x15', '\x3', '\x2', '\x2', '\x2', '\xF', '\x19', '\x1D', '#', '-', '\x31', 
+		'\x35', '<', '@', '\x43', 'K', 'O', 'W', '_',
 	};
 
 	public static readonly ATN _ATN =
