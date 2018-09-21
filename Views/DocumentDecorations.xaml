@@ -63,7 +63,7 @@
                     <TextBlock x:Name="xURISource" FontSize="9"/>
                 </Canvas>
                 <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
-                    <TextBox Background="LightBlue" x:Name="xTitle" Style="{ThemeResource  xSearchTextBox}" KeyDown="xTitle_KeyDown"/>
+                <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
                 </Canvas>
             </Grid>
 
