@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -83,6 +85,17 @@ namespace Dash.Views.TreeView
             }
         }
 
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set
+            {
+                if (value == _isEditing) return;
+                _isEditing = value;
+                OnPropertyChanged();
+            }
+        }
+
         public TreeViewNode()
         {
             InitializeComponent();
@@ -102,6 +115,8 @@ namespace Dash.Views.TreeView
         }
 
         private DocumentViewModel _oldViewModel;
+        private bool _isEditing;
+
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (Equals(ViewModel, _oldViewModel))
@@ -113,7 +128,7 @@ namespace Dash.Views.TreeView
 
             if (ViewModel != null)
             {
-                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>{Document = ViewModel.DataDocument, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay});
+                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController> { Document = ViewModel.DataDocument, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay });
 
                 SplitDocumentOnActiveDocumentChanged(SplitFrame.ActiveFrame);
 
@@ -129,7 +144,7 @@ namespace Dash.Views.TreeView
 
         private void XTitleBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            
+
         }
 
         private void XTitleBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -150,6 +165,73 @@ namespace Dash.Views.TreeView
         private void SplitDocumentOnActiveDocumentChanged(SplitFrame splitFrame)
         {
             XTitleBlock.FontWeight = ViewModel.DataDocument.Equals(splitFrame.DocumentController.GetDataDocument()) ? FontWeights.Bold : FontWeights.Normal;
+        }
+
+        #region Renaming
+
+        private void CommitEdit()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                ViewModel.DataDocument.SetTitle(XRenameBox.Text);
+                IsEditing = false;
+            }
+        }
+
+        private void CancelEdit()
+        {
+            IsEditing = false;
+        }
+
+        [UsedImplicitly]
+        private Visibility Not(bool b)
+        {
+            return b ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void RenameFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            IsEditing = true;
+
+            void FocusResizer(object s, object o)
+            {
+                MenuFlyout.Closed -= FocusResizer;
+                XRenameBox.Focus(FocusState.Keyboard);
+            }
+
+            MenuFlyout.Closed += FocusResizer; //Psuedo-hack to get focusing the text box to work
+        }
+
+        private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Focused");
+            XRenameBox.Text = ViewModel.DataDocument.Title;
+            XRenameBox.SelectAll();
+        }
+
+        private void XRenameBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Lost focus");
+            CommitEdit();
+        }
+
+        private void XRenameBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                CommitEdit();
+            }
+            else if (e.Key == VirtualKey.Escape)
+            {
+                CancelEdit();
+            }
+        }
+
+        #endregion
+
+        private void XRenameBox_OnLosingFocus(UIElement sender, LosingFocusEventArgs args)
+        {
+            
         }
     }
 }

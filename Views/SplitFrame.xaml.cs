@@ -438,6 +438,11 @@ namespace Dash
 
             XPathView.Document = DocumentController;
 
+            if (this == ActiveFrame)//If we are the active frame, our document just changed, so the active document changed
+            {
+                OnActiveDocumentChanged(this);
+            }
+
             if (_changingView)
             {
                 _changingView = false;
@@ -449,11 +454,6 @@ namespace Dash
             {
                 _future.Clear();
                 _history.Add(_oldViewModel.DocumentController);
-            }
-
-            if (this == ActiveFrame)//If we are the active frame, our document just changed, so the active document changed
-            {
-                OnActiveDocumentChanged(this);
             }
 
             _oldViewModel = ViewModel;
