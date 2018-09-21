@@ -135,6 +135,13 @@ namespace Dash
             if (args.Key == VirtualKey.Space)
                 MainPage.Instance.xToolbar.xPdfToolbar.Update(
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
+            if (!MainPage.Instance.IsShiftPressed())
+            {
+                if (args.Key == VirtualKey.PageDown)
+                    PageNext(BottomScrollViewer);
+                if (args.Key == VirtualKey.PageUp)
+                    PagePrev(BottomScrollViewer);
+            }
             if (this.IsCtrlPressed())
             {
                 var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
