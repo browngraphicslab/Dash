@@ -186,14 +186,19 @@ namespace Dash
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
-                    var curDocs =
-                        new HashSet<DocumentController>(DocumentViewModels.Select(dvm => dvm.DocumentController));
-                    var colDocs =
-                        new HashSet<DocumentController>(CollectionController);
-                    var newDocs = colDocs.Where(dc => !curDocs.Contains(dc)).ToList();
-                    var deletedDocs = curDocs.Where(dc => !colDocs.Contains(dc)).ToList();
-                    addViewModels(newDocs);
-                    removeViewModels(deletedDocs);
+                    var curDocs = DocumentViewModels.Select((dvm, i) => new {Doc = dvm.DocumentController, Index = i}).ToList();
+                    var colDocs = CollectionController.Select((doc, i) => new {Doc = doc, Index = i}).ToList();
+
+                    var newDocs = colDocs.Where(dc => !curDocs.Any(doc => doc.Doc.Equals(dc.Doc))).ToList();
+                    var deletedDocs = curDocs.Where(dc => !colDocs.Any(doc => doc.Doc.Equals(dc.Doc))).ToList();
+                    foreach (var deletedDoc in deletedDocs)
+                    {
+                        RemoveViewModels(new List<DocumentController>{deletedDoc.Doc}, deletedDoc.Index);
+                    }
+                    foreach (var newDoc in newDocs)
+                    {
+                        AddViewModels(new List<DocumentController>{newDoc.Doc}, newDoc.Index);
+                    }
                 }
                 ActualSizeFieldChanged(null, null, null);
 
@@ -260,33 +265,34 @@ namespace Dash
                 }
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                addViewModels(args.NewItems);
+                AddViewModels(args.NewItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                 DocumentViewModels.Clear();
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                removeViewModels(args.OldItems);
+                RemoveViewModels(args.OldItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                 DocumentViewModels.Clear();
-                addViewModels(args.NewItems);
+                AddViewModels(args.NewItems, 0);
                 break;
             }
         }
 
-        void addViewModels(List<DocumentController> documents)
+        private void AddViewModels(List<DocumentController> documents, int startIndex)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
                 foreach (var documentController in documents)
                 {
-                    DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
+                    startIndex++;
                 }
             }
         }
 
-        void removeViewModels(List<DocumentController> documents)
+        private void RemoveViewModels(List<DocumentController> documents, int startIndex)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
