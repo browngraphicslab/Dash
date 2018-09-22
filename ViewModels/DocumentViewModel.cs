@@ -203,8 +203,9 @@ namespace Dash
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType)
+                //|| LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType)
+                )
             {
                 if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))

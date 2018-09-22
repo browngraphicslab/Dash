@@ -646,8 +646,8 @@ namespace Dash
             }
 
             var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-
+            var parColl = SelectionManager.GetSelectedDocs()?.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var coll = parColl ?? (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
             // bcz: needs to be in keyUp because when typing in a new textBox inside a nested collection, no one catches the KeyDown event and putting this in KeyDown
             //       would cause a collection to be created when typing a 'c'
@@ -677,7 +677,8 @@ namespace Dash
                 }
                 return;
             }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) && 
+                !(FocusManager.GetFocusedElement() is TextBox))
             {
                 var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();

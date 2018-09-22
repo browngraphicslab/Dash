@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Dash
@@ -102,6 +103,7 @@ namespace Dash
 
         public void AddDocumentContext(DocumentController document)
         {
+            Debug.Assert(document != null);
             _documentContextList.AddFirst(document);
         }
 

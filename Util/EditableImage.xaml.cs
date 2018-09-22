@@ -53,8 +53,8 @@ namespace Dash
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
             };
-            // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
-            _imgctrl = document.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+
+            _imgctrl = document.GetDataDocument().GetDereferencedField<ImageController>(KeyStore.DataKey, context) ;
 
             _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
             _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
@@ -90,27 +90,16 @@ namespace Dash
 
             // set image source to the new file path and fix the width
             Image.Source = new BitmapImage(new Uri(file.Path));
-            Image.Width = fileProperties.Width;
 
             // on replace image, change the original image value for revert
-            var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-            LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+            LayoutDocument.SetHeight(double.NaN);
         }
 
-        private async Task<StorageFile> GetImageFile(bool originalImage = false)
+        private async Task<StorageFile> GetImageFile()
         {
-            // finds local uri path of image controller's image source
-            StorageFile file;
-            Uri src;
-            if (originalImage)
-            {
-                src = LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
-            }
-            else
-            {
-                src = _imgctrl.ImageSource;
-            }
-
             /*
 			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
 			 * try catch is literally the only way we can deal with regular
@@ -119,15 +108,13 @@ namespace Dash
             try
             {
                 // method of getting file from local uri
-                file = await StorageFile.GetFileFromPathAsync(src.LocalPath);
+                return await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
             }
             catch (Exception)
             {
                 // method of getting file from absolute uri
-                file = await StorageFile.GetFileFromApplicationUriAsync(src);
+                return await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
             }
-
-            return file;
         }
 
 
@@ -136,16 +123,13 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 // make sure if we have an original image stored (which we always should)
-                if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+                if (LayoutDocument.GetDataDocument().GetField(KeyStore.OriginalImageKey) is ImageController originalImage)
                 {
-                    // get the storagefile of the original image so we can revert
-                    var file = await GetImageFile(true);
-                    var fileProperties = await file.Properties.GetImagePropertiesAsync();
-                    Image.Width = fileProperties.Width;
+                    _imgctrl = originalImage;
 
-                    LayoutDocument.SetField<ImageController>(KeyStore.DataKey,
-                        LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
-                    _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                    LayoutDocument.GetDataDocument().SetField<ImageController>(KeyStore.DataKey, originalImage.ImageSource, true);
+                    LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+                    LayoutDocument.SetHeight(double.NaN);
                 }
             }
         }
@@ -270,10 +254,10 @@ namespace Dash
                 break;
             }
 
-            if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
+            if (LayoutDocument.GetDataDocument().GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
-                var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-                LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+                var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl.Copy(), true);
             }
 
             // opens the uri path and reads it
@@ -333,10 +317,10 @@ namespace Dash
                 }
                 
                 var uri = new Uri(newFile.Path);
-                LayoutDocument.SetField<ImageController>(KeyStore.DataKey, uri, true);
+                LayoutDocument.GetDataDocument().SetField<ImageController>(KeyStore.DataKey, uri, true);
 
                 // store new image information so that multiple crops can be made
-                _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
+                _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
 
                 var oldpoint = LayoutDocument.GetPosition() ?? new Point();
                 var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;

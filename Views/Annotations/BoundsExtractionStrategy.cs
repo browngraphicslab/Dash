@@ -111,12 +111,12 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public Tuple<List<SelectableElement>, string> GetSelectableElements(int startPage, int endPage)
+        public (List<SelectableElement> elements, string text, List<int> pages) GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
             {
-                return Tuple.Create(new List<SelectableElement>(), "");
+                return (new List<SelectableElement>(), "", new List<int>());
             }
 
             var pageElements = new List<List<SelectableElement>>();
@@ -150,17 +150,19 @@ namespace Dash
             }
 
             var elements = new List<SelectableElement>(_elements.Count);
+            var pages = new List<int>(requestedPages.Count);
             // sort and add the elements in each page to a list of elements
             foreach (var page in pageElements)
             {
                 var newElements = GetSortedSelectableElements(page, elements.Count);
                 elements.AddRange(newElements);
+                pages.Add(newElements.Last().Index);
             }
 
             StringBuilder sb = new StringBuilder(elements.Count);
             elements.ForEach(se => sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : ""));
 
-            return Tuple.Create(elements, sb.ToString());
+            return (elements, sb.ToString(), pages);
         }
 
         /// <summary>

@@ -135,6 +135,13 @@ namespace Dash
             if (args.Key == VirtualKey.Space)
                 MainPage.Instance.xToolbar.xPdfToolbar.Update(
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
+            if (!MainPage.Instance.IsShiftPressed())
+            {
+                if (args.Key == VirtualKey.PageDown)
+                    PageNext(BottomScrollViewer);
+                if (args.Key == VirtualKey.PageUp)
+                    PagePrev(BottomScrollViewer);
+            }
             if (this.IsCtrlPressed())
             {
                 var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
@@ -467,6 +474,7 @@ namespace Dash
                     outDoc.Close();
                 }
                 var doc = new PdfToDashUtil().GetPDFDoc(localFile, title.Substring(0,title.IndexOf(".pdf"))+":"+i+".pdf");
+                doc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, DataDocument.Id, true);
                 pages.Add(doc);
             }
             reader.Close();
@@ -547,11 +555,13 @@ namespace Dash
                 }
             });
 
-            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
-            _bottomAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
+            var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            _topAnnotationOverlay.TextSelectableElements = selectableElements;
+            _topAnnotationOverlay.PageEndIndices = pages;
+            _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
+            _bottomAnnotationOverlay.PageEndIndices = pages;
 
-            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
+            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
             reader.Close();
             pdfDocument.Close();

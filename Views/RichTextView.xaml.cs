@@ -480,6 +480,30 @@ namespace Dash
                 getDocView().HandleShiftEnter();
                 e.Handled = true;
             }
+            if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
+            {
+                if (xRichEditBox.Document.Selection.EndPosition < getReadableText().Length-1)
+                {
+                    var clone = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                    xRichEditBox.Document.Selection.MoveEnd(TextRangeUnit.Character, -1);
+                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                }
+                var s1 = xRichEditBox.Document.Selection.StartPosition;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = ParagraphAlignment.Right;
+                xRichEditBox.Document.Selection.SetRange(s1, s1);
+                e.Handled = true;
+            }
+            if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Left))
+            {
+                var clone = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, 1);
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                var s1 = xRichEditBox.Document.Selection.StartPosition;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = ParagraphAlignment.Left;
+                xRichEditBox.Document.Selection.SetRange(s1, s1);
+                e.Handled = true;
+            }
+
 
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -545,13 +569,13 @@ namespace Dash
         {
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
-            var fsize = xRichEditBox.Document.Selection.CharacterFormat.Size;
+            var origFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
             var origAlign = xRichEditBox.Document.Selection.ParagraphFormat.Alignment;
-            var align = ParagraphAlignment.Left;
+            var align = origAlign;
             var hashcount = 0;
             var extracount = 0;
 
-            for (int i = xRichEditBox.Document.Selection.StartPosition - 2; i >= 0; i--)
+            for (int i = s1 - 2; i >= 0; i--)
             {
                 xRichEditBox.Document.Selection.SetRange(i, i + 1);
                 string text = xRichEditBox.Document.Selection.Text;
@@ -577,24 +601,24 @@ namespace Dash
                 } else
                 {
                     extracount = hashcount = 0;
-                    align = ParagraphAlignment.Left;
+                    align = origAlign;
                 }
             }
             if (hashcount > 0 || extracount > 0)
             {
-                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, xRichEditBox.Document.Selection.StartPosition + hashcount + extracount);
+                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition,
+                                                         xRichEditBox.Document.Selection.StartPosition + hashcount + extracount);
                 if (xRichEditBox.Document.Selection.StartPosition == 0)
                     CollectionFreeformBase.PreviewFormatString = xRichEditBox.Document.Selection.Text;
                 xRichEditBox.Document.Selection.Text = "";
                 xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, s2);
-                if (hashcount > 0)
-                    xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                xRichEditBox.Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 xRichEditBox.Document.Selection.ParagraphFormat.Alignment = align;
-                xRichEditBox.Document.Selection.CharacterFormat.Size = fsize + hashcount * 5;
+                xRichEditBox.Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
             }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-            xRichEditBox.Document.Selection.CharacterFormat.Size = fsize;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = origFormat.Size;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
