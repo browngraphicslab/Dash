@@ -240,9 +240,12 @@ namespace Dash.Views.TreeView
 
         private void DeleteFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
-            var list = this.GetFirstAncestorOfType<TreeViewList>();
+            using (UndoManager.GetBatchHandle())
+            {
+                var list = this.GetFirstAncestorOfType<TreeViewList>();
 
-            list?.ViewModel.RemoveDocument(ViewModel.LayoutDocument);
+                list?.ViewModel.RemoveDocument(ViewModel.LayoutDocument);
+            }
         }
 
         private void GotoFlyoutItem_OnClick(object sender, RoutedEventArgs e)

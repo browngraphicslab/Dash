@@ -90,13 +90,16 @@ namespace Dash
             {
                 Debug.Assert(ViewModel != null, "ViewModel != null");
                 var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
+                ViewModel.AddDocument(documentController);
             }
         }
 
-        public void Highlight(DocumentController document, bool? flag) => xTreeRoot.Highlight(document, flag);
+        public void Highlight(DocumentController document, bool? flag)
+        {
+            //TODO TreeView: Get highlighting working in some form
+        }
 
-        public async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //List of Document Controller - one document controller for each collection
             //so a data file is made for each element in this list
@@ -146,7 +149,7 @@ namespace Dash
         {
             xTreeGrid.Background = dark ? 
                 (SolidColorBrush) Application.Current.Resources["WindowsBlue"] : (SolidColorBrush) Application.Current.Resources["DocumentBackgroundColor"];
-            Textblock.Foreground = Textbox.Foreground = XFilterBox.Foreground = xTreeRoot.Foreground = dark
+            Textblock.Foreground = Textbox.Foreground = XFilterBox.Foreground = XTreeView.Foreground = dark
                     ? (SolidColorBrush) Application.Current.Resources["InverseTextColor"]
                     : (SolidColorBrush) Application.Current.Resources["MainText"];
         }

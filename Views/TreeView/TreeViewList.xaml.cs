@@ -182,33 +182,38 @@ namespace Dash.Views.TreeView
 
         private async void TreeViewList_OnDrop(object sender, DragEventArgs e)
         {
-            _dragIndex = -1;
-            if (_dropIndex == -1)
+            using (UndoManager.GetBatchHandle())
             {
-                return;
-            }
-            XPreviewLine.Visibility = Visibility.Collapsed;
+                _dragIndex = -1;
+                if (_dropIndex == -1)
+                {
+                    return;
+                }
 
-            e.Handled = true;
+                XPreviewLine.Visibility = Visibility.Collapsed;
 
-            e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
-            var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Internal, this);
-            if (!this.IsShiftPressed())
-            {
-                if(e.DataView.GetDragModel() is DragDocumentModel ddm) { 
-                    for (var i = 0; i < ddm.DraggedDocCollectionViews?.Count; i++)
+                e.Handled = true;
+
+                e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
+                var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Internal, this);
+                if (!this.IsShiftPressed())
+                {
+                    if (e.DataView.GetDragModel() is DragDocumentModel ddm)
                     {
-                        ddm.DraggedDocCollectionViews[i].RemoveDocument(ddm.DraggedDocuments[i]);
+                        for (var i = 0; i < ddm.DraggedDocCollectionViews?.Count; i++)
+                        {
+                            ddm.DraggedDocCollectionViews[i].RemoveDocument(ddm.DraggedDocuments[i]);
+                        }
                     }
                 }
-            }
 
-            foreach (var doc in docs)
-            {
-                ViewModel.InsertDocument(doc, _dropIndex++);
-            }
+                foreach (var doc in docs)
+                {
+                    ViewModel.InsertDocument(doc, _dropIndex++);
+                }
 
-            _dropIndex = -1;
+                _dropIndex = -1;
+            }
         }
     }
 }
