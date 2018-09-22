@@ -28,7 +28,7 @@ namespace Dash
             if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
                 var parent = this.GetFirstAncestorOfType<CollectionDBSchemaView>();
-                parent.xRecordsView.SelectedItem = this.DataContext;
+                //parent.xRecordsView.SelectedItem = this.DataContext;
                 _downPt = e.GetCurrentPoint(null);
                 e.Handled = true;
             }

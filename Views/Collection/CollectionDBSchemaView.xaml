@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:telerikGrid="using:Telerik.UI.Xaml.Controls.Grid"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     mc:Ignorable="d"
@@ -12,64 +13,14 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CCFFFFFF" ManipulationMode="All" >
+    <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" >
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="xHeaderArea" Height="42"></RowDefinition>
             <RowDefinition x:Name="xDataArea" Height="*"></RowDefinition>
             <RowDefinition x:Name="xAddRowArea" Height="42"></RowDefinition>
         </Grid.RowDefinitions>
-        <Border Visibility="Collapsed" x:Name="HeaderBorderThickness" BorderThickness="1" />
-        <!--grid wrapping the headers for formatting-->
-        <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Row="0" 
-                      CanDragItems="True"
-                      CanReorderItems="True"
-                      AllowDrop="True"
-                      DragItemsStarting="xHeaderView_DragItemsStarting"
-                      Style="{StaticResource xSchemaListView}" 
-                      SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
-                      >
-            <!--header list-->
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal" Margin="0"/>
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
-                        <local:CollectionDBSchemaHeader DataContext="{Binding}" Height="40"/>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <telerikGrid:RadDataGrid x:Name="xDataGrid" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></telerikGrid:RadDataGrid>
 
-        <!--records list-->
-        <ListView x:Name="xRecordsView"  x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
-                  Grid.Row="1" 
-                  SelectionMode="Extended"
-                  Background="{ThemeResource DBCollectionBrush}"
-                  CanDragItems="True"
-                  CanReorderItems="True"
-                  AllowDrop="True"
-                  Height="100"
-                  ItemsSource="{x:Bind ColumnViewModels}"
-                  SelectionChanged ="XRecordsView_OnSelectionChanged"
-                  PointerPressed="xRecordsView_PointerPressed"  
-                  Loaded="XRecordsView_OnLoaded"
-                  DragItemsStarting="XRecordsView_OnDragItemsStarting">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal" VerticalAlignment="Top" Height="Auto"  HorizontalAlignment="Left" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <local:CollectionDBSchemaColumn></local:CollectionDBSchemaColumn>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-        <StackPanel HorizontalAlignment="Center" Grid.Row="2" Orientation="Horizontal">
+        <StackPanel HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <Button HorizontalAlignment="Center" Tapped="AddRow_OnTapped" Margin="2" Width="200" Height="40">Add Row</Button>
             <Button HorizontalAlignment="Center" Tapped="AddColumn_OnTapped" Margin="2" Width="200" Height="40">Add Column</Button>
         </StackPanel>
