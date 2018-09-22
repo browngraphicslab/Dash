@@ -332,7 +332,7 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController));
+            args.Data.SetDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 
@@ -502,7 +502,7 @@ namespace Dash
                 d.SetHeight(200);
             }
             DocumentViewModel dvm = ViewModel;
-            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
@@ -511,7 +511,7 @@ namespace Dash
             if (e.Items.Count.Equals(0)) return;
             var first = (SnapshotView) e.Items.First();
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index]));
+            e.Data.SetDragModel(new DragDocumentModel(snapshots[first.Index]));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 

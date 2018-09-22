@@ -64,10 +64,10 @@ namespace Dash
         /*
          * Tests whether dropping the document would create a cycle and, if so, returns false
          */
-        public bool CanDrop(FrameworkElement sender)
+        public override bool CanDrop(FrameworkElement sender)
         {
-            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() || MainPage.Instance.IsCtrlPressed()))
-                return !cview.ViewModel.CreatesCycle(DraggedDocuments);
+            if (sender.DataContext is CollectionViewModel cvm && (MainPage.Instance.IsShiftPressed() || MainPage.Instance.IsCtrlPressed()))
+                return !cvm.CreatesCycle(DraggedDocuments);
             return true;
         }
 

@@ -984,10 +984,10 @@ namespace Dash
             if (ViewModel.IsAdornmentGroup)
                 return;
 
-            var dragModels = e.DataView.GetDragModels();
-            foreach (var dragModel in dragModels)
+            var dragModel = e.DataView.GetDragModel();
+            if(dragModel != null)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)

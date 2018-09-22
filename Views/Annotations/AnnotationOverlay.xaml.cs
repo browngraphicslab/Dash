@@ -790,7 +790,7 @@ namespace Dash
 
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
-		    if (e.DataView.HasDragModels())
+		    if (e.DataView.HasDragModel())
 		        e.AcceptedOperation |= DataPackageOperation.Copy;
 		    else
 			    e.AcceptedOperation = DataPackageOperation.None;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Windows.Foundation;
+using Windows.UI.Xaml;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -11,6 +12,11 @@ namespace Dash
          */
 
         public abstract List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target);
-        
+
+        public virtual bool CanDrop(FrameworkElement element)
+        {
+            return true;
+        }
+
     }
 }

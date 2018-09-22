@@ -284,7 +284,7 @@ namespace Dash
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews,
                 _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList(),
                 offsets.ToList(), args.GetPosition(docView)));
 

@@ -753,41 +753,41 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
 
-                var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+                var dragDocModel = e.DataView.GetDragModel() as DragDocumentModel;
 
                 var cpar = ContainerDocument;
 
-                if (MainPage.Instance.IsAltPressed() && dragDocModels.FirstOrDefault().DraggedDocCollectionViews?.FirstOrDefault() != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
+                if (MainPage.Instance.IsAltPressed() && dragDocModel != null && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
-                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
+                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)  // dropping a DataBox
+                if (e.DataView.GetDragModel() is DragFieldModel)  // dropping a DataBox
                 {
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
                 }
 
                 if (!MainPage.Instance.IsShiftPressed())
                 {
-                    foreach (var d in dragDocModels)
+                    if(dragDocModel != null)
                     {
-                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
+                        for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (d.DraggedDocCollectionViews[i] == this)
+                            if (dragDocModel.DraggedDocCollectionViews[i] == this)
 
                             {
-                                docsToAdd.Remove(d.DraggedDocuments[i]);
-                                if (d.DraggedDocumentViews[i] != null)
+                                docsToAdd.Remove(dragDocModel.DraggedDocuments[i]);
+                                if (dragDocModel.DraggedDocumentViews[i] != null)
                                 {
-                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                                    dragDocModel.DraggedDocumentViews[i].Visibility = Visibility.Visible;
                                 }
                             }
                             else
                             {
-                                MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                                MainPage.Instance.ClearFloaty(dragDocModel.DraggedDocumentViews[i]);
+                                dragDocModel.DraggedDocCollectionViews[i].RemoveDocument(dragDocModel.DraggedDocuments[i]);
 
                             }
                         }

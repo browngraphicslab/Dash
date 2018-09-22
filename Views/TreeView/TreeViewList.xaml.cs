@@ -106,7 +106,7 @@ namespace Dash.Views.TreeView
 
             var node = (TreeViewNode) sender;
             _dragIndex = ViewModel.DocumentViewModels.IndexOf(node.ViewModel);
-            args.Data.AddDragModel(new DragDocumentModel(node.ViewModel.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
+            args.Data.SetDragModel(new DragDocumentModel(node.ViewModel.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
         }
 
         private int _dragIndex = -1;
@@ -120,7 +120,12 @@ namespace Dash.Views.TreeView
                 return;
             }
 
-            //TODO Prevent dropping a collection into itself
+            var dragModel = e.DataView.GetDragModel();
+            //TODO Prevent dragging a collection into itself
+            if (!dragModel.CanDrop(this))
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+            }
             e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
 
             var pos = e.GetPosition(XListControl);
@@ -190,11 +195,10 @@ namespace Dash.Views.TreeView
             var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Internal, this);
             if (!this.IsShiftPressed())
             {
-                foreach (var d in e.DataView.GetDragModels().OfType<DragDocumentModel>())
-                {
-                    for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
+                if(e.DataView.GetDragModel() is DragDocumentModel ddm) { 
+                    for (var i = 0; i < ddm.DraggedDocCollectionViews?.Count; i++)
                     {
-                        d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                        ddm.DraggedDocCollectionViews[i].RemoveDocument(ddm.DraggedDocuments[i]);
                     }
                 }
             }

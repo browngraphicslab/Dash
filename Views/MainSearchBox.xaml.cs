@@ -169,7 +169,7 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.AddDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -186,7 +186,7 @@ namespace Dash
         {
             var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
             // get the sender's view docs and set the key for the drag to a static const
-            args.Data.AddDragModel(dragModel);
+            args.Data.SetDragModel(dragModel);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -284,7 +284,7 @@ namespace Dash
 
             var note = new DishScriptBox(0, 0, 300, 400, script);
 
-            args.Data.AddDragModel(new DragDocumentModel(note.Document));
+            args.Data.SetDragModel(new DragDocumentModel(note.Document));
 
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
