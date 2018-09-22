@@ -105,9 +105,11 @@ namespace Dash.Views.TreeView
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link;
 
             var node = (TreeViewNode) sender;
-            args.Data.AddDragModel(new DragDocumentModel(node.ViewModel.DocumentController){DraggedDocCollectionViews = new List<CollectionViewModel>{ViewModel}});
+            _dragIndex = ViewModel.DocumentViewModels.IndexOf(node.ViewModel);
+            args.Data.AddDragModel(new DragDocumentModel(node.ViewModel.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
         }
 
+        private int _dragIndex = -1;
         private int _dropIndex = -1;
         private void TreeViewList_OnDragOver(object sender, DragEventArgs e)
         {
@@ -118,6 +120,7 @@ namespace Dash.Views.TreeView
                 return;
             }
 
+            //TODO Prevent dropping a collection into itself
             e.AcceptedOperation = this.IsShiftPressed() ? DataPackageOperation.Copy : DataPackageOperation.Move;
 
             var pos = e.GetPosition(XListControl);
@@ -126,6 +129,7 @@ namespace Dash.Views.TreeView
             double previewY = 0;
             int i;
             Debug.Assert(XListControl.Items != null, "XListControl.Items != null");
+            bool found = false;
             for (i = 0; i < XListControl.Items.Count; i++)
             {
                 var ele = (FrameworkElement)XListControl.ContainerFromIndex(i);
@@ -134,38 +138,51 @@ namespace Dash.Views.TreeView
                 bounds = ele.TransformToVisual(XListControl).TransformBounds(bounds);
                 if (pos.Y < bounds.Top + threshold)
                 {
+                    found = true;
                     break;
                 }
 
-                previewY += bounds.Y;
+                previewY += bounds.Height;
 
                 if (pos.Y > bounds.Bottom - threshold && pos.Y < bounds.Bottom)
                 {
-                    i++;
+                    if (i < _dragIndex)
+                    {
+                        i++;
+                    }
+                    found = true;
                     break;
                 }
             }
 
+            if (!found)
+            {
+                XPreviewLine.Visibility = Visibility.Collapsed;
+                _dropIndex = -1;
+                return;
+            }
             _dropIndex = i;
 
             XPreviewLine.X1 = 0;
             XPreviewLine.X2 = ActualWidth;
-            XPreviewLine.Y1 = XPreviewLine.Y2 = previewY;
+            XPreviewLine.Y1 = XPreviewLine.Y2 = previewY + 2;
             XPreviewLine.Visibility = Visibility.Visible;
         }
 
         private void TreeViewList_OnDragLeave(object sender, DragEventArgs e)
         {
             XPreviewLine.Visibility = Visibility.Collapsed;
-            _dropIndex = -1;
+            _dropIndex = _dragIndex = -1;
         }
 
         private async void TreeViewList_OnDrop(object sender, DragEventArgs e)
         {
+            _dragIndex = -1;
             if (_dropIndex == -1)
             {
                 return;
             }
+            XPreviewLine.Visibility = Visibility.Collapsed;
 
             e.Handled = true;
 
