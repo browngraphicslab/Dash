@@ -685,10 +685,10 @@ namespace Dash
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e!= null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
                 handledTouch.Add(e);
-                NumFingers--;
+                if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
             {
@@ -711,7 +711,7 @@ namespace Dash
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
                 handledTouch.Add(e);
-                NumFingers--;
+                if(NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
             {

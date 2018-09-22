@@ -134,7 +134,9 @@ namespace Dash
             {
                 //handle touch interactions with just one finger - equivalent to drag without ctr
                if (_freeformView.StartMarquee(_freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position)))
+                {
                     e.Handled = true;
+                }
             }
         }
         

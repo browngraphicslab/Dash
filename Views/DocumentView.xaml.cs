@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -215,7 +216,17 @@ namespace Dash
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
-                e.Handled = true;
+
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if (SelectionManager.TryInitiateDragDrop(this, e, null))
+                        e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
+                
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;

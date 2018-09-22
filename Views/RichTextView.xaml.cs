@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -66,6 +67,11 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
+                //if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                //{
+                //    if (SelectionManager.TryInitiateDragDrop(_manipulator?._manipulationDocumentTarget, e, null))
+                //        e.Handled = true;
+                //}
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
                 e.Handled = true;
