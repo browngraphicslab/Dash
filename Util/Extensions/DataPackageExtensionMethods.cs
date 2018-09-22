@@ -72,7 +72,7 @@ namespace Dash
 
         // DATA ACCESS
 
-        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point @where = new Point())
+        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null)
         {
             var dropDocs = new List<DocumentController>();
 
@@ -83,11 +83,11 @@ namespace Dash
 
             if (transferType.HasFlag(FileSystem) && packageView.Contains(StandardDataFormats.StorageItems))
             {
-                DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where);
+                DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where ?? new Point());
                 if (documentController != null) dropDocs.Add(documentController);
                 else if(transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
                 {
-                    dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+                    dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where ?? new Point()));
                 }
             }
 
@@ -95,28 +95,28 @@ namespace Dash
 
             else if (transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
             {
-                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where ?? new Point()));
             } 
 
             // RTF
 
             else if (transferType.HasFlag(Rtf) && packageView.Contains(StandardDataFormats.Rtf))
             {
-                dropDocs.Add(await ConvertRtfData(packageView, where));
+                dropDocs.Add(await ConvertRtfData(packageView, where ?? new Point()));
             }
 
             // Plain Text
 
             else if (transferType.HasFlag(PlainText) && packageView.Contains(StandardDataFormats.Text))
             {
-                dropDocs.Add(await ConvertPlainTextData(packageView, where));
+                dropDocs.Add(await ConvertPlainTextData(packageView, where ?? new Point()));
             }
 
             // Image (rarely hit, most images fall under Storage Items)
 
             else if (transferType.HasFlag(Image) && packageView.Contains(StandardDataFormats.Bitmap))
             {
-                dropDocs.Add(await ConvertBitmapData(packageView, where));
+                dropDocs.Add(await ConvertBitmapData(packageView, where ?? new Point()));
             }
 
             // Internal Dash Document or Field
@@ -131,7 +131,7 @@ namespace Dash
 
         // HELPER METHODS
 
-        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point where, FrameworkElement sender)
+        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender)
         {
             var dragModel = packageView.GetDragModel();
             return (dragModel?.CanDrop(sender) ?? false) ? dragModel.GetDropDocuments(where, sender) : new List<DocumentController>();
