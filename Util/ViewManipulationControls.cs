@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Windows.Devices.Input;
 using Windows.System;
 using Windows.UI.Input;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Point = Windows.Foundation.Point;
@@ -132,8 +133,8 @@ namespace Dash
             } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
                 //handle touch interactions with just one finger - equivalent to drag without ctr
-                //TODO: convert pos to canvas pos
-                _freeformView.StartMarquee(e.Position);
+               if (_freeformView.StartMarquee(_freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position)))
+                    e.Handled = true;
             }
         }
         
