@@ -415,75 +415,6 @@ namespace Dash
             return false;
         }
 
-        public void HighlightTreeView(DocumentController document, bool? flag)
-        {
-            xMainTreeView.Highlight(document, flag);
-        }
-
-        public void HighlightDoc(DocumentController document, bool? flag, int search = 0, bool animate = false)
-        {
-            foreach (var dockedView in MainSplitter.GetChildFrames())
-            {
-                highlightDoc(dockedView.ViewModel, document, flag, search, animate);
-            }
-        }
-
-        private void highlightDoc(DocumentViewModel dm, DocumentController document, bool? flag, int search, bool animate = false)
-        {
-            if (dm.DocumentController.Equals(document))
-            {
-                //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
-                if (search == 0)
-                {
-                    if (flag == null)
-                    {
-                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                    }
-                    else if (flag == true)
-                    {
-                        dm.DecorationState = (dm.Undecorated == false);
-                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#e50000");
-                    }
-                    else if (flag == false)
-                    {
-                        dm.DecorationState = false;
-                        dm.SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
-                    }
-                }
-                else if (search == 1)
-                {
-                    //highlight doc
-                    if (animate)
-                    {
-                        dm.ExpandBorder();
-                    }
-                    else
-                    {
-                        dm.SearchHighlightState = DocumentViewModel.Highlighted;
-                    }
-                }
-                else
-                {
-                    //unhighlight doc
-                    if (animate)
-                    {
-                        dm.RetractBorder();
-                    }
-                    else
-                    {
-                        dm.SearchHighlightState = DocumentViewModel.UnHighlighted;
-                    }
-                }
-            }
-            else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
-            {
-                foreach (var vm in freeformView.ViewModel.DocumentViewModels)
-                {
-                    highlightDoc(vm, document, flag, search, animate);
-                }
-            }
-        }
-
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
         {
             //TODO Splitting this should be more sophisticated logic to check if it's in any split view
@@ -1021,7 +952,7 @@ namespace Dash
             if (onScreenView != null)
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
+                onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted)
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
@@ -1050,7 +981,7 @@ namespace Dash
                     return;
             }
 
-            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.SearchHighlightState == DocumentViewModel.Highlighted).ToList().ForEach((dv) => dv.ViewModel?.RetractBorder());
+            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
             ClearFloaty(null);
         }
 
@@ -1129,14 +1060,14 @@ namespace Dash
             if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
-                if (onScreenView != null) onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
+                onScreenView?.ViewModel.SetHighlight(true);
                 return LinkHandledResult.HandledRemainOpen;
             }
 
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SearchHighlightState = DocumentViewModel.Highlighted;
+                onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
@@ -1183,11 +1114,11 @@ namespace Dash
                 {
                     SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
                     SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-                    doc.SearchHighlightState = DocumentViewModel.Highlighted;
+                    doc.SetHighlight(true);
                     void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
                     {
-                        doc.SearchHighlightState = DocumentViewModel.UnHighlighted;
                         SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
+                        doc.SetHighlight(false);
                     }
                 }
 

@@ -118,10 +118,8 @@ namespace Dash
                     if (!deselect) {
                         r.IsSelected = true;
                     }
-                    if (documentView.ViewModel != null)
-                    {
-                        documentView.ViewModel.SearchHighlightState = deselect ? DocumentViewModel.UnHighlighted : DocumentViewModel.Highlighted;
-                    }
+
+                    documentView.ViewModel?.SetHighlight(!deselect);
                 }
         }
         public void DeselectRegion()

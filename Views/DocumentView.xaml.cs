@@ -1081,17 +1081,6 @@ namespace Dash
             }
         }
 
-        private void This_DragOver(object sender, DragEventArgs e)
-        {
-            ViewModel.DecorationState = ViewModel?.Undecorated == false;
-        }
-
-        public void This_DragLeave(object sender, DragEventArgs e)
-        {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            ViewModel.DecorationState = false;
-        }
-
         public bool IsTopLevel()
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
@@ -1324,16 +1313,6 @@ namespace Dash
             }
         }
 
-        public void SetLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-        }
-
-        public void RemoveLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
-            xToYellow.Begin();
-        }
         ~DocumentView()
         {
             //Debug.Write("dispose DocumentView");

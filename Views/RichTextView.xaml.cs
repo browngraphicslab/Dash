@@ -93,7 +93,6 @@ namespace Dash
             {
                 e.Handled = true;
                 xRichEditBox_Drop(s, e);
-                this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;

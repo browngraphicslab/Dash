@@ -493,7 +493,6 @@ namespace Dash
             if (doc.ViewModel != null)
             {
                 VisibilityState = Visibility.Visible;
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
             }
         }
 
@@ -503,9 +502,6 @@ namespace Dash
             if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
                 VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
-
-            if (doc.ViewModel != null)
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -546,7 +542,6 @@ namespace Dash
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                docView.ViewModel.DecorationState = false;
             }
         }
 

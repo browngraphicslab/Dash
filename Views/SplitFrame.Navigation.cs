@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media;
@@ -71,6 +72,77 @@ namespace Dash
                 workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
                 return workspace;
             }
+        }
+
+        private static void HighlightViewModel(DocumentViewModel viewModel, HighlightMode highlightMode)
+        {
+            switch (highlightMode)
+            {
+            case HighlightMode.Highlight:
+                viewModel.SetHighlight(true);
+                break;
+            case HighlightMode.Unhighlight:
+                viewModel.SetHighlight(false);
+                break;
+            case HighlightMode.ToggleHighlight:
+                viewModel.ToggleHighlight();
+                break;
+            }
+        }
+
+        public static void HighlightDoc(DocumentController document, HighlightMode mode, bool useDataDoc = false, bool unhighlightOthers = true)
+        {
+            HighlightDocs(new List<DocumentController> { document }, mode, useDataDoc, unhighlightOthers);
+        }
+
+        public static void HighlightDocs(IEnumerable<DocumentController> documents, HighlightMode mode, bool useDataDoc = false, bool unhighlightOthers = true)
+        {
+            var docs = new HashSet<DocumentController>(useDataDoc ? documents.Select(doc => doc.GetDataDocument()) : documents);
+            var dvms = MainPage.Instance.MainSplitter.GetChildFrames().Select(sf => sf.ViewModel).ToList();
+            while (dvms.Any())
+            {
+                var dvm = dvms[dvms.Count - 1];
+                dvms.RemoveAt(dvms.Count - 1);
+
+                if (docs.Contains(useDataDoc ? dvm.DataDocument : dvm.DocumentController))
+                {
+                    HighlightViewModel(dvm, mode);
+                }
+                else if (unhighlightOthers && mode == HighlightMode.Highlight)
+                {
+                    HighlightViewModel(dvm, HighlightMode.Unhighlight);
+                }
+
+                if (dvm.Content.DataContext is CollectionViewModel cvm)
+                {
+                    dvms.AddRange(cvm.DocumentViewModels);
+                }
+            }
+        }
+
+        public static void UnhighlightAllDocs()
+        {
+            var dvms = MainPage.Instance.MainSplitter.GetChildFrames().Select(sf => sf.ViewModel).ToList();
+            while (dvms.Any())
+            {
+                var dvm = dvms[dvms.Count - 1];
+                dvms.RemoveAt(dvms.Count - 1);
+
+                HighlightViewModel(dvm, HighlightMode.Unhighlight);
+
+                if (dvm.Content.DataContext is CollectionViewModel cvm)
+                {
+                    dvms.AddRange(cvm.DocumentViewModels);
+                }
+            }
+
+        }
+
+        public enum HighlightMode
+        {
+            Highlight,
+            Unhighlight,
+            ToggleHighlight
         }
     }
 }

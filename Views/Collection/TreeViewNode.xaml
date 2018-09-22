@@ -43,7 +43,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid Background="{StaticResource DashLightBlue}" Grid.Column="1" Opacity="0.3" Visibility="{Binding DecorationState}" IsHitTestVisible="False"/>
+            <Grid Background="{StaticResource DashLightBlue}" Grid.Column="1" Opacity="0.3" Visibility="Collapsed" IsHitTestVisible="False"/>
             <Border x:Name="XBlockBorder"  Grid.Column="1">
             <TextBlock x:Name="XTextBlock" FontSize="{StaticResource DataSizing}"
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"

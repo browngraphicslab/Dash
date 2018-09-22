@@ -236,15 +236,6 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public void Highlight(bool ? flag)
-        {
-            if (flag == null)
-                ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
-            else if (flag == true)
-                ViewModel.DecorationState = (ViewModel.Undecorated == false);
-            else if (flag == false)
-                ViewModel.DecorationState = false;
-        }
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         { 
             e.Handled = true;
@@ -297,16 +288,13 @@ namespace Dash
         private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
-            Highlight(true);
-            MainPage.Instance.HighlightDoc(docTapped, true);
-
+            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Highlight);
         }
 
         private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Highlight(false);
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
-            MainPage.Instance.HighlightDoc(docTapped, false);
+            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Unhighlight);
         }
 
         private void XTextBlock_Tapped(object sender, TappedRoutedEventArgs e)
