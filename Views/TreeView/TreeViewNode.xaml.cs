@@ -99,6 +99,12 @@ namespace Dash.Views.TreeView
         public TreeViewNode()
         {
             InitializeComponent();
+
+            _addCollectionItem = new MenuFlyoutItem()
+            {
+                Text = "Add Collection",
+            };
+            _addCollectionItem.Click += AddCollectionItem_OnClick;
         }
 
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -251,5 +257,33 @@ namespace Dash.Views.TreeView
             var doc = ViewModel.DocumentController;
             SplitFrame.OpenDocumentInWorkspace(doc, workspaceDoc);
         }
+
+        #region Collection Flyout
+
+        private readonly MenuFlyoutItem _addCollectionItem;
+        private void AddCollectionItem_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (!IsCollection)
+            {
+                return;
+            }
+
+            XTreeViewList.ViewModel.AddDocument(new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid).Document);
+        }
+
+        private void MenuFlyout_OnClosed(object sender, object e)
+        {
+            MenuFlyout.Items?.Remove(_addCollectionItem);
+        }
+
+        private void MenuFlyout_OnOpening(object sender, object e)
+        {
+            if (IsCollection)
+            {
+                MenuFlyout.Items?.Add(_addCollectionItem);
+            }
+        }
+
+        #endregion
     }
 }

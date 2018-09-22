@@ -17,7 +17,7 @@
 
     <Grid>
         <Grid.ContextFlyout>
-            <MenuFlyout x:Name="MenuFlyout">
+            <MenuFlyout x:Name="MenuFlyout" Opening="MenuFlyout_OnOpening"  Closed="MenuFlyout_OnClosed">
                 <MenuFlyoutItem Text="Go To" Click="GotoFlyoutItem_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Open" Click="OpenFlyoutItem_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Rename" Click="RenameFlyoutItem_OnClick"></MenuFlyoutItem>
