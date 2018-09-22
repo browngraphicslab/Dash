@@ -18,7 +18,10 @@
     <Grid>
         <Grid.ContextFlyout>
             <MenuFlyout x:Name="MenuFlyout">
+                <MenuFlyoutItem Text="Go To" Click="GotoFlyoutItem_OnClick"></MenuFlyoutItem>
+                <MenuFlyoutItem Text="Open" Click="OpenFlyoutItem_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Rename" Click="RenameFlyoutItem_OnClick"></MenuFlyoutItem>
+                <MenuFlyoutItem Text="Delete" Click="DeleteFlyoutItem_OnClick"></MenuFlyoutItem>
             </MenuFlyout>
         </Grid.ContextFlyout>
         <Grid.ColumnDefinitions>
@@ -33,7 +36,7 @@
         <TextBlock x:Name="XTitleBlock" Foreground="{StaticResource InverseTextColor}" Grid.Column="1" Grid.Row="0" Visibility="{x:Bind Not(IsEditing), Mode=OneWay}"
                    Tapped="XTitleBlock_OnTapped" DoubleTapped="XTitleBlock_OnDoubleTapped" IsDoubleTapEnabled="True"></TextBlock>
         <TextBox x:Name="XRenameBox" Grid.Column="1" Grid.Row="0" Visibility="{x:Bind IsEditing, Mode=OneWay}"
-                 GotFocus="XRenameBox_OnGotFocus" LostFocus="XRenameBox_OnLostFocus" LosingFocus="XRenameBox_OnLosingFocus"
+                 GotFocus="XRenameBox_OnGotFocus" LostFocus="XRenameBox_OnLostFocus"
                  KeyDown="XRenameBox_OnKeyDown"></TextBox>
         <local:TreeViewList x:Name="XTreeViewList" Grid.Row="1" Grid.Column="1" Visibility="{x:Bind IsExpanded, Mode=OneWay}" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
     </Grid>

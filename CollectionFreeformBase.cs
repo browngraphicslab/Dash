@@ -309,11 +309,9 @@ namespace Dash
             CompositionTarget.Rendering += CompositionTargetOnRendering;
 
             // Begin the animation.
-            _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-
-
+            _storyboard1.Begin();
         }
 
         protected void Storyboard1OnCompleted(object sender, object e)

@@ -152,6 +152,11 @@ namespace Dash.Views.TreeView
             SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
         }
 
+        private void OpenFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+        }
+
         private void TreeViewNode_OnLoaded(object sender, RoutedEventArgs e)
         {
             SplitFrame.ActiveDocumentChanged += SplitDocumentOnActiveDocumentChanged;
@@ -204,14 +209,12 @@ namespace Dash.Views.TreeView
 
         private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Focused");
             XRenameBox.Text = ViewModel.DataDocument.Title;
             XRenameBox.SelectAll();
         }
 
         private void XRenameBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Lost focus");
             CommitEdit();
         }
 
@@ -229,9 +232,24 @@ namespace Dash.Views.TreeView
 
         #endregion
 
-        private void XRenameBox_OnLosingFocus(UIElement sender, LosingFocusEventArgs args)
+        private void DeleteFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            var list = this.GetFirstAncestorOfType<TreeViewList>();
+
+            list?.ViewModel.RemoveDocument(ViewModel.LayoutDocument);
+        }
+
+        private void GotoFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var workspace = this.GetFirstAncestorOfType<TreeViewNode>();
+            if (workspace == null)
+            {
+                return;
+            }
+
+            var workspaceDoc = workspace.ViewModel.DocumentController;
+            var doc = ViewModel.DocumentController;
+            SplitFrame.OpenDocumentInWorkspace(doc, workspaceDoc);
         }
     }
 }

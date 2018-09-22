@@ -772,6 +772,7 @@
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SplitFrame.Navigation.cs" />
     <Compile Include="Views\SplitFrame.xaml.cs">
       <DependentUpon>SplitFrame.xaml</DependentUpon>
     </Compile>

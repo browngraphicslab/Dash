@@ -35,42 +35,11 @@ namespace Dash
             }
         }
 
-        public static void OpenInActiveFrame(DocumentController doc)
-        {
-            ActiveFrame.OpenDocument(doc);
-        }
-
-        public static void OpenInInactiveFrame(DocumentController doc)
-        {
-            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
-            if (frames.Count == 0)
-            {
-                ActiveFrame.TrySplit(SplitDirection.Right, doc, true);
-            }
-            else
-            {
-                var frame = frames[0];
-                var area = frame.ActualWidth * frame.ActualHeight;
-                for (var i = 1; i < frames.Count; ++i)
-                {
-                    var curFrame = frames[i];
-                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
-                    if (curArea > area)
-                    {
-                        area = curArea;
-                        frame = curFrame;
-                    }
-                }
-
-                frame.OpenDocument(doc);
-            }
-        }
-
-        public void OpenDocument(DocumentController doc)
+        public DocumentController OpenDocument(DocumentController doc)
         {
             if (ViewModel.DataDocument.Equals(doc.GetDataDocument()))
             {
-                return;
+                return ViewModel.DocumentController;
             }
 
             doc = doc.GetViewCopy();
@@ -82,6 +51,8 @@ namespace Dash
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
+
+            return doc;
         }
 
         public static SplitFrame GetFrameWithDoc(DocumentController doc, bool matchDataDoc)
@@ -157,7 +128,7 @@ namespace Dash
             XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
-        public void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
+        public DocumentController TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
             splitDoc = splitDoc.GetViewCopy();
             splitDoc.SetWidth(double.NaN);
@@ -176,6 +147,8 @@ namespace Dash
             }
 
             CurrentSplitMode = (direction == SplitDirection.Left || direction == SplitDirection.Right) ? SplitMode.HorizontalSplit : SplitMode.VerticalSplit;
+
+            return splitDoc;
         }
 
         private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
