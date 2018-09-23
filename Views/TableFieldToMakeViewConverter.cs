@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
 using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 namespace Dash
 {
@@ -88,6 +89,23 @@ namespace Dash
                 }
                 currView = grid;
                 grid.Children.Add(text);
+            }
+            else if (data is ListController<TextController> textList)
+            {
+                WrapPanel wrap = new WrapPanel();
+                KVPListText listText = null;
+                wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                wrap.Margin = new Thickness(0, 15, 0, 0);
+                foreach (var text in textList)
+                {
+                    var r = new Random();
+                    var hexColor = Color.FromArgb(150, (byte)r.Next(256), (byte)r.Next(256), (byte)r.Next(256));
+                    listText = new KVPListText(text.Data, hexColor);
+                    wrap.Children.Add(listText);
+                }
+
+                currView = wrap;
+
             }
             else if (data is ListController<DocumentController> docList)
             {

@@ -662,6 +662,9 @@
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\KVPListText.xaml.cs">
+      <DependentUpon>KVPListText.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
@@ -1279,6 +1282,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\KeyValueScriptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\KVPListText.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
