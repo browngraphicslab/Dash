@@ -10,6 +10,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using static Dash.CollectionDBSchemaHeader;
 using Windows.UI.Xaml.Media;
+using Telerik.UI.Xaml.Controls.Grid;
+using Telerik.UI.Xaml.Controls.Grid.Primitives;
+using DataGridColumn = Telerik.UI.Xaml.Controls.Grid.DataGridColumn;
+using DataGridTextColumn = Telerik.UI.Xaml.Controls.Grid.DataGridTextColumn;
+using Telerik.Data.Core;
+using Telerik.UI.Xaml.Controls.Grid.Commands;
+using DataGridSelectionMode = Telerik.UI.Xaml.Controls.Grid.DataGridSelectionMode;
+using DataGridTemplateColumn = Telerik.UI.Xaml.Controls.Grid.DataGridTemplateColumn;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -57,6 +66,37 @@ namespace Dash
         public CollectionDBSchemaView()
         {
             InitializeComponent();
+            //Warning: code does not work yet -Brandon
+            ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
+            var docs = ParentDocument.GetDataDocument().
+                GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
+            var keys = new HashSet<KeyController>();
+            foreach (var doc in docs)
+            {
+                foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+                {
+                    keys.Add(field.Key);
+                }
+            }
+
+            xDataGrid.AutoGenerateColumns = false;
+            xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
+            xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
+            xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
+
+            foreach (var key in keys)
+            {
+                var column = new DataGridDictionaryColumn(key)
+                {
+                    Header = key,
+                    CanUserEdit = true,
+                    SizeMode = DataGridColumnSizeMode.Auto
+                };
+
+                xDataGrid.Columns.Add(column);
+            }
+
+            xDataGrid.ItemsSource = docs;
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -86,6 +126,86 @@ namespace Dash
 
         public void SetDropIndicationFill(Brush fill)
         {
+        }
+    }
+
+    public class DataGridDictionaryColumn : DataGridTypedColumn
+    {
+        public KeyController Key { get; set; }
+
+        public DataGridDictionaryColumn(KeyController key)
+        {
+            PropertyName = key.Name;
+            Key = key;
+        }
+
+        public override object GetEditorType(object item)
+        {
+            return typeof(TextBox);
+        }
+
+        public override FrameworkElement CreateEditorContentVisual()
+        {
+            var tb = new TextBox();
+            return tb;
+        }
+
+        public override object CreateContainer(object rowItem)
+        {
+            var contentPresenter = new ContentPresenter();
+            return contentPresenter;
+        }
+
+        public override object GetContainerType(object rowItem)
+        {
+            return typeof(ContentPresenter);
+        }
+
+        protected override DataGridFilterControlBase CreateFilterControl()
+        {
+            return new DataGridTextFilterControl()
+            {
+                PropertyName = PropertyName
+            };
+        }
+
+        public override void PrepareEditorContentVisual(FrameworkElement editorContent, Binding binding)
+        {
+            editorContent.DataContext = binding.Source;
+        }
+
+        public override void ClearEditorContentVisual(FrameworkElement editorContent)
+        {
+            editorContent.ClearValue(TextBox.TextProperty);
+        }
+
+        //public override object GetValueForInstance(object instance)
+        //{
+        //    //return null;
+        //    return ((Customer)instance).Params.TryGetValue(Key, out var value) ? value : "<null>";
+        //}
+
+        public override void PrepareCell(object container, object value, object item)
+        {
+            base.PrepareCell(container, value, item); //Scrap in favor of Databox.Makeview
+            var contentPresenter = (ContentPresenter)container;
+            switch (value)
+            {
+            case string s:
+                contentPresenter.Content = new TextBlock { Text = s };
+                break;
+            case bool b:
+                CheckBox checkBox = new CheckBox
+                {
+                    IsChecked = b,
+                };
+                contentPresenter.Content = checkBox;
+                contentPresenter.HorizontalAlignment = HorizontalAlignment.Center;
+                break;
+            default:
+                contentPresenter.Content = new TextBlock { Text = "Unrecognized data type" };
+                break;
+            }
         }
     }
 }
