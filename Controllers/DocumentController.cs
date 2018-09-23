@@ -923,14 +923,14 @@ namespace Dash
                 UpdateOnServer(withUndo ? newEvent : null);
             }
 
-            if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
-            {
-                if (doc.DocumentType.Equals(TemplateBox.DocumentType))
-                {
-                    // TODO: ask tyler about this next line? -sy
-                    //TypeInfo = TypeInfo.Template;
-                }
-            }
+            //if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
+            //{
+            //    if (doc.DocumentType.Equals(TemplateBox.DocumentType))
+            //    {
+            //        // TODO: ask tyler about this next line? -sy
+            //        //TypeInfo = TypeInfo.Template;
+            //    }
+            //}
 
             return fieldChanged;
         }

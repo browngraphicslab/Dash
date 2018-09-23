@@ -143,13 +143,21 @@ namespace Dash
         {
             SetPositionAndSize();
         }
-
+        ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
             _selectedDocs = new List<DocumentView>();
+            _titleTip.Content = HeaderFieldKey.Name;
+            ToolTipService.SetToolTip(xHeaderText, _titleTip);
+            xHeaderText.PointerEntered += (s, e) => _titleTip.IsOpen = true;
+            xHeaderText.PointerExited  += (s, e) => _titleTip.IsOpen = false;
+            xHeaderText.GotFocus += (s, e) =>
+            {
+                if (xHeaderText.Text == "<empty>") xHeaderText.SelectAll();
+            };
             //Tags = new List<SuggestViewModel>();
             //Recents = new Queue<SuggestViewModel>();
             Tags = new List<Tag>();
@@ -411,7 +419,7 @@ namespace Dash
             //}
             return tag;
         }
-        
+        static public KeyController HeaderFieldKey = KeyStore.TitleKey;
         //rebuilds the different link dots when the menu is refreshed or one is added
         public void rebuildMenuIfNeeded()
         {
@@ -425,24 +433,46 @@ namespace Dash
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
+            ResetHeader(); // force header field to update
 
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
             {// add a hyperlink that points to the source webpage.
 
-                xURISource.Text = "From website";
+                xURISource.Text = "From:";
                 try
                 {
                     var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
                     hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
                     xURISource.Inlines.Add(hyperlink);
-                } catch (Exception)
+                }
+                catch (Exception)
                 {
+                    var theDoc = ContentController<DashShared.FieldModel>.GetController<DocumentController>(htmlAddress);
+                    if (theDoc != null)
+                    {
+                        var regDef = theDoc.GetDataDocument().GetRegionDefinition() ?? theDoc;
+                        xURISource.Text += " " + regDef?.Title;
+                        //var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
+                        //hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
+                        //xURISource.Inlines.Add(hyperlink);
+                    }
                 }
                 xURISource.Visibility = Visibility.Visible;
-            } else xURISource.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                var author = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.AuthorKey,null)?.Data;
+                if (!string.IsNullOrEmpty(author))
+                {// add a hyperlink that points to the source webpage.
+
+                    xURISource.Text = "Authored by: " + author;
+                    xURISource.Visibility = Visibility.Visible;
+                }
+                else xURISource.Visibility = Visibility.Collapsed;
+            }
         }
 
         private Dictionary<string, List<DocumentController>> UpdateTags()
@@ -538,9 +568,10 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (DocumentView docView in SelectedDocs)
+            foreach (var docView in SelectedDocs)
             {
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true });
+                var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
+                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionView>(new CollectionView[] { docCollectionView } ) });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
@@ -549,14 +580,14 @@ namespace Dash
             }
         }
 
-        private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-                doc.ToggleTemplateEditor();
-            }
-        }
+        //private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    foreach (var doc in SelectedDocs)
+        //    {
+        //        doc.ManipulationMode = ManipulationModes.None;
+        //        doc.ToggleTemplateEditor();
+        //    }
+        //}
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -919,5 +950,79 @@ namespace Dash
         void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
         void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
         void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
+
+        private void xTitle_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case VirtualKey.Enter:
+                    if (xHeaderText.Text.StartsWith("#"))
+                    {
+                        ResetHeader(xHeaderText.Text.Substring(1));
+                    }
+                    else
+                    {
+                        CommitHeaderText();
+                    }
+                    break;
+                case VirtualKey.Down:
+                case VirtualKey.Up:
+                    ChooseNextHeaderKey(e.Key == VirtualKey.Up);
+                    break;
+                default :
+                    xHeaderText.Foreground = new SolidColorBrush(Colors.Red);
+                    break;
+            }
+            e.Handled = true;
+        }
+
+        private void ChooseNextHeaderKey(bool prev=false)
+        {
+            var keys = new List<KeyController>();
+            foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            {
+                keys.AddRange(d.EnumDisplayableFields().Select((pair) => pair.Key));
+            }
+            keys = keys.ToHashSet().ToList();
+            keys.Sort((dv1, dv2) => string.Compare(dv1.Name, dv2.Name));
+            var ind = keys.IndexOf(HeaderFieldKey);
+            do
+            {
+                ind = prev ? (ind > 0 ? ind - 1 : keys.Count - 1) : (ind < keys.Count - 1 ? ind + 1 : 0);
+                ResetHeader(keys[ind].Name);
+            } while (xHeaderText.Text == "<empty>");
+        }
+        private void CommitHeaderText()
+        {
+            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            {
+                doc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
+            }
+            xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
+            ResetHeader();
+        }
+        private void ResetHeader(string newkey = null)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                if (newkey != null)
+                {
+                    HeaderFieldKey = KeyController.IsPresent(newkey) ? new KeyController(newkey) : new KeyController(newkey, Guid.NewGuid().ToString());
+                }
+                xHeaderText.Text = SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+                {
+                    var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                    if (dvalue != xHeaderText.Text)
+                    {
+                        xHeaderText.Text = "...";
+                        break;
+                    }
+                }
+                xHeaderText.Foreground = new SolidColorBrush(Colors.Black);
+                _titleTip.Content = HeaderFieldKey.Name;
+                xHeaderText.Background = new SolidColorBrush(xHeaderText.Text == "<empty>" ? Colors.Pink : Colors.LightBlue);
+            }
+        }
     }
 }

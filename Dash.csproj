@@ -360,8 +360,6 @@
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\TemplateBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\TemplateEditorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
@@ -583,9 +581,6 @@
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml.cs">
-      <DependentUpon>AnnotationSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -942,25 +937,6 @@
     <Compile Include="Views\Tag.xaml.cs">
       <DependentUpon>Tag.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
-      <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\Ruler.xaml.cs">
-      <DependentUpon>Ruler.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\ResizingControls.xaml.cs">
-      <DependentUpon>ResizingControls.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateApplier.xaml.cs">
-      <DependentUpon>TemplateApplier.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateConstants.cs" />
-    <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
-      <DependentUpon>TemplateEditorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateRecord.xaml.cs">
-      <DependentUpon>TemplateRecord.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
     <Compile Include="WebBoxView.xaml.cs">
@@ -1194,10 +1170,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1497,30 +1469,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\Ruler.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\ResizingControls.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateApplier.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateRecord.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="WebBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1597,9 +1545,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Syncfusion.SfColorPickers.UWP">
-      <Version>16.2.0.50</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>

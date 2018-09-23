@@ -17,11 +17,11 @@
 
     <Grid >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition x:Name="ContentColumn" x:FieldModifier="public" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="ContentRow"/>
+            <RowDefinition x:Name="ContentRow" x:FieldModifier="public"/>
             <RowDefinition x:Name="XSuggestRow" Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.Resources>
@@ -59,7 +59,12 @@
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
                 <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
-                <TextBlock x:Name="xURISource" Margin="0 0 0 -40" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                <Canvas Margin="-20 0 0 -8"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
+                    <TextBlock x:Name="xURISource" FontSize="9"/>
+                </Canvas>
+                <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
+                </Canvas>
             </Grid>
 
             <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
@@ -82,7 +87,7 @@
                         </ToolTipService.ToolTip>
                     </Grid>
                     <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-                    <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
+                    <!--<Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
                         <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
                             PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
                         HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
@@ -99,7 +104,7 @@
 
                             </Grid>
                         </Border>
-                    </Grid>
+                    </Grid>-->
                 </Grid>
             </Canvas>
 

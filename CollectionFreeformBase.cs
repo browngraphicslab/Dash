@@ -906,7 +906,7 @@ namespace Dash
             var type = CollectionView.CollectionViewType.Freeform;
 
             var deselect = false;
-            if (!(this.IsCtrlPressed() || this.IsShiftPressed() || this.IsAltPressed()))
+            if (!(this.IsAltPressed()))
             {
                 switch (modifier)
                 {
@@ -926,7 +926,8 @@ namespace Dash
                     DoAction((views, where, size) =>
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            CollectionViewModel.RouteDataBoxReferencesThroughCollection(newCollection, docss);
                             ViewModel.AddDocument(newCollection);
 
                             foreach (DocumentView v in views)
@@ -937,65 +938,82 @@ namespace Dash
                         });
                     deselect = true;
                     break;
-                case VirtualKey.Up:
                 case VirtualKey.Down:
-                    DoAction((views, where, size) =>
-                    {
-                        views.Sort((dv1, dv2) =>
-                        {
-                            var dv1y = dv1.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
-                            var dv2y = dv2.ViewModel.LayoutDocument.GetPosition()?.Y ?? 0;
-                            if (dv1y < dv2y)
-                                return -1;
-                            else if (dv1y > dv2y)
-                                return 1;
-                            return 0;
-                        });
-
-                        Rect bounds = Rect.Empty;
-                        double usedHeight = 0;
-                        foreach (var v in views)
-                        {
-                            var vb = v.ViewModel.Bounds;
-                            usedHeight += vb.Height;
-                            bounds.Union(new Point(vb.Left, vb.Top));
-                            bounds.Union(new Point(vb.Right, vb.Bottom));
-                        }
-                        var spacing = (bounds.Height -usedHeight) / (views.Count -1);
-                        double placement = bounds.Top;
-                        foreach (var v in views)
-                        {
-                            if (modifier == VirtualKey.Up)
-                            {
-                                v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
-                                placement += v.ViewModel.Bounds.Height + spacing;
-                            }
-                        }
-                    });
-                    break;
                 case VirtualKey.Left:
+                case VirtualKey.Up:
                 case VirtualKey.Right:
-                    DoAction((views, where, size) =>
+                    if (!MainPage.Instance.IsShiftPressed()) // arrow aligns to left or right (ctrl + arrow aligns to horizontal or vertical center)
                     {
-                        Rect bounds = Rect.Empty;
-                        foreach (var v in views)
+                        DoAction((views, where, size) =>
                         {
-                            var vb = v.ViewModel.Bounds;
-                            bounds.Union(new Point(vb.Left, vb.Top));
-                            bounds.Union(new Point(vb.Right, vb.Bottom));
-                        }
-                        foreach (var v in views)
+                            var docDec = MainPage.Instance.XDocumentDecorations;
+                            var rect = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
+                            var centered = MainPage.Instance.IsCtrlPressed();
+                            foreach (var v in views)
+                            {
+                                double alignedX = v.ViewModel.LayoutDocument.GetPosition().Value.X;
+                                double alignedY = v.ViewModel.LayoutDocument.GetPosition().Value.Y;
+                                if (centered)
+                                {
+                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up)    ? (rect.Left + rect.Right)/2-v.ActualWidth  /2 : alignedX;
+                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom)/2-v.ActualHeight /2 : alignedY;
+
+                                }
+                                else
+                                {
+                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right -v.ActualWidth  : alignedX;
+                                    alignedY = modifier == VirtualKey.Up   ? rect.Top  : modifier == VirtualKey.Down  ? rect.Bottom-v.ActualHeight : alignedY;
+                                }
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
+                            }
+                        });
+                    }
+                    else // shift + arrow distributes objects horizontally or vertically
+                    {
+                        DoAction((views, where, size) =>
                         {
-                            if (modifier == VirtualKey.Left)
+                            var sortY = modifier == VirtualKey.Down || modifier == VirtualKey.Up;
+                            views.Sort((dv1, dv2) =>
                             {
-                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Left, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
-                            }
-                            else if (modifier == VirtualKey.Right)
+                                var v1p = dv1.ViewModel.LayoutDocument.GetPosition() ?? new Point();
+                                var v2p = dv2.ViewModel.LayoutDocument.GetPosition() ?? new Point();
+                                var v1 = sortY ? v1p.Y : v1p.X;
+                                var v2 = sortY ? v2p.Y : v2p.X;
+                                var v1o = sortY ? v1p.X : v1p.Y;
+                                var v2o = sortY ? v2p.X : v2p.Y;
+                                if (v1 < v2)
+                                    return -1;
+                                else if (v1 > v2)
+                                    return 1;
+                                else if (v1o < v2o)
+                                    return -1;
+                                else if (v1o > v2o)
+                                    return 1;
+                                return 0;
+                            });
+
+                            var docDec = MainPage.Instance.XDocumentDecorations;
+                            var usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
+                            var bounds     = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
+                            var spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
+                            double placement = sortY ? bounds.Top : bounds.Left;
+                            if (modifier == VirtualKey.Down || modifier == VirtualKey.Left)
+                                views.Reverse();
+                            foreach (var v in views)
                             {
-                                v.ViewModel.LayoutDocument.SetPosition(new Point(bounds.Right-v.ViewModel.Bounds.Width, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                                if (modifier == VirtualKey.Down || modifier == VirtualKey.Up)
+                                {
+                                    v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
+                                    placement += v.ViewModel.Bounds.Height + spacing;
+                                }
+                                if (modifier == VirtualKey.Left || modifier == VirtualKey.Right)
+                                {
+                                    v.ViewModel.LayoutDocument.SetPosition(new Point(placement, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                                    placement += v.ViewModel.Bounds.Width + spacing;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:

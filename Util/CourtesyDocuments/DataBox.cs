@@ -19,6 +19,8 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             SetupDocument(DocumentType, PrototypeId, "Data Box Prototype Layout", fields);
+            var doc = (refToData as DocumentReferenceController)?.GetDocumentController(null);
+            Document.SetField(KeyStore.DocumentContextKey, doc, true);
         }
 
         public static FrameworkElement MakeView(DocumentController documentController, Context context)
