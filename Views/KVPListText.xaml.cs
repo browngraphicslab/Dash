@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -43,6 +44,23 @@ namespace Dash
             xText.Text = text;
             _text = text;
             _color = color;
+        }
+
+        private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xDeleteIcon.Opacity = 1;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 1);
+        }
+
+        private void DeleteButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xDeleteIcon.Opacity = 0.5;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
