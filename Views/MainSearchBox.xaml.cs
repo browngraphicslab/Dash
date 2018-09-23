@@ -437,26 +437,12 @@ namespace Dash
 
         private void NavigateToSearchResult(SearchResultViewModel resultVm)
         {
-            var navigated = false;
             resultVm.ViewDocument.SetHidden(false);
             if (resultVm.DocumentCollection != null)
             {
-                var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                if (!currentWorkspace.GetDataDocument().Equals(resultVm.DocumentCollection.GetDataDocument()))
-                {
-                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVm.DocumentCollection, resultVm.ViewDocument);
-                }
-                else
-                {
-                    navigated = MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
-                }
+                SplitFrame.OpenDocumentInWorkspace(resultVm.ViewDocument, resultVm.DocumentCollection);
             }
             else
-            {
-                navigated = MainPage.Instance.NavigateToDocumentInWorkspace(resultVm.ViewDocument, true, false);
-            }
-
-            if (!navigated)
             {
                 SplitFrame.OpenInInactiveFrame(resultVm.ViewDocument);
             }

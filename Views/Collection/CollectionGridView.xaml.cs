@@ -96,7 +96,7 @@ namespace Dash
         private void Viewbox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
-            MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
+            SplitFrame.TryNavigateToDocument(dv.ViewModel.DocumentController, true);
         }
     }
 }

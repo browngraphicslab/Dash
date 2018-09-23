@@ -380,7 +380,10 @@ namespace Dash
                         {
                             if (this.IsCtrlPressed())
                                 nearestOnCollection.DeleteDocument();
-                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                            else
+                            {
+                                SplitFrame.TryNavigateToDocument(nearestOnCollection.ViewModel.DocumentController);
+                            }
                         }
                         else
                         {

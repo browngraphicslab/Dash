@@ -308,8 +308,9 @@ namespace Dash
             MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
-            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            //if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+            //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            //TODO TreeView
 
             UnfocusText();
             ClosePopups();
@@ -353,7 +354,7 @@ namespace Dash
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            SplitFrame.OpenInActiveFrame((DataContext as DocumentViewModel).DocumentController);
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -438,8 +439,9 @@ namespace Dash
             if (snaps != null && snaps.Count > itemNum)
             {
                 var docToFocus = snaps[itemNum];
-                if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+                //if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+                //TODO TreeView
             }
 
             ClosePopups();

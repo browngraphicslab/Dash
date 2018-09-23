@@ -105,6 +105,12 @@ namespace Dash.Views.TreeView
                 Text = "Add Collection",
             };
             _addCollectionItem.Click += AddCollectionItem_OnClick;
+
+            _showInMapItem = new MenuFlyoutItem()
+            {
+                Text = "Show in Mini-map",
+            };
+            _showInMapItem.Click += ShowInMapItemOnClick;
         }
 
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -264,6 +270,7 @@ namespace Dash.Views.TreeView
         #region Collection Flyout
 
         private readonly MenuFlyoutItem _addCollectionItem;
+        private readonly MenuFlyoutItem _showInMapItem;
         private void AddCollectionItem_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             if (!IsCollection)
@@ -274,8 +281,19 @@ namespace Dash.Views.TreeView
             XTreeViewList.ViewModel.AddDocument(new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid).Document);
         }
 
+        private void ShowInMapItemOnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (!IsCollection)
+            {
+                return;
+            }
+            
+            MainPage.Instance.SetupMapView(ViewModel.DocumentController);
+        }
+
         private void MenuFlyout_OnClosed(object sender, object e)
         {
+            MenuFlyout.Items?.Remove(_showInMapItem);
             MenuFlyout.Items?.Remove(_addCollectionItem);
         }
 
@@ -284,6 +302,7 @@ namespace Dash.Views.TreeView
             if (IsCollection)
             {
                 MenuFlyout.Items?.Add(_addCollectionItem);
+                MenuFlyout.Items?.Add(_showInMapItem);
             }
         }
 

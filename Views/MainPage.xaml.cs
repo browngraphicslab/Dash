@@ -102,8 +102,6 @@ namespace Dash
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
-            xBackButton.Tapped += (s, e) => GoBack();
-            xForwardButton.Tapped += (s, e) => GoForward();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
@@ -137,7 +135,7 @@ namespace Dash
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            async Task Success(IEnumerable<DocumentModel> mainPages)
+            Task Success(IEnumerable<DocumentModel> mainPages)
             {
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
@@ -190,9 +188,11 @@ namespace Dash
                 xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
-                setupMapView(lastWorkspace);
+                SetupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+
+                return Task.CompletedTask;
             }
 
             await DotNetRPC.Init();
@@ -261,234 +261,6 @@ namespace Dash
         }
 
         #endregion
-
-        /// <summary>
-        /// Updates the workspace currently displayed on the canvas.
-        /// </summary>
-        /// <param name="workspace"></param>
-        /// <returns></returns>
-        public bool SetCurrentWorkspace(DocumentController workspace)
-        {
-            //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
-            if (workspace.Equals(MainDocument))
-            {
-                return false;
-            }
-            var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-
-            SplitFrame.OpenInActiveFrame(workspace);
-            if (workspace.DocumentType.Equals(CollectionBox.DocumentType))
-            {
-                setupMapView(workspace);
-            }
-
-            MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
-            return true;
-        }
-
-        public void GoBack()
-        {
-            var history =
-                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
-            if (history.Count != 0)
-            {
-                var workspace = history.TypedData.Last();
-                history.Remove(workspace);
-                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceFutureKey)
-                    .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
-                SplitFrame.OpenInActiveFrame(workspace);
-                setupMapView(workspace);
-                MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
-            }
-        }
-
-        public void GoForward()
-        {
-            var future =
-                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceFutureKey);
-            if (future.Count > 0)
-            {
-                var workspace = future.TypedData.Last();
-                future.Remove(workspace);
-                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey)
-                    .Add(MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey));
-                SplitFrame.OpenInActiveFrame(workspace);
-                setupMapView(workspace);
-                MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
-            }
-        }
-
-        /// <summary>
-        /// Given a Workspace document (collection freeform), displays the workspace on the main canvas
-        /// and centers on a specific document.
-        /// </summary>
-        /// <param name="workspace"></param>
-        /// <param name="document"></param>
-        public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
-        {
-            //TODO Splitting: This method should be refactored...
-            var docView = SplitFrame.ActiveFrame.Document;
-            RoutedEventHandler handler = null;
-            handler =
-                delegate (object sender, RoutedEventArgs args)
-                {
-                    //docView.xContentPresenter.Loaded -= handler;
-
-
-                    var dvm = docView.DataContext as DocumentViewModel;
-                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-                    if (coll?.ViewModel?.DocumentViewModels != null)
-                    {
-                        foreach (var vm in coll.ViewModel.DocumentViewModels)
-                        {
-                            if (vm.DocumentController.Equals(document))
-                            {
-                                RoutedEventHandler finalHandler = null;
-                                finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
-                                {
-                                    Debug.WriteLine("loaded");
-                                    NavigateToDocumentInWorkspace(document, false, false);
-                                    vm.Content.Loaded -= finalHandler;
-                                };
-
-                                vm.Content.Loaded += finalHandler;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (dvm?.Content != null)
-                        {
-                            if (coll == null)
-                            {
-                                RoutedEventHandler contentHandler = null;
-                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
-                                {
-                                    dvm.Content.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false, false))
-                                    {
-                                        handler(null, null);
-                                    }
-                                };
-                                dvm.Content.Loaded += contentHandler;
-                            }
-                            else
-                            {
-                                RoutedEventHandler contentHandler = null;
-                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
-                                {
-                                    coll.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document, false, false))
-                                    {
-                                        handler(null, null);
-                                    }
-                                };
-                                coll.Loaded += contentHandler;
-                            }
-                        }
-
-                    }
-                };
-            //docView.xContentPresenter.Loaded += handler;
-            //if (!SetCurrentWorkspace(workspace))
-            //{
-            //    docView.xContentPresenter.Loaded -= handler;
-            //}
-        }
-
-        /// <summary>
-        /// Centers the main canvas view to a given document.
-        /// </summary>
-        /// <param name="document"></param>
-        /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
-        {
-            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            if (coll != null)
-            {
-                return NavigateToDocument(coll, null, coll, document, animated, zoom, compareDataDocuments);
-            }
-            return false;
-        }
-
-        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document, bool zoom)
-        {
-            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            if (coll != null && document != null)
-            {
-                return NavigateToDocument(coll, null, coll, document, true, zoom, true);
-            }
-            return false;
-        }
-
-        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection,
-            DocumentController document, bool animated, bool zoom, bool compareDataDocuments = false)
-        {
-            if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
-            {
-                return false;
-            }
-
-            //TODO Splitting this should be more sophisticated logic to check if it's in any split view
-            var workspace = (SplitFrame.ActiveFrame.DataContext as DocumentViewModel).DocumentController;
-            var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            var workspaceView = workspace.GetViewCopy();
-            workspaceView.SetWidth(double.NaN);
-            workspaceView.SetHeight(double.NaN);
-
-            MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(workspaceView);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, currentWorkspace, true);
-
-            //loop through each doc in collection
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-            {
-                var dmd = dm.DocumentController.GetDataDocument();
-                //if this doc is given document
-                if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
-                {
-                    var containerViewModel = rootViewModel ?? dm;
-                    //TODO Splitting this should be more sophisticated logic 
-                    var center = new Point(SplitFrame.ActiveFrame.ActualWidth / 2, SplitFrame.ActiveFrame.ActualHeight / 2);
-                    //get center point of doc where you want to go
-                    var shift = new Point(
-                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
-                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2);
-
-                    //get zoom changes
-                    var shiftZ =new Point(containerViewModel.ActualSize.X / 2, containerViewModel.ActualSize.Y / 2);
-
-                    //get less zoom, so x and y are zoomed by same amt
-                    var minZoom = Math.Min(center.X / shiftZ.X, center.Y / shiftZ.Y) * 0.9;
-                    if (!zoom)
-                    {
-                        minZoom = root.ViewModel.TransformGroup.ScaleAmount.X;
-                    }
-
-                    if (animated)
-                    {
-                        //TranslateTransform moves object by x and y - find diff bt where you are (center) and where you want to go (shift)
-                        root.SetTransformAnimated(
-                            new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y },
-                            new ScaleTransform { CenterX = shift.X, CenterY = shift.Y, ScaleX = minZoom, ScaleY = minZoom }
-                        );
-                    }
-                    else root.SetTransform(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y }, null);
-                    return true;
-                }
-                else if ((dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
-                {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformBase, document, animated, compareDataDocuments))
-                        return true;
-                }
-            }
-            return false;
-        }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
@@ -633,22 +405,6 @@ namespace Dash
             e.Handled = true;
         }
 
-        public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
-        {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xTabCanvas);
-        }
-
-        public void AddGenericFilter(object o, DragEventArgs e)
-        {
-            if (!xTabCanvas.Children.Contains(GenericSearchView.Instance))
-            {
-                xCanvas.Children.Add(GenericSearchView.Instance);
-                Point absPos = e.GetPosition(Instance);
-                Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
-                Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
-            }
-        }
-
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
@@ -675,7 +431,7 @@ namespace Dash
 
         DispatcherTimer mapTimer = new DispatcherTimer();
         Button _mapActivateBtn = new Button() { Content = "^:" };
-        void setupMapView(DocumentController mainDocumentCollection)
+        public void SetupMapView(DocumentController mainDocumentCollection)
         {
             if (xMapDocumentView == null)
             {
@@ -701,8 +457,8 @@ namespace Dash
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) =>
                 {
-                    var cview = xMapDocumentView.GetFirstDescendantOfType<CollectionView>();
-                    //cview?.ViewModel?.FitContents(cview);
+                    var cview = xMapDocumentView.ViewModel.Content as CollectionView;
+                    cview?.ViewModel?.FitContents(cview);
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
@@ -919,19 +675,11 @@ namespace Dash
             var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
             if (node?.Parent == null)
             {
-                SetCurrentWorkspace(doc);
+                SplitFrame.OpenInActiveFrame(doc);
                 return;
             }
 
-            var workspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            if (workspace.GetDataDocument().Equals(node.Parent.DataDocument))
-            {
-                NavigateToDocumentInWorkspace(doc, true, false);
-            }
-            else
-            {
-                SetCurrentWorkspaceAndNavigateToDocument(node.Parent.ViewDocument, doc);
-            }
+            SplitFrame.OpenDocumentInWorkspace(doc, node.Parent.ViewDocument);
         }
 
         public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
@@ -1106,26 +854,6 @@ namespace Dash
             }
         }
 
-        private void Docview_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cview = (sender as CollectionView);
-            foreach (var doc in cview.ViewModel.DocumentViewModels)
-                if (doc.DocumentController.Equals(cview.Tag as DocumentController))
-                {
-                    SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
-                    SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-                    doc.SetHighlight(true);
-                    void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
-                    {
-                        SelectionManager.SelectionChanged -= SelectionManagerSelectionChanged;
-                        doc.SetHighlight(false);
-                    }
-                }
-
-
-            cview.Loaded -= Docview_Loaded;
-        }
-
         public DocumentView GetTargetDocumentView(DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
@@ -1208,59 +936,22 @@ namespace Dash
 
         }
 
-        private ToolTip _search;
-        private ToolTip _back;
-        private ToolTip _forward;
-        private ToolTip _presentation;
-        private ToolTip _export;
 
         private void SetUpToolTips()
         {
             const PlacementMode placementMode = PlacementMode.Bottom;
             const int offset = 5;
 
-            _search = new ToolTip()
+            var search = new ToolTip()
             {
                 Content = "Search workspace",
                 Placement = placementMode,
                 VerticalOffset = offset
             };
-            ToolTipService.SetToolTip(xSearchButton, _search);
-
-            _back = new ToolTip()
-            {
-                Content = "Go back",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBackButton, _back);
-
-            _forward = new ToolTip()
-            {
-                Content = "Go forward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xForwardButton, _forward);
+            ToolTipService.SetToolTip(xSearchButton, search);
         }
 
-        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            xMainTreeView.MakePdf_OnTapped(sender, e);
-        }
-
-        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
-        {
-            xMainTreeView.TogglePresentationMode(sender, e);
-        }
-
-        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            xMainTreeView.Snapshot_OnTapped(sender, e);
-        }
-
-
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void ActionMenuTest_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             ActionMenu GetMenu()
             {

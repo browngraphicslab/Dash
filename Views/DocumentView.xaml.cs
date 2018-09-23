@@ -949,9 +949,8 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
             }
-
         }
 
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)

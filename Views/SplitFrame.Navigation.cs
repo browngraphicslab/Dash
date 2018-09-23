@@ -8,9 +8,12 @@ namespace Dash
 {
     public sealed partial class SplitFrame
     {
+        #region Navigation
         public static DocumentController OpenInActiveFrame(DocumentController doc)
         {
-            return ActiveFrame.OpenDocument(doc);
+            var newDoc = ActiveFrame.OpenDocument(doc);
+            MainPage.Instance.MainDocument.SetField(KeyStore.LastWorkspaceKey, newDoc, true);
+            return newDoc;
         }
 
         public static DocumentController OpenInInactiveFrame(DocumentController doc)
@@ -39,40 +42,81 @@ namespace Dash
             }
         }
 
-        public static DocumentController OpenDocumentInWorkspace(DocumentController document, DocumentController workspace)
+        private void AnimateToDocument(DocumentController document)
         {
-            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Contains(document) ?? false);
-
             var center = document.GetPosition() ?? new Point();
             var size = document.GetActualSize() ?? new Point();
             center.X += (size.X - ActiveFrame.ActualWidth) / 2;
             center.Y += (size.Y - ActiveFrame.ActualHeight) / 2;
             center.X = -center.X;
             center.Y = -center.Y;
+
+            var col = ActiveFrame.ViewModel.Content as CollectionView;
+            var ffv = col?.CurrentView as CollectionFreeformBase;
+            ffv?.SetTransformAnimated(new TranslateTransform
+            {
+                X = center.X,
+                Y = center.Y
+            }, new ScaleTransform
+            {
+                ScaleX = 1,
+                ScaleY = 1
+            });
+        }
+
+        public static DocumentController OpenDocumentInWorkspace(DocumentController document, DocumentController workspace)
+        {
+            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Contains(document) ?? false);
+
             if (ActiveFrame.ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
             {
-                var col = ActiveFrame.ViewModel.Content as CollectionView;
-                var ffv = col?.CurrentView as CollectionFreeformBase;
-                ffv?.SetTransformAnimated(new TranslateTransform
-                {
-                    X = center.X,
-                    Y = center.Y
-                }, new ScaleTransform
-                {
-                    ScaleX = 1,
-                    ScaleY = 1
-                });
-
+                ActiveFrame.AnimateToDocument(document);
                 return ActiveFrame.ViewModel.DocumentController;
             }
             else
             {
+                var center = document.GetPosition() ?? new Point();
+                var size = document.GetActualSize() ?? new Point();
+                center.X += (size.X - ActiveFrame.ActualWidth) / 2;
+                center.Y += (size.Y - ActiveFrame.ActualHeight) / 2;
+                center.X = -center.X;
+                center.Y = -center.Y;
                 workspace = ActiveFrame.OpenDocument(workspace);
                 workspace.SetField<PointController>(KeyStore.PanPositionKey, center, true);
                 workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
                 return workspace;
             }
         }
+
+        public static bool TryNavigateToDocument(DocumentController document, bool useDataDoc = false)
+        {
+            var workspace = ActiveFrame.ViewModel.DocumentController;
+            if (useDataDoc)
+            {
+                var dataDoc = document.GetDataDocument();
+                document = workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
+                    ?.FirstOrDefault(doc => doc.GetDataDocument().Equals(dataDoc));
+                if (document == null)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
+                          ?.Contains(document) ?? false))
+                {
+                    return false;
+                }
+            }
+
+            ActiveFrame.AnimateToDocument(document);
+            return true;
+        }
+
+        #endregion
+
+        #region Highlighting
 
         private static void HighlightViewModel(DocumentViewModel viewModel, HighlightMode highlightMode)
         {
@@ -144,5 +188,7 @@ namespace Dash
             Unhighlight,
             ToggleHighlight
         }
+
+        #endregion
     }
 }
