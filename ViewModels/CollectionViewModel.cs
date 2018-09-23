@@ -122,12 +122,14 @@ namespace Dash
                 {
                     var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
                     var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
-                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth());
-                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth());
+                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth())&& !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth()) && !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
                     if (!halin && !autoWidth)
                         rl.Union(d.Bounds);
                     if (!valin && !autoHeight)
                         rr.Union(d.Bounds);
+                    else if (!valin && autoHeight)
+                        rr.Union(new Point(d.Bounds.Left, d.Bounds.Top));
                 }
                 var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
                 if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
@@ -753,41 +755,46 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
 
-                var dragDocModel = e.DataView.GetDragModel() as DragDocumentModel;
+                var dragModel = e.DataView.GetDragModel();
 
                 var cpar = ContainerDocument;
 
-                if (MainPage.Instance.IsAltPressed() && dragDocModel != null && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
+                if (MainPage.Instance.IsAltPressed() && dragModel is DragDocumentModel dragDocModel && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this &&
+                    (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
                     cpar.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                if (e.DataView.GetDragModel() is DragFieldModel)  // dropping a DataBox
+                if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
                 {
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
                 }
 
                 if (!MainPage.Instance.IsShiftPressed())
                 {
-                    if(dragDocModel != null)
+                    if(dragModel is DragDocumentModel d)
                     {
-                        for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
+                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (dragDocModel.DraggedDocCollectionViews[i] == this)
+                            if (d.DraggedDocCollectionViews[i] == this)
 
                             {
-                                docsToAdd.Remove(dragDocModel.DraggedDocuments[i]);
-                                if (dragDocModel.DraggedDocumentViews[i] != null)
+                                docsToAdd.Remove(d.DraggedDocuments[i]);
+                                if (d.DraggedDocumentViews?[i] != null)
                                 {
-                                    dragDocModel.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
                                 }
                             }
                             else
                             {
-                                MainPage.Instance.ClearFloaty(dragDocModel.DraggedDocumentViews[i]);
-                                dragDocModel.DraggedDocCollectionViews[i].RemoveDocument(dragDocModel.DraggedDocuments[i]);
+                                if (d.DraggedDocumentViews != null)
+                                {
+                                    MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
+                                }
+
+                                d.DraggedDocCollectionViews[i]?.RemoveDocument(d.DraggedDocuments[i]);
 
                             }
                         }
@@ -798,17 +805,18 @@ namespace Dash
             }
         }
 
-        private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
             cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
-            foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+            foreach (var dataBox in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
             {
-                var xd = doc.GetDataDocument();
-                var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                var ddd = dd?.GetDocumentController(null);
-                cpar.SetField(KeyStore.DocumentContextKey, ddd, true);
-                var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), refdoc.FieldKey), true);
+                var dataBoxSourceDoc     = dataBox.GetDataDocument();
+                var dataBoxDataReference = dataBox.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                if (dataBoxSourceDoc != null)
+                {
+                    cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
+                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), dataBoxDataReference.FieldKey), true);
+                }
             }
         }
 

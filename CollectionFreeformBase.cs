@@ -924,7 +924,8 @@ namespace Dash
                     DoAction((views, where, size) =>
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            CollectionViewModel.RouteDataBoxReferencesThroughCollection(newCollection, docss);
                             ViewModel.AddDocument(newCollection);
 
                             foreach (DocumentView v in views)

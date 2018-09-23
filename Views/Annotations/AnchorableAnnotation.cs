@@ -143,7 +143,8 @@ namespace Dash
 
             if (pos != null)
             {
-                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+
+                shape.RenderTransform = new TranslateTransform { X = pos.Value.X, Y = pos.Value.Y };
             }
             else
             {

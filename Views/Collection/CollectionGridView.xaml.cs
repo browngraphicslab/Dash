@@ -26,7 +26,7 @@ namespace Dash
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
             var selectedDocControllers =
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel?.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;

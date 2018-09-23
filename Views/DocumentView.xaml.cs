@@ -226,7 +226,7 @@ namespace Dash
             {
                 if (this.GetFirstAncestorOfType<DocumentView>() != null)
                 {
-                    if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+                    if (MainPage.Instance.IsShiftPressed() && args.Key == VirtualKey.PageDown && !_isQuickEntryOpen || args.Key == VirtualKey.PageUp && _isQuickEntryOpen)
                     {
                         if (!_isQuickEntryOpen)
                         {
@@ -238,7 +238,7 @@ namespace Dash
                         ToggleQuickEntry();
                         args.Handled = true;
                     }
-                    else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
+                    else if (MainPage.Instance.IsShiftPressed() && args.Key == VirtualKey.PageDown && _isQuickEntryOpen)
                     {
                         if (xKeyBox.FocusState != FocusState.Unfocused)
                         {

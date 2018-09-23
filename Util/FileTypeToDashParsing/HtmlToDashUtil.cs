@@ -189,7 +189,10 @@ namespace Dash
             pageTitle = status ?
 
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
-            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+            if (pageTitle.Length > 40)
+                pageTitle = pageTitle.Substring(1, 39) + "...";
+            else pageTitle = pageTitle.Substring(1);
+            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle;
 
             return $"{webName} ({pageTitle})";
         }

@@ -42,13 +42,20 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
+
+            var startPage = ParentOverlay.GetPageOf(p.Y);
+            // startIndex is either 0 or the last page's end index + 1
+            var startIndex = startPage > 0 ? ParentOverlay.PageEndIndices[startPage - 1] + 1 : 0;
+            var endIndex = ParentOverlay.PageEndIndices[startPage];
+            for (var index = startIndex; index <= endIndex; index++)
             {
+                var selectableElement = ParentOverlay.TextSelectableElements[index];
                 var b = selectableElement.Bounds;
                 if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
+
                 var dist = GetMinRectDist(b, p, out var closest);
                 if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
                 {
