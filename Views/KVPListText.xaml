@@ -15,7 +15,7 @@
                 <TextBlock x:Name="xText" Foreground="White" FontSize="13" Padding="10 4 6 4" HorizontalAlignment="Left"
                 ></TextBlock>
             </Grid>
-            <Grid Background="Transparent" PointerEntered="DeleteButton_PointerEntered" PointerExited="DeleteButton_PointerExited" PointerPressed="DeleteButton_PointerPressed">
+            <Grid Background="Transparent" PointerEntered="DeleteButton_PointerEntered" PointerExited="DeleteButton_PointerExited" Tapped="UIElement_OnTapped">
                 <TextBlock x:Name="xDeleteIcon" Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets" Padding="0 10 10 0"  Foreground="White" HorizontalAlignment="Right" Opacity="0.5"/>
             </Grid>
         </StackPanel>

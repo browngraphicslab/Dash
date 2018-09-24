@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
@@ -18,13 +19,15 @@ namespace Dash
     {
 
         private DocumentController _docController = null;
+        private KeyController _key = null;
         private Context _context = null;
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
 
-        public TableFieldToMakeViewConverter(DocumentController docController, Context context)
+        public TableFieldToMakeViewConverter(DocumentController docController, KeyController key, Context context)
         {
             _docController = docController;
+            _key = key;
             _context = context;
         }
 
@@ -67,28 +70,9 @@ namespace Dash
             }
             else if (data is BoolController val)
             {
-                Grid grid = new Grid();
-               
-                grid.Width = 60;
-                grid.Height = 24;
-                grid.Margin = new Thickness(0, 15, 0, 0);
-                TextBlock text = new TextBlock();
-               
-                text.Foreground = new SolidColorBrush(Colors.White);
-                text.Margin = new Thickness(8, -6, 0, 0);
-
-                if (val.Data)
-                {
-                    text.Text = "true";
-                    grid.Background = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
-                }
-                else
-                {
-                    text.Text = "false";
-                    grid.Background = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
-                }
-                currView = grid;
-                grid.Children.Add(text);
+                var toggleSwitch = new ToggleSwitch();
+                toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController>{Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot});
+                currView = toggleSwitch;
             }
             else if (data is ListController<TextController> textList)
             {
@@ -127,6 +111,39 @@ namespace Dash
                 {
                     currView = dc.GetKeyValueAlias().MakeViewUI(_context);
                 }
+            } else if (data is ListController<BoolController> boolList)
+            {
+                WrapPanel wrap = new WrapPanel();
+                KVPListText listText = null;
+                wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                wrap.Margin = new Thickness(0, 15, 0, 0);
+                foreach (var booler in boolList)
+                {
+                    Grid grid = new Grid();
+
+                    grid.Width = 24;
+                    grid.Height = 24;
+                    grid.Margin = new Thickness(6, 0, 0, 0);
+                    TextBlock text = new TextBlock();
+
+                    text.Margin = new Thickness(-1, -4, 0, 0);
+
+                    if (booler.Data)
+                    {
+                        text.Text = "T";
+                        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
+                    }
+                    else
+                    {
+                        text.Text = "F";
+                        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
+                    }
+                    grid.Children.Add(text);
+                    wrap.Children.Add(grid);
+                }
+
+                currView = wrap;
+
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {

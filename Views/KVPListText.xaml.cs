@@ -58,7 +58,8 @@ namespace Dash
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
 
-        private void DeleteButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             throw new NotImplementedException();
         }

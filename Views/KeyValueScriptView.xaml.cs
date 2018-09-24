@@ -37,7 +37,7 @@ namespace Dash
                         this.XTextBox.Text = "==" + this.XTextBox.Text;
                     xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
                     xValueColumn.Width = new GridLength(0);
-                    Focus(FocusState.Programmatic);
+                    XTextBox.Focus(FocusState.Programmatic);
                 }
             };
             KeyDown += (s, e) =>
@@ -52,7 +52,7 @@ namespace Dash
                     MainPage.Instance.Focus(FocusState.Programmatic);
             };
             KeyUp += (s, e) => e.Handled = true;
-            LostFocus += (s, e) =>
+            XTextBox.LostFocus += (s, e) =>
             {
                 CollapseBox();
             };
