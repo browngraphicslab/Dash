@@ -772,7 +772,7 @@ namespace Dash
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
                 }
 
-                if (!MainPage.Instance.IsShiftPressed())
+                if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
                 {
                     if(dragModel is DragDocumentModel d)
                     {
@@ -807,15 +807,20 @@ namespace Dash
 
         public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
-            cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
-            foreach (var dataBox in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+            var databoxes = docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)).ToList();
+            if (databoxes.Count > 0)
+            {
+                cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
+            }
+            foreach (var dataBox in databoxes)
             {
                 var dataBoxSourceDoc     = dataBox.GetDataDocument();
-                var dataBoxDataReference = dataBox.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                if (dataBoxSourceDoc != null)
+                var dataBoxDataReference = dataBox.GetField<ReferenceController>(KeyStore.DataKey);
+                if (dataBoxSourceDoc != null && dataBoxDataReference != null)
                 {
+                    var fieldKey = dataBoxDataReference.FieldKey;
                     cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
-                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), dataBoxDataReference.FieldKey), true);
+                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), fieldKey), true);
                 }
             }
         }
