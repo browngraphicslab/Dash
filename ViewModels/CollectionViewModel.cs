@@ -772,7 +772,7 @@ namespace Dash
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
                 }
 
-                if (!MainPage.Instance.IsShiftPressed())
+                if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
                 {
                     if(dragModel is DragDocumentModel d)
                     {
