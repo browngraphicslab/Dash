@@ -141,12 +141,12 @@
                 </Grid.Clip>
                 <Grid.Resources>
                     <Storyboard x:Name="xContentZoomAnimation">
-                        <DoubleAnimation x:Name="xContentZoomX" Storyboard.TargetName="xContentTransform" 
-                                         Storyboard.TargetProperty="ScaleX"
+                        <DoubleAnimation x:Name="xContentZoomX" Storyboard.TargetName="xContentTransform.Value" 
+                                         Storyboard.TargetProperty="M11"
                                          From="0" To="0" Duration="0:0:.1" >
                         </DoubleAnimation>
-                        <DoubleAnimation x:Name="xContentZoomY" Storyboard.TargetName="xContentTransform" 
-                                         Storyboard.TargetProperty="ScaleY"
+                        <DoubleAnimation x:Name="xContentZoomY" Storyboard.TargetName="xContentTransform.Value" 
+                                         Storyboard.TargetProperty="M22"
                                          From="0" To="0" Duration="0:0:.1">
                         </DoubleAnimation>
                     </Storyboard>
@@ -191,8 +191,11 @@
                 <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
                 <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
                     <ContentPresenter.RenderTransform>
-                        <CompositeTransform x:Name="xContentTransform" > </CompositeTransform>
+                        <TransformGroup x:Name="xContentTransform" >
+                        </TransformGroup>
+                       
                     </ContentPresenter.RenderTransform>
+                    
                 </ContentPresenter>
 
                 <!-- 
