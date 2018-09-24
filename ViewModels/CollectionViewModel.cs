@@ -815,15 +815,12 @@ namespace Dash
             foreach (var dataBox in databoxes)
             {
                 var dataBoxSourceDoc     = dataBox.GetDataDocument();
-                var dataBoxDataReference = dataBox.GetField(KeyStore.DataKey);
-                if (dataBoxSourceDoc != null)
+                var dataBoxDataReference = dataBox.GetField<ReferenceController>(KeyStore.DataKey);
+                if (dataBoxSourceDoc != null && dataBoxDataReference != null)
                 {
-                    var fieldKey = dataBoxDataReference is DocumentReferenceController dref ? dref.FieldKey : dataBoxDataReference is PointerReferenceController pref ? pref.FieldKey : null;
-                    if (fieldKey != null)
-                    {
-                        cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
-                        dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), fieldKey), true);
-                    }
+                    var fieldKey = dataBoxDataReference.FieldKey;
+                    cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
+                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), fieldKey), true);
                 }
             }
         }

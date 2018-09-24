@@ -74,13 +74,7 @@ namespace Dash.Views.TreeView
 
         private void TreeView_OnUnloaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ViewModel?.Loaded(false);
-            } catch (Exception)
-            {
-
-            }
+            _oldViewModel?.Loaded(false);
         }
 
         private void OnFilterChanged()
