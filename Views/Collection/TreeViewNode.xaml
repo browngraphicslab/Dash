@@ -72,7 +72,7 @@
                 PointerExited="XOnPointerExited"/>
 
             <Popup x:Name="XSnapshotsPopup" Grid.Column="2" IsOpen="true" Visibility="Collapsed"   Margin="30,0,0,0">
-                <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="{StaticResource DashMediumBlueBrush}" DragItemsStarting="ListViewBase_OnDragItemsStarting" DragItemsCompleted="ListViewBase_OnDragItemsCompleted">
+                <ListView IsItemClickEnabled="True" CanDragItems="True" ItemsSource="{x:Bind _items}" Background="{StaticResource DashMediumBlueBrush}" DragItemsStarting="ListViewBase_OnDragItemsStarting">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:SnapshotView">
                             <StackPanel DoubleTapped="UIElement_OnDoubleTapped" Margin="0 10 0 10">

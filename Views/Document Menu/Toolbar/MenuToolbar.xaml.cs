@@ -1156,7 +1156,7 @@ namespace Dash
 
         private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
         private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)

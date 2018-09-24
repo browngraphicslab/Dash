@@ -129,7 +129,7 @@ namespace Dash
 
         private void HideLinkInputBox()
         {
-            xLinkInputBox.ClearHandlers(new[] { VirtualKey.Enter });
+            xLinkInputBox.ClearHandlers(VirtualKey.Enter);
             xLinkInputOut.Begin();
             xLinkInputOut.Completed += (o, o1) =>
             {

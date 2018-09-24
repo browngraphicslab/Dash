@@ -100,17 +100,6 @@ namespace Dash.Views.TreeView
         {
             InitializeComponent();
 
-            _addCollectionItem = new MenuFlyoutItem()
-            {
-                Text = "Add Collection",
-            };
-            _addCollectionItem.Click += AddCollectionItem_OnClick;
-
-            _showInMapItem = new MenuFlyoutItem()
-            {
-                Text = "Show in Mini-map",
-            };
-            _showInMapItem.Click += ShowInMapItemOnClick;
         }
 
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -269,8 +258,6 @@ namespace Dash.Views.TreeView
 
         #region Collection Flyout
 
-        private readonly MenuFlyoutItem _addCollectionItem;
-        private readonly MenuFlyoutItem _showInMapItem;
         private void AddCollectionItem_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             if (!IsCollection)
@@ -291,19 +278,65 @@ namespace Dash.Views.TreeView
             MainPage.Instance.SetupMapView(ViewModel.DocumentController);
         }
 
+        private void SnapshotItemOnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (!IsCollection)
+            {
+                return;
+            }
+
+            ViewModel.DocumentController.CreateSnapshot();
+        }
+
         private void MenuFlyout_OnClosed(object sender, object e)
         {
-            MenuFlyout.Items?.Remove(_showInMapItem);
-            MenuFlyout.Items?.Remove(_addCollectionItem);
+            var itemsToRemove = MenuFlyout.Items?.Where(mfi => mfi.Tag is bool b && b).ToList();
+            if (itemsToRemove == null) return;
+            foreach (var menuFlyoutItemBase in itemsToRemove)
+            {
+                MenuFlyout.Items?.Remove(menuFlyoutItemBase);
+            }
         }
 
         private void MenuFlyout_OnOpening(object sender, object e)
         {
             if (IsCollection)
             {
-                MenuFlyout.Items?.Add(_addCollectionItem);
-                MenuFlyout.Items?.Add(_showInMapItem);
+                foreach (var collectionItem in GetCollectionItems())
+                {
+                    collectionItem.Tag = true;
+                    MenuFlyout.Items?.Add(collectionItem);
+                }
             }
+        }
+
+        private List<MenuFlyoutItemBase> GetCollectionItems()
+        {
+            var addCollectionItem = new MenuFlyoutItem()
+            {
+                Text = "Add Collection",
+            };
+            addCollectionItem.Click += AddCollectionItem_OnClick;
+
+            var showInMapItem = new MenuFlyoutItem()
+            {
+                Text = "Show in Mini-map",
+            };
+            showInMapItem.Click += ShowInMapItemOnClick;
+
+            var snapshotItem = new MenuFlyoutItem()
+            {
+                Text = "Take Snapshop",
+            };
+            snapshotItem.Click += SnapshotItemOnClick;
+
+            return new List<MenuFlyoutItemBase>
+            {
+                new MenuFlyoutSeparator(),
+                addCollectionItem,
+                snapshotItem,
+                showInMapItem
+            };
         }
 
         #endregion

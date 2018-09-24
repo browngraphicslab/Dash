@@ -55,8 +55,6 @@ namespace Dash
         public TreeViewNode()
         {
             InitializeComponent();
-            MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
-            focusOnSelected();
             SetupTooltips();
         }
 
@@ -249,10 +247,7 @@ namespace Dash
                 var centX = (float)xArrowBlock.ActualWidth / 2 + 1;
                 var centY = (float)xArrowBlock.ActualHeight / 2 + 1;
                 //open search bar
-                xArrowBlock.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-                    easingType: EasingType.Default).Start();
-
-                ClosePopups();
+                xArrowBlock.Rotate(90.0f, centX, centY, 300).Start();
             }
             else
             {
@@ -264,8 +259,7 @@ namespace Dash
                 var centY = (float)xArrowBlock.ActualHeight / 2;
                 //open search bar
 
-                xArrowBlock.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-                    easingType: EasingType.Default).Start();
+                xArrowBlock.Rotate(0.0f, centX, centY, 300).Start();
             }
         }
 
@@ -276,7 +270,6 @@ namespace Dash
             //Toggle visibility
             if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
-                ClosePopups();
                 XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
@@ -312,9 +305,6 @@ namespace Dash
             //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
             //TODO TreeView
 
-            UnfocusText();
-            ClosePopups();
-
 	        XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
             XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
         }
@@ -327,7 +317,6 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            ClosePopups();
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
@@ -343,7 +332,6 @@ namespace Dash
         
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
-            ClosePopups();
             UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
@@ -410,25 +398,6 @@ namespace Dash
 
         }
 
-        private void ClosePopups()
-        {
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                node.XSnapshotsPopup.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void UnfocusText()
-        {
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
-                node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
-
-                node.XSnapshotSelected.Visibility = Visibility.Collapsed;
-            }
-        }
-
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             var item = (sender as StackPanel)?.DataContext as SnapshotView;
@@ -444,25 +413,9 @@ namespace Dash
                 //TODO TreeView
             }
 
-            ClosePopups();
-            UnfocusText();
-
             SelectedTitle.Text = item.Title;
             SelectedImage.Source = new BitmapImage(new Uri(item.Image));
             XSnapshotSelected.Visibility = Visibility.Visible;
-        }
-
-        private void focusOnSelected()
-        {
-            var workspace = MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey, true) as DocumentController;
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                if (node.ViewModel?.DocumentController == workspace)
-                {
-                    node.XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
-                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
-                }
-            }
         }
 
         private void TextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -503,11 +456,6 @@ namespace Dash
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
             e.Data.SetDragModel(new DragDocumentModel(snapshots[first.Index]));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-        }
-
-        private void ListViewBase_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            ClosePopups();
         }
     }
 }
