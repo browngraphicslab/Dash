@@ -12,7 +12,6 @@ namespace Dash
         public static DocumentController OpenInActiveFrame(DocumentController doc)
         {
             var newDoc = ActiveFrame.OpenDocument(doc);
-            MainPage.Instance.MainDocument.SetField(KeyStore.LastWorkspaceKey, newDoc, true);
             return newDoc;
         }
 

@@ -120,6 +120,11 @@ namespace Dash
 
             xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
             xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
+
+            SplitFrame.ActiveDocumentChanged += frame =>
+            {
+                MainDocument.SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
+            };
         }
 
         private void HideLinkInputBox()
@@ -171,7 +176,6 @@ namespace Dash
                     var documentController = new CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
-                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
                     lastWorkspace = documentController;
                 }
                 else
