@@ -248,6 +248,7 @@ namespace Dash
             settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, 1.0, true);
             settingsDoc.SetField<BoolController>(KeyStore.SettingsMarkdownModeKey, false, true);
+            settingsDoc.SetField<TextController>(KeyStore.AuthorKey, "New User", true);
 
             return settingsDoc;
         }
