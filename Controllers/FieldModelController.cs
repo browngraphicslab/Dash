@@ -27,10 +27,5 @@ namespace Dash
         {
             return Copy() as T;
         }
-
-        public virtual void Dispose()
-        {
-            // TODO why is the dispose not implemented for most field model controllers!
-        }
     }
 }

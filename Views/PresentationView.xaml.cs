@@ -108,7 +108,7 @@ namespace Dash
                     xPinnedNodesListView.SelectedIndex = 0;
                     NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
-                    _startCollection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
                     _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
                     _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
                     NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);

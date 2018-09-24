@@ -89,6 +89,7 @@ namespace Dash
                 DocumentModel.DocumentType = value;
                 //If there is an issue here it is probably because 'enforceTypeCheck' is set to false.
                 this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
+                UpdateOnServer(null);
             }
         }
         

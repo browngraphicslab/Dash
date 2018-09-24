@@ -248,7 +248,7 @@ namespace Dash
             }
             var allDocs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return null;
-            return allDocs.Where(f => f != MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey));//TODO Have optional way to specify if we wan't workspace (really just search options/parameters in general)
+            return allDocs.Where(f => f != MainPage.Instance.MainDocument.GetDataDocument().GetField(KeyStore.LastWorkspaceKey));//TODO Have optional way to specify if we wan't workspace (really just search options/parameters in general)
         }
 
         private void XSearchCode_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -293,7 +293,7 @@ namespace Dash
             string script = "var docs = search(\"" + text + "\"); \r for (var doc in docs){ \r" + xSearchCode.Text + "\r }";
 
 
-            var collection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            var collection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
             DishScriptBox note;
             if (collection.GetField<PointController>(KeyStore.PanPositionKey) == null)
             {

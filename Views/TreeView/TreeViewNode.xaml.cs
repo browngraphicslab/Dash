@@ -274,7 +274,7 @@ namespace Dash.Views.TreeView
             {
                 return;
             }
-            
+
             MainPage.Instance.SetupMapView(ViewModel.DocumentController);
         }
 
@@ -286,6 +286,18 @@ namespace Dash.Views.TreeView
             }
 
             ViewModel.DocumentController.CreateSnapshot();
+        }
+
+        private void FocusItemOnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (!IsCollection)
+            {
+                return;
+            }
+
+            CollectionViewModel cvm = this.GetFirstAncestorOfType<TreeView>()?.ViewModel;
+
+            cvm?.ContainerDocument.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
         }
 
         private void MenuFlyout_OnClosed(object sender, object e)
@@ -324,6 +336,12 @@ namespace Dash.Views.TreeView
             };
             showInMapItem.Click += ShowInMapItemOnClick;
 
+            var focusItem = new MenuFlyoutItem()
+            {
+                Text = "Focus Collection",
+            };
+            focusItem.Click += FocusItemOnClick;
+
             var snapshotItem = new MenuFlyoutItem()
             {
                 Text = "Take Snapshop",
@@ -335,6 +353,7 @@ namespace Dash.Views.TreeView
                 new MenuFlyoutSeparator(),
                 addCollectionItem,
                 snapshotItem,
+                focusItem,
                 showInMapItem
             };
         }

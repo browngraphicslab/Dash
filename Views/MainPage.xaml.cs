@@ -123,7 +123,7 @@ namespace Dash
 
             SplitFrame.ActiveDocumentChanged += frame =>
             {
-                MainDocument.SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
+                MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
         }
 
@@ -146,30 +146,19 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                    if (MainDocument.GetActiveLayout() == null)
-                    {
-                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
-                        MainDocument.SetActiveLayout(layout, true, true);
-                    }
                 }
                 else
                 {
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.DataKey] = new ListController<DocumentController>(),
-                    };
-                    MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
-                    MainDocument.SetActiveLayout(layout, true, true);
+                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                    MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
+                    MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
                 }
                 LoadSettings();
 
-                var presentationItems = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                var presentationItems = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
                 xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
 
-                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
-                var history =
-                    MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
+                var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
@@ -180,16 +169,15 @@ namespace Dash
                 }
                 else
                 {
-                    lastWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
                 XMainSplitter.SetContent(lastWorkspace);
 
-                var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
-                xMainTreeView.ChangeTreeViewTitle("Workspaces");
                 //xMainTreeView.ToggleDarkMode(true);
 
                 SetupMapView(lastWorkspace);
@@ -238,11 +226,11 @@ namespace Dash
 
         private DocumentController GetAppropriateSettingsDoc()
         {
-            var settingsDoc = MainDocument.GetField<DocumentController>(KeyStore.SettingsDocKey);
+            var settingsDoc = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
             if (settingsDoc != null) return settingsDoc;
             Debug.WriteLine("GETTING DEFAULT");
             settingsDoc = GetDefaultSettingsDoc();
-            MainDocument.SetField(KeyStore.SettingsDocKey, settingsDoc, true);
+            MainDocument.GetDataDocument().SetField(KeyStore.SettingsDocKey, settingsDoc, true);
             return settingsDoc;
         }
 
