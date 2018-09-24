@@ -378,7 +378,7 @@ namespace Dash
         {
             if (IsReadOnly) return;
 
-            var prevList = TypedData;
+            var prevList = TypedData.ToList();
             var enumerable = elements.ToList();
             foreach (var element in enumerable)
             {

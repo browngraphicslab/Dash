@@ -807,15 +807,23 @@ namespace Dash
 
         public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
-            cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
-            foreach (var dataBox in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+            var databoxes = docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)).ToList();
+            if (databoxes.Count > 0)
+            {
+                cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
+            }
+            foreach (var dataBox in databoxes)
             {
                 var dataBoxSourceDoc     = dataBox.GetDataDocument();
-                var dataBoxDataReference = dataBox.GetField(KeyStore.DataKey) as DocumentReferenceController;
+                var dataBoxDataReference = dataBox.GetField(KeyStore.DataKey);
                 if (dataBoxSourceDoc != null)
                 {
-                    cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
-                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), dataBoxDataReference.FieldKey), true);
+                    var fieldKey = dataBoxDataReference is DocumentReferenceController dref ? dref.FieldKey : dataBoxDataReference is PointerReferenceController pref ? pref.FieldKey : null;
+                    if (fieldKey != null)
+                    {
+                        cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
+                        dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), fieldKey), true);
+                    }
                 }
             }
         }
