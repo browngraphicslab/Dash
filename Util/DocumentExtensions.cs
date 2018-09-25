@@ -60,6 +60,25 @@ namespace Dash
             return doc;
         }
 
+        public static DocumentController CreateSnapshot(this DocumentController collection, bool copyData = false)
+        {
+            var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (docs == null)
+            {
+                return null;
+            }
+
+            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,
+                    double.NaN, double.NaN,
+                    copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy())).Document;
+
+            var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);
+            snapshots.Add(snap);
+            snap.GetDataDocument().SetTitle(collection.Title + $"_snapshot{snapshots.Count}");
+            snap.SetFitToParent(true);
+            return snap;
+        }
+
         /// <summary>
         /// Copies a document by copying each field of the document and making a copy of the
         /// ActiveLayout if it exists.  The layout is offset by 15, or set to 'where' if specified
@@ -268,56 +287,7 @@ namespace Dash
 
             return newDoc;
         }
-        /*
-        public class SetContextClass
-        {
-            public DocumentController DataDocument;
-            int yPos;
-            public SetContextClass()
-            {
-                MainPage.Instance.WebContext.LoadCompleted += WebContext_LoadCompleted;
-            }
 
-            private void WebContext_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
-            {
-                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.scrollTo(0," + yPos + ");" });
-            }
-
-            public void UpdateNeighboringContext()
-            {
-                var neighboring = DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
-                if (neighboring != null && neighboring.TypedData.Count == 2)
-                {
-                    var uri = neighboring.TypedData.First().Data;
-                    var where = neighboring.TypedData.Last().Data;
-                    if (int.TryParse(where, out yPos))
-                    {
-                        MainPage.Instance.WebContext.Navigate(new Uri(uri));
-                    }
-                }
-            }
-        }
-        public class GetContextClass
-        {
-            public DocumentController DataDocument;
-            public void CaptureNeighboringContext()
-            {
-                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString());" });
-            }
-            public GetContextClass()
-            {
-                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
-                MainPage.Instance.WebContext.ScriptNotify += scriptNotify;
-            }
-            private void scriptNotify(object sender, NotifyEventArgs e)
-            {
-                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
-                
-                DataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
-                    new TextController(MainPage.Instance.WebContextUri.AbsoluteUri),
-                    new TextController(e.Value)}), true);
-            }
-        }*/
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();

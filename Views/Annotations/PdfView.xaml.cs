@@ -20,6 +20,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using iText.Kernel.Crypto;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -519,9 +520,17 @@ namespace Dash
                     return;
                 }
             }
-            
+
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            var pdfDocument = new PdfDocument(reader);
+            PdfDocument pdfDocument;
+            try
+            {
+                pdfDocument = new PdfDocument(reader);
+            }
+            catch(BadPasswordException)
+            {
+                return;
+            }
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;

@@ -204,7 +204,7 @@ namespace Dash
             }
             DocumentController dataBox = new DataBox(outputData).Document;
             dataBox.SetWidth(80.0);
-            args.Data.AddDragModel(new DragDocumentModel(dataBox));
+            args.Data.SetDragModel(new DragDocumentModel(dataBox));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

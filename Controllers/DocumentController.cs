@@ -89,6 +89,7 @@ namespace Dash
                 DocumentModel.DocumentType = value;
                 //If there is an issue here it is probably because 'enforceTypeCheck' is set to false.
                 this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
+                UpdateOnServer(null);
             }
         }
         
@@ -473,13 +474,19 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being added to the list</param>
-        public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
+        public void AddToListField<T>(KeyController key, T value, int? index = null) where T: FieldControllerBase
         {
-            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
+            if (index is int intIndex)
+            {
+                GetFieldOrCreateDefault<ListController<T>>(key).Insert(intIndex, value);
+            }
+            else
+            {
+                GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
+            }
 
             foreach (var d in GetDelegates().TypedData)
             {
-                var items = d.GetField<ListController<T>>(key, true);
                 var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
                 mapping.Add(this, d);
                 if (value is DocumentController)
@@ -496,11 +503,11 @@ namespace Dash
                         if ((mapping[this] as DocumentController).GetField(f.Key, true) == null)
                             (mapping[this] as DocumentController).SetField(f.Key, new DocumentReferenceController(this, f.Key, true), true);
 
-                    d.AddToListField(key, delgateValue);
+                    d.AddToListField(key, delgateValue, index);
                 }
                 else
                 {
-                    items.Add(value);
+                    d.AddToListField(key, value, index);
                 }
             }
         }

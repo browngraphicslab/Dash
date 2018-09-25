@@ -24,22 +24,22 @@ namespace Dash
 {
     public partial class AnnotationOverlay : UserControl, ILinkHandler, INotifyPropertyChanged
     {
-        readonly InkController                  _inkController;
-        AnnotationType                          _currAnnotationType = AnnotationType.None;
-        ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
-        bool                                    _maskInkUpdates;
-        [CanBeNull] AnchorableAnnotation        _currentAnnotation;
+        private InkController                           _inkController;
+        private AnnotationType                          _currAnnotationType = AnnotationType.None;
+        private ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
+        private bool                                    _maskInkUpdates = false;
+        [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
 
-        public readonly DocumentController     MainDocument;
-        public readonly RegionGetter           GetRegion;
-        public readonly AnnotationManager      AnnotationManager;
-        public AnchorableAnnotation.Selection  SelectedRegion;
-        public List<SelectableElement>         TextSelectableElements;
-        public List<AnchorableAnnotation>      CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
-        public delegate DocumentController     RegionGetter(AnnotationType type);
-        public readonly ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
-        public readonly ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
-        public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a) => a.ViewModel);
+        public delegate DocumentController       RegionGetter(AnnotationType type);
+        public readonly DocumentController        MainDocument;
+        public readonly RegionGetter              GetRegion;
+        public readonly AnnotationManager         AnnotationManager;
+        public AnchorableAnnotation.Selection     SelectedRegion;
+        public List<SelectableElement>            TextSelectableElements;
+        public List<AnchorableAnnotation>         CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
+        public ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
+        public ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
+        public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
         public AnnotationType                 CurrentAnnotationType
         {
             get =>_currAnnotationType;
@@ -60,13 +60,9 @@ namespace Dash
             InitializeComponent();
 
             MainDocument = viewDocument;
-            GetRegion = getRegion;
+            GetRegion    = getRegion;
 
             AnnotationManager = new AnnotationManager(this);
-
-            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
-            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
-            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
 
             //XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
             //XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
@@ -74,17 +70,8 @@ namespace Dash
             //XInkCanvas.InkPresenter.IsInputEnabled = false;
             //XInkCanvas.IsHitTestVisible = false;
             //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
-            Loaded += onLoaded;
+            Loaded   += onLoaded;
             Unloaded += onUnloaded;
-            
-            var binding = new Binding()
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(CurrentAnnotationType)),
-                Mode = BindingMode.TwoWay,
-                Converter = new CursorConverter()
-            };
-           // this.SetBinding(Mouse.CursorProperty, binding);
 
         }
         public class CursorConverter : IValueConverter
@@ -120,10 +107,8 @@ namespace Dash
                     if (!deselect) {
                         r.IsSelected = true;
                     }
-                    if (documentView.ViewModel != null)
-                    {
-                        documentView.ViewModel.SearchHighlightState = deselect ? DocumentViewModel.UnHighlighted : DocumentViewModel.Highlighted;
-                    }
+
+                    documentView.ViewModel?.SetHighlight(!deselect);
                 }
         }
         public void DeselectRegion()
@@ -131,12 +116,16 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             var selectedRegion = SelectedRegion;
             if (selectedRegion != null)
+            {
                 foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+                {
                     foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
                         nvo.SelectedRegion.IsSelected = false;
                         nvo.SelectedRegion = null;
                     }
+                }
+            }
         }
         /// <summary>
         /// Creates a region document from a preview, or returns an already selected region
@@ -190,8 +179,11 @@ namespace Dash
         }
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
-            _inkController.FieldModelUpdated += inkController_FieldModelUpdated;
-            RegionDocsList.FieldModelUpdated += regionDocsListOnFieldModelUpdated;
+            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
+            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
+            _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
+            RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
             xItemsControl.ItemsSource = _embeddedViewModels;
             embeddedDocsListOnFieldModelUpdated(null, 
@@ -208,10 +200,11 @@ namespace Dash
                 }));
         }
 
-        void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
+        private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
             if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs &&
                  listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
+            {
                 listArgs.NewItems.ForEach((reg) => _embeddedViewModels.Add(
                     new DocumentViewModel(reg)
                     {
@@ -219,8 +212,10 @@ namespace Dash
                         ResizersVisible = true,
                         DragWithinParentBounds = true
                     }));
+            }
         }
-        void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
+
+        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
             if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
@@ -239,7 +234,8 @@ namespace Dash
                 }
             }
         }
-        void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+
+        private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (!_maskInkUpdates)
             {
@@ -266,9 +262,7 @@ namespace Dash
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
             
-            if (linkTag != null)
-                linkSource.Link(linkTarget, LinkBehavior.Zoom, linkTag);
-            else linkSource.Link(linkTarget, LinkBehavior.Zoom);
+            linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -294,17 +288,10 @@ namespace Dash
             {
                 return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
-                    var selectionIndices =
-                        reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                    if (selectionIndices.Count == 1)
-                    {
-                        if ((int) startIndex == (int) selectionIndices[0].Data.X &&
-                            (int) endIndex == (int) selectionIndices[0].Data.Y)
-                            return true;
-                    }
-
-                    return false;
-                });
+                    var selInds = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+                    return (selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
+                                                   (int)endIndex == (int)selInds[0].Data.Y));
+                }); 
             }
         }
         
@@ -416,7 +403,7 @@ namespace Dash
 
         #region Selection Annotation
 
-        readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
         public void ClearSelection(bool hardReset = false)
         {
@@ -720,12 +707,8 @@ namespace Dash
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        // if we've already found a rectangle that the index can append to, stop searching
-                        if (found) break;
                         var rLeft = (rect.RenderTransform as TranslateTransform).X;
                         var rTop = (rect.RenderTransform as TranslateTransform).Y;
-                        //var rLeft = Canvas.GetLeft(rect);
-                        //var rTop = Canvas.GetTop(rect);
                         var closeEnoughX = Math.Abs(ele.Bounds.Left - rLeft) < ele.Bounds.Width + rect.Width;
                         var closeEnoughY = Math.Abs(ele.Bounds.Top - rTop) < ele.Bounds.Height / 5;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
@@ -741,12 +724,14 @@ namespace Dash
                             rect.Height = Math.Abs(ele.Bounds.Bottom - rTop);
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
+                            break;
                         }
                         // if the element is in the rectangle
                         else if (new Rect(rLeft, rTop, rect.Width, rect.Height).Contains(ele.Bounds))
                         {
                             found = true;
                             _selectedRectangles[ele.Index] = rect;
+                            break;
                         }
                     }
 
@@ -829,11 +814,8 @@ namespace Dash
 
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
-		    if (e.DataView.HasDragModels())
-		        e.AcceptedOperation |= DataPackageOperation.Copy;
-		    else
-			    e.AcceptedOperation = DataPackageOperation.None;
-	    }
+            e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
+        }
 
         public async void OnDrop(object sender, DragEventArgs e)
         {
@@ -895,8 +877,8 @@ namespace Dash
 
         }
 
-        CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
-        CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
+        private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
+        private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
 
