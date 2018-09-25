@@ -25,111 +25,31 @@
                 Storyboard.TargetProperty="Opacity"
                 From="0.0" To="1.0" Duration="0:0:0.2"/>
         </Storyboard>
+        <Storyboard x:Name="xQuickEntryIn" x:FieldModifier="public">
+            <DoubleAnimation 
+                Storyboard.TargetName="xQuickEntryRow"
+                Storyboard.TargetProperty="MinHeight"
+                To="60"
+                Duration="0:0:0.2"
+                EnableDependentAnimation="True"/>
+        </Storyboard>
+        <Storyboard x:Name="xQuickEntryOut" x:FieldModifier="public">
+            <DoubleAnimation 
+                Storyboard.TargetName="xQuickEntryRow"
+                Storyboard.TargetProperty="MinHeight"
+                To="0"
+                Duration="0:0:0.2"
+                EnableDependentAnimation="True"/>
+        </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 
     <Grid x:Name="xMasterStack">
         <Grid.RowDefinitions>
-            <RowDefinition  Height="Auto"/>
+            <RowDefinition x:Name="xQuickEntryRow" x:FieldModifier="public" Height="0"/>
             <RowDefinition  Height="*"/>
         </Grid.RowDefinitions>
-        
-        <!--Key Value Flyout-->
-        <Border x:Name="xKeyValueBorder" Grid.Row="0" Height="0" Width="0">
-            <Border.Resources>
-                <Storyboard x:Name="xQuickEntryIn">
-                    <DoubleAnimation 
-                        Storyboard.TargetName="xKeyValueBorder"
-                        Storyboard.TargetProperty="MinHeight"
-                        To="60"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xQuickEntryOut">
-                    <DoubleAnimation 
-                        Storyboard.TargetName="xKeyValueBorder"
-                        Storyboard.TargetProperty="MinHeight"
-                        To="0"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xKeyEditFailure">
-                    <ColorAnimation 
-                        Storyboard.TargetName="xKeyBox"
-                        Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                        To="Red"
-                        AutoReverse="True"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xValueEditFailure">
-                    <ColorAnimation 
-                        Storyboard.TargetName="xValueBox"
-                        Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                        To="Red"
-                        AutoReverse="True"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xValueErrorFailure">
-                    <ColorAnimation 
-                        Storyboard.TargetName="xValueBox"
-                        Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                        To="Navy"
-                        AutoReverse="True"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xKeyEditSuccess">
-                    <ColorAnimation 
-                        Storyboard.TargetName="xKeyBox"
-                        Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                        To="ForestGreen"
-                        AutoReverse="True"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xValueEditSuccess">
-                        <ColorAnimation 
-                        Storyboard.TargetName="xValueBox"
-                        Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                        To="ForestGreen"
-                        AutoReverse="True"
-                        Duration="0:0:0.2"
-                        EnableDependentAnimation="True"/>
-                </Storyboard>
-            </Border.Resources>
-            <Grid>
-                <Grid Margin="0, 0, 0, 0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="1"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ActionTextBox
-                        x:Name="xKeyBox"
-                        Margin="7, 0, 3, 0"
-                        Padding="7, 3, 0, 0"
-                        MaxLength="30"
-                        Grid.Column="0"
-                        AcceptsReturn="False"
-                        IsSpellCheckEnabled="False"
-                        Height="25"/>
-                    <local:ActionTextBox
-                        x:Name="xValueBox"
-                        Margin="3, 0, 7, 0"
-                        Padding="7, 3, 0, 0"
-                        Grid.Column="2"
-                        AcceptsReturn="False"
-                        IsSpellCheckEnabled="False"
-                        PlaceholderText="Value..."
-                        Height="25"/>
-                </Grid>
-            </Grid>
-
-        </Border>
-
         <Grid x:Name="LayoutRoot" BorderThickness="0" Grid.Row="1" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
             <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
