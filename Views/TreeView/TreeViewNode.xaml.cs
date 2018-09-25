@@ -190,7 +190,9 @@ namespace Dash.Views.TreeView
         {
             using (UndoManager.GetBatchHandle())
             {
-                ViewModel.DataDocument.SetTitle(XRenameBox.Text);
+                if (ViewModel.DocumentController.GetField<TextController>(KeyStore.TitleKey) != null)
+                    ViewModel.DocumentController.SetTitle(XRenameBox.Text);
+                else ViewModel.DataDocument.SetTitle(XRenameBox.Text);
                 IsEditing = false;
             }
         }
@@ -219,7 +221,7 @@ namespace Dash.Views.TreeView
 
         private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            XRenameBox.Text = ViewModel.DataDocument.Title;
+            XRenameBox.Text = ViewModel.DocumentController.Title ?? ViewModel.DataDocument.Title;
             XRenameBox.SelectAll();
         }
 

@@ -119,11 +119,10 @@ namespace Dash
             ListItemSource.Clear();
             if (activeContextDoc != null)
             {
-                foreach (var keyFieldPair in activeContextDoc.EnumFields())
-                    if (!keyFieldPair.Key.Name.StartsWith("_"))
-                        ListItemSource.Add(
-                            new EditableScriptViewModel(
-                                new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
+                foreach (var keyFieldPair in activeContextDoc.EnumDisplayableFields())
+                    ListItemSource.Add(
+                        new EditableScriptViewModel(
+                            new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
             }
         }
 

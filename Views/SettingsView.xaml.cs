@@ -186,7 +186,7 @@ namespace Dash
         public string UserName
         {
             //This gets called before the settings are initialized, so _settingsDoc is null
-            get => _settingsDoc?.GetField<TextController>(KeyStore.AuthorKey).Data;
+            get => _settingsDoc?.GetField<TextController>(KeyStore.AuthorKey)?.Data;
             set => _settingsDoc?.SetField<TextController>(KeyStore.AuthorKey, value, true);
         }
 
