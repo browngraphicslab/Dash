@@ -83,8 +83,14 @@ namespace Dash
             FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceController)
             {
-                context?.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
-                reference = reference.Dereference(context);
+                var doc = ((ReferenceController)reference).GetDocumentController(context);
+                if (doc != null)
+                {
+                    context?.AddDocumentContext(doc);
+                    reference = reference.Dereference(context);
+                }
+                else
+                    break;
             }
 
             return reference;
