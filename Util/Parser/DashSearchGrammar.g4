@@ -2,20 +2,23 @@ grammar DashSearchGrammar;
 
 // EXAMPLE logical_expr: ((a b) | ("cat dog" | (dog cat)) | inside(collection1, collection2, collection3))
 
+// DOUBLE CHECK! Is grun testing the proper rule?? If you've updated the rule, have you opened a new command prompt??
+
 /*
  * PARSER RULES
  */
 
 	// FUNCTIONS
 
-	arguments				: (ALPHANUM ',' WHITESPACE?)+? ALPHANUM 
+	argument 				: ALPHANUM 
+							| STRING
 							;
 
-	input					:
-							| arguments 
+	arguments				: 
+							| ((argument ',' WHITESPACE?)+)? argument 
 							;
 
-	function_expr			: ALPHANUM '(' input ')' 
+	function_expr			: ALPHANUM '(' arguments ')' 
 							;
 
 	// LOGICAL OPERATORS
@@ -27,20 +30,23 @@ grammar DashSearchGrammar;
 							;
 
 	operator 				: and_token 
-							| or_token ; 
+							| or_token 
+							; 
 
 	phrase					: ALPHANUM
 							| STRING
 							;
 
-	chain					: '!'? phrase
+/*
+	chain					: '!' phrase
 							| (phrase operator)+ phrase 
 							;
 
 	logical_expr			: chain													// base case
 							| logical_expr operator logical_expr					// intermediate recursion
 							| '(' logical_expr ')'									// accounts for grouping
-							;									
+							;
+*/									
 
 	// KEY VALUE
 
@@ -73,13 +79,14 @@ grammar DashSearchGrammar;
 
 	fragment ESCAPED_QUOTE : '\\"';
 
-	NEWLINE					: [\n\r]+ -> skip ;
+	NEWLINE					: [\n\r]+ -> skip 
+							;
 
-	ALPHANUM		 		: (LOWERCASE | UPPERCASE | '_')+ 
-							| [0-9]+
+	ALPHANUM		 		:  (LOWERCASE | UPPERCASE | '_' | [0-9])+
 							;
 
 	STRING					: '"' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '"'
 							;
 
-	WHITESPACE 				: [ \t]+ ;
+	WHITESPACE 				: [ \t]+ 
+							;

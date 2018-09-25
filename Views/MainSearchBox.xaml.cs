@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System;
+using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
@@ -340,7 +341,7 @@ namespace Dash
                 var searchBoxLexer = new DashSearchGrammarLexer(new AntlrInputStream(text));
                 var parser = new DashSearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
                 var visitor = new SearchGrammarVisitor();
-                visitor.
+                Debug.WriteLine(visitor.Visit(parser.query()));
 
                 searchRes = Search.Parse(text).ToList();
             }

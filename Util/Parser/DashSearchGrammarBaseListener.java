@@ -15,6 +15,18 @@ public class DashSearchGrammarBaseListener implements DashSearchGrammarListener 
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArgument(DashSearchGrammarParser.ArgumentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArgument(DashSearchGrammarParser.ArgumentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterArguments(DashSearchGrammarParser.ArgumentsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -22,18 +34,6 @@ public class DashSearchGrammarBaseListener implements DashSearchGrammarListener 
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitArguments(DashSearchGrammarParser.ArgumentsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterInput(DashSearchGrammarParser.InputContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitInput(DashSearchGrammarParser.InputContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -94,30 +94,6 @@ public class DashSearchGrammarBaseListener implements DashSearchGrammarListener 
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPhrase(DashSearchGrammarParser.PhraseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterChain(DashSearchGrammarParser.ChainContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitChain(DashSearchGrammarParser.ChainContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterLogical_expr(DashSearchGrammarParser.Logical_exprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitLogical_expr(DashSearchGrammarParser.Logical_exprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

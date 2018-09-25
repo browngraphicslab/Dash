@@ -7,6 +7,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface DashSearchGrammarListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link DashSearchGrammarParser#argument}.
+	 * @param ctx the parse tree
+	 */
+	void enterArgument(DashSearchGrammarParser.ArgumentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DashSearchGrammarParser#argument}.
+	 * @param ctx the parse tree
+	 */
+	void exitArgument(DashSearchGrammarParser.ArgumentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link DashSearchGrammarParser#arguments}.
 	 * @param ctx the parse tree
 	 */
@@ -16,16 +26,6 @@ public interface DashSearchGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArguments(DashSearchGrammarParser.ArgumentsContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DashSearchGrammarParser#input}.
-	 * @param ctx the parse tree
-	 */
-	void enterInput(DashSearchGrammarParser.InputContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DashSearchGrammarParser#input}.
-	 * @param ctx the parse tree
-	 */
-	void exitInput(DashSearchGrammarParser.InputContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link DashSearchGrammarParser#function_expr}.
 	 * @param ctx the parse tree
@@ -76,26 +76,6 @@ public interface DashSearchGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPhrase(DashSearchGrammarParser.PhraseContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DashSearchGrammarParser#chain}.
-	 * @param ctx the parse tree
-	 */
-	void enterChain(DashSearchGrammarParser.ChainContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DashSearchGrammarParser#chain}.
-	 * @param ctx the parse tree
-	 */
-	void exitChain(DashSearchGrammarParser.ChainContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link DashSearchGrammarParser#logical_expr}.
-	 * @param ctx the parse tree
-	 */
-	void enterLogical_expr(DashSearchGrammarParser.Logical_exprContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link DashSearchGrammarParser#logical_expr}.
-	 * @param ctx the parse tree
-	 */
-	void exitLogical_expr(DashSearchGrammarParser.Logical_exprContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link DashSearchGrammarParser#kv_search}.
 	 * @param ctx the parse tree

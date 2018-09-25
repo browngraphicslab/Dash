@@ -1,75 +1,98 @@
-﻿using System.Diagnostics;
+﻿using System;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 
 namespace Dash
 {
-    public class SearchGrammarVisitor : DashSearchGrammarBaseVisitor<string>
+    public class SearchGrammarVisitor : DashSearchGrammarBaseVisitor<bool>
     {
-        public override string Visit(IParseTree tree)
+        public Predicate<DocumentController> Predicate { get; private set; }
+
+        public override bool Visit(IParseTree tree)
         {
             return base.Visit(tree);
         }
 
-        public override string VisitAnd_token([NotNull] DashSearchGrammarParser.And_tokenContext context)
+        public override bool VisitAnd_token([NotNull] DashSearchGrammarParser.And_tokenContext context)
         {
-            Debug.WriteLine("VISITING AND_TOKEN!!");
             return base.VisitAnd_token(context);
         }
 
-        public override string VisitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context)
+        public override bool VisitArgument([NotNull] DashSearchGrammarParser.ArgumentContext context)
+        {
+            return base.VisitArgument(context);
+        }
+
+        public override bool VisitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context)
         {
             return base.VisitArguments(context);
         }
 
-        public override string VisitChain([NotNull] DashSearchGrammarParser.ChainContext context)
-        {
-            return base.VisitChain(context);
-        }
-
-        public override string VisitChildren(IRuleNode node)
+        public override bool VisitChildren(IRuleNode node)
         {
             return base.VisitChildren(node);
         }
 
-        public override string VisitErrorNode(IErrorNode node)
+        public override bool VisitErrorNode(IErrorNode node)
         {
             return base.VisitErrorNode(node);
         }
 
-        public override string VisitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context)
+        public override bool VisitFunction_expr([NotNull] DashSearchGrammarParser.Function_exprContext context)
         {
             return base.VisitFunction_expr(context);
         }
 
-        public override string VisitInput([NotNull] DashSearchGrammarParser.InputContext context)
-        {
-            return base.VisitInput(context);
-        }
-
-        public override string VisitKv_search([NotNull] DashSearchGrammarParser.Kv_searchContext context)
+        public override bool VisitKv_search([NotNull] DashSearchGrammarParser.Kv_searchContext context)
         {
             return base.VisitKv_search(context);
         }
 
-        public override string VisitLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context)
+        public override bool VisitNot_search_term([NotNull] DashSearchGrammarParser.Not_search_termContext context)
         {
-            return base.VisitLogical_expr(context);
+            return base.VisitNot_search_term(context);
         }
 
-        public override string VisitOperator([NotNull] DashSearchGrammarParser.OperatorContext context)
+        public override bool VisitOperator([NotNull] DashSearchGrammarParser.OperatorContext context)
         {
             return base.VisitOperator(context);
         }
 
-        public override string VisitOr_token([NotNull] DashSearchGrammarParser.Or_tokenContext context)
+        public override bool VisitOr_token([NotNull] DashSearchGrammarParser.Or_tokenContext context)
         {
             return base.VisitOr_token(context);
         }
 
-        public override string VisitPhrase([NotNull] DashSearchGrammarParser.PhraseContext context)
+        public override bool VisitPhrase([NotNull] DashSearchGrammarParser.PhraseContext context)
         {
             return base.VisitPhrase(context);
         }
+
+        public override bool VisitQuery([NotNull] DashSearchGrammarParser.QueryContext context)
+        {
+            return base.VisitQuery(context);
+        }
+
+        public override bool VisitSearch_term([NotNull] DashSearchGrammarParser.Search_termContext context)
+        {
+            return base.VisitSearch_term(context);
+        }
+
+        public override bool VisitTerminal(ITerminalNode node)
+        {
+            return base.VisitTerminal(node);
+        }
+
+        protected override bool AggregateResult(bool aggregate, bool nextResult)
+        {
+            return base.AggregateResult(aggregate, nextResult);
+        }
+
+        protected override bool ShouldVisitNextChild(IRuleNode node, bool currentResult)
+        {
+            return base.ShouldVisitNextChild(node, currentResult);
+        }
     }
+
 }

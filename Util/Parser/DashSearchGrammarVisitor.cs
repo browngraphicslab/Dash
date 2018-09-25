@@ -32,17 +32,17 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IDashSearchGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.argument"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArgument([NotNull] DashSearchGrammarParser.ArgumentContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitInput([NotNull] DashSearchGrammarParser.InputContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
 	/// </summary>
@@ -74,21 +74,27 @@ public interface IDashSearchGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitPhrase([NotNull] DashSearchGrammarParser.PhraseContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.chain"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitChain([NotNull] DashSearchGrammarParser.ChainContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.logical_expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.kv_search"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitKv_search([NotNull] DashSearchGrammarParser.Kv_searchContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.search_term"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSearch_term([NotNull] DashSearchGrammarParser.Search_termContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.not_search_term"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNot_search_term([NotNull] DashSearchGrammarParser.Not_search_termContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="DashSearchGrammarParser.query"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitQuery([NotNull] DashSearchGrammarParser.QueryContext context);
 }

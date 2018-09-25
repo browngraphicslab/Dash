@@ -35,6 +35,18 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.argument"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArgument([NotNull] DashSearchGrammarParser.ArgumentContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.argument"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArgument([NotNull] DashSearchGrammarParser.ArgumentContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.arguments"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -46,18 +58,6 @@ public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener 
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitArguments([NotNull] DashSearchGrammarParser.ArgumentsContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterInput([NotNull] DashSearchGrammarParser.InputContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.input"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitInput([NotNull] DashSearchGrammarParser.InputContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.function_expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -119,30 +119,6 @@ public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener 
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitPhrase([NotNull] DashSearchGrammarParser.PhraseContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.chain"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterChain([NotNull] DashSearchGrammarParser.ChainContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.chain"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitChain([NotNull] DashSearchGrammarParser.ChainContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.logical_expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.logical_expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitLogical_expr([NotNull] DashSearchGrammarParser.Logical_exprContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.kv_search"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -154,6 +130,42 @@ public partial class DashSearchGrammarBaseListener : IDashSearchGrammarListener 
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitKv_search([NotNull] DashSearchGrammarParser.Kv_searchContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.search_term"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSearch_term([NotNull] DashSearchGrammarParser.Search_termContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.search_term"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSearch_term([NotNull] DashSearchGrammarParser.Search_termContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.not_search_term"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterNot_search_term([NotNull] DashSearchGrammarParser.Not_search_termContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.not_search_term"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitNot_search_term([NotNull] DashSearchGrammarParser.Not_search_termContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="DashSearchGrammarParser.query"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterQuery([NotNull] DashSearchGrammarParser.QueryContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="DashSearchGrammarParser.query"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitQuery([NotNull] DashSearchGrammarParser.QueryContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

@@ -19,18 +19,16 @@ public class DashSearchGrammarParser extends Parser {
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, NEWLINE=7, ALPHANUM=8, 
 		STRING=9, WHITESPACE=10;
 	public static final int
-		RULE_arguments = 0, RULE_input = 1, RULE_function_expr = 2, RULE_and_token = 3, 
-		RULE_or_token = 4, RULE_operator = 5, RULE_phrase = 6, RULE_chain = 7, 
-		RULE_logical_expr = 8, RULE_kv_search = 9, RULE_search_term = 10, RULE_not_search_term = 11, 
-		RULE_query = 12;
+		RULE_argument = 0, RULE_arguments = 1, RULE_function_expr = 2, RULE_and_token = 3, 
+		RULE_or_token = 4, RULE_operator = 5, RULE_phrase = 6, RULE_kv_search = 7, 
+		RULE_search_term = 8, RULE_not_search_term = 9, RULE_query = 10;
 	public static final String[] ruleNames = {
-		"arguments", "input", "function_expr", "and_token", "or_token", "operator", 
-		"phrase", "chain", "logical_expr", "kv_search", "search_term", "not_search_term", 
-		"query"
+		"argument", "arguments", "function_expr", "and_token", "or_token", "operator", 
+		"phrase", "kv_search", "search_term", "not_search_term", "query"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, "','", "'('", "')'", "'|'", "'!'", "':'"
+		null, "','", "'('", "')'", "'|'", "':'", "'!'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, null, null, null, null, null, null, "NEWLINE", "ALPHANUM", "STRING", 
@@ -85,10 +83,64 @@ public class DashSearchGrammarParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
+	public static class ArgumentContext extends ParserRuleContext {
+		public TerminalNode ALPHANUM() { return getToken(DashSearchGrammarParser.ALPHANUM, 0); }
+		public TerminalNode STRING() { return getToken(DashSearchGrammarParser.STRING, 0); }
+		public ArgumentContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_argument; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).enterArgument(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).exitArgument(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof DashSearchGrammarVisitor ) return ((DashSearchGrammarVisitor<? extends T>)visitor).visitArgument(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final ArgumentContext argument() throws RecognitionException {
+		ArgumentContext _localctx = new ArgumentContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_argument);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(22);
+			_la = _input.LA(1);
+			if ( !(_la==ALPHANUM || _la==STRING) ) {
+			_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
 	public static class ArgumentsContext extends ParserRuleContext {
-		public List<TerminalNode> ALPHANUM() { return getTokens(DashSearchGrammarParser.ALPHANUM); }
-		public TerminalNode ALPHANUM(int i) {
-			return getToken(DashSearchGrammarParser.ALPHANUM, i);
+		public List<ArgumentContext> argument() {
+			return getRuleContexts(ArgumentContext.class);
+		}
+		public ArgumentContext argument(int i) {
+			return getRuleContext(ArgumentContext.class,i);
 		}
 		public List<TerminalNode> WHITESPACE() { return getTokens(DashSearchGrammarParser.WHITESPACE); }
 		public TerminalNode WHITESPACE(int i) {
@@ -115,87 +167,11 @@ public class DashSearchGrammarParser extends Parser {
 
 	public final ArgumentsContext arguments() throws RecognitionException {
 		ArgumentsContext _localctx = new ArgumentsContext(_ctx, getState());
-		enterRule(_localctx, 0, RULE_arguments);
+		enterRule(_localctx, 2, RULE_arguments);
 		int _la;
 		try {
 			int _alt;
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(31); 
-			_errHandler.sync(this);
-			_alt = 1+1;
-			do {
-				switch (_alt) {
-				case 1+1:
-					{
-					{
-					setState(26);
-					match(ALPHANUM);
-					setState(27);
-					match(T__0);
-					setState(29);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-					if (_la==WHITESPACE) {
-						{
-						setState(28);
-						match(WHITESPACE);
-						}
-					}
-
-					}
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				setState(33); 
-				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,1,_ctx);
-			} while ( _alt!=1 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
-			setState(35);
-			match(ALPHANUM);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class InputContext extends ParserRuleContext {
-		public ArgumentsContext arguments() {
-			return getRuleContext(ArgumentsContext.class,0);
-		}
-		public InputContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_input; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).enterInput(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).exitInput(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DashSearchGrammarVisitor ) return ((DashSearchGrammarVisitor<? extends T>)visitor).visitInput(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-
-	public final InputContext input() throws RecognitionException {
-		InputContext _localctx = new InputContext(_ctx, getState());
-		enterRule(_localctx, 2, RULE_input);
-		try {
-			setState(39);
+			setState(37);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case T__2:
@@ -204,10 +180,51 @@ public class DashSearchGrammarParser extends Parser {
 				}
 				break;
 			case ALPHANUM:
+			case STRING:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(38);
-				arguments();
+				setState(34);
+				_errHandler.sync(this);
+				switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
+				case 1:
+					{
+					setState(30); 
+					_errHandler.sync(this);
+					_alt = 1;
+					do {
+						switch (_alt) {
+						case 1:
+							{
+							{
+							setState(25);
+							argument();
+							setState(26);
+							match(T__0);
+							setState(28);
+							_errHandler.sync(this);
+							_la = _input.LA(1);
+							if (_la==WHITESPACE) {
+								{
+								setState(27);
+								match(WHITESPACE);
+								}
+							}
+
+							}
+							}
+							break;
+						default:
+							throw new NoViableAltException(this);
+						}
+						setState(32); 
+						_errHandler.sync(this);
+						_alt = getInterpreter().adaptivePredict(_input,1,_ctx);
+					} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
+					}
+					break;
+				}
+				setState(36);
+				argument();
 				}
 				break;
 			default:
@@ -227,8 +244,8 @@ public class DashSearchGrammarParser extends Parser {
 
 	public static class Function_exprContext extends ParserRuleContext {
 		public TerminalNode ALPHANUM() { return getToken(DashSearchGrammarParser.ALPHANUM, 0); }
-		public InputContext input() {
-			return getRuleContext(InputContext.class,0);
+		public ArgumentsContext arguments() {
+			return getRuleContext(ArgumentsContext.class,0);
 		}
 		public Function_exprContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -255,13 +272,13 @@ public class DashSearchGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41);
+			setState(39);
 			match(ALPHANUM);
-			setState(42);
+			setState(40);
 			match(T__1);
-			setState(43);
-			input();
-			setState(44);
+			setState(41);
+			arguments();
+			setState(42);
 			match(T__2);
 			}
 		}
@@ -303,7 +320,7 @@ public class DashSearchGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(46);
+			setState(44);
 			match(WHITESPACE);
 			}
 		}
@@ -349,24 +366,24 @@ public class DashSearchGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(49);
+			setState(47);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==WHITESPACE) {
 				{
-				setState(48);
+				setState(46);
 				match(WHITESPACE);
 				}
 			}
 
-			setState(51);
+			setState(49);
 			match(T__3);
-			setState(53);
+			setState(51);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==WHITESPACE) {
 				{
-				setState(52);
+				setState(50);
 				match(WHITESPACE);
 				}
 			}
@@ -414,20 +431,20 @@ public class DashSearchGrammarParser extends Parser {
 		OperatorContext _localctx = new OperatorContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_operator);
 		try {
-			setState(57);
+			setState(55);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(55);
+				setState(53);
 				and_token();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(56);
+				setState(54);
 				or_token();
 				}
 				break;
@@ -473,7 +490,7 @@ public class DashSearchGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(59);
+			setState(57);
 			_la = _input.LA(1);
 			if ( !(_la==ALPHANUM || _la==STRING) ) {
 			_errHandler.recoverInline(this);
@@ -492,215 +509,6 @@ public class DashSearchGrammarParser extends Parser {
 		}
 		finally {
 			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class ChainContext extends ParserRuleContext {
-		public List<PhraseContext> phrase() {
-			return getRuleContexts(PhraseContext.class);
-		}
-		public PhraseContext phrase(int i) {
-			return getRuleContext(PhraseContext.class,i);
-		}
-		public List<OperatorContext> operator() {
-			return getRuleContexts(OperatorContext.class);
-		}
-		public OperatorContext operator(int i) {
-			return getRuleContext(OperatorContext.class,i);
-		}
-		public ChainContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_chain; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).enterChain(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).exitChain(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DashSearchGrammarVisitor ) return ((DashSearchGrammarVisitor<? extends T>)visitor).visitChain(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-
-	public final ChainContext chain() throws RecognitionException {
-		ChainContext _localctx = new ChainContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_chain);
-		int _la;
-		try {
-			int _alt;
-			setState(74);
-			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
-			case 1:
-				enterOuterAlt(_localctx, 1);
-				{
-				setState(62);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				if (_la==T__4) {
-					{
-					setState(61);
-					match(T__4);
-					}
-				}
-
-				setState(64);
-				phrase();
-				}
-				break;
-			case 2:
-				enterOuterAlt(_localctx, 2);
-				{
-				setState(68); 
-				_errHandler.sync(this);
-				_alt = 1;
-				do {
-					switch (_alt) {
-					case 1:
-						{
-						{
-						setState(65);
-						phrase();
-						setState(66);
-						operator();
-						}
-						}
-						break;
-					default:
-						throw new NoViableAltException(this);
-					}
-					setState(70); 
-					_errHandler.sync(this);
-					_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
-				} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
-				setState(72);
-				phrase();
-				}
-				break;
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
-	public static class Logical_exprContext extends ParserRuleContext {
-		public ChainContext chain() {
-			return getRuleContext(ChainContext.class,0);
-		}
-		public List<Logical_exprContext> logical_expr() {
-			return getRuleContexts(Logical_exprContext.class);
-		}
-		public Logical_exprContext logical_expr(int i) {
-			return getRuleContext(Logical_exprContext.class,i);
-		}
-		public OperatorContext operator() {
-			return getRuleContext(OperatorContext.class,0);
-		}
-		public Logical_exprContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_logical_expr; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).enterLogical_expr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof DashSearchGrammarListener ) ((DashSearchGrammarListener)listener).exitLogical_expr(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof DashSearchGrammarVisitor ) return ((DashSearchGrammarVisitor<? extends T>)visitor).visitLogical_expr(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-
-	public final Logical_exprContext logical_expr() throws RecognitionException {
-		return logical_expr(0);
-	}
-
-	private Logical_exprContext logical_expr(int _p) throws RecognitionException {
-		ParserRuleContext _parentctx = _ctx;
-		int _parentState = getState();
-		Logical_exprContext _localctx = new Logical_exprContext(_ctx, _parentState);
-		Logical_exprContext _prevctx = _localctx;
-		int _startState = 16;
-		enterRecursionRule(_localctx, 16, RULE_logical_expr, _p);
-		try {
-			int _alt;
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(82);
-			_errHandler.sync(this);
-			switch (_input.LA(1)) {
-			case T__4:
-			case ALPHANUM:
-			case STRING:
-				{
-				setState(77);
-				chain();
-				}
-				break;
-			case T__1:
-				{
-				setState(78);
-				match(T__1);
-				setState(79);
-				logical_expr(0);
-				setState(80);
-				match(T__2);
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-			_ctx.stop = _input.LT(-1);
-			setState(90);
-			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,10,_ctx);
-			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
-				if ( _alt==1 ) {
-					if ( _parseListeners!=null ) triggerExitRuleEvent();
-					_prevctx = _localctx;
-					{
-					{
-					_localctx = new Logical_exprContext(_parentctx, _parentState);
-					pushNewRecursionContext(_localctx, _startState, RULE_logical_expr);
-					setState(84);
-					if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
-					setState(85);
-					operator();
-					setState(86);
-					logical_expr(3);
-					}
-					} 
-				}
-				setState(92);
-				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,10,_ctx);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			unrollRecursionContexts(_parentctx);
 		}
 		return _localctx;
 	}
@@ -733,15 +541,15 @@ public class DashSearchGrammarParser extends Parser {
 
 	public final Kv_searchContext kv_search() throws RecognitionException {
 		Kv_searchContext _localctx = new Kv_searchContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_kv_search);
+		enterRule(_localctx, 14, RULE_kv_search);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(93);
+			setState(59);
 			phrase();
-			setState(94);
-			match(T__5);
-			setState(95);
+			setState(60);
+			match(T__4);
+			setState(61);
 			phrase();
 			}
 		}
@@ -790,40 +598,40 @@ public class DashSearchGrammarParser extends Parser {
 
 	public final Search_termContext search_term() throws RecognitionException {
 		Search_termContext _localctx = new Search_termContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_search_term);
+		enterRule(_localctx, 16, RULE_search_term);
 		try {
-			setState(104);
+			setState(70);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,11,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(97);
+				setState(63);
 				function_expr();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(98);
+				setState(64);
 				match(T__1);
-				setState(99);
+				setState(65);
 				query();
-				setState(100);
+				setState(66);
 				match(T__2);
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(102);
+				setState(68);
 				phrase();
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(103);
+				setState(69);
 				kv_search();
 				}
 				break;
@@ -865,22 +673,22 @@ public class DashSearchGrammarParser extends Parser {
 
 	public final Not_search_termContext not_search_term() throws RecognitionException {
 		Not_search_termContext _localctx = new Not_search_termContext(_ctx, getState());
-		enterRule(_localctx, 22, RULE_not_search_term);
+		enterRule(_localctx, 18, RULE_not_search_term);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(107);
+			setState(73);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if (_la==T__4) {
+			if (_la==T__5) {
 				{
-				setState(106);
-				match(T__4);
+				setState(72);
+				match(T__5);
 				}
 			}
 
-			setState(109);
+			setState(75);
 			search_term();
 			}
 		}
@@ -929,30 +737,30 @@ public class DashSearchGrammarParser extends Parser {
 
 	public final QueryContext query() throws RecognitionException {
 		QueryContext _localctx = new QueryContext(_ctx, getState());
-		enterRule(_localctx, 24, RULE_query);
+		enterRule(_localctx, 20, RULE_query);
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(116);
+			setState(82);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,13,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(111);
+					setState(77);
 					not_search_term();
-					setState(112);
+					setState(78);
 					operator();
 					}
 					} 
 				}
-				setState(118);
+				setState(84);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,13,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
-			setState(119);
+			setState(85);
 			not_search_term();
 			}
 		}
@@ -967,52 +775,29 @@ public class DashSearchGrammarParser extends Parser {
 		return _localctx;
 	}
 
-	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
-		switch (ruleIndex) {
-		case 8:
-			return logical_expr_sempred((Logical_exprContext)_localctx, predIndex);
-		}
-		return true;
-	}
-	private boolean logical_expr_sempred(Logical_exprContext _localctx, int predIndex) {
-		switch (predIndex) {
-		case 0:
-			return precpred(_ctx, 2);
-		}
-		return true;
-	}
-
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\f|\4\2\t\2\4\3\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\fZ\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4"+
-		"\f\t\f\4\r\t\r\4\16\t\16\3\2\3\2\3\2\5\2 \n\2\6\2\"\n\2\r\2\16\2#\3\2"+
-		"\3\2\3\3\3\3\5\3*\n\3\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\6\5\6\64\n\6\3\6\3"+
-		"\6\5\68\n\6\3\7\3\7\5\7<\n\7\3\b\3\b\3\t\5\tA\n\t\3\t\3\t\3\t\3\t\6\t"+
-		"G\n\t\r\t\16\tH\3\t\3\t\5\tM\n\t\3\n\3\n\3\n\3\n\3\n\3\n\5\nU\n\n\3\n"+
-		"\3\n\3\n\3\n\7\n[\n\n\f\n\16\n^\13\n\3\13\3\13\3\13\3\13\3\f\3\f\3\f\3"+
-		"\f\3\f\3\f\3\f\5\fk\n\f\3\r\5\rn\n\r\3\r\3\r\3\16\3\16\3\16\7\16u\n\16"+
-		"\f\16\16\16x\13\16\3\16\3\16\3\16\3#\3\22\17\2\4\6\b\n\f\16\20\22\24\26"+
-		"\30\32\2\3\3\2\n\13\2~\2!\3\2\2\2\4)\3\2\2\2\6+\3\2\2\2\b\60\3\2\2\2\n"+
-		"\63\3\2\2\2\f;\3\2\2\2\16=\3\2\2\2\20L\3\2\2\2\22T\3\2\2\2\24_\3\2\2\2"+
-		"\26j\3\2\2\2\30m\3\2\2\2\32v\3\2\2\2\34\35\7\n\2\2\35\37\7\3\2\2\36 \7"+
-		"\f\2\2\37\36\3\2\2\2\37 \3\2\2\2 \"\3\2\2\2!\34\3\2\2\2\"#\3\2\2\2#$\3"+
-		"\2\2\2#!\3\2\2\2$%\3\2\2\2%&\7\n\2\2&\3\3\2\2\2\'*\3\2\2\2(*\5\2\2\2)"+
-		"\'\3\2\2\2)(\3\2\2\2*\5\3\2\2\2+,\7\n\2\2,-\7\4\2\2-.\5\4\3\2./\7\5\2"+
-		"\2/\7\3\2\2\2\60\61\7\f\2\2\61\t\3\2\2\2\62\64\7\f\2\2\63\62\3\2\2\2\63"+
-		"\64\3\2\2\2\64\65\3\2\2\2\65\67\7\6\2\2\668\7\f\2\2\67\66\3\2\2\2\678"+
-		"\3\2\2\28\13\3\2\2\29<\5\b\5\2:<\5\n\6\2;9\3\2\2\2;:\3\2\2\2<\r\3\2\2"+
-		"\2=>\t\2\2\2>\17\3\2\2\2?A\7\7\2\2@?\3\2\2\2@A\3\2\2\2AB\3\2\2\2BM\5\16"+
-		"\b\2CD\5\16\b\2DE\5\f\7\2EG\3\2\2\2FC\3\2\2\2GH\3\2\2\2HF\3\2\2\2HI\3"+
-		"\2\2\2IJ\3\2\2\2JK\5\16\b\2KM\3\2\2\2L@\3\2\2\2LF\3\2\2\2M\21\3\2\2\2"+
-		"NO\b\n\1\2OU\5\20\t\2PQ\7\4\2\2QR\5\22\n\2RS\7\5\2\2SU\3\2\2\2TN\3\2\2"+
-		"\2TP\3\2\2\2U\\\3\2\2\2VW\f\4\2\2WX\5\f\7\2XY\5\22\n\5Y[\3\2\2\2ZV\3\2"+
-		"\2\2[^\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]\23\3\2\2\2^\\\3\2\2\2_`\5\16\b\2"+
-		"`a\7\b\2\2ab\5\16\b\2b\25\3\2\2\2ck\5\6\4\2de\7\4\2\2ef\5\32\16\2fg\7"+
-		"\5\2\2gk\3\2\2\2hk\5\16\b\2ik\5\24\13\2jc\3\2\2\2jd\3\2\2\2jh\3\2\2\2"+
-		"ji\3\2\2\2k\27\3\2\2\2ln\7\7\2\2ml\3\2\2\2mn\3\2\2\2no\3\2\2\2op\5\26"+
-		"\f\2p\31\3\2\2\2qr\5\30\r\2rs\5\f\7\2su\3\2\2\2tq\3\2\2\2ux\3\2\2\2vt"+
-		"\3\2\2\2vw\3\2\2\2wy\3\2\2\2xv\3\2\2\2yz\5\30\r\2z\33\3\2\2\2\20\37#)"+
-		"\63\67;@HLT\\jmv";
+		"\f\t\f\3\2\3\2\3\3\3\3\3\3\3\3\5\3\37\n\3\6\3!\n\3\r\3\16\3\"\5\3%\n\3"+
+		"\3\3\5\3(\n\3\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\6\5\6\62\n\6\3\6\3\6\5\6\66"+
+		"\n\6\3\7\3\7\5\7:\n\7\3\b\3\b\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\n"+
+		"\3\n\5\nI\n\n\3\13\5\13L\n\13\3\13\3\13\3\f\3\f\3\f\7\fS\n\f\f\f\16\f"+
+		"V\13\f\3\f\3\f\3\f\2\2\r\2\4\6\b\n\f\16\20\22\24\26\2\3\3\2\n\13\2Z\2"+
+		"\30\3\2\2\2\4\'\3\2\2\2\6)\3\2\2\2\b.\3\2\2\2\n\61\3\2\2\2\f9\3\2\2\2"+
+		"\16;\3\2\2\2\20=\3\2\2\2\22H\3\2\2\2\24K\3\2\2\2\26T\3\2\2\2\30\31\t\2"+
+		"\2\2\31\3\3\2\2\2\32(\3\2\2\2\33\34\5\2\2\2\34\36\7\3\2\2\35\37\7\f\2"+
+		"\2\36\35\3\2\2\2\36\37\3\2\2\2\37!\3\2\2\2 \33\3\2\2\2!\"\3\2\2\2\" \3"+
+		"\2\2\2\"#\3\2\2\2#%\3\2\2\2$ \3\2\2\2$%\3\2\2\2%&\3\2\2\2&(\5\2\2\2\'"+
+		"\32\3\2\2\2\'$\3\2\2\2(\5\3\2\2\2)*\7\n\2\2*+\7\4\2\2+,\5\4\3\2,-\7\5"+
+		"\2\2-\7\3\2\2\2./\7\f\2\2/\t\3\2\2\2\60\62\7\f\2\2\61\60\3\2\2\2\61\62"+
+		"\3\2\2\2\62\63\3\2\2\2\63\65\7\6\2\2\64\66\7\f\2\2\65\64\3\2\2\2\65\66"+
+		"\3\2\2\2\66\13\3\2\2\2\67:\5\b\5\28:\5\n\6\29\67\3\2\2\298\3\2\2\2:\r"+
+		"\3\2\2\2;<\t\2\2\2<\17\3\2\2\2=>\5\16\b\2>?\7\7\2\2?@\5\16\b\2@\21\3\2"+
+		"\2\2AI\5\6\4\2BC\7\4\2\2CD\5\26\f\2DE\7\5\2\2EI\3\2\2\2FI\5\16\b\2GI\5"+
+		"\20\t\2HA\3\2\2\2HB\3\2\2\2HF\3\2\2\2HG\3\2\2\2I\23\3\2\2\2JL\7\b\2\2"+
+		"KJ\3\2\2\2KL\3\2\2\2LM\3\2\2\2MN\5\22\n\2N\25\3\2\2\2OP\5\24\13\2PQ\5"+
+		"\f\7\2QS\3\2\2\2RO\3\2\2\2SV\3\2\2\2TR\3\2\2\2TU\3\2\2\2UW\3\2\2\2VT\3"+
+		"\2\2\2WX\5\24\13\2X\27\3\2\2\2\f\36\"$\'\61\659HKT";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

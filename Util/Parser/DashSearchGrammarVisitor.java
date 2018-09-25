@@ -10,17 +10,17 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface DashSearchGrammarVisitor<T> extends ParseTreeVisitor<T> {
 	/**
+	 * Visit a parse tree produced by {@link DashSearchGrammarParser#argument}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgument(DashSearchGrammarParser.ArgumentContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DashSearchGrammarParser#arguments}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitArguments(DashSearchGrammarParser.ArgumentsContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DashSearchGrammarParser#input}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInput(DashSearchGrammarParser.InputContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DashSearchGrammarParser#function_expr}.
 	 * @param ctx the parse tree
@@ -51,18 +51,6 @@ public interface DashSearchGrammarVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPhrase(DashSearchGrammarParser.PhraseContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DashSearchGrammarParser#chain}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitChain(DashSearchGrammarParser.ChainContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DashSearchGrammarParser#logical_expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitLogical_expr(DashSearchGrammarParser.Logical_exprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DashSearchGrammarParser#kv_search}.
 	 * @param ctx the parse tree
