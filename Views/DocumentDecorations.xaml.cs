@@ -989,9 +989,11 @@ namespace Dash
         }
         private void CommitHeaderText()
         {
-            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
             {
-                doc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
+                var targetDoc = doc.GetField<TextController>(HeaderFieldKey)?.Data != null ? doc : doc.GetDataDocument();
+
+                targetDoc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
             }
             xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
             ResetHeader();
@@ -1004,14 +1006,18 @@ namespace Dash
                 {
                     HeaderFieldKey = KeyController.IsPresent(newkey) ? new KeyController(newkey) : new KeyController(newkey, Guid.NewGuid().ToString());
                 }
-                xHeaderText.Text = SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
-                foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+                var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
+                xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                if (SelectedDocs.Count > 1)
                 {
-                    var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
-                    if (dvalue != xHeaderText.Text)
+                    foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
                     {
-                        xHeaderText.Text = "...";
-                        break;
+                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        if (dvalue != xHeaderText.Text)
+                        {
+                            xHeaderText.Text = "...";
+                            break;
+                        }
                     }
                 }
                 xHeaderText.Foreground = new SolidColorBrush(Colors.Black);
