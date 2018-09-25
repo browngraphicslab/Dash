@@ -663,8 +663,9 @@ namespace Dash
             // for each rectangle, if it's not between the current clip rectangle, we should remove it
             foreach (var rect in _clipRectSelections)
             {
-                var belowTopBound = Canvas.GetTop(rect) + rect.Height > currentClipRect.Top;
-                var belowBottomBound = Canvas.GetTop(rect) < currentClipRect.Bottom;
+                var rTop = (rect.RenderTransform as TranslateTransform).Y;
+                var belowTopBound = rTop + rect.Height > currentClipRect.Top;
+                var belowBottomBound = rTop < currentClipRect.Bottom;
                 if (!(belowTopBound && belowBottomBound))
                 {
                     rectsToRemove.Add(rect);
@@ -706,8 +707,8 @@ namespace Dash
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        var rLeft = Canvas.GetLeft(rect);
-                        var rTop = Canvas.GetTop(rect);
+                        var rLeft = (rect.RenderTransform as TranslateTransform).X;
+                        var rTop = (rect.RenderTransform as TranslateTransform).Y;
                         var closeEnoughX = Math.Abs(ele.Bounds.Left - rLeft) < ele.Bounds.Width + rect.Width;
                         var closeEnoughY = Math.Abs(ele.Bounds.Top - rTop) < ele.Bounds.Height / 5;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
@@ -715,9 +716,11 @@ namespace Dash
                         // if the element is close enough to append to the rectangle
                         if (closeEnoughX && closeEnoughY && similarSize)
                         {
-                            Canvas.SetLeft(rect, Math.Min(rLeft, ele.Bounds.Left));
+                            (rect.RenderTransform as TranslateTransform).X = Math.Min(rLeft, ele.Bounds.Left);
+                            (rect.RenderTransform as TranslateTransform).Y = Math.Min(rTop, ele.Bounds.Top);
+                            //Canvas.SetLeft(rect, Math.Min(rLeft, ele.Bounds.Left));
                             rect.Width = Math.Max(rect.Width, ele.Bounds.Right - rLeft);
-                            Canvas.SetTop(rect, Math.Min(rTop, ele.Bounds.Top));
+                            //Canvas.SetTop(rect, Math.Min(rTop, ele.Bounds.Top));
                             rect.Height = Math.Abs(ele.Bounds.Bottom - rTop);
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
@@ -740,10 +743,11 @@ namespace Dash
                         {
                             Width = ele.Bounds.Width,
                             Height = ele.Bounds.Height,
-                            Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                            Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB)),
+                            RenderTransform = new TranslateTransform { X = ele.Bounds.Left, Y = ele.Bounds.Top }
                         };
-                        Canvas.SetLeft(newRect, ele.Bounds.Left);
-                        Canvas.SetTop(newRect, ele.Bounds.Top);
+                        //Canvas.SetLeft(newRect, ele.Bounds.Left);
+                        //Canvas.SetTop(newRect, ele.Bounds.Top);
                         XSelectionCanvas.Children.Add(newRect);
                         _clipRectSelections.Add(newRect);
                         _selectedRectangles[ele.Index] = newRect;
@@ -753,7 +757,7 @@ namespace Dash
                 {
                     foreach (var rect in _clipRectSelections)
                     {
-                        var rbounds = new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height);
+                        var rbounds = new Rect((rect.RenderTransform as TranslateTransform).X, (rect.RenderTransform as TranslateTransform).Y, rect.Width, rect.Height);
                         if (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
                             rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom)))
                         {
@@ -764,7 +768,7 @@ namespace Dash
                             else
                             {
                                 rect.Width = Math.Abs(rbounds.Left + rect.Width - ele.Bounds.Right);
-                                Canvas.SetLeft(rect, ele.Bounds.Right);
+                                (rect.RenderTransform as TranslateTransform).X = ele.Bounds.Right;
                             }
 
                             _selectedRectangles.Remove(ele.Index);
