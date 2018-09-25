@@ -155,7 +155,7 @@ namespace Dash.Views.TreeView
 
             if (ViewModel != null)
             {
-                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController> { Document = ViewModel.DataDocument, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay });
+                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController> { Document = ViewModel.DocumentController, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay });
 
                 SplitDocumentOnActiveDocumentChanged(SplitFrame.ActiveFrame);
 
