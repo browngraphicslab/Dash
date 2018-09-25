@@ -265,8 +265,8 @@ namespace Dash
                 : targetDoc;
             
             if (linkTag != null)
-                linkSource.Link(linkTarget, LinkBehavior.Zoom, linkTag);
-            else linkSource.Link(linkTarget, LinkBehavior.Zoom);
+                linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
+            else linkSource.Link(linkTarget, LinkBehavior.Follow);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {

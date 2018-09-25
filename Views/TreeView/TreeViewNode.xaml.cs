@@ -6,9 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -42,6 +44,8 @@ namespace Dash.Views.TreeView
     public sealed partial class TreeViewNode : UserControl, INotifyPropertyChanged
     {
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+
+        public TreeView TreeView => this.GetFirstAncestorOfType<TreeView>();
 
         private bool _isCollection;
         private bool _isExpanded;
@@ -93,7 +97,29 @@ namespace Dash.Views.TreeView
                 if (value == _isEditing) return;
                 _isEditing = value;
                 OnPropertyChanged();
+                XRenameBox.Focus(FocusState.Programmatic);
             }
+        }
+
+        private static readonly SolidColorBrush SelectedBrush = new SolidColorBrush(Colors.DeepSkyBlue);
+        public bool IsSelected { get; private set; }
+
+        /// <summary>
+        /// This should only be called from TreeView.SelectedItem
+        /// </summary>
+        public void Select()
+        {
+            IsSelected = true;
+            XTitleBorder.Background = SelectedBrush;
+        }
+
+        /// <summary>
+        /// This should only be called from TreeView.SelectedItem
+        /// </summary>
+        public void Deselect()
+        {
+            IsSelected = false;
+            XTitleBorder.Background = null;
         }
 
         public TreeViewNode()
@@ -143,21 +169,6 @@ namespace Dash.Views.TreeView
             }
         }
 
-        private void XTitleBlock_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
-        private void XTitleBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
-        }
-
-        private void OpenFlyoutItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
-        }
-
         private void TreeViewNode_OnLoaded(object sender, RoutedEventArgs e)
         {
             SplitFrame.ActiveDocumentChanged += SplitDocumentOnActiveDocumentChanged;
@@ -189,7 +200,6 @@ namespace Dash.Views.TreeView
             IsEditing = false;
         }
 
-        [UsedImplicitly]
         private Visibility Not(bool b)
         {
             return b ? Visibility.Collapsed : Visibility.Visible;
@@ -197,15 +207,14 @@ namespace Dash.Views.TreeView
 
         private void RenameFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
-            IsEditing = true;
-
-            void FocusResizer(object s, object o)
+            void FocusResizeBox(object s, object o)
             {
-                MenuFlyout.Closed -= FocusResizer;
+                MenuFlyout.Closed -= FocusResizeBox;
+                IsEditing = true;
                 XRenameBox.Focus(FocusState.Keyboard);
             }
 
-            MenuFlyout.Closed += FocusResizer; //Psuedo-hack to get focusing the text box to work
+            MenuFlyout.Closed += FocusResizeBox; //Psuedo-hack to get focusing the text box to work
         }
 
         private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
@@ -233,7 +242,67 @@ namespace Dash.Views.TreeView
 
         #endregion
 
-        private void DeleteFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        private bool _tapped;
+        private async void XTitleBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var treeView = TreeView;
+            if (treeView == null)
+            {
+                return;
+            }
+
+            if (!IsSelected)
+            {
+                treeView.SelectedItem = this;
+                Focus(FocusState.Programmatic);
+            }
+            else
+            {
+                _tapped = true;
+                await Task.Delay(100);//Delay to allow for double tapped
+                if (_tapped)
+                {
+                    IsEditing = true;
+                }
+            }
+        }
+
+        private void XTitleBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var treeView = TreeView;
+            if (treeView == null)
+            {
+                return;
+            }
+
+            _tapped = false;
+
+            //if (treeView.UseActiveFrame)
+            //{
+            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+            //}
+
+            treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);
+        }
+
+        private void OpenFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var treeView = TreeView;
+            if (treeView == null)
+            {
+                return;
+            }
+
+            //if (treeView.UseActiveFrame)
+            //{
+            SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+            //}
+
+            treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);
+        }
+
+        private void Delete()
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -241,6 +310,11 @@ namespace Dash.Views.TreeView
 
                 list?.ViewModel.RemoveDocument(ViewModel.LayoutDocument);
             }
+        }
+
+        private void DeleteFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            Delete();
         }
 
         private void GotoFlyoutItem_OnClick(object sender, RoutedEventArgs e)
@@ -295,7 +369,17 @@ namespace Dash.Views.TreeView
                 return;
             }
 
-            CollectionViewModel cvm = this.GetFirstAncestorOfType<TreeView>()?.ViewModel;
+            var treeView = TreeView;
+            if (treeView == null)
+            {
+                return;
+            }
+            CollectionViewModel cvm = treeView.ViewModel;
+
+            if (treeView.UseActiveFrame)
+            {
+                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+            }
 
             cvm?.ContainerDocument.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
         }
@@ -359,5 +443,22 @@ namespace Dash.Views.TreeView
         }
 
         #endregion
+
+        private void TreeViewNode_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
+            switch (e.Key)
+            {
+            case VirtualKey.F2:
+                IsEditing = true;
+                break;
+            case VirtualKey.Delete:
+                Delete();
+                break;
+            default:
+                e.Handled = false;
+                break;
+            }
+        }
     }
 }

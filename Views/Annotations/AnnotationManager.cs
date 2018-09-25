@@ -139,7 +139,7 @@ namespace Dash
 
             switch (link.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     //navigate to link
                     if (linkContext)
                     {

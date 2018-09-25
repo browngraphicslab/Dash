@@ -242,7 +242,7 @@ namespace Dash
     }
 
     public enum LinkBehavior {
-        Zoom,
+        Follow,
         Annotate,
         Dock,
         Float,

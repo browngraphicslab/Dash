@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -25,10 +26,29 @@ namespace Dash.Views.TreeView
         public static readonly DependencyProperty FilterFuncProperty = DependencyProperty.Register(
             "FilterFunc", typeof(Func<DocumentController, bool>), typeof(TreeView), new PropertyMetadata(default(Func<DocumentController, bool>)));
 
+        public bool UseActiveFrame
+        {
+            get => XActiveFrameSwitch.IsOn;
+            set => XActiveFrameSwitch.IsOn = value;
+        }
+
         public Func<DocumentController, bool> FilterFunc
         {
             get => (Func<DocumentController, bool>)GetValue(FilterFuncProperty);
             set => SetValue(FilterFuncProperty, value);
+        }
+
+
+        private TreeViewNode _selectedItem;
+        public TreeViewNode SelectedItem
+        {
+            get => _selectedItem;
+            set
+            {
+                _selectedItem?.Deselect();
+                _selectedItem = value;
+                _selectedItem.Select();
+            }
         }
 
         public TreeView()
@@ -36,5 +56,11 @@ namespace Dash.Views.TreeView
             InitializeComponent();
         }
 
+        private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.AllowedOperations = DataPackageOperation.Link;
+
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(ViewModel.ContainerDocument, KeyStore.CollectionOutputKey)));
+        }
     }
 }

@@ -846,7 +846,7 @@ namespace Dash
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
             switch (currEditLink?.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     xTypeZoom.IsSelected = true;
                     break;
                 case LinkBehavior.Annotate:
@@ -883,7 +883,7 @@ namespace Dash
             switch (selected)
             {
                 case "Zoom":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Zoom);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)
                     {

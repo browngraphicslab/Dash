@@ -178,6 +178,7 @@ namespace Dash
 
                 var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
                 xMainTreeView.DataContext = treeContext;
+                xMainTreeView.SetUseActiveFrame(true);
                 //xMainTreeView.ToggleDarkMode(true);
 
                 SetupMapView(lastWorkspace);

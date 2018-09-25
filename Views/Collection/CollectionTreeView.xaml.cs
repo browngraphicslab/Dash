@@ -50,6 +50,11 @@ namespace Dash
             ToolTipService.SetToolTip(xUpOneLevel, upLevel);
         }
 
+        public void SetUseActiveFrame(bool useActiveFrame)
+        {
+            XTreeView.UseActiveFrame = useActiveFrame;
+        }
+
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
