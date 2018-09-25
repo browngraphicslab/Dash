@@ -21,7 +21,7 @@ namespace Dash
         /// at the start of the drag.  When the documents are dropped, this allows us to remove the documents
         /// from where they were (in the case of a Move operation)
         /// </summary>
-        public List<CollectionView>     DraggedDocCollectionViews;
+        public List<CollectionViewModel>     DraggedDocCollectionViews;
 
         public List<DocumentView>       DraggedDocumentViews;   // The Document views being dragged
         public List<DocumentController> DraggedDocuments; // The Documents being dragged (they correspond to the DraggedDocumentViews when specified)
@@ -30,10 +30,10 @@ namespace Dash
         /// <summary>
         /// Flags whether the dropped set of documents should be wrapped in a collection
         /// </summary>
-        public bool                     MakeCollection   { get; set; } = false;
+        public bool MakeCollection { get; set; } = false;
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
-        
+
         public DragDocumentModel(DocumentController draggedDocument)
         {
             DraggedDocuments = new List<DocumentController> { draggedDocument };
@@ -44,7 +44,7 @@ namespace Dash
             DraggedDocumentViews = new List<DocumentView> { draggedDocumentView };
         }
 
-        public DragDocumentModel(List<DocumentView> draggedDocumentViews, List<CollectionView> draggedDocCollectionViews, List<Point> off, Point offset)
+        public DragDocumentModel(List<DocumentView> draggedDocumentViews, List<CollectionViewModel> draggedDocCollectionViews, List<Point> off, Point offset)
         {
             DraggedDocuments = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
             DraggedDocumentViews = draggedDocumentViews;
@@ -64,29 +64,44 @@ namespace Dash
         /*
          * Tests whether dropping the document would create a cycle and, if so, returns false
          */
-        public bool CanDrop(FrameworkElement sender)
+        public override bool CanDrop(FrameworkElement sender)
         {
-            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() ||  MainPage.Instance.IsCtrlPressed()))
-                return !cview.ViewModel.CreatesCycle(DraggedDocuments);
+            if (sender.DataContext is CollectionViewModel cvm && (MainPage.Instance.IsShiftPressed() || MainPage.Instance.IsCtrlPressed()))
+                return !cvm.CreatesCycle(DraggedDocuments);
             return true;
         }
 
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override List<DocumentController> GetDropDocuments(Point where, FrameworkElement target)
+        public override List<DocumentController> GetDropDocuments(Point? where, FrameworkElement target)
         {
             // For each dragged document...
             var docs = new List<DocumentController>();
 
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+            Point? GetPosition(int i)
+            {
+                Point? pos;
+                if (where == null)
+                {
+                    pos = null;
+                }
+                else
+                {
+                    Point wherePoint = (Point)where;
+                    pos = new Point(wherePoint.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                        wherePoint.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
+                }
+
+                return pos;
+            }
             // ...if CTRL pressed, create a key value pane
             if (MainPage.Instance.IsCtrlPressed())
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    docs.Add(DraggedDocuments[i].GetDataInstance(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
-                        where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y)));
+                    docs.Add(DraggedDocuments[i].GetDataInstance(GetPosition(i)));
                 }
             }
             // ...if ALT pressed, create a data instance
@@ -94,8 +109,7 @@ namespace Dash
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
-                        where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y)));
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
                 }
             }
             else if (MainPage.Instance.IsShiftPressed())
@@ -104,8 +118,7 @@ namespace Dash
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
                     DocumentController vcopy = DraggedDocuments[i]
-                        .GetViewCopy(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
-                            where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y));
+                        .GetViewCopy(GetPosition(i));
 
                     // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
                     // an arbitrary size for it and zero out its pan position so that it will FitToParent
@@ -124,7 +137,8 @@ namespace Dash
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
-                docs = GetLinkDocuments(where);
+                Debug.Assert(where.HasValue);
+                docs = GetLinkDocuments((Point)where);
             }
             else
             {
@@ -142,14 +156,19 @@ namespace Dash
                             draggedDoc.SetHeight(300);
                             draggedDoc.SetFitToParent(true);
                         }
-                        draggedDoc.SetPosition(new Point(where.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
-                            where.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y));
+
+                        var pos = GetPosition(i);
+                        if (pos.HasValue)
+                        {
+                            draggedDoc.SetPosition(pos.Value);
+                        }
+
                         docs.Add(draggedDoc);
                     }
                 }
             }
 
-            return MakeCollection ? new List<DocumentController>{ new CollectionNote(where, ViewType, collectedDocuments: docs).Document } : docs;
+            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(), ViewType, collectedDocuments: docs).Document } : docs;
         }
 
         //TODO do we want to create link here?
@@ -172,7 +191,7 @@ namespace Dash
 
                 dragDoc.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
             }
-            return new List<DocumentController>{ anno };
+            return new List<DocumentController> { anno };
         }
     }
 }

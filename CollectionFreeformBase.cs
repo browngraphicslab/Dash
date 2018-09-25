@@ -309,11 +309,9 @@ namespace Dash
             CompositionTarget.Rendering += CompositionTargetOnRendering;
 
             // Begin the animation.
-            _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-
-
+            _storyboard1.Begin();
         }
 
         protected void Storyboard1OnCompleted(object sender, object e)
@@ -926,7 +924,8 @@ namespace Dash
                     DoAction((views, where, size) =>
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            CollectionViewModel.RouteDataBoxReferencesThroughCollection(newCollection, docss);
                             ViewModel.AddDocument(newCollection);
 
                             foreach (DocumentView v in views)

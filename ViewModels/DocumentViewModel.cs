@@ -29,7 +29,6 @@ namespace Dash
             _lastLayout = LayoutDocument;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
-            IsSearchHighlighted = false;
 
             if (IconTypeController == null)
             {
@@ -144,19 +143,11 @@ namespace Dash
         }
 
         public bool Undecorated { get; set; }
-        public bool DecorationState
-        {
-            get => _decorationState;
-            set => SetProperty(ref _decorationState, value);
-        }
-
         public Thickness SearchHighlightState
         {
             get => _searchHighlightState;
-            set => SetProperty(ref _searchHighlightState, value);
+            private set => SetProperty(ref _searchHighlightState, value);
         }
-
-        public bool IsSearchHighlighted { get; set; }
 
         public SolidColorBrush SearchHighlightBrush
         {
@@ -164,27 +155,16 @@ namespace Dash
             set => SetProperty(ref _searchHighlightBrush, value);
         }
 
+        public bool IsHighlighted => SearchHighlightState == Highlighted;
 
-        public async void ExpandBorder()
+        public void SetHighlight(bool highlight)
         {
-            while (SearchHighlightState.Bottom <= Highlighted.Bottom - 0.5)
-            {
-                SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
-                await Task.Delay(TimeSpan.FromMilliseconds(7));
-            }
-
-            IsSearchHighlighted = true;
+            SearchHighlightState = highlight ? Highlighted : UnHighlighted;
         }
 
-        public async void RetractBorder()
+        public void ToggleHighlight()
         {
-            while (SearchHighlightState.Bottom >= 0.5)
-            {
-                SearchHighlightState = new Thickness(SearchHighlightState.Bottom - 0.5);
-                await Task.Delay(TimeSpan.FromMilliseconds(7));
-            }
-
-            IsSearchHighlighted = false;
+            SetHighlight(!IsHighlighted);
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 

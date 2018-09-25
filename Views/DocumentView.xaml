@@ -13,8 +13,6 @@
     d:DesignWidth="400"
     d:DesignHeight="400"
     AllowDrop="True"
-    DragOver="This_DragOver"
-    DragLeave="This_DragLeave"
     Drop="This_Drop"
     UseLayoutRounding="False">
     <UserControl.Resources>

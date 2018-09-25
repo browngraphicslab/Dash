@@ -76,7 +76,7 @@ namespace Dash
                 string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
                 string src = srcMatch.Substring(6, srcMatch.Length - 6);
                 var imgNote = new ImageNote(new Uri(src), where, new Size(), src);
-                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "HTML", true);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, MainPage.Instance.GetSettingsView.UserName, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);

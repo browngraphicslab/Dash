@@ -108,7 +108,7 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             var el = sender as FrameworkElement;
             var docRef = DataContext as DocumentFieldReference;
-            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(docRef.GetDocumentController(null), ((DictionaryEntry?)el?.DataContext)?.Key as KeyController)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(docRef.GetDocumentController(null), ((DictionaryEntry?)el?.DataContext)?.Key as KeyController)));
         }
     }
 }

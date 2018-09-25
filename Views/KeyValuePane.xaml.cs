@@ -119,11 +119,10 @@ namespace Dash
             ListItemSource.Clear();
             if (activeContextDoc != null)
             {
-                foreach (var keyFieldPair in activeContextDoc.EnumFields())
-                    if (!keyFieldPair.Key.Name.StartsWith("_"))
-                        ListItemSource.Add(
-                            new EditableScriptViewModel(
-                                new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
+                foreach (var keyFieldPair in activeContextDoc.EnumDisplayableFields())
+                    ListItemSource.Add(
+                        new EditableScriptViewModel(
+                            new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
             }
         }
 
@@ -303,7 +302,7 @@ namespace Dash
             foreach (object m in args.Items)
             {
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel)?.Key);
-                args.Data.AddDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
+                args.Data.SetDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -319,7 +318,7 @@ namespace Dash
         {
             foreach (var m in args.Items)
             {
-                args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
+                args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;

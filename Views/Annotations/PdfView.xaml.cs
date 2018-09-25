@@ -20,6 +20,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using iText.Kernel.Crypto;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -135,6 +136,13 @@ namespace Dash
             if (args.Key == VirtualKey.Space)
                 MainPage.Instance.xToolbar.xPdfToolbar.Update(
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
+            if (!MainPage.Instance.IsShiftPressed())
+            {
+                if (args.Key == VirtualKey.PageDown)
+                    PageNext(BottomScrollViewer);
+                if (args.Key == VirtualKey.PageUp)
+                    PagePrev(BottomScrollViewer);
+            }
             if (this.IsCtrlPressed())
             {
                 var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
@@ -467,6 +475,7 @@ namespace Dash
                     outDoc.Close();
                 }
                 var doc = new PdfToDashUtil().GetPDFDoc(localFile, title.Substring(0,title.IndexOf(".pdf"))+":"+i+".pdf");
+                doc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, DataDocument.Id, true);
                 pages.Add(doc);
             }
             reader.Close();
@@ -511,9 +520,17 @@ namespace Dash
                     return;
                 }
             }
-            
+
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            var pdfDocument = new PdfDocument(reader);
+            PdfDocument pdfDocument;
+            try
+            {
+                pdfDocument = new PdfDocument(reader);
+            }
+            catch(BadPasswordException)
+            {
+                return;
+            }
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;

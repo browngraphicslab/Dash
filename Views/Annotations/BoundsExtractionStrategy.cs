@@ -156,7 +156,9 @@ namespace Dash
             {
                 var newElements = GetSortedSelectableElements(page, elements.Count);
                 elements.AddRange(newElements);
-                pages.Add(newElements.Last().Index);
+                // set the last index to the last index of the new elements, or the last index of the previous page if no new elements, or 0 if no previous pages.
+                var lastEle = newElements.Any() ? newElements.Last().Index : pages.Any() ? pages.Last() : 0;
+                pages.Add(lastEle);
             }
 
             StringBuilder sb = new StringBuilder(elements.Count);

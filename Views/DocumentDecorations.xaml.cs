@@ -143,13 +143,21 @@ namespace Dash
         {
             SetPositionAndSize();
         }
-
+        ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
             _selectedDocs = new List<DocumentView>();
+            _titleTip.Content = HeaderFieldKey.Name;
+            ToolTipService.SetToolTip(xHeaderText, _titleTip);
+            xHeaderText.PointerEntered += (s, e) => _titleTip.IsOpen = true;
+            xHeaderText.PointerExited  += (s, e) => _titleTip.IsOpen = false;
+            xHeaderText.GotFocus += (s, e) =>
+            {
+                if (xHeaderText.Text == "<empty>") xHeaderText.SelectAll();
+            };
             //Tags = new List<SuggestViewModel>();
             //Recents = new Queue<SuggestViewModel>();
             Tags = new List<Tag>();
@@ -425,26 +433,13 @@ namespace Dash
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
-            var title = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data;
-            if (!string.IsNullOrEmpty(title))
-            {
-                xTitle.Background = new SolidColorBrush(Colors.LightBlue);
-                xTitle.Foreground = new SolidColorBrush(Colors.Black);
-                xTitle.Text = title;
-                xTitle.Visibility = Visibility.Visible;
-            } else
-            {
-                xTitle.Background = new SolidColorBrush(Colors.Pink);
-                xTitle.Foreground = new SolidColorBrush(Colors.Black);
-                xTitle.Text = "";
-                xTitle.Visibility = Visibility.Visible;
-            }
+            ResetHeader(); // force header field to update
 
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
             {// add a hyperlink that points to the source webpage.
 
-                xURISource.Text = "From website";
+                xURISource.Text = "From:";
                 try
                 {
                     var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
@@ -454,7 +449,16 @@ namespace Dash
                 }
                 catch (Exception)
                 {
+                    var theDoc = ContentController<DashShared.FieldModel>.GetController<DocumentController>(htmlAddress);
+                    if (theDoc != null)
+                    {
+                        var regDef = theDoc.GetDataDocument().GetRegionDefinition() ?? theDoc;
+                        xURISource.Text += " " + regDef?.Title;
+                        //var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
+                        //hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
+                        //xURISource.Inlines.Add(hyperlink);
+                    }
                 }
                 xURISource.Visibility = Visibility.Visible;
             }
@@ -519,7 +523,6 @@ namespace Dash
             if (doc.ViewModel != null)
             {
                 VisibilityState = Visibility.Visible;
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
             }
         }
 
@@ -529,9 +532,6 @@ namespace Dash
             if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
                 VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
-
-            if (doc.ViewModel != null)
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -567,12 +567,11 @@ namespace Dash
             foreach (var docView in SelectedDocs)
             {
                 var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionView>(new CollectionView[] { docCollectionView } ) });
+                args.Data.SetDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionViewModel>(new[] { docCollectionView.ViewModel } ) });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                docView.ViewModel.DecorationState = false;
             }
         }
 
@@ -847,7 +846,7 @@ namespace Dash
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
             switch (currEditLink?.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     xTypeZoom.IsSelected = true;
                     break;
                 case LinkBehavior.Annotate:
@@ -884,7 +883,7 @@ namespace Dash
             switch (selected)
             {
                 case "Zoom":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Zoom);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)
                     {
@@ -946,25 +945,85 @@ namespace Dash
         void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
         void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
         void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
-        
-        private void xTitle_KeyDown(object sender, KeyRoutedEventArgs e)
+
+        private void xTitle_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Enter)
+            switch (e.Key)
             {
-                xTitle.Foreground = new SolidColorBrush(Colors.Black);
-                xTitle.Background = new SolidColorBrush(Colors.LightBlue);
-                if (xTitle.Text.StartsWith("#") && KeyController.IsPresent(xTitle.Text.Substring(1))) {
-                    HeaderFieldKey = new KeyController(xTitle.Text.Substring(1));
-                    var title = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data;
-                    xTitle.Text = title ?? "";
-                    if (string.IsNullOrEmpty(title))
-                        xTitle.Background = new SolidColorBrush(Colors.Pink);
-                    return;
-                }
-                SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.SetField<TextController>(HeaderFieldKey, xTitle.Text, true);
+                case VirtualKey.Enter:
+                    if (xHeaderText.Text.StartsWith("#"))
+                    {
+                        ResetHeader(xHeaderText.Text.Substring(1));
+                    }
+                    else
+                    {
+                        CommitHeaderText();
+                    }
+                    break;
+                case VirtualKey.Down:
+                case VirtualKey.Up:
+                    ChooseNextHeaderKey(e.Key == VirtualKey.Up);
+                    break;
+                default :
+                    xHeaderText.Foreground = new SolidColorBrush(Colors.Red);
+                    break;
             }
-            else
-                xTitle.Foreground = new SolidColorBrush(Colors.Red);
+            e.Handled = true;
+        }
+
+        private void ChooseNextHeaderKey(bool prev=false)
+        {
+            var keys = new List<KeyController>();
+            foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            {
+                keys.AddRange(d.EnumDisplayableFields().Select((pair) => pair.Key));
+            }
+            keys = keys.ToHashSet().ToList();
+            keys.Sort((dv1, dv2) => string.Compare(dv1.Name, dv2.Name));
+            var ind = keys.IndexOf(HeaderFieldKey);
+            do
+            {
+                ind = prev ? (ind > 0 ? ind - 1 : keys.Count - 1) : (ind < keys.Count - 1 ? ind + 1 : 0);
+                ResetHeader(keys[ind].Name);
+            } while (xHeaderText.Text == "<empty>");
+        }
+        private void CommitHeaderText()
+        {
+            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
+            {
+                var targetDoc = doc.GetField<TextController>(HeaderFieldKey)?.Data != null ? doc : doc.GetDataDocument();
+
+                targetDoc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
+            }
+            xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
+            ResetHeader();
+        }
+        private void ResetHeader(string newkey = null)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                if (newkey != null)
+                {
+                    HeaderFieldKey = KeyController.IsPresent(newkey) ? new KeyController(newkey) : new KeyController(newkey, Guid.NewGuid().ToString());
+                }
+                var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
+                xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                if (SelectedDocs.Count > 1)
+                {
+                    foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+                    {
+                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        if (dvalue != xHeaderText.Text)
+                        {
+                            xHeaderText.Text = "...";
+                            break;
+                        }
+                    }
+                }
+                xHeaderText.Foreground = new SolidColorBrush(Colors.Black);
+                _titleTip.Content = HeaderFieldKey.Name;
+                xHeaderText.Background = new SolidColorBrush(xHeaderText.Text == "<empty>" ? Colors.Pink : Colors.LightBlue);
+            }
         }
     }
 }

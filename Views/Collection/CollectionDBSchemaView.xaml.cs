@@ -320,7 +320,7 @@ namespace Dash
             {
                 vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
-                args.Data.AddDragModel(new DragDocumentModel(vm.Document));
+                args.Data.SetDragModel(new DragDocumentModel(vm.Document));
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
         }
