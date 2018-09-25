@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Windows.Foundation;
-using Windows.UI.Input;
+﻿using System.Linq;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
     public class ManipulationControlHelper
     {
-        DocumentView       _manipulationDocumentTarget = null;
-        int                _numMovements = 0;
+        private DocumentView _manipulationDocumentTarget = null;
+        private int          _numMovements = 0;
 
         public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)
         {
@@ -27,7 +20,8 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e?.GetCurrentPoint(_manipulationDocumentTarget), null);
+                if (SelectionManager.TryInitiateDragDrop(_manipulationDocumentTarget, e, null))
+                    e.Handled = true;
             }
         }
     }

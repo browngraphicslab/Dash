@@ -13,7 +13,7 @@
     d:DesignWidth="400"
     DataContextChanged="EditableScriptView_OnDataContextChanged">
 
-    <Grid x:Name="xBackground" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid x:Name="xBackground" Height="60"  Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid x:Name="xDataBoxContainer" DoubleTapped="XTextBlock_DoubleTapped" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <TextBlock x:Name="XTextBlock"
                            x:FieldModifier="public"

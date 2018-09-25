@@ -5,7 +5,7 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.add, Op.Name.concat, Op.Name.operator_add)]
-    public class ConcatOperatorController : OperatorController
+    public sealed class ConcatOperatorController : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("A");
         public static readonly KeyController BKey = new KeyController("B");

@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using Windows.UI.Xaml.Shapes;
 using Image = Windows.UI.Xaml.Controls.Image;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -64,12 +53,12 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
 
-            if (SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
+            if (args.SelectedViews.Contains(docView) && SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
                 Unfreeze();
             } 
-            else if (args.DeselectedViews.Contains(docView) || 
-                (xCacheBitmap.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))
+            else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) || 
+                (xCacheBitmap.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
             {
                 Freeze();
             }
@@ -79,7 +68,6 @@ namespace Dash
         {
             var rtb = new RenderTargetBitmap();
             var size = new Point(Math.Round(ActualWidth), Math.Round(ActualHeight));
-            _xWebView.UseLayoutRounding = true;
             //var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
             //var rect = transformToVisual.TransformBounds(new Rect(0, 0, size.X, size.Y));
             //size = new Point(rect.Width, rect.Height);
@@ -92,6 +80,7 @@ namespace Dash
                 var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
                 await Util.SaveSoftwareBitmapToFile(sb, localFile);
                 LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
+
                 _xWebView.Visibility = Visibility.Collapsed;
                 xCacheBitmap.Visibility = Visibility.Visible;
                 if (xTextBlock != null)
@@ -151,23 +140,6 @@ namespace Dash
                 } 
                 _xWebView.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
             };
-
-            // add a hyperlink that points to the source webpage.
-            xTextBlock = new TextBlock();
-            xTextBlock.VerticalAlignment = VerticalAlignment.Bottom;
-            xTextBlock.Margin = new Thickness(0, 0, 0, -40);
-            xTextBlock.Text = "Website from";
-            try
-            {
-                var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
-                hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
-
-                xTextBlock.Inlines.Add(hyperlink);
-                xOuterGrid.Children.Add(xTextBlock);
-            } catch (Exception)
-            {
-
-            }
 
             _xWebView.LoadCompleted += Web_LoadCompleted;
         }

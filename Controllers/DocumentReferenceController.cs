@@ -50,13 +50,8 @@ namespace Dash
             DocumentController oldDoc = DocumentController;
             UndoCommand newEvent = new UndoCommand(() => ChangeFieldDoc(DocumentController, false), () => ChangeFieldDoc(oldDoc, false));
 
-            //docController for old DocumentId
-            var docController = GetDocumentController(null);
-            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-                DocumentController = doc;
-            //docController for given DocumentId
-            var docController2 = GetDocumentController(null);
-            docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            DocumentController = doc;
+            DocumentChanged();
 
             UpdateOnServer(withUndo ? newEvent : null);
         }
@@ -79,7 +74,7 @@ namespace Dash
 
 
         // todo: more meaningful tostring here
-        public override string ToString() => $"dRef[{DocumentController}, {FieldKey}]";
+        public override string ToString() => $"dRef({DocumentController}, {FieldKey})";
 
         public override FieldControllerBase GetDocumentReference() => DocumentController;
 

@@ -9,12 +9,11 @@
     d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     mc:Ignorable="d"
     AllowDrop="True"  
-    Tapped="OnTapped"
     Background="Transparent"
     d:DesignHeight="300"
     d:DesignWidth="600">
 
-    <Grid>
+    <Grid  ManipulationMode="All">
         <Grid x:Name="xNumberContent" Visibility="Visible" HorizontalAlignment="Stretch" Background="#CC414141" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="10*"/>

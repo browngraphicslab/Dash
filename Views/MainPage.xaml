@@ -57,7 +57,7 @@
 
         <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
 
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 10, 10, 0" Spacing="10">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 15, 15, 0" Spacing="10" Grid.Column="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
             </Grid>
@@ -68,28 +68,6 @@
                 <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
                 <ToolTipService.ToolTip>
                     <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
-                                />
-                </ToolTipService.ToolTip>
-            </Grid>
-
-            <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
-
-                </Ellipse>
-                <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
-                                />
-                </ToolTipService.ToolTip>
-            </Grid>
-
-            <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
-
-                </Ellipse>
-                <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
                                 />
                 </ToolTipService.ToolTip>
             </Grid>
@@ -132,6 +110,7 @@
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+            <Button Tapped="ActionMenuTest_OnTapped" Width="10" Height="10">Test</Button>
             <local:DocumentDecorations x:Name="XDocumentDecorations" x:FieldModifier="public"/>
             <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
 

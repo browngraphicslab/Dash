@@ -54,9 +54,7 @@ namespace Dash
 
         public TreeViewNode()
         {
-            this.InitializeComponent();
-            MainPage.Instance.xMainTreeView.TreeViewNodes.Add(this);
-            focusOnSelected();
+            InitializeComponent();
             SetupTooltips();
         }
 
@@ -236,15 +234,6 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public void Highlight(bool ? flag)
-        {
-            if (flag == null)
-                ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
-            else if (flag == true)
-                ViewModel.DecorationState = (ViewModel.Undecorated == false);
-            else if (flag == false)
-                ViewModel.DecorationState = false;
-        }
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         { 
             e.Handled = true;
@@ -258,10 +247,7 @@ namespace Dash
                 var centX = (float)xArrowBlock.ActualWidth / 2 + 1;
                 var centY = (float)xArrowBlock.ActualHeight / 2 + 1;
                 //open search bar
-                xArrowBlock.Rotate(value: 90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-                    easingType: EasingType.Default).Start();
-
-                ClosePopups();
+                xArrowBlock.Rotate(90.0f, centX, centY, 300).Start();
             }
             else
             {
@@ -273,8 +259,7 @@ namespace Dash
                 var centY = (float)xArrowBlock.ActualHeight / 2;
                 //open search bar
 
-                xArrowBlock.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-                    easingType: EasingType.Default).Start();
+                xArrowBlock.Rotate(0.0f, centX, centY, 300).Start();
             }
         }
 
@@ -285,7 +270,6 @@ namespace Dash
             //Toggle visibility
             if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
             {
-                ClosePopups();
                 XSnapshotsPopup.Visibility = Visibility.Visible;
             }
             else
@@ -297,16 +281,13 @@ namespace Dash
         private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
-            Highlight(true);
-            MainPage.Instance.HighlightDoc(docTapped, true);
-
+            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Highlight);
         }
 
         private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Highlight(false);
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
-            MainPage.Instance.HighlightDoc(docTapped, false);
+            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Unhighlight);
         }
 
         private void XTextBlock_Tapped(object sender, TappedRoutedEventArgs e)
@@ -320,11 +301,9 @@ namespace Dash
             MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
-            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                MainPage.Instance.SetCurrentWorkspace(docToFocus);
-
-            UnfocusText();
-            ClosePopups();
+            //if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+            //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+            //TODO TreeView
 
 	        XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
             XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
@@ -332,13 +311,12 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.AddDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController));
+            args.Data.SetDragModel(new DragDocumentModel((DataContext as DocumentViewModel)?.DocumentController));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 
         public void DeleteDocument()
         {
-            ClosePopups();
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
@@ -354,7 +332,6 @@ namespace Dash
         
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
-            ClosePopups();
             UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
@@ -365,7 +342,7 @@ namespace Dash
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            SplitFrame.OpenInActiveFrame((DataContext as DocumentViewModel).DocumentController);
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -421,25 +398,6 @@ namespace Dash
 
         }
 
-        private void ClosePopups()
-        {
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                node.XSnapshotsPopup.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void UnfocusText()
-        {
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                node.XBlockBorder.Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
-                node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
-
-                node.XSnapshotSelected.Visibility = Visibility.Collapsed;
-            }
-        }
-
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             var item = (sender as StackPanel)?.DataContext as SnapshotView;
@@ -450,29 +408,14 @@ namespace Dash
             if (snaps != null && snaps.Count > itemNum)
             {
                 var docToFocus = snaps[itemNum];
-                if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
-                    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+                //if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
+                //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
+                //TODO TreeView
             }
-
-            ClosePopups();
-            UnfocusText();
 
             SelectedTitle.Text = item.Title;
             SelectedImage.Source = new BitmapImage(new Uri(item.Image));
             XSnapshotSelected.Visibility = Visibility.Visible;
-        }
-
-        private void focusOnSelected()
-        {
-            var workspace = MainPage.Instance.MainDocument.GetField(KeyStore.LastWorkspaceKey, true) as DocumentController;
-            foreach (var node in MainPage.Instance.xMainTreeView.TreeViewNodes)
-            {
-                if (node.ViewModel?.DocumentController == workspace)
-                {
-                    node.XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
-                    node.XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
-                }
-            }
         }
 
         private void TextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -502,7 +445,7 @@ namespace Dash
                 d.SetHeight(200);
             }
             DocumentViewModel dvm = ViewModel;
-            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(dvm.DataDocument, KeyStore.SnapshotsKey)));
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
@@ -511,13 +454,8 @@ namespace Dash
             if (e.Items.Count.Equals(0)) return;
             var first = (SnapshotView) e.Items.First();
             var snapshots = ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            e.Data.AddDragModel(new DragDocumentModel(snapshots[first.Index]));
+            e.Data.SetDragModel(new DragDocumentModel(snapshots[first.Index]));
             e.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-        }
-
-        private void ListViewBase_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            ClosePopups();
         }
     }
 }

@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using DashShared;
 using System.Collections.Generic;
-using Dash.Converters;
 
 namespace Dash
 {
@@ -18,16 +17,27 @@ namespace Dash
         DocumentController _lastDoc = null;
         public override void Init()
         {
-            FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
+            if (FieldKey == null)
+            {
+                FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
+            }
+
             _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
             _lastDoc = GetDocumentController(null);
             _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
+        protected void DocumentChanged()
+        {
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc = GetDocumentController(null);
+            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            DocFieldUpdated(null, null, null);
+        }
+
         protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
-            //OnFieldModelUpdated(dargs, c);
-            OnFieldModelUpdated(args.FieldArgs, c);
+            OnFieldModelUpdated(args?.FieldArgs, c);
         }
 
         public override void DisposeField()

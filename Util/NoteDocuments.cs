@@ -1,15 +1,13 @@
 ﻿using DashShared;
-using System.Collections.Generic;
-using System.Linq;
-using Windows.Foundation;
 using Dash.Controllers;
 using System;
 
 namespace Dash
 {
-    public abstract class NoteDocument {
+    public abstract class NoteDocument
+    {
         public DocumentController Document { get; set; }
-            
+
         public NoteDocument(string prototypeID)
         {
             _prototype = ContentController<FieldModel>.GetController<DocumentController>(prototypeID);
@@ -45,13 +43,17 @@ namespace Dash
         protected DocumentController makeDataDelegate(FieldControllerBase controller)
         {
             DocumentController dataDocument = _prototype.MakeDelegate();
-            
+
             dataDocument.SetField(KeyStore.DataKey, controller, true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
             dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, dataDocument.DocumentType.Type, true);
-            dataDocument.SetField<TextController>(KeyStore.AuthorKey, "avd", true);
-            
+            var author = MainPage.Instance.GetSettingsView.UserName;
+            if (author != null)
+            {
+                dataDocument.SetField<TextController>(KeyStore.AuthorKey, author, true);
+            }
+
             return dataDocument;
         }
 
@@ -67,9 +69,9 @@ namespace Dash
             if (!string.IsNullOrEmpty(title))
                 dataDocument.SetTitle(title);
             layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-            layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
-            // layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
-            layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument, KeyStore.TitleKey), true);
+            var docContextReference = new DocumentReferenceController(layout, KeyStore.DocumentContextKey);
+            layout.SetField(KeyStore.DataKey, new PointerReferenceController(docContextReference, KeyStore.DataKey), true);
+            layout.SetField(KeyStore.TitleKey, new PointerReferenceController(docContextReference, KeyStore.TitleKey), true);
             return layout;
         }
     }

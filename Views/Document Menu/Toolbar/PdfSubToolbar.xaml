@@ -710,6 +710,11 @@
                                 PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xRegionToggleIcon" Text="&#xE70B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0, -2, 0, 0" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
+            <!--Explode-->
+            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xExplodePages" Checked="XExplodePages_OnChecked" PointerEntered="ShowAppBarToolTip"
+                                PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xExplodePagesIcon" Text="&#xECCD;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0, -2, 0, 0" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarToggleButton>
 
             <AppBarSeparator Height="45" VerticalAlignment="Center" Foreground="White" Background="White"></AppBarSeparator>
 

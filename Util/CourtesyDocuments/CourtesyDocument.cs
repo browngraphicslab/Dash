@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
@@ -104,12 +102,12 @@ namespace Dash
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            //BindWidth(element, docController, context);
+            //BindHeight(element, docController, context);
 
             //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
+            //BindHorizontalAlignment(element, docController, context);
+            //BindVerticalAlignment(element, docController, context);
         }
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
@@ -200,8 +198,8 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
-                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
-                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
+                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Left.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Top.ToString()),
                 [KeyStore.ActualSizeKey] = new PointController(double.NaN, double.NaN),
                 
             };
@@ -244,7 +242,7 @@ namespace Dash
     }
 
     public enum LinkBehavior {
-        Zoom,
+        Follow,
         Annotate,
         Dock,
         Float,
@@ -286,12 +284,11 @@ namespace Dash
 
         public static bool GetFitToParent(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null);
-            return data?.Data == "true";
+            return document.GetDereferencedField<BoolController>(KeyStore.CollectionFitToParentKey, null)?.Data ?? false;
         }
         public static void    SetFitToParent(this DocumentController document, bool fit)
         {
-            document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
+            document.SetField<BoolController>(KeyStore.CollectionFitToParentKey, fit, true);
         }
         public static void    SetTitle(this DocumentController document, string title)
         {
@@ -300,12 +297,12 @@ namespace Dash
 
         public static bool    GetIsAdornment(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.IsAdornmentKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
+            return data?.Data == true;
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
+            document.SetField<BoolController>(KeyStore.IsAdornmentKey, adornment, true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)

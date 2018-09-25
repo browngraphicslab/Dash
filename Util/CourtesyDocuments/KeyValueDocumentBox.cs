@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -16,6 +14,9 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             SetupDocument(DocumentType, PrototypeId, "KeyValueDocumentBox Prototype Layout", fields);
+
+            Document.SetField(KeyStore.TitleKey, new PointerReferenceController(new DocumentReferenceController(Document, KeyStore.DocumentContextKey),
+                KeyStore.TitleKey), true);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {

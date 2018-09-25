@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.ApplicationModel.DataTransfer;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -63,7 +64,7 @@ namespace Dash
 
             if (transferType.HasFlag(Internal))
             {
-                retVal |= packageView.Properties.ContainsKey(nameof(List<DragModelBase>));
+                retVal |= packageView.Properties.ContainsKey(nameof(DragModelBase));
             }
 
             return retVal;
@@ -71,7 +72,7 @@ namespace Dash
 
         // DATA ACCESS
 
-        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point @where = new Point())
+        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null)
         {
             var dropDocs = new List<DocumentController>();
 
@@ -82,36 +83,40 @@ namespace Dash
 
             if (transferType.HasFlag(FileSystem) && packageView.Contains(StandardDataFormats.StorageItems))
             {
-                DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where);
+                DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where ?? new Point());
                 if (documentController != null) dropDocs.Add(documentController);
+                else if(transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
+                {
+                    dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where ?? new Point()));
+                }
             }
 
             // HTML
 
             else if (transferType.HasFlag(Html) && packageView.Contains(StandardDataFormats.Html))
             {
-                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where));
+                dropDocs.Add(await HtmlToDashUtil.ConvertHtmlData(packageView, where ?? new Point()));
             } 
 
             // RTF
 
             else if (transferType.HasFlag(Rtf) && packageView.Contains(StandardDataFormats.Rtf))
             {
-                dropDocs.Add(await ConvertRtfData(packageView, where));
+                dropDocs.Add(await ConvertRtfData(packageView, where ?? new Point()));
             }
 
             // Plain Text
 
             else if (transferType.HasFlag(PlainText) && packageView.Contains(StandardDataFormats.Text))
             {
-                dropDocs.Add(await ConvertPlainTextData(packageView, where));
+                dropDocs.Add(await ConvertPlainTextData(packageView, where ?? new Point()));
             }
 
             // Image (rarely hit, most images fall under Storage Items)
 
             else if (transferType.HasFlag(Image) && packageView.Contains(StandardDataFormats.Bitmap))
             {
-                dropDocs.Add(await ConvertBitmapData(packageView, where));
+                dropDocs.Add(await ConvertBitmapData(packageView, where ?? new Point()));
             }
 
             // Internal Dash Document or Field
@@ -126,12 +131,10 @@ namespace Dash
 
         // HELPER METHODS
 
-        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point where, FrameworkElement sender)
+        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender)
         {
-            var dragModels = packageView.GetDragModels();
-            var dropSafe = dragModels.Where(dmb => dmb is DragFieldModel || dmb is DragDocumentModel ddm && ddm.CanDrop(sender)).ToList();
-
-            return dropSafe.SelectMany(dm => dm.GetDropDocuments(where, sender)).ToList();
+            var dragModel = packageView.GetDragModel();
+            return (dragModel?.CanDrop(sender) ?? false) ? dragModel.GetDropDocuments(where, sender) : new List<DocumentController>();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)
@@ -167,42 +170,45 @@ namespace Dash
             return new RichTextNote(text, where, new Size(300, double.NaN)).Document;
         }
 
-        public static bool HasDragModels(this DataPackageView packageView) => packageView.Properties.ContainsKey(nameof(List<DragModelBase>));
 
-        public static bool HasDroppableDragModels(this DataPackageView packageView, FrameworkElement target) => packageView.GetDragModels().Any(d => IsDroppable(d, target));
-
-        private static bool IsDroppable(DragModelBase dragModel, FrameworkElement target) => dragModel is DragFieldModel || dragModel is DragDocumentModel ddm && ddm.CanDrop(target);
-
-        public static bool HasDragModels(this DataPackage package) => package.Properties.ContainsKey(nameof(List<DragModelBase>));
-
-        public static List<DragModelBase> GetDragModels(this DataPackageView packageView)
+        public static bool HasDroppableDragModels(this DataPackageView packageView, FrameworkElement target)
         {
-            if (!packageView.Properties.ContainsKey(nameof(List<DragModelBase>))) return new List<DragModelBase>();
-            return (List<DragModelBase>) packageView.Properties[nameof(List<DragModelBase>)];
+            var dragModel = packageView.GetDragModel();
+            return dragModel != null && IsDroppable(dragModel, target);
         }
 
-        public static List<DragModelBase> AddDragModel(this DataPackage package, DragModelBase model)
+        private static bool IsDroppable(DragModelBase dragModel, FrameworkElement target)
         {
-            if (!package.HasDragModels()) package.Properties[nameof(List<DragModelBase>)] = new List<DragModelBase>() { model };
-            else ((List<DragModelBase>) package.Properties[nameof(List<DragModelBase>)]).Add(model);
-
-            return (List<DragModelBase>) package.Properties[nameof(List<DragModelBase>)];
+            return dragModel is DragFieldModel || dragModel is DragDocumentModel ddm && ddm.CanDrop(target);
         }
 
-        public static List<DragModelBase> AddDragModels(this DataPackage package, List<DragModelBase> models)
+        public static bool HasDragModel(this DataPackageView packageView)
         {
-            if (!package.HasDragModels()) package.Properties[nameof(List<DragModelBase>)] = models;
-            else ((List<DragModelBase>)package.Properties[nameof(List<DragModelBase>)]).AddRange(models);
+            return packageView.Properties.ContainsKey(nameof(DragModelBase));
+        }
 
-            return (List<DragModelBase>)package.Properties[nameof(List<DragModelBase>)];
+        public static bool HasDragModel(this DataPackage package)
+        {
+            return package.Properties.ContainsKey(nameof(DragModelBase));
+        }
+
+        public static DragModelBase GetDragModel(this DataPackageView packageView)
+        {
+            return !packageView.Properties.ContainsKey(nameof(DragModelBase)) ? null : (DragModelBase)packageView.Properties[nameof(DragModelBase)];
+        }
+
+        public static void SetDragModel(this DataPackage package, DragModelBase model)
+        {
+            Debug.Assert(!package.HasDragModel());
+            package.Properties[nameof(DragModelBase)] = model;
         }
 
         public static bool TryGetLoneDocument(this DataPackageView packageView, out DocumentController doc)
         {
-            var dragModels = packageView.GetDragModels();
-            if (dragModels.Count == 1 && dragModels.First() is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
+            var dragModel = packageView.GetDragModel();
+            if (dragModel is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
             {
-                doc = ddm.DraggedDocuments.First();
+                doc = ddm.DraggedDocuments[0];
                 return true;
             }
 
@@ -212,35 +218,16 @@ namespace Dash
 
         public static bool TryGetLoneDragDocAndView(this DataPackageView packageView, out DocumentController doc, out DocumentView linkView)
         {
-            var dragModels = packageView.GetDragModels();
-            if (dragModels.Count == 1 && dragModels.First() is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
+            var dragModel = packageView.GetDragModel();
+            if (dragModel is DragDocumentModel ddm && ddm.DraggedDocuments.Count == 1)
             {
-                doc = ddm.DraggedDocuments.First();
+                doc = ddm.DraggedDocuments[0];
                 linkView = ddm.DraggedDocumentViews?.FirstOrDefault();
                 return true;
             }
 
             doc = null;
             linkView = null;
-            return false;
-        }
-
-        public static bool TryGetLoneDragModel(this DataPackageView packageView, out DragModelBase dragModel)
-        {
-            if (!packageView.HasDragModels())
-            {
-                dragModel = null;
-                return false;
-            }
-
-            var dragModels = packageView.GetDragModels();
-            if (dragModels.Count == 1)
-            {
-                dragModel = dragModels.First();
-                return true;
-            }
-
-            dragModel = null;
             return false;
         }
 

@@ -20,7 +20,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using iText.Kernel.Crypto;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -136,6 +136,13 @@ namespace Dash
             if (args.Key == VirtualKey.Space)
                 MainPage.Instance.xToolbar.xPdfToolbar.Update(
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
+            if (!MainPage.Instance.IsShiftPressed())
+            {
+                if (args.Key == VirtualKey.PageDown)
+                    PageNext(BottomScrollViewer);
+                if (args.Key == VirtualKey.PageUp)
+                    PagePrev(BottomScrollViewer);
+            }
             if (this.IsCtrlPressed())
             {
                 var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
@@ -358,18 +365,17 @@ namespace Dash
 
                     if (regionDoc == null)
                         continue;
-
-                    var allLinks = regionDoc.GetDataDocument().GetLinks(null);
-
+                    
                     //bool for checking whether child is currently in view of scrollviewer
                     var inView = new Rect(0, 0, BottomScrollViewer.ActualWidth, BottomScrollViewer.ActualHeight).Contains(child.TransformToVisual(BottomScrollViewer).TransformPoint(new Point(0, 0)));
 
-                    foreach (var link in allLinks)
+                    foreach (var link in regionDoc.GetDataDocument().GetLinks(null))
                     {
-                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
+                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? 
+                                        !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
 
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)      is DocumentController sourceDoc) sourceDoc.SetHidden(!inView && !pinned);
+                        if (link.GetDataDocument().GetLinkedDocument(LinkDirection.ToDestination) is DocumentController destDoc) destDoc.SetHidden(!inView && !pinned);
                     }
                 }
             }
@@ -447,6 +453,36 @@ namespace Dash
             return regionDoc;
         }
 
+        public async Task<List<DocumentController>> ExplodePages()
+        {
+            var pages = new List<DocumentController>();
+            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
+            var pdfDocument = new PdfDocument(reader);
+            int n = pdfDocument.GetNumberOfPages();
+            var title = DataDocument.GetTitleFieldOrSetDefault().Data;
+            var psplit = new iText.Kernel.Utils.PdfSplitter(pdfDocument);
+            for (int i = 1; i <= n; i++)
+            {
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var uniqueFilePath = _file.Path.Replace(".pdf", "-"+i+".pdf");
+                var exists = await localFolder.TryGetItemAsync(Path.GetFileName(uniqueFilePath)) != null;
+                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(uniqueFilePath), CreationCollisionOption.OpenIfExists);
+                if (!exists)
+                {
+                    var pw = new PdfWriter(new FileInfo(localFolder.Path + "/"+ Path.GetFileName(uniqueFilePath)));
+                    var outDoc = new PdfDocument(pw);
+                    pdfDocument.CopyPagesTo(new List<int>(new int[] { i }), outDoc);
+                    outDoc.Close();
+                }
+                var doc = new PdfToDashUtil().GetPDFDoc(localFile, title.Substring(0,title.IndexOf(".pdf"))+":"+i+".pdf");
+                doc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, DataDocument.Id, true);
+                pages.Add(doc);
+            }
+            reader.Close();
+            pdfDocument.Close();
+            return pages;
+        }
+
         private Point calculateClosestPointOnPDF(Point p)
         {
             return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth  ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
@@ -461,32 +497,40 @@ namespace Dash
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
+        StorageFile _file;
         private async Task OnPdfUriChanged()
         {
             if (PdfUri == null)
             {
                 return;
             }
-
-            StorageFile file;
+            
             try
             {
-                file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
             }
             catch (ArgumentException)
             {
                 try
                 {
-                    file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
+                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
                 }
                 catch (ArgumentException)
                 {
                     return;
                 }
             }
-            
-            var reader = new PdfReader(await file.OpenStreamForReadAsync());
-            var pdfDocument = new PdfDocument(reader);
+
+            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
+            PdfDocument pdfDocument;
+            try
+            {
+                pdfDocument = new PdfDocument(reader);
+            }
+            catch(BadPasswordException)
+            {
+                return;
+            }
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
@@ -501,7 +545,7 @@ namespace Dash
 
             PdfMaxWidth = maxWidth;
 
-            PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
             bool add = PDFdoc.PageCount != _currentPageCount;
             if (add)
             {
@@ -520,11 +564,13 @@ namespace Dash
                 }
             });
 
-            var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
-            _bottomAnnotationOverlay.TextSelectableElements = selectableElements.Item1;
+            var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            _topAnnotationOverlay.TextSelectableElements = selectableElements;
+            _topAnnotationOverlay.PageEndIndices = pages;
+            _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
+            _bottomAnnotationOverlay.PageEndIndices = pages;
 
-            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, selectableElements.Item2, true);
+            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
             reader.Close();
             pdfDocument.Close();
@@ -562,7 +608,6 @@ namespace Dash
                     overlay.EmbedDocumentWithPin(e.GetPosition(overlay));
                 }
             }
-
         }
 
         #region Region/Selection Events
@@ -842,11 +887,6 @@ namespace Dash
             xAnnotationNavigation.Opacity = 0;
         }
 
-        public void DisplayFlyout(MenuFlyout linkFlyout)
-        {
-            linkFlyout.ShowAt(this);
-        }
-
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (xTopAnnotationBox.Width.Equals(0))
@@ -861,8 +901,6 @@ namespace Dash
                 xBottomAnnotationBox.Width = 0;
             }
         }
-
-
 
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
@@ -1328,6 +1366,19 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
+        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
+        }
+
+        public void SetActivationMode(bool onoff)
+        {
+            xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
+            if (onoff)
+                LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+            else
+                LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+        }
     }
 }
 

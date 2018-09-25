@@ -1,5 +1,4 @@
-﻿using System;
-namespace Dash
+﻿namespace Dash
 {
     [OperatorType(Op.Name.less_than, Op.Name.operator_less_than)]
     public class LessThanOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>

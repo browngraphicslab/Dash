@@ -54,7 +54,8 @@ namespace Dash
                 // mechanism of identifying and halting an evaluation cycle
                 if (firstDoc?.DocumentType.Equals(DataBox.DocumentType) == true)
                     output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null)?.ToString() ?? "");
-                else output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                else
+                    output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
             // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;

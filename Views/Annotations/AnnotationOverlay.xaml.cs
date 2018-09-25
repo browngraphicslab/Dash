@@ -24,22 +24,22 @@ namespace Dash
 {
     public partial class AnnotationOverlay : UserControl, ILinkHandler, INotifyPropertyChanged
     {
-        readonly InkController                  _inkController;
-        AnnotationType                          _currAnnotationType = AnnotationType.None;
-        ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
-        bool                                    _maskInkUpdates;
-        [CanBeNull] AnchorableAnnotation        _currentAnnotation;
+        private InkController                           _inkController;
+        private AnnotationType                          _currAnnotationType = AnnotationType.None;
+        private ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
+        private bool                                    _maskInkUpdates = false;
+        [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
 
-        public readonly DocumentController     MainDocument;
-        public readonly RegionGetter           GetRegion;
-        public readonly AnnotationManager      AnnotationManager;
-        public AnchorableAnnotation.Selection  SelectedRegion;
-        public List<SelectableElement>         TextSelectableElements;
-        public List<AnchorableAnnotation>      CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
-        public delegate DocumentController     RegionGetter(AnnotationType type);
-        public readonly ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
-        public readonly ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
-        public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Where((a) => a.ViewModel != null).Select((a) => a.ViewModel);
+        public delegate DocumentController       RegionGetter(AnnotationType type);
+        public readonly DocumentController        MainDocument;
+        public readonly RegionGetter              GetRegion;
+        public readonly AnnotationManager         AnnotationManager;
+        public AnchorableAnnotation.Selection     SelectedRegion;
+        public List<SelectableElement>            TextSelectableElements;
+        public List<AnchorableAnnotation>         CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
+        public ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
+        public ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
+        public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
         public AnnotationType                 CurrentAnnotationType
         {
             get =>_currAnnotationType;
@@ -48,41 +48,30 @@ namespace Dash
                 _currAnnotationType = value;
                 OnPropertyChanged();
 
-                XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
-                XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                //XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
+                //XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
             }
         }
+
+        public List<int> PageEndIndices { get; set; }
 
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
             InitializeComponent();
 
             MainDocument = viewDocument;
-            GetRegion = getRegion;
+            GetRegion    = getRegion;
 
             AnnotationManager = new AnnotationManager(this);
 
-            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
-            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
-            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
-
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            XInkCanvas.InkPresenter.IsInputEnabled = false;
-            XInkCanvas.IsHitTestVisible = false;
-            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
-            Loaded += onLoaded;
+            //XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            //XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+            //XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            //XInkCanvas.InkPresenter.IsInputEnabled = false;
+            //XInkCanvas.IsHitTestVisible = false;
+            //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            Loaded   += onLoaded;
             Unloaded += onUnloaded;
-            
-            var binding = new Binding()
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(CurrentAnnotationType)),
-                Mode = BindingMode.TwoWay,
-                Converter = new CursorConverter()
-            };
-           // this.SetBinding(Mouse.CursorProperty, binding);
 
         }
         public class CursorConverter : IValueConverter
@@ -118,10 +107,8 @@ namespace Dash
                     if (!deselect) {
                         r.IsSelected = true;
                     }
-                    if (documentView.ViewModel != null)
-                    {
-                        documentView.ViewModel.SearchHighlightState = deselect ? DocumentViewModel.UnHighlighted : DocumentViewModel.Highlighted;
-                    }
+
+                    documentView.ViewModel?.SetHighlight(!deselect);
                 }
         }
         public void DeselectRegion()
@@ -129,12 +116,16 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             var selectedRegion = SelectedRegion;
             if (selectedRegion != null)
+            {
                 foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+                {
                     foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
                         nvo.SelectedRegion.IsSelected = false;
                         nvo.SelectedRegion = null;
                     }
+                }
+            }
         }
         /// <summary>
         /// Creates a region document from a preview, or returns an already selected region
@@ -188,8 +179,11 @@ namespace Dash
         }
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
-            _inkController.FieldModelUpdated += inkController_FieldModelUpdated;
-            RegionDocsList.FieldModelUpdated += regionDocsListOnFieldModelUpdated;
+            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
+            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
+            _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
+            RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
             xItemsControl.ItemsSource = _embeddedViewModels;
             embeddedDocsListOnFieldModelUpdated(null, 
@@ -202,23 +196,26 @@ namespace Dash
                 {
                     Undecorated = true,
                     ResizersVisible = true,
-                    DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
+                    DragWithinParentBounds = true
                 }));
         }
 
-        void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
+        private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
-            if ((args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs) &&
+            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs &&
                  listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
+            {
                 listArgs.NewItems.ForEach((reg) => _embeddedViewModels.Add(
                     new DocumentViewModel(reg)
                     {
                         Undecorated = true,
                         ResizersVisible = true,
-                        DragBounds = new RectangleGeometry { Rect = new Rect(0, 0, ActualWidth, ActualHeight) }
+                        DragWithinParentBounds = true
                     }));
+            }
         }
-        void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
+
+        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
             if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
@@ -237,12 +234,13 @@ namespace Dash
                 }
             }
         }
-        void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+
+        private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (!_maskInkUpdates)
             {
-                XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+                //XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
 
@@ -257,16 +255,14 @@ namespace Dash
             string linkTag = null)
         {
             Debug.Assert(sourceDoc.GetRegionDefinition() == null);
-            var linkSource = (sStartIndex is double sStart && sEndIndex is double sEnd)
+            var linkSource = sStartIndex is double sStart && sEndIndex is double sEnd
                 ? createRegionDoc(sourceDoc, sStart, sEnd)
                 : sourceDoc;
-            var linkTarget = (tStartIndex is double tStart && tEndIndex is double tEnd)
+            var linkTarget = tStartIndex is double tStart && tEndIndex is double tEnd
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
-
-            if (linkTag != null)
-                linkSource.Link(linkTarget, LinkBehavior.Zoom, linkTag);
-            else linkSource.Link(linkTarget, LinkBehavior.Zoom);
+            
+            linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -292,17 +288,10 @@ namespace Dash
             {
                 return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
-                    var selectionIndices =
-                        reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                    if (selectionIndices.Count == 1)
-                    {
-                        if ((int) startIndex == (int) selectionIndices[0].Data.X &&
-                            (int) endIndex == (int) selectionIndices[0].Data.Y)
-                            return true;
-                    }
-
-                    return false;
-                });
+                    var selInds = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+                    return (selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
+                                                   (int)endIndex == (int)selInds[0].Data.Y));
+                }); 
             }
         }
         
@@ -398,23 +387,23 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
-            _maskInkUpdates = true;
-            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            _maskInkUpdates = false;
+            //_maskInkUpdates = true;
+            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            //_maskInkUpdates = false;
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            _maskInkUpdates = true;
-            _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            _maskInkUpdates = false;
+            //_maskInkUpdates = true;
+            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            //_maskInkUpdates = false;
         }
 
         #endregion
 
         #region Selection Annotation
 
-        readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
         public void ClearSelection(bool hardReset = false)
         {
@@ -439,84 +428,82 @@ namespace Dash
             }
         }
 
-
+        /// <summary>
+        ///     Deselects the index passed. If endIndex is passed in as a parameter, and the rectangle
+        ///     selected by the index isn't the same as the rectangle of the endIndex, it will just remove
+        ///     the index's rectangle and all references to it (because we're going to be deselecting all
+        ///     of the indices in between anyways).
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="clipRect"></param>
+        /// <param name="endIndex"></param>
         private void DeselectIndex(int index, Rect? clipRect = null, int endIndex = -1)
         {
             if (_selectedRectangles.ContainsKey(index))
             {
-                var ele = TextSelectableElements[index];
-                if (clipRect == null || clipRect == Rect.Empty || clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
-                        ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
+                // if we've already removed the rectangle, we don't need to do the math, just remove the index
+                if (_selectedRectangles[index].Visibility == Visibility.Collapsed)
                 {
-                    //var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                    //                  ele.Bounds.Width && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) < ele.Bounds.Height;
-                    //var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
-                    //if (closeEnough && similarSize || true)
-                    //{
+                    _selectedRectangles.Remove(index);
+                    return;
+                }
 
+                var ele = TextSelectableElements[index];
+                var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
+                var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+                                                ele.Bounds.Y + ele.Bounds.Height / 2)) == true;
+                if (clipRectNonexistent || clipRectContainsIndex)
+                {
                     var currRect = _selectedRectangles[index];
                     var left = Canvas.GetLeft(currRect);
                     var right = Canvas.GetLeft(currRect) + currRect.Width;
+                    var top = Canvas.GetTop(currRect);
                     if (endIndex != -1)
                     {
-                        //if (currRect.GetBoundingRect(this).Top - _selectedRectangles[endIndex].GetBoundingRect(this).Top > currRect.Height / 2)
-                        //{
-                        //    if (currRect.Width != 0)
-                        //    {
-                        //        currRect.Width = 0;
-                        //        XAnnotationCanvas.Children.Remove(currRect);
-                        //    }
-                        //} else
+                        // if we're deselecting text backwards
+                        if (ele.Bounds.Left - left < ele.Bounds.Width)
                         {
-                            // if we're deselecting text backwards
-                            if (ele.Bounds.Left - left < ele.Bounds.Width)
+                            var farEnoughY = Math.Abs(top -
+                                                      TextSelectableElements[index + 1].Bounds.Top) >
+                                             TextSelectableElements[index].Bounds.Height / 5;
+                            var farEnoughX = Math.Abs(left - TextSelectableElements[index + 1].Bounds.Left) >
+                                             TextSelectableElements[index].Bounds.Width * 4;
+                            // if we've reached a different line
+                            if (farEnoughY || farEnoughX)
                             {
-                                // if we've reached a different line
-                                if (Math.Abs(Canvas.GetTop(currRect) -
-                                             TextSelectableElements[index + 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2 ||
-                                    Math.Abs(Canvas.GetLeft(currRect) - TextSelectableElements[index + 1].Bounds.Left) > TextSelectableElements[index].Bounds.Width * 2)
-                                {
-                                    currRect.Width = 0;
-                                    XAnnotationCanvas.Children.Remove(currRect);
-                                } else
-                                {
-                                    Canvas.SetLeft(currRect, TextSelectableElements[index + 1].Bounds.Left);
-                                    currRect.Width =
-                                        Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
-                                }
+                                // deselect the whole rectangle
+                                currRect.Visibility = Visibility.Collapsed;
+                                XAnnotationCanvas.Children.Remove(currRect);
                             }
-                            // if we're deselecting text forwards
-                            else if (ele.Bounds.Right - right < ele.Bounds.Width)
+                            else
                             {
-                                // if we've reached a different line
-                                if (Math.Abs(Canvas.GetTop(currRect) -
-                                             TextSelectableElements[index - 1].Bounds.Top) > TextSelectableElements[index].Bounds.Height / 2)
-                                {
-                                    currRect.Width = 0;
-                                    XAnnotationCanvas.Children.Remove(currRect);
-                                } else
-                                {
-                                    currRect.Width =
-                                        Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
-                                }
+                                Canvas.SetLeft(currRect, TextSelectableElements[index + 1].Bounds.Left);
+                                currRect.Width =
+                                    Math.Max(right - TextSelectableElements[index + 1].Bounds.Left, 0);
+                            }
+                        }
+                        // if we're deselecting text forwards
+                        else if (ele.Bounds.Right - right < ele.Bounds.Width)
+                        {
+                            var farEnoughY = Math.Abs(top -
+                                                      TextSelectableElements[index - 1].Bounds.Top) >
+                                             TextSelectableElements[index].Bounds.Height / 5;
+                            // if we've reached a different line
+                            if (farEnoughY)
+                            {
+                                // deselect the whole rectangle
+                                currRect.Visibility = Visibility.Collapsed;
+                                XAnnotationCanvas.Children.Remove(currRect);
+                            }
+                            else
+                            {
+                                currRect.Width =
+                                    Math.Max(TextSelectableElements[index - 1].Bounds.Right - left, 0);
                             }
                         }
                     }
-                    /*else*/
-                    // if we're deselecting something in the middle
-                    //else
-                    //{
-
-                    //}
-
-                    //if (!_selectedRectangles.ContainsValue(_selectedRectangles[index]))
-                    //{
-                    //    XAnnotationCanvas.Children.Remove(_selectedRectangles[index]);
-                    //}
 
                     _selectedRectangles.Remove(index);
-
-                    //}
                 }
             }
         }
@@ -526,9 +513,10 @@ namespace Dash
         private void SelectIndex(int index, Rect? clipRect = null)
         {
             var ele = TextSelectableElements[index];
-            if (clipRect == null || clipRect == Rect.Empty ||
-                clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
-                    ele.Bounds.Y + ele.Bounds.Height / 2)) == true)
+            var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
+            var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+                                            ele.Bounds.Y + ele.Bounds.Height / 2)) == true;
+            if (clipRectNonexistent || clipRectContainsIndex)
             {
                 if (_selectedRectangles.ContainsKey(index))
                 {
@@ -549,20 +537,35 @@ namespace Dash
                 XSelectionCanvas.Children.Add(_currRect);
             }
 
-            var closeEnough = Math.Abs(ele.Bounds.Left - (Canvas.GetLeft(_currRect) + _currRect.Width)) <
-                              ele.Bounds.Width * 2 && Math.Abs(ele.Bounds.Top - Canvas.GetTop(_currRect)) <
-                              ele.Bounds.Height / 2;
+            var left = Canvas.GetLeft(_currRect);
+            var right = Canvas.GetLeft(_currRect) + _currRect.Width;
+            var top = Canvas.GetTop(_currRect);
+            var closeEnoughX = Math.Abs(ele.Bounds.Left - right) <
+                               ele.Bounds.Width * 4;
+            var closeEnoughY = Math.Abs(ele.Bounds.Top - top) <
+                              ele.Bounds.Height / 5;
             var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
-            if (closeEnough && similarSize)
+            // if we should just adjust the current rectangle
+            if (closeEnoughX && closeEnoughY && similarSize)
             {
-                Canvas.SetLeft(_currRect, Math.Min(Canvas.GetLeft(_currRect), ele.Bounds.Left));
-                _currRect.Width = Math.Abs(ele.Bounds.Right - Canvas.GetLeft(_currRect));
-                Canvas.SetTop(_currRect, Math.Min(Canvas.GetTop(_currRect), ele.Bounds.Top));
-                _currRect.Height = Math.Max(_currRect.Height, ele.Bounds.Bottom - Canvas.GetTop(_currRect));
+                // if selecting backwards
+                if (ele.Bounds.Left < left)
+                {
+                    Canvas.SetLeft(_currRect, ele.Bounds.Left);
+                    _currRect.Width = right - ele.Bounds.Left;
+                }
+                // if selecting forwards
+                else
+                {
+                    _currRect.Width = Math.Max(_currRect.Width, ele.Bounds.Right - left);
+                }
+                _currRect.Height = Math.Max(_currRect.Height, ele.Bounds.Bottom - top);
             }
+            // if we should make a new rectangle
             else
             {
-                if (_currRect.IsInVisualTree() && _currRect.GetBoundingRect(this).Contains(ele.Bounds))
+                // double check that the current rectangle doesn't contain the new one we would make
+                if (new Rect(left, top, _currRect.Width, _currRect.Height).Contains(ele.Bounds))
                 {
                     _selectedRectangles[index] = _currRect;
                     return;
@@ -580,18 +583,6 @@ namespace Dash
             }
 
             _selectedRectangles[index] = _currRect;
-            //var rect = new Rectangle
-            //{
-            //    Width = ele.Bounds.Width,
-            //    Height = ele.Bounds.Height
-            //};
-            //Canvas.SetLeft(rect, ele.Bounds.Left);
-            //Canvas.SetTop(rect, ele.Bounds.Top);
-            //rect.Fill = _selectionBrush;
-
-            //XSelectionCanvas.Children.Add(rect);
-
-            //_selectedRectangles[index] = rect;
         }
 
         public void SelectElements(int startIndex, int endIndex, Point start, Point end) 
@@ -625,18 +616,10 @@ namespace Dash
                 if (this.IsAltPressed())
                 {
                     SelectFromClipRect(currentClipRect);
-                    //for (var i = currentSelectionStart; i <= currentSelectionEnd; ++i)
-                    //{
-                    //    DeselectIndex(i, currentClipRect);
-                    //}
-                    //for (var i = startIndex; i <= endIndex; ++i)
-                    //{
-                    //    SelectIndex(i, currentClipRect);
-                    //}
                 }
                 else
                 {
-                    if (currentSelectionStart == -1 || (currentClipRect != null && currentClipRect != Rect.Empty))
+                    if (currentSelectionStart == -1 || currentClipRect != null && currentClipRect != Rect.Empty)
                     {
                         for (var i = startIndex; i <= endIndex; ++i)
                         {
@@ -677,10 +660,12 @@ namespace Dash
         private void SelectFromClipRect(Rect currentClipRect)
         {
             var rectsToRemove = new List<Rectangle>();
+            // for each rectangle, if it's not between the current clip rectangle, we should remove it
             foreach (var rect in _clipRectSelections)
             {
-                var belowTopBound = Canvas.GetTop(rect) + rect.Height > currentClipRect.Top;
-                var belowBottomBound = Canvas.GetTop(rect) < currentClipRect.Bottom;
+                var rTop = (rect.RenderTransform as TranslateTransform).Y;
+                var belowTopBound = rTop + rect.Height > currentClipRect.Top;
+                var belowBottomBound = rTop < currentClipRect.Bottom;
                 if (!(belowTopBound && belowBottomBound))
                 {
                     rectsToRemove.Add(rect);
@@ -689,9 +674,12 @@ namespace Dash
 
             rectsToRemove.ForEach(r =>
             {
+                // remove the rectangle
                 _clipRectSelections.Remove(r);
+                r.Visibility = Visibility.Collapsed;
                 XSelectionCanvas.Children.Remove(r);
                 var keys = new List<int>();
+                // remove every key that points to the rectangle
                 foreach (var key in _selectedRectangles.Where(kvp => kvp.Value.Equals(r)).Select(kvp => kvp.Key))
                 {
                     keys.Add(key);
@@ -703,73 +691,109 @@ namespace Dash
                 }
             });
 
-            foreach (var ele in TextSelectableElements)
+            var startPage = GetPageOf(currentClipRect.Top);
+            var endPage = GetPageOf(currentClipRect.Bottom);
+            // startIndex is either 0 or the last page's end index + 1
+            var startIndex = startPage > 0 ? PageEndIndices[startPage - 1] + 1 : 0;
+            var endIndex = PageEndIndices[endPage];
+            
+            // loop through the indices between the possible pages
+            for (var index = startIndex; index <= endIndex; index++)
             {
+                var ele = TextSelectableElements[index];
                 if (currentClipRect.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
-                        ele.Bounds.Y + ele.Bounds.Height / 2))
-                    /*currentClipRect.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
-                    currentClipRect.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))*/)
+                        ele.Bounds.Y + ele.Bounds.Height / 2)))
                 {
                     var found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        var closeEnough = Math.Abs(ele.Bounds.Left - Canvas.GetLeft(rect)) <
-                                          ele.Bounds.Width + rect.Width &&
-                                          Math.Abs(ele.Bounds.Top - Canvas.GetTop(rect)) <
-                                          ele.Bounds.Height / 2;
+                        var rLeft = (rect.RenderTransform as TranslateTransform).X;
+                        var rTop = (rect.RenderTransform as TranslateTransform).Y;
+                        var closeEnoughX = Math.Abs(ele.Bounds.Left - rLeft) < ele.Bounds.Width + rect.Width;
+                        var closeEnoughY = Math.Abs(ele.Bounds.Top - rTop) < ele.Bounds.Height / 5;
                         var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
-                        if (closeEnough && similarSize)
+
+                        // if the element is close enough to append to the rectangle
+                        if (closeEnoughX && closeEnoughY && similarSize)
                         {
-                            Canvas.SetLeft(rect, Math.Min(Canvas.GetLeft(rect), ele.Bounds.Left));
-                            rect.Width = Math.Max(rect.Width, ele.Bounds.Right - Canvas.GetLeft(rect));
-                            Canvas.SetTop(rect, Math.Min(Canvas.GetTop(rect), ele.Bounds.Top));
-                            rect.Height = Math.Abs(ele.Bounds.Bottom - Canvas.GetTop(rect));
+                            (rect.RenderTransform as TranslateTransform).X = Math.Min(rLeft, ele.Bounds.Left);
+                            (rect.RenderTransform as TranslateTransform).Y = Math.Min(rTop, ele.Bounds.Top);
+                            //Canvas.SetLeft(rect, Math.Min(rLeft, ele.Bounds.Left));
+                            rect.Width = Math.Max(rect.Width, ele.Bounds.Right - rLeft);
+                            //Canvas.SetTop(rect, Math.Min(rTop, ele.Bounds.Top));
+                            rect.Height = Math.Abs(ele.Bounds.Bottom - rTop);
                             _selectedRectangles[ele.Index] = rect;
                             found = true;
+                            break;
                         }
-                        else if (/*rect.IsInVisualTree() &&*/ (new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height).Contains(ele.Bounds)))
+                        // if the element is in the rectangle
+                        else if (new Rect(rLeft, rTop, rect.Width, rect.Height).Contains(ele.Bounds))
                         {
-                            found = true; 
+                            found = true;
                             _selectedRectangles[ele.Index] = rect;
+                            break;
                         }
                     }
 
+                    // if we still haven't found a rectangle for the element
                     if (!found && !_selectedRectangles.ContainsKey(ele.Index))
                     {
+                        // create a new rectangle
                         var newRect = new Rectangle
                         {
                             Width = ele.Bounds.Width,
                             Height = ele.Bounds.Height,
-                            Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                            Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB)),
+                            RenderTransform = new TranslateTransform { X = ele.Bounds.Left, Y = ele.Bounds.Top }
                         };
-                        Canvas.SetLeft(newRect, ele.Bounds.Left);
-                        Canvas.SetTop(newRect, ele.Bounds.Top);
+                        //Canvas.SetLeft(newRect, ele.Bounds.Left);
+                        //Canvas.SetTop(newRect, ele.Bounds.Top);
                         XSelectionCanvas.Children.Add(newRect);
                         _clipRectSelections.Add(newRect);
                         _selectedRectangles[ele.Index] = newRect;
                     }
-                } else if (_selectedRectangles.ContainsKey(ele.Index))
+                }
+                else if (_selectedRectangles.ContainsKey(ele.Index))
                 {
                     foreach (var rect in _clipRectSelections)
                     {
-                        var rbounds = new Rect(Canvas.GetLeft(rect), Canvas.GetTop(rect), rect.Width, rect.Height);
-                        if (// rect.IsInVisualTree() &&
-                            (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
-                             rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom))))
+                        var rbounds = new Rect((rect.RenderTransform as TranslateTransform).X, (rect.RenderTransform as TranslateTransform).Y, rect.Width, rect.Height);
+                        if (rbounds.Contains(new Point(ele.Bounds.Left, ele.Bounds.Top)) ||
+                            rbounds.Contains(new Point(ele.Bounds.Right, ele.Bounds.Bottom)))
                         {
-                            if (ele.Bounds.Left - Canvas.GetLeft(rect) > ele.Bounds.Width)
+                            if (ele.Bounds.Left - rbounds.Left > ele.Bounds.Width)
                             {
-                                rect.Width = ele.Bounds.Left - Canvas.GetLeft(rect);
-                            } else
-                            {
-                                rect.Width = Math.Abs(Canvas.GetLeft(rect) + rect.Width - ele.Bounds.Right);
-                                Canvas.SetLeft(rect, ele.Bounds.Right);
+                                rect.Width = ele.Bounds.Left - rbounds.Left;
                             }
+                            else
+                            {
+                                rect.Width = Math.Abs(rbounds.Left + rect.Width - ele.Bounds.Right);
+                                (rect.RenderTransform as TranslateTransform).X = ele.Bounds.Right;
+                            }
+
                             _selectedRectangles.Remove(ele.Index);
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     Returns the page of the PDF given a y-offset relative to the PDF
+        /// </summary>
+        /// <param name="yOffset"></param>
+        /// <returns></returns>
+        public int GetPageOf(double yOffset)
+        {
+            var pages = this.GetFirstAncestorOfType<PdfView>().BottomPages.PageSizes;
+            var currOffset = 0.0;
+            var i = 0;
+            do
+            {
+                currOffset += pages[i].Height;
+            } while (currOffset < yOffset && ++i < pages.Count);
+
+            return i;
         }
 
         #endregion
@@ -790,11 +814,8 @@ namespace Dash
 
 	    public void OnDragEnter(object sender, DragEventArgs e)
 	    {
-		    if (e.DataView.HasDragModels())
-		        e.AcceptedOperation |= DataPackageOperation.Copy;
-		    else
-			    e.AcceptedOperation = DataPackageOperation.None;
-	    }
+            e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
+        }
 
         public async void OnDrop(object sender, DragEventArgs e)
         {
@@ -856,8 +877,8 @@ namespace Dash
 
         }
 
-        CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
-        CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
+        private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
+        private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             if (this.IsCtrlPressed())

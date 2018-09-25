@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Dash
+﻿namespace Dash
 {
 
     public class InvalidDishScriptException : DSLException

@@ -1,32 +1,17 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Graphics.Display;
-using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Input;
-using Windows.UI.Xaml.Media.Animation;
 using MyToolkit.Mathematics;
 
 namespace Dash
@@ -224,6 +209,33 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
+
+        public static bool TryInitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe, ManipulationStartedRoutedEventArgs e)
+        {
+            var parents = draggedView.GetAncestorsOfType<DocumentView>().ToList();
+            if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(draggedView) ||
+                SelectionManager.GetSelectedDocs().Contains(draggedView.GetFirstAncestorOfType<DocumentView>()))
+            {
+                SelectionManager.InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
+                return true;
+            }
+            else
+            {
+                var prevParent = parents.FirstOrDefault();
+                foreach (var parent in parents)// bcz: Ugh.. this is ugly.
+                {
+                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.DocumentType) &&
+                        parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
+                        (SelectionManager.GetSelectedDocs().Contains(parent) || parent == parents.Last()))
+                    {
+                        SelectionManager.InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
+                        return true;
+                    }
+                    prevParent = parent;
+                }
+            }
+            return false;
+        }
         public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null)
@@ -258,6 +270,7 @@ namespace Dash
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
             _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
+            _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
         }
@@ -271,8 +284,8 @@ namespace Dash
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
-                _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection : null).ToList(),
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews,
+                _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList(),
                 offsets.ToList(), args.GetPosition(docView)));
 
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -289,6 +302,8 @@ namespace Dash
                 tl.Y = Math.Min(tl.Y, bounds.Top * scaling);
                 br.X = Math.Max(br.X, bounds.Right * scaling);
                 br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
+                doc.IsHitTestVisible = false;
+                doc.Tag = "INVISIBLE";
             }
 
             var width = (br.X - tl.X);

@@ -32,7 +32,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            outputs[ResultsKey] = MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.TemplateListKey);
+            outputs[ResultsKey] = MainPage.Instance.MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.TemplateListKey);
         }
 
         public override FieldControllerBase GetDefaultController() => new TemplateAssignmentOperatorController();

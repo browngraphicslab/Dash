@@ -6,10 +6,6 @@ namespace Dash
 {
     public static class Actions
     {
-        public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
-        {
-            MainPage.Instance.AddOperatorsFilter(collection, e);
-        }
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,

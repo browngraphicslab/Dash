@@ -13,8 +13,6 @@
     d:DesignWidth="400"
     d:DesignHeight="400"
     AllowDrop="True"
-    DragOver="This_DragOver"
-    DragLeave="This_DragLeave"
     Drop="This_Drop"
     UseLayoutRounding="False"
     
@@ -38,7 +36,7 @@
             <RowDefinition  Height="Auto"/>
             <RowDefinition  Height="*"/>
         </Grid.RowDefinitions>
-
+        
         <!--Key Value Flyout-->
         <Border x:Name="xKeyValueBorder" Grid.Row="0" Height="0" Width="0">
             <Border.Resources>
@@ -134,86 +132,61 @@
 
         </Border>
 
-        <Border x:Name="xTargetBorder" x:FieldModifier="public" Grid.Row="1" >
-            <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
-                <Grid.Clip>
-                    <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
-                </Grid.Clip>
-                <Grid.Resources>
-                    <Storyboard x:Name="xContentZoomAnimation">
-                        <DoubleAnimation x:Name="xContentZoomX" Storyboard.TargetName="xContentTransform.Value" 
-                                         Storyboard.TargetProperty="M11"
-                                         From="0" To="0" Duration="0:0:.1" >
-                        </DoubleAnimation>
-                        <DoubleAnimation x:Name="xContentZoomY" Storyboard.TargetName="xContentTransform.Value" 
-                                         Storyboard.TargetProperty="M22"
-                                         From="0" To="0" Duration="0:0:.1">
-                        </DoubleAnimation>
-                    </Storyboard>
-                </Grid.Resources>
-                <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+           <Grid x:Name="LayoutRoot" BorderThickness="0" Grid.Row="1" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
+            <Grid.Clip>
+                <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
+            </Grid.Clip>
+            <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
                 <Grid.ContextFlyout>
                     <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
 
-                        <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
 
-                        <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
-                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
-                        <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
+                    <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
 
-                        <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
+                    <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
+                    <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
 
-                        <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
-                        <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
+                    <MenuFlyoutSeparator />
 
-                        <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
+                    <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
 
-                        <MenuFlyoutItem Text="Fields" Icon="ShowResults" Click="MenuFlyoutItemFields_Click" />
-                        <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click" />
+                    <MenuFlyoutSeparator />
 
-                        <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="Fields" Icon="ShowResults" Click="MenuFlyoutItemFields_Click" />
+                    <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click" />
 
-                        <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
-                        <MenuFlyoutItem x:Name="xAnnotationVisibility" Text="Show Annotation On Scroll" Icon="Priority" Click="ToggleAnnotationVisibility_OnClick" />
-                        <!--<MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click" />-->
-                        <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click" />
+                    <MenuFlyoutSeparator />
 
-                        <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
+                    <MenuFlyoutItem x:Name="xAnnotationVisibility" Text="Show Annotation On Scroll" Icon="Priority" Click="ToggleAnnotationVisibility_OnClick" />
+                    <!--<MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click" />-->
+                    <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click" />
 
-                        <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click" />
-                        <MenuFlyoutItem Text="Launch App" Icon="Go" Click="MenuFlyoutLaunch_Click" />
-                        <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click" />
+                    <MenuFlyoutSeparator />
 
-                    </MenuFlyout>
-                </Grid.ContextFlyout>
+                    <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click" />
+                    <MenuFlyoutItem Text="Launch App" Icon="Go" Click="MenuFlyoutLaunch_Click" />
+                    <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click" />
 
-                <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
-                <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
-                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
-                    <ContentPresenter.RenderTransform>
-                        <TransformGroup x:Name="xContentTransform" >
-                        </TransformGroup>
-                       
-                    </ContentPresenter.RenderTransform>
-                    
-                </ContentPresenter>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+            
+            <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
+            <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
+            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
+                <ContentPresenter.RenderTransform>
+                    <TransformGroup x:Name="xContentTransform"></TransformGroup>
+                </ContentPresenter.RenderTransform>
+            </ContentPresenter>
+        </Grid>
+        <Grid x:Name="xBackgroundPinBox" Grid.Row="1" Margin="-20 -20 -20 0" Height="20" Width="20" CornerRadius="10" 
+              Tapped="xBackgroundPin_Tapped" Background="#40FFFFFF" VerticalAlignment="Top"  HorizontalAlignment="Right"  
+              PointerPressed="xBackgroundPin_PointerPressed"  PointerReleased="xBackgroundPin_PointerReleased" >
+            <TextBlock x:Name="xBackgroundPin" Text="&#xE77A;" FontSize="18" Height="20" Width="20" FontFamily="Segoe MDL2 Assets" Foreground="Green" Padding="0"/>
+        </Grid>
 
-                <!-- 
-                <ScrollViewer x:Name="xContentScrollViewer" ZoomMode="Enabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" MinZoomFactor="1" LayoutUpdated="XContentScrollViewer_OnLayoutUpdated" ViewChanging="XContentScrollViewer_OnViewChanging" ViewChanged="XContentScrollViewer_OnViewChanged" Width="1000" Height="1000">
-                    <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
-                        <ContentPresenter.RenderTransform>
-                            <CompositeTransform x:Name="ContentTransform"></CompositeTransform>
-                        </ContentPresenter.RenderTransform>
-                    </ContentPresenter>
-                                                      
-                </ScrollViewer>
-                
-                
-                -->
-               
-                <Ellipse x:Name="xActivationMode" HorizontalAlignment="Right" VerticalAlignment="Top" Tapped="xActivationMode_Tapped" Visibility="Collapsed" Margin="0 -40 -40 0" Width="40" Height="40" Fill="Green" />
-            </Grid>
-        </Border>
         <!-- border to highlight search results-->
         <Border x:Name="xDocHighlight"  Grid.Row="1"  BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" >
             <Border.Resources>
