@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
-    mc:Ignorable="d"   uiControls:Mouse.Cursor="Arrow"
+    mc:Ignorable="d"   uiControls:Mouse.Cursor="Arrow" HorizontalAlignment="Left" VerticalAlignment="Top"
     IsDoubleTapEnabled="false">
 
     <Ellipse x:Name="xShape" Width="10" Height="10" Margin="-5 -5 0 0" PointerMoved="xShape_PointerMoved"/>
