@@ -20,7 +20,6 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
-            fields[KeyStore.InkDataKey] = new InkController();
             fields[KeyStore.BackgroundColorKey] = new TextController(Colors.White.ToString());
             fields[KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Left.ToString());
             fields[KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Top.ToString());

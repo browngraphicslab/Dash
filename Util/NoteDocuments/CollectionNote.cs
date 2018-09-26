@@ -39,6 +39,8 @@ namespace Dash
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;
 
+            dataDocument.SetField(KeyStore.InkDataKey, new InkController(), true);
+
             // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
             //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
             SetDocuments(collectedDocuments);

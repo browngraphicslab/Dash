@@ -116,7 +116,7 @@ namespace Dash
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-            //MakeInkCanvas();
+            MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground -= ChangeBackground;
             setBackground += ChangeBackground;
