@@ -988,6 +988,24 @@ namespace Dash
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
 
+                if (MainPage.Instance.IsAltPressed())
+                {
+                    var curLayout = ViewModel.LayoutDocument;
+                    var activeLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position); 
+                    activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    ViewModel.LayoutDocument.SetActiveLayout(activeLayout, true, false);
+                    updateBindings();
+                    if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
+                    {
+                        activeLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.X);
+                        activeLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+                        curLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.X);
+                        curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+                    }
+                    e.Handled = true;
+                    return;
+                }
+
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {

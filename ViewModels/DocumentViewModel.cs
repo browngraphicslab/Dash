@@ -195,7 +195,7 @@ namespace Dash
             }
             else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))

@@ -43,7 +43,20 @@ namespace Dash.Views.TreeView
 
     public sealed partial class TreeViewNode : UserControl, INotifyPropertyChanged
     {
-        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+        public DocumentViewModel ViewModel
+        {
+            get
+            {
+                try
+                {
+                    return DataContext as DocumentViewModel;
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+        }
 
         public TreeView TreeView => this.GetFirstAncestorOfType<TreeView>();
 
@@ -181,7 +194,7 @@ namespace Dash.Views.TreeView
 
         private void SplitDocumentOnActiveDocumentChanged(SplitFrame splitFrame)
         {
-            XTitleBlock.FontWeight = ViewModel.DataDocument.Equals(splitFrame.DocumentController.GetDataDocument()) ? FontWeights.Bold : FontWeights.Normal;
+            XTitleBlock.FontWeight = ViewModel?.DataDocument.Equals(splitFrame.DocumentController.GetDataDocument()) == true ? FontWeights.Bold : FontWeights.Normal;
         }
 
         #region Renaming

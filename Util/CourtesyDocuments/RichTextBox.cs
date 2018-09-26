@@ -73,7 +73,7 @@ namespace Dash
         public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
-            return rtv.GetRegionDocument();
+            return rtv?.GetRegionDocument();
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {

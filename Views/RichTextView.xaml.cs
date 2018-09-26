@@ -91,8 +91,11 @@ namespace Dash
 
             xRichEditBox.Drop += (s, e) =>
             {
-                e.Handled = true;
-                xRichEditBox_Drop(s, e);
+                if (!MainPage.Instance.IsAltPressed())
+                {
+                    e.Handled = true;
+                    xRichEditBox_Drop(s, e);
+                }
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;

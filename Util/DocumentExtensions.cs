@@ -420,8 +420,7 @@ namespace Dash
             }
 
             // set the layout on the document that was calling this
-            var layoutWrapper = activeLayout;
-            doc.SetField(KeyStore.ActiveLayoutKey, layoutWrapper, forceMask);
+            doc.SetField(KeyStore.ActiveLayoutKey, activeLayout, forceMask);
         }
 
 
