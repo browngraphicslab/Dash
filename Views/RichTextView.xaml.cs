@@ -67,13 +67,15 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                //if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-                //{
-                //    if (SelectionManager.TryInitiateDragDrop(_manipulator?._manipulationDocumentTarget, e, null))
-                //        e.Handled = true;
-                //}
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if (!SelectionManager.IsSelected(docView))
+                        SelectionManager.Select(docView, false);
+                    SelectionManager.TryInitiateDragDrop(docView, e, null);
+                }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+                DocumentView.FocusedDocument = docView;
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);

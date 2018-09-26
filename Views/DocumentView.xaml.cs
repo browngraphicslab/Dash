@@ -219,13 +219,12 @@ namespace Dash
 
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
-                    if (SelectionManager.TryInitiateDragDrop(this, e, null))
-                        e.Handled = true;
+                    if(!SelectionManager.IsSelected(this))
+                        SelectionManager.Select(this, false);
+                    SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
-                else
-                {
-                    e.Handled = true;
-                }
+
+                e.Handled = true;
                 
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
