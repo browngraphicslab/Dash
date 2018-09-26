@@ -12,11 +12,11 @@
     <Grid x:Name="xDocBoxContainer" Margin="4 4 4 4" Padding ="0" Height="28" Width="Auto" BorderThickness="0" Background="{StaticResource DashDarkDarkBlueBrush}">
         <StackPanel Orientation="Horizontal">
 
-            <Grid x:Name="xIcon" Width="Auto" Background="Transparent" PointerEntered="DeleteButton_PointerEntered" PointerExited="DeleteButton_PointerExited" Tapped="DeleteButton_Tapped" Margin="8 0 0 0">
-                <!--<TextBlock x:Name="xDeleteIcon" Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets" Padding="0 10 10 0"  Foreground="White" HorizontalAlignment="Right" Opacity="0.5"/>-->
+            <Grid x:Name="xIcon" Width="Auto" Background="Transparent" PointerEntered="DeleteButton_PointerEntered" PointerExited="DeleteButton_PointerExited" Tapped="DeleteButton_Tapped" Margin="8 0 8 0">
+                <TextBlock x:Name="xDeleteIcon" Visibility="Collapsed"  Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets"  Foreground="White" Margin="-11 2 -10 0"/>
             </Grid>
             <Grid>
-                <TextBlock x:Name="xText" Foreground="White" FontSize="13" Padding="6 4 6 6" HorizontalAlignment="Left"
+                <TextBlock x:Name="xText" Foreground="White" FontSize="13" Padding="0 4 6 6" HorizontalAlignment="Right"
                 ></TextBlock>
             </Grid>
             

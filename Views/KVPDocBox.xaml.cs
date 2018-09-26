@@ -30,7 +30,6 @@ namespace Dash
         }
 
         private string _text;
-        private FontAwesomeIcon _prev;
         private FontIcons.FontAwesome _icon;
 
         public KVPDocBox(DocumentType docType, String text)
@@ -51,34 +50,43 @@ namespace Dash
             if (docType.Equals(TextingBox.DocumentType) || docType.Equals(RichTextBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FileTextOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 235, 113, 113));
             }
             else if (docType.Equals(ImageBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FileImageOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 253, 147, 50));
+
             }
             else if (docType.Equals(AudioBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FileAudioOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 252, 212, 69));
 
             } else if (docType.Equals(InkBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.PencilSquareOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 148, 229, 98));
 
             } else if (docType.Equals(PdfBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FilePdfOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 113, 219, 181));
 
             } else if (docType.Equals(VideoBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FileVideoOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 95, 188, 217));
 
             } else if (docType.Equals(WebBox.DocumentType))
             {
                 _icon.Icon = FontAwesomeIcon.FileCodeOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 104, 139, 228));
             }
             else
             {
                 _icon.Icon = FontAwesomeIcon.FileOutline;
+                xDocBoxContainer.Background = new SolidColorBrush(Color.FromArgb(255, 158, 104, 228));
             }
 
             xIcon.Children.Add(_icon);
@@ -86,15 +94,17 @@ namespace Dash
 
     private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-            _prev = _icon.Icon;
+            //_prev = _icon.Icon;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 1);
-            _icon.Icon = FontAwesomeIcon.Times;
+            xIcon.Children.Remove(_icon);
+            xDeleteIcon.Visibility = Visibility.Visible;
         }
 
         private void DeleteButton_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            _icon.Icon = _prev;
+            xDeleteIcon.Visibility = Visibility.Collapsed;
+            xIcon.Children.Add(_icon);
         }
 
         private void DeleteButton_Tapped(object sender, TappedRoutedEventArgs e)
