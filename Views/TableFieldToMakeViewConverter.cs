@@ -71,7 +71,10 @@ namespace Dash
             else if (data is BoolController val)
             {
                 var toggleSwitch = new ToggleSwitch();
-                toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController>{Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot});
+                toggleSwitch.OnContent = "True";
+                toggleSwitch.OffContent = "False";
+                toggleSwitch.HorizontalAlignment = HorizontalAlignment.Center;
+                toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController> { Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot });
                 currView = toggleSwitch;
             }
             else if (data is ListController<TextController> textList)
@@ -93,12 +96,25 @@ namespace Dash
             }
             else if (data is ListController<DocumentController> docList)
             {
-                if (double.IsNaN(_docController.GetWidth()))
-                { // if we're going to show a CollectionBox, give it initial dimensions, otherwise it has no default size
-                    _docController.SetWidth(400);
-                    _docController.SetHeight(400);
+                //if (double.IsNaN(_docController.GetWidth()))
+                //{ // if we're going to show a CollectionBox, give it initial dimensions, otherwise it has no default size
+                //    _docController.SetWidth(400);
+                //    _docController.SetHeight(400);
+                //}
+                //currView = CollectionBox.MakeView(_docController, _context);
+
+                WrapPanel wrap = new WrapPanel();
+                KVPDocBox docBox = null;
+                wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                wrap.Margin = new Thickness(0, 15, 0, 0);
+                foreach (var doc in docList)
+                {
+                    docBox = new KVPDocBox(doc.DocumentType, doc.Title);
+                    wrap.Children.Add(docBox);
+                    
                 }
-                currView = CollectionBox.MakeView(_docController, _context);
+
+                currView = wrap;
             }
             else if (data is DocumentController dc)
             {
