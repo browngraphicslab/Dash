@@ -930,15 +930,6 @@ namespace Dash
                 UpdateOnServer(withUndo ? newEvent : null);
             }
 
-            //if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
-            //{
-            //    if (doc.DocumentType.Equals(TemplateBox.DocumentType))
-            //    {
-            //        // TODO: ask tyler about this next line? -sy
-            //        //TypeInfo = TypeInfo.Template;
-            //    }
-            //}
-
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
@@ -1274,21 +1265,6 @@ namespace Dash
 			context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument());
-
-            // if the document has a layout already, use that underlying layout's data to generate
-            // the view
-            var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
-            if (fieldModelController != null)
-            {
-                var doc = fieldModelController.DereferenceToRoot<DocumentController>(context);
-
-                if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
-                {
-                    return makeAllViewUI(context);
-                }
-                Debug.Assert(doc != null);
-                return doc.MakeViewUI(context);
-            }
 
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {

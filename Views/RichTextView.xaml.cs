@@ -155,7 +155,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.IsSelected(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.IsSelected(docView))
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }
@@ -204,7 +204,7 @@ namespace Dash
             if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
-                if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                if (args.DeselectedViews.Contains(docView))
                     docView.DeleteDocument();
             }
         }

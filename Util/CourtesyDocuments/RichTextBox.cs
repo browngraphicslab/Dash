@@ -82,7 +82,7 @@ namespace Dash
             var refToRichText = dataField as ReferenceController;
                 rtv = new RichTextView()
                 {
-                    LayoutDocument = docController.GetActiveLayout() ?? docController,
+                    LayoutDocument = docController,
                     DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
                 };
                 rtv.ManipulationMode = ManipulationModes.All;

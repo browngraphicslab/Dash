@@ -246,7 +246,7 @@ namespace Dash
         {
             this.InitializeComponent();
             SetUpToolTips();
-            LayoutDocument = document.GetActiveLayout() ?? document;
+            LayoutDocument = document;
             DataDocument = document.GetDataDocument();
             TopPages = new DataVirtualizationSource(this, TopScrollViewer, TopPageItemsControl);
             BottomPages = new DataVirtualizationSource(this, BottomScrollViewer, BottomPageItemsControl);
