@@ -29,6 +29,7 @@ using System.Threading;
 using Windows.Devices.Input;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Windows.UI.Input;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -683,7 +684,7 @@ namespace Dash
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e!= null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
                 handledTouch.Add(e);
                 if (NumFingers > 0) NumFingers--;
@@ -781,6 +782,10 @@ namespace Dash
         /// <param name="args"></param>
         protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind != PointerUpdateKind.Other)
+            {
+                return;
+            }
             var pos = args.GetCurrentPoint(SelectionCanvas).Position;
             if (StartMarquee(pos))
                 args.Handled = true;

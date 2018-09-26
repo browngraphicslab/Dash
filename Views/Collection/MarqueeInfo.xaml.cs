@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using Windows.System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -9,6 +12,25 @@ namespace Dash.Views.Collection
         public MarqueeInfo()
         {
             this.InitializeComponent();
+        }
+
+        private void Collection_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            collection?.TriggerActionFromSelection(VirtualKey.C, true);
+            e.Handled = true;
+        }
+
+        private void Group_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            collection?.TriggerActionFromSelection(VirtualKey.G, true);
+            e.Handled = true;
+        }
+
+        private void Collection_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

@@ -12,14 +12,19 @@
 
     <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" BorderThickness="2 2 2 0" BorderBrush="DimGray">
 
-        <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 2 0" BorderBrush="DimGray">
-            <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" />
-            <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  />
-        </StackPanel>
-        <StackPanel  Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-            <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" />
-            <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" />
-        </StackPanel>
+        <Button x:Name="Collection" Background="White" Tapped="Collection_OnTapped" PointerPressed="Collection_OnPointerPressed">
+            <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 2 0" BorderBrush="DimGray">
+                <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" />
+                <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  />
+            </StackPanel>
+        </Button>
+        <Button x:Name="Group" Background="White" Tapped="Group_OnTapped">
+            <StackPanel  Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
+                <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" />
+                <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" />
+            </StackPanel>
+        </Button>
+        
     </StackPanel>
 
 </UserControl>
