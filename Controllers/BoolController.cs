@@ -25,10 +25,13 @@ namespace Dash
 
         public override bool TrySetValue(object value)
         {
-            var data = value as bool?;
-            if (!(value is bool?)) return false;
-            if (Data != data.Value) Data = data.Value;
-            return true;
+            if (value is bool b)
+            {
+                Data = b;
+                return true;
+            }
+
+            return false;
         }
 
         public bool Data

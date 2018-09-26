@@ -148,22 +148,14 @@ namespace Dash
             }
             else
             {
-                var bindingX = new FieldBinding<PointController>()
+                var bindingXf = new FieldBinding<PointController>()
                 {
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(false)
+                    Converter = new PointToTranslateTransformConverter()
                 };
-                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
-                var bindingY = new FieldBinding<PointController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = RegionDocumentController,
-                    Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(true)
-                };
-                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+                this.AddFieldBinding(RenderTransformProperty, bindingXf);
             }
 
             if (RegionDocumentController != null)

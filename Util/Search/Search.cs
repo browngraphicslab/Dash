@@ -179,33 +179,6 @@ namespace Dash
             return outList;
         }
 
-        public static void UnHighlightAllDocs()
-        {
-            //TODO:call this when search is unfocused
-            //list of all collections
-            var allCollections =
-                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
-
-            foreach (var coll in allCollections)
-            {
-                UnHighlightDocs(coll);
-            }
-        }
-
-        public static void UnHighlightDocs(DocumentController coll)
-        {
-            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-            //unhighlight each doc in collection
-            foreach (var doc in colDocs)
-            {
-                MainPage.Instance.HighlightDoc(doc, false, 2);
-                if (doc.DocumentType.ToString() == "Collection Box")
-                {
-                    UnHighlightDocs(doc);
-                }
-            }
-        }
-
         // Handles instances where the user inserted a colon, and determines whether or not the user meant to
         // search the colon as part of a string, or perform a parameterized search
         public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart)

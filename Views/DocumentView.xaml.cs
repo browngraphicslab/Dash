@@ -960,9 +960,8 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
             }
-
         }
 
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
@@ -995,10 +994,10 @@ namespace Dash
             if (ViewModel.IsAdornmentGroup)
                 return;
 
-            var dragModels = e.DataView.GetDragModels();
-            foreach (var dragModel in dragModels)
+            var dragModel = e.DataView.GetDragModel();
+            if(dragModel != null)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
@@ -1090,17 +1089,6 @@ namespace Dash
                 activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                 ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
-        }
-
-        private void This_DragOver(object sender, DragEventArgs e)
-        {
-            ViewModel.DecorationState = ViewModel?.Undecorated == false;
-        }
-
-        public void This_DragLeave(object sender, DragEventArgs e)
-        {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            ViewModel.DecorationState = false;
         }
 
         public bool IsTopLevel()
@@ -1335,16 +1323,6 @@ namespace Dash
             }
         }
 
-        public void SetLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-        }
-
-        public void RemoveLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
-            xToYellow.Begin();
-        }
         ~DocumentView()
         {
             //Debug.Write("dispose DocumentView");

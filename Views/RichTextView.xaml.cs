@@ -99,7 +99,6 @@ namespace Dash
             {
                 e.Handled = true;
                 xRichEditBox_Drop(s, e);
-                this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;
@@ -387,7 +386,10 @@ namespace Dash
                         {
                             if (this.IsCtrlPressed())
                                 nearestOnCollection.DeleteDocument();
-                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                            else
+                            {
+                                SplitFrame.TryNavigateToDocument(nearestOnCollection.ViewModel.DocumentController);
+                            }
                         }
                         else
                         {
