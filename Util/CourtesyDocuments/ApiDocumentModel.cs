@@ -60,7 +60,6 @@ namespace Dash
                 new ListController<DocumentController>(new List<DocumentController>())
             };
             SetupDocument(DocumentType, PrototypeId, "API Document Prototype Layout", fields);
-            //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
         /// <summary>

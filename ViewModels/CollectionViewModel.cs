@@ -28,7 +28,7 @@ namespace Dash
     {
         static ICollectionView _previousDragEntered;
         bool _canDragItems = true;
-        private bool _isLoaded => _refCount > 0;
+        public bool IsLoaded => _refCount > 0;
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
@@ -45,7 +45,7 @@ namespace Dash
                 {
                     trans = new Point(trans.X, 0);
                 }
-                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
+                return new TransformGroupData(trans, IsLoaded ? scale : new Point(1, 1));
             }
             set
             {
@@ -93,15 +93,15 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
-            var wasLoaded = _isLoaded;
-            if (_isLoaded)
+            var wasLoaded = IsLoaded;
+            if (IsLoaded)
             {
                 Loaded(false);
             }
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            if (_isLoaded && wasLoaded)
+            if (wasLoaded)
             {
                 Loaded(true);
             }
@@ -113,6 +113,8 @@ namespace Dash
         /// </summary>
         public void FitContents(CollectionView cview)
         {
+            if (LocalSqliteEndpoint.SuspendTimer)
+                return;
             if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
                 var parSize = ContainerDocument.GetActualSize() ?? new Point();
@@ -123,12 +125,14 @@ namespace Dash
                 {
                     var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
                     var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
-                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth());
-                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth());
+                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth())&& !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth()) && !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
                     if (!halin && !autoWidth)
                         rl.Union(d.Bounds);
                     if (!valin && !autoHeight)
                         rr.Union(d.Bounds);
+                    else if (!valin && autoHeight)
+                        rr.Union(new Point(d.Bounds.Left, d.Bounds.Top));
                 }
                 var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
                 if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
@@ -173,9 +177,10 @@ namespace Dash
         private int _refCount = 0;
         public void Loaded(bool isLoaded)
         {
-            if (isLoaded)
+            bool wasLoaded = IsLoaded;
+            _refCount += isLoaded ? 1 : -1;
+            if (IsLoaded && !wasLoaded)
             {
-                _refCount++;
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
@@ -186,22 +191,26 @@ namespace Dash
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
-                    var curDocs =
-                        new HashSet<DocumentController>(DocumentViewModels.Select(dvm => dvm.DocumentController));
-                    var colDocs =
-                        new HashSet<DocumentController>(CollectionController);
-                    var newDocs = colDocs.Where(dc => !curDocs.Contains(dc)).ToList();
-                    var deletedDocs = curDocs.Where(dc => !colDocs.Contains(dc)).ToList();
-                    addViewModels(newDocs);
-                    removeViewModels(deletedDocs);
+                    var curDocs = DocumentViewModels.Select((dvm, i) => new {Doc = dvm.DocumentController, Index = i}).ToList();
+                    var colDocs = CollectionController.Select((doc, i) => new {Doc = doc, Index = i}).ToList();
+
+                    var newDocs = colDocs.Where(dc => !curDocs.Any(doc => doc.Doc.Equals(dc.Doc))).ToList();
+                    var deletedDocs = curDocs.Where(dc => !colDocs.Any(doc => doc.Doc.Equals(dc.Doc))).ToList();
+                    foreach (var deletedDoc in deletedDocs)
+                    {
+                        RemoveViewModels(new List<DocumentController>{deletedDoc.Doc}, deletedDoc.Index);
+                    }
+                    foreach (var newDoc in newDocs)
+                    {
+                        AddViewModels(new List<DocumentController>{newDoc.Doc}, newDoc.Index);
+                    }
                 }
                 ActualSizeFieldChanged(null, null, null);
 
                 _lastContainerDocument = ContainerDocument;
             }
-            else
+            else if(!IsLoaded && wasLoaded)
             {
-                _refCount--;
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 _lastContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
@@ -261,33 +270,34 @@ namespace Dash
                 }
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                addViewModels(args.NewItems);
+                AddViewModels(args.NewItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                 DocumentViewModels.Clear();
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                removeViewModels(args.OldItems);
+                RemoveViewModels(args.OldItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                 DocumentViewModels.Clear();
-                addViewModels(args.NewItems);
+                AddViewModels(args.NewItems, 0);
                 break;
             }
         }
 
-        void addViewModels(List<DocumentController> documents)
+        private void AddViewModels(List<DocumentController> documents, int startIndex)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
                 foreach (var documentController in documents)
                 {
-                    DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
+                    startIndex++;
                 }
             }
         }
 
-        void removeViewModels(List<DocumentController> documents)
+        private void RemoveViewModels(List<DocumentController> documents, int startIndex)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
@@ -315,8 +325,8 @@ namespace Dash
 
         public bool CreatesCycle(DocumentController newDoc)
         {
-            var curLayout = ContainerDocument.GetActiveLayout() ?? ContainerDocument;
-            var newLayout = newDoc.GetActiveLayout() ?? newDoc;
+            var curLayout = ContainerDocument;
+            var newLayout = newDoc;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType) && curLayout.GetDataDocument().Equals(newLayout.GetDataDocument()))
                 return true;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType))
@@ -324,7 +334,7 @@ namespace Dash
                 var newDocList = newLayout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                 foreach (var subDoc in newDocList.TypedData)
                 {
-                    var subLayout = subDoc.GetActiveLayout() ?? subDoc;
+                    var subLayout = subDoc;
                     if (subLayout.DocumentType.Equals(CollectionBox.DocumentType))
                     {
                         if (curLayout.GetDataDocument().Equals(subLayout.GetDataDocument()))
@@ -337,7 +347,10 @@ namespace Dash
             return false;
         }
 
-        public bool CreatesCycle(List<DocumentController> docs) => docs.Where(CreatesCycle).Any();
+        public bool CreatesCycle(List<DocumentController> docs)
+        {
+            return docs.Where(CreatesCycle).Any();
+        }
 
         /// <summary>
         /// Adds a document to the given collectionview.
@@ -356,6 +369,22 @@ namespace Dash
                     if (collectionField == null)
                         ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                     else ContainerDocument.AddToListField(CollectionKey, doc);
+                }
+            }
+        }
+
+        public void InsertDocument(DocumentController doc, int i)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (!CreatesCycle(doc))
+                {
+                    doc.CaptureNeighboringContext();
+
+                    var collectionField = ContainerDocument.GetField<ListController<DocumentController>>(CollectionKey);
+                    if (collectionField == null)
+                        ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc, i);
+                    else ContainerDocument.AddToListField(CollectionKey, doc, i);
                 }
             }
         }
@@ -729,44 +758,49 @@ namespace Dash
                 var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
                 adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
 
-                var dragDocModels = e.DataView.GetDragModels().OfType<DragDocumentModel>();
+                var dragModel = e.DataView.GetDragModel();
 
                 var cpar = ContainerDocument;
 
-                if (MainPage.Instance.IsAltPressed() && dragDocModels.FirstOrDefault().DraggedDocCollectionViews?.FirstOrDefault()?.ViewModel != this) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
+                if (MainPage.Instance.IsAltPressed() && dragModel is DragDocumentModel dragDocModel && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this &&
+                    (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
-                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
+                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
                     Debug.WriteLine("NEW DOCUMENT DRAGGED");
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)  // dropping a DataBox
+                if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
                 {
                     Debug.WriteLine("adding a field");
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
 
                 }
 
-                if (!MainPage.Instance.IsShiftPressed())
+                if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
                 {
-                    foreach (var d in dragDocModels)
+                    if(dragModel is DragDocumentModel d)
                     {
                         for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (d.DraggedDocCollectionViews[i]?.ViewModel == this)
+                            if (d.DraggedDocCollectionViews[i] == this)
 
                             {
                                 docsToAdd.Remove(d.DraggedDocuments[i]);
-                                if (d.DraggedDocumentViews[i] != null)
+                                if (d.DraggedDocumentViews?[i] != null)
                                 {
                                     d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
                                 }
                             }
                             else
                             {
-                                MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                d.DraggedDocCollectionViews[i]?.ViewModel.RemoveDocument(d.DraggedDocuments[i]);
+                                if (d.DraggedDocumentViews != null)
+                                {
+                                    MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
+                                }
+
+                                d.DraggedDocCollectionViews[i]?.RemoveDocument(d.DraggedDocuments[i]);
 
                             }
                         }
@@ -778,18 +812,23 @@ namespace Dash
             }
         }
 
-        private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
-            cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
-            Debug.WriteLine("# of docstoAdd: "+docsToAdd.Count);
-            foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
+            var databoxes = docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)).ToList();
+            if (databoxes.Count > 0)
             {
-                var xd = doc.GetDataDocument();
-                var dd = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                var ddd = dd?.GetDocumentController(null);
-                cpar.SetField(KeyStore.DocumentContextKey, ddd, true);
-                var refdoc = xd.GetField(KeyStore.DataKey) as DocumentReferenceController;
-                xd.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), refdoc.FieldKey), true);
+                cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
+            }
+            foreach (var dataBox in databoxes)
+            {
+                var dataBoxSourceDoc     = dataBox.GetDataDocument();
+                var dataBoxDataReference = dataBox.GetField<ReferenceController>(KeyStore.DataKey);
+                if (dataBoxSourceDoc != null && dataBoxDataReference != null)
+                {
+                    var fieldKey = dataBoxDataReference.FieldKey;
+                    cpar.SetField(KeyStore.DocumentContextKey, dataBoxSourceDoc, true);
+                    dataBox.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(cpar, KeyStore.DocumentContextKey), fieldKey), true);
+                }
             }
         }
 
@@ -869,6 +908,5 @@ namespace Dash
             _previousDragEntered = null;
         }
         #endregion
-
     }
 }

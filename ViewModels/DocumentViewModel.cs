@@ -29,7 +29,6 @@ namespace Dash
             _lastLayout = LayoutDocument;
 
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
-            IsSearchHighlighted = false;
 
             if (IconTypeController == null)
             {
@@ -40,20 +39,20 @@ namespace Dash
         public void Load()
         {
             //UnLoad();
-            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            DocumentController.AddFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
         public void UnLoad()
         {
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
-        public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
+        public DocumentController LayoutDocument => DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
         public bool ResizersVisible = true;
         public bool ShowLocalContext
@@ -144,19 +143,11 @@ namespace Dash
         }
 
         public bool Undecorated { get; set; }
-        public bool DecorationState
-        {
-            get => _decorationState;
-            set => SetProperty(ref _decorationState, value);
-        }
-
         public Thickness SearchHighlightState
         {
             get => _searchHighlightState;
-            set => SetProperty(ref _searchHighlightState, value);
+            private set => SetProperty(ref _searchHighlightState, value);
         }
-
-        public bool IsSearchHighlighted { get; set; }
 
         public SolidColorBrush SearchHighlightBrush
         {
@@ -164,27 +155,16 @@ namespace Dash
             set => SetProperty(ref _searchHighlightBrush, value);
         }
 
+        public bool IsHighlighted => SearchHighlightState == Highlighted;
 
-        public async void ExpandBorder()
+        public void SetHighlight(bool highlight)
         {
-            while (SearchHighlightState.Bottom <= Highlighted.Bottom - 0.5)
-            {
-                SearchHighlightState = new Thickness(SearchHighlightState.Bottom + 0.5);
-                await Task.Delay(TimeSpan.FromMilliseconds(7));
-            }
-
-            IsSearchHighlighted = true;
+            SearchHighlightState = highlight ? Highlighted : UnHighlighted;
         }
 
-        public async void RetractBorder()
+        public void ToggleHighlight()
         {
-            while (SearchHighlightState.Bottom >= 0.5)
-            {
-                SearchHighlightState = new Thickness(SearchHighlightState.Bottom - 0.5);
-                await Task.Delay(TimeSpan.FromMilliseconds(7));
-            }
-
-            IsSearchHighlighted = false;
+            SetHighlight(!IsHighlighted);
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 
@@ -203,8 +183,9 @@ namespace Dash
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType)
+                //|| LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType)
+                )
             {
                 if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
@@ -214,7 +195,7 @@ namespace Dash
             }
             else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
@@ -235,35 +216,36 @@ namespace Dash
         /// <param name="context"></param>
         void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            if (args.Action == FieldUpdatedAction.Remove)
-            {
-                Content = null;
-                _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                _lastLayout = LayoutDocument;
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                LayoutDocument_DataChanged(null, null, new Context(DocumentController));
-            }
-            else
-            {
-                var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
-                // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
-                // if a field of the activelayout changed, we ignore that here since it should update the layout directly
-                // through bindings.
-                if (fargs == null && _lastLayout != LayoutDocument)
-                {
-                    var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
-                    if (curActive == null)
-                    {
-                        curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
-                        curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
-                        DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
-                    }
-                    _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                    _lastLayout = LayoutDocument;
-                    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
-                }
-            }
+            Content = null;
+            //if (args.Action == FieldUpdatedAction.Remove)
+            //{
+            //    Content = null;
+            //    _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //    _lastLayout = LayoutDocument;
+            //    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+            //}
+            //else
+            //{
+            //    var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            //    // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
+            //    // if a field of the activelayout changed, we ignore that here since it should update the layout directly
+            //    // through bindings.
+            //    if (fargs == null && _lastLayout != LayoutDocument)
+            //    {
+            //        var curActive = DocumentController.GetField(KeyStore.DocumentTypeKey, true) as DocumentController;
+            //        if (curActive == null)
+            //        {
+            //            curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
+            //            curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+            //            DocumentController.SetField(KeyStore.DocumentTypeKey, curActive, true);
+            //        }
+            //        _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //        _lastLayout = LayoutDocument;
+            //        LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //        LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+            //    }
+            //}
         }
         ~DocumentViewModel()
         {

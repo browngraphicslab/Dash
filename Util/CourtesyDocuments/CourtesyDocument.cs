@@ -66,7 +66,8 @@ namespace Dash
         /// </summary>
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
-            dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
@@ -242,7 +243,7 @@ namespace Dash
     }
 
     public enum LinkBehavior {
-        Zoom,
+        Follow,
         Annotate,
         Dock,
         Float,
@@ -284,12 +285,11 @@ namespace Dash
 
         public static bool GetFitToParent(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null);
-            return data?.Data == "true";
+            return document.GetDereferencedField<BoolController>(KeyStore.CollectionFitToParentKey, null)?.Data ?? false;
         }
         public static void    SetFitToParent(this DocumentController document, bool fit)
         {
-            document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
+            document.SetField<BoolController>(KeyStore.CollectionFitToParentKey, fit, true);
         }
         public static void    SetTitle(this DocumentController document, string title)
         {

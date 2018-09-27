@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
-using Syncfusion.UI.Xaml.Controls;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -63,7 +63,7 @@ namespace Dash
 
             // get the sort key value and display it
             var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .GetField(ViewModel.SortKey).GetValue(new Context()).ToDateTime();
+                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null).Data;
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 

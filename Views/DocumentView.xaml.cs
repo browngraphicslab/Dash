@@ -224,29 +224,32 @@ namespace Dash
 
             KeyDown += (sender, args) =>
             {
-                if (args.Key == VirtualKey.Down && !_isQuickEntryOpen || args.Key == VirtualKey.Up && _isQuickEntryOpen)
+                if (this.GetFirstAncestorOfType<DocumentView>() != null)
                 {
-                    if (!_isQuickEntryOpen)
+                    if (MainPage.Instance.IsShiftPressed() && args.Key == VirtualKey.PageDown && !_isQuickEntryOpen || args.Key == VirtualKey.PageUp && _isQuickEntryOpen)
                     {
-                        _clearByClose = true;
-                        ClearQuickEntryBoxes();
-                        xKeyBox.Focus(FocusState.Keyboard);
-                    }
+                        if (!_isQuickEntryOpen)
+                        {
+                            _clearByClose = true;
+                            ClearQuickEntryBoxes();
+                            xKeyBox.Focus(FocusState.Keyboard);
+                        }
 
-                    ToggleQuickEntry();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down && _isQuickEntryOpen)
-                {
-                    if (xKeyBox.FocusState != FocusState.Unfocused)
-                    {
-                        _articialChange = true;
-                        int pos = xKeyBox.SelectionStart;
-                        if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
-                        else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
-                        xKeyBox.SelectionStart = pos;
+                        ToggleQuickEntry();
+                        args.Handled = true;
                     }
-                    args.Handled = true;
+                    else if (MainPage.Instance.IsShiftPressed() && args.Key == VirtualKey.PageDown && _isQuickEntryOpen)
+                    {
+                        if (xKeyBox.FocusState != FocusState.Unfocused)
+                        {
+                            _articialChange = true;
+                            int pos = xKeyBox.SelectionStart;
+                            if (xKeyBox.Text.ToLower().StartsWith("v")) xKeyBox.Text = "d" + xKeyBox.Text.Substring(1);
+                            else if (xKeyBox.Text.ToLower().StartsWith("d")) xKeyBox.Text = "v" + xKeyBox.Text.Substring(1);
+                            xKeyBox.SelectionStart = pos;
+                        }
+                        args.Handled = true;
+                    }
                 }
             };
 
@@ -416,35 +419,35 @@ namespace Dash
             xValueBox.Text = "";
         }
 
-        public void ToggleTemplateEditor()
-        {
-            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
-            {
-                var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
-                    (RenderTransform as MatrixTransform).Matrix.OffsetY);
-                if (_templateEditor != null)
-                {
-                    Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+        //public void ToggleTemplateEditor()
+        //{
+        //    if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
+        //    {
+        //        var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
+        //            (RenderTransform as MatrixTransform).Matrix.OffsetY);
+        //        if (_templateEditor != null)
+        //        {
+        //            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
 
-                    _templateEditor.SetHidden(!_templateEditor.GetHidden());
-                    ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                    return;
-                }
+        //            _templateEditor.SetHidden(!_templateEditor.GetHidden());
+        //            ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //            return;
+        //        }
 
-                _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540))
-                    .Document;
+        //        _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540))
+        //            .Document;
 
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                //creates a doc controller for the image(s)
-                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-            }
-            else
-            {
-                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                _templateEditor.SetHidden(!_templateEditor.GetHidden());
-            }
-        }
+        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //        //creates a doc controller for the image(s)
+        //        Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+        //    }
+        //    else
+        //    {
+        //        _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+        //        _templateEditor.SetHidden(!_templateEditor.GetHidden());
+        //    }
+        //}
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
@@ -946,9 +949,8 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController);
+                SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
             }
-
         }
 
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
@@ -981,10 +983,30 @@ namespace Dash
             if (ViewModel.IsAdornmentGroup)
                 return;
 
-            var dragModels = e.DataView.GetDragModels();
-            foreach (var dragModel in dragModels)
+            var dragModel = e.DataView.GetDragModel();
+            if(dragModel != null)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) continue;
+                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
+
+                if (MainPage.Instance.IsAltPressed())
+                {
+                    var curLayout = ViewModel.LayoutDocument;
+                    var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position);
+                    draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
+                    {
+                        curLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.X);
+                        curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+                    }
+                    curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
+                    curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
+
+                    curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey,null), true);
+                    curLayout.DocumentType = draggedLayout.DocumentType;
+                    updateBindings();
+                    e.Handled = true;
+                    return;
+                }
 
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
@@ -1008,87 +1030,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        void drop(bool footer, DocumentController newFieldDoc)
-        {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-
-            // newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
-            newFieldDoc.SetWidth(double.NaN);
-            newFieldDoc.SetPosition(new Point(100, 100));
-            var activeLayout = ViewModel.LayoutDocument;
-            if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
-            {
-                if (activeLayout.GetField(KeyStore.DataKey, true) == null)
-                {
-                    var fields = activeLayout
-                        .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData
-                        .ToArray().ToList();
-                    if (!footer)
-                        fields.Insert(0, newFieldDoc);
-                    else fields.Add(newFieldDoc);
-                    activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                }
-                else
-                {
-                    var listCtrl =
-                        activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                    if (!footer)
-                        listCtrl.Insert(0, newFieldDoc);
-                    else listCtrl.Add(newFieldDoc);
-                }
-            }
-            else
-            {
-                var curLayout = activeLayout;
-                if (ViewModel.DocumentController?.GetActiveLayout() != null
-                ) // wrap existing activeLayout into a new StackPanel activeLayout
-                {
-                    curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                    curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
-                    curLayout.SetWidth(double.NaN);
-                    curLayout.SetHeight(double.NaN);
-                }
-                else // need to create a stackPanel activeLayout and add the document to it
-                {
-                    curLayout =
-                        activeLayout
-                                .MakeCopy() as
-                            DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
-                    curLayout.Tag = "StackPanel DocView Layout";
-                    curLayout.SetWidth(double.NaN);
-                    curLayout.SetHeight(double.NaN);
-                    curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                }
-
-                activeLayout = new StackLayout(new DocumentController[]
-                    {footer ? curLayout : newFieldDoc, footer ? newFieldDoc : curLayout}).Document;
-                activeLayout.Tag = "StackLayout";
-                // we need to move the Height and Width fields from the current layout to the new active layout.
-                // this is because we want any bindings that were made to the current layout to still fire when changes
-                // are made to the new layout.
-                activeLayout.SetField(KeyStore.PositionFieldKey, curLayout.GetField(KeyStore.PositionFieldKey), true);
-                activeLayout.SetField(KeyStore.WidthFieldKey, curLayout.GetField(KeyStore.WidthFieldKey), true);
-                activeLayout.SetField(KeyStore.HeightFieldKey, curLayout.GetField(KeyStore.HeightFieldKey), true);
-                //activeLayout.SetPosition(ViewModel.Position);
-                //activeLayout.SetWidth(ViewModel.ActualSize.X);
-                //activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
-                activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
-            }
-        }
-
-        private void This_DragOver(object sender, DragEventArgs e)
-        {
-            ViewModel.DecorationState = ViewModel?.Undecorated == false;
-        }
-
-        public void This_DragLeave(object sender, DragEventArgs e)
-        {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-            ViewModel.DecorationState = false;
-        }
-
+        
         public bool IsTopLevel()
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
@@ -1121,19 +1063,19 @@ namespace Dash
             ellipse.Height = length;
         }
 
-        private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
-        {
-            var applier = new TemplateApplier(ViewModel.LayoutDocument);
-            _flyout.Content = applier;
-            if (_flyout.IsInVisualTree())
-            {
-                _flyout.Hide();
-            }
-            else
-            {
-                _flyout.ShowAt(this);
-            }
-        }
+        //private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var applier = new TemplateApplier(ViewModel.LayoutDocument);
+        //    _flyout.Content = applier;
+        //    if (_flyout.IsInVisualTree())
+        //    {
+        //        _flyout.Hide();
+        //    }
+        //    else
+        //    {
+        //        _flyout.ShowAt(this);
+        //    }
+        //}
 
         //binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
         void BindBackgroundColor()
@@ -1321,16 +1263,6 @@ namespace Dash
             }
         }
 
-        public void SetLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 1, true);
-        }
-
-        public void RemoveLinkBorderColor()
-        {
-            MainPage.Instance.HighlightDoc(ViewModel.DocumentController, null, 2, true);
-            xToYellow.Begin();
-        }
         ~DocumentView()
         {
             //Debug.Write("dispose DocumentView");

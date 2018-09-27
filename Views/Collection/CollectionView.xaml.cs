@@ -17,7 +17,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { None, Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;

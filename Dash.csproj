@@ -359,8 +359,6 @@
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\TemplateBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\TemplateEditorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
@@ -583,9 +581,6 @@
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml.cs">
-      <DependentUpon>AnnotationSubtoolbar.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
     </Compile>
@@ -777,6 +772,7 @@
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SplitFrame.Navigation.cs" />
     <Compile Include="Views\SplitFrame.xaml.cs">
       <DependentUpon>SplitFrame.xaml</DependentUpon>
     </Compile>
@@ -937,24 +933,14 @@
     <Compile Include="Views\Tag.xaml.cs">
       <DependentUpon>Tag.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
-      <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
+    <Compile Include="Views\TreeView\TreeView.xaml.cs">
+      <DependentUpon>TreeView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\Ruler.xaml.cs">
-      <DependentUpon>Ruler.xaml</DependentUpon>
+    <Compile Include="Views\TreeView\TreeViewList.xaml.cs">
+      <DependentUpon>TreeViewList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\ResizingControls.xaml.cs">
-      <DependentUpon>ResizingControls.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateApplier.xaml.cs">
-      <DependentUpon>TemplateApplier.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateConstants.cs" />
-    <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
-      <DependentUpon>TemplateEditorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateRecord.xaml.cs">
-      <DependentUpon>TemplateRecord.xaml</DependentUpon>
+    <Compile Include="Views\TreeView\TreeViewNode.xaml.cs">
+      <DependentUpon>TreeViewNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
@@ -1189,10 +1175,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1488,27 +1470,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
+    <Page Include="Views\TreeView\TreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TemplateEditor\Ruler.xaml">
+    <Page Include="Views\TreeView\TreeViewList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TemplateEditor\ResizingControls.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateApplier.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateRecord.xaml">
+    <Page Include="Views\TreeView\TreeViewNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1588,9 +1558,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Syncfusion.SfColorPickers.UWP">
-      <Version>16.2.0.50</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>

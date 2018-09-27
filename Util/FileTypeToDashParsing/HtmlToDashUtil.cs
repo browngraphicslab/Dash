@@ -76,7 +76,7 @@ namespace Dash
                 string srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First()).Value;
                 string src = srcMatch.Substring(6, srcMatch.Length - 6);
                 var imgNote = new ImageNote(new Uri(src), where, new Size(), src);
-                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, "HTML", true);
+                imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.AuthorKey, MainPage.Instance.GetSettingsView.UserName, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, uri, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.WebContextKey, uri, true);
                 imgNote.Document.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
@@ -189,7 +189,10 @@ namespace Dash
             pageTitle = status ?
 
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
-            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle.Substring(1);
+            if (pageTitle.Length > 40)
+                pageTitle = pageTitle.Substring(1, 39) + "...";
+            else pageTitle = pageTitle.Substring(1);
+            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle;
 
             return $"{webName} ({pageTitle})";
         }

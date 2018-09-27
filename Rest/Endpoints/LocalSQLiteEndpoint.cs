@@ -86,13 +86,16 @@ namespace Dash
         public override void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
 
         public override void SetNumBackups(int numBackups) { }
-
+        static public bool SuspendTimer = false;
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            _transactionMutex.WaitOne();
-            _currentTransaction.Commit();
-            _currentTransaction = _db.BeginTransaction();
-            _transactionMutex.ReleaseMutex();
+            if (!SuspendTimer)
+            {
+                _transactionMutex.WaitOne();
+                _currentTransaction.Commit();
+                _currentTransaction = _db.BeginTransaction();
+                _transactionMutex.ReleaseMutex();
+            }
         }
 
         private void CopyAsBackup()
