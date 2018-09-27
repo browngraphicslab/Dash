@@ -70,7 +70,8 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="40" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="40" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
@@ -97,7 +98,6 @@
                 DragItemsCompleted="xThumbs_DragItemsCompleted" 
                 ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
-
                     <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
                 </ListView.Resources>
                 <ListView.ItemsPanel>
@@ -114,9 +114,10 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle Grid.Row="2" Fill="{StaticResource DashDarkBlueBrush}" />
+            <Rectangle Grid.Row="3" Fill="{StaticResource DashDarkBlueBrush}" />
+            <Button Grid.Row="2" Content="Generate Template" HorizontalAlignment="Center" Background="LightGreen" Click="TemplateButton_OnClick"/>
             <TextBlock
-                CanDrag="True" Grid.Row="2" FontSize="16" HorizontalAlignment="Stretch"
+                CanDrag="True" Grid.Row="3" FontSize="16" HorizontalAlignment="Stretch"
                 TextAlignment="Center" VerticalAlignment="Center" Foreground="White"
                 DragStarting="ApplyScript_OnDragStarting">Apply Script</TextBlock>
         </Grid>

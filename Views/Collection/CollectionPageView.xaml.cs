@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -16,6 +17,7 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
+        private bool templateMode = false;
         public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public CollectionViewModel OldViewModel = null;
@@ -26,6 +28,7 @@ namespace Dash
         public CollectionPageView()
         {
             this.InitializeComponent();
+            Debug.WriteLine("COLLECTION PAGE VIEW MADE");
             xTextBox.AddKeyHandler(VirtualKey.Enter, EnterPressed);
             xThumbs.Loaded += (sender, e) =>
             {
@@ -46,7 +49,11 @@ namespace Dash
             Unloaded += (sender, e) =>
             {
                 if (ViewModel != null)
+                {
+                    Debug.WriteLine("collection changed");
                     ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                }
+
                 if (OldViewModel != null)
                     OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 OldViewModel = null;
@@ -55,6 +62,7 @@ namespace Dash
             AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
             xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             LosingFocus += CollectionPageView_LosingFocus;
+            //Debug.WriteLine(ViewModel.DocumentViewModels.Select((dvm) => dvm.DocumentController).ToList().Count);
         }
 
         private void EnterPressed(KeyRoutedEventArgs obj)
@@ -138,6 +146,7 @@ namespace Dash
 
         public void SetHackCaptionText(FieldControllerBase caption)
         {
+            //Debug.WriteLine(caption);
             var textBox = xTextBox;
             xDocContainer.Children.Clear();
             xDocContainer.Children.Add(textBox);
@@ -184,6 +193,7 @@ namespace Dash
         
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Debug.WriteLine("selection changed");
             var ind = xThumbs.SelectedIndex;
             if (PageDocumentViewModels.Count > 0)
             {
@@ -197,6 +207,7 @@ namespace Dash
                 var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
                 if (x != null)
                 {
+                    Debug.WriteLine("x is not null");
                     try
                     {
                         x.Focus(FocusState.Keyboard);
@@ -206,6 +217,11 @@ namespace Dash
 
                     }
                 }
+            }
+
+            if (templateMode)
+            {
+                CreateTemplate();
             }
         }
 
@@ -371,6 +387,37 @@ namespace Dash
             args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void TemplateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("PAGEDOCVIEW COUNT: "+PageDocumentViewModels.Count);
+            Debug.WriteLine("XDOC CHILDREN COUNT: "+xDocContainer.Children.Count);
+            Debug.WriteLine("FIRST DOC TITLE: "+PageDocumentViewModels[0].DataDocument.Title);
+            var ind = PageDocumentViewModels.IndexOf(CurPage);
+            Debug.WriteLine("INDEX OF CURPAGE: "+ind);
+            Debug.WriteLine("DATA OF CUR PAGE: "+PageDocumentViewModels[ind].LayoutDocument.GetDataDocument().GetField(KeyStore.DataKey));
+            templateMode = true;
+            CreateTemplate();
+        }
+
+        private void CreateTemplate()
+        {
+            Debug.WriteLine("creating template...");
+            //var controllers = new List<DocumentController>();
+            //controllers.Add(CurPage.DocumentController.GetDataCopy());
+            CurPage.DocumentController.GetKeyValueAlias();
+            //controllers.Add(CurPage.DocumentController);
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
+            //cnote.SetDocuments(controllers);
+            var newDoc = cnote.Document;
+            newDoc.GetField(KeyStore.DocumentContextKey, true);
+            //newDoc.SetField(KeyStore.DocumentContextKey,)
+            var docView = newDoc.MakeViewUI(null);
+            xDocContainer.Children.RemoveAt(1);
+            Grid.SetRow(docView, 0);
+            xDocContainer.Children.Add(docView);
+
         }
     }
 }

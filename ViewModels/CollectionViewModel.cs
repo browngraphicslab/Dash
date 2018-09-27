@@ -35,6 +35,7 @@ namespace Dash
         public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
         public TransformGroupData TransformGroup
+
         {
             get
             {
@@ -736,12 +737,15 @@ namespace Dash
                 {
                     cpar.SetField(KeyStore.DocumentContextKey, dragDocModels.First().DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
+                    Debug.WriteLine("NEW DOCUMENT DRAGGED");
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                 if (e.DataView.GetDragModels().OfType<DragFieldModel>().Count() > 0)  // dropping a DataBox
                 {
+                    Debug.WriteLine("adding a field");
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
+
                 }
 
                 if (!MainPage.Instance.IsShiftPressed())
@@ -770,12 +774,14 @@ namespace Dash
                 }
                 AddDocuments(docsToAdd);
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+                
             }
         }
 
         private static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
         {
             cpar.SetField(KeyStore.DataKey, cpar.GetDereferencedField(KeyStore.DataKey, null), true); // move the layout data to the collection's layout document.
+            Debug.WriteLine("# of docstoAdd: "+docsToAdd.Count);
             foreach (var doc in docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)))
             {
                 var xd = doc.GetDataDocument();
