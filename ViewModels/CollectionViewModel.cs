@@ -112,6 +112,8 @@ namespace Dash
         /// </summary>
         public void FitContents(CollectionView cview)
         {
+            if (LocalSqliteEndpoint.SuspendTimer)
+                return;
             if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
                 var parSize = ContainerDocument.GetActualSize() ?? new Point();

@@ -268,6 +268,8 @@ namespace Dash
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
+
+            LocalSqliteEndpoint.SuspendTimer = false;
             _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
             _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
             _dragViews = null;
@@ -278,6 +280,7 @@ namespace Dash
         {
             DragManipulationStarted?.Invoke(sender, null);
 
+            LocalSqliteEndpoint.SuspendTimer = true;
            
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
@@ -314,10 +317,11 @@ namespace Dash
             // blip a bitmap for each element onto
             var parentBitmap = new WriteableBitmap((int)s1.X, (int)s1.Y);
             var thisOffset = new Point();
-            
+
             var def = args.GetDeferral();
-            foreach (var doc in _dragViews)
+            try
             {
+                var doc =  MainPage.Instance.MainSplitter;
                 // renders a bitmap for each selected document and blits it onto the parent bitmap at the correct position
                 var rtb = new RenderTargetBitmap();
                 var s = new Point(Math.Ceiling(doc.ActualWidth), Math.Ceiling(doc.ActualHeight));
@@ -332,12 +336,9 @@ namespace Dash
                 var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
                 parentBitmap.Blit(pos, miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
                     Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
+            } catch (Exception)
+            {
 
-                if (doc == docView)
-                {
-                    thisOffset.X = rect.X - tl.X / scaling;
-                    thisOffset.Y = rect.Y - tl.Y / scaling;
-                }
             }
 
             var p = args.GetPosition(Window.Current.Content);
