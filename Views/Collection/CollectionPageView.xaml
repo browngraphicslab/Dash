@@ -63,7 +63,7 @@
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
                 <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">
-                    
+
                 </Grid>
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
@@ -71,7 +71,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="40" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="20" />
+                <RowDefinition Height="40" />
                 <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
@@ -116,7 +116,7 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Rectangle Grid.Row="3" Fill="{StaticResource DashDarkBlueBrush}" />
-            <Button Grid.Row="2" Content="Generate Template" HorizontalAlignment="Center" Background="LightGreen" Click="TemplateButton_OnClick"/>
+            <Button x:Name="templateButton" Grid.Row="2" Foreground="White" FontSize="16" Content="Generate Template" HorizontalAlignment="Stretch" Background="{StaticResource DashDarkBlueBrush}" Click="TemplateButton_OnClick" VerticalAlignment="Center"/>
             <TextBlock
                 CanDrag="True" Grid.Row="3" FontSize="16" HorizontalAlignment="Stretch"
                 TextAlignment="Center" VerticalAlignment="Center" Foreground="White"

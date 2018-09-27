@@ -24,6 +24,7 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         private DSL _dsl;
         private OuterReplScope _scope;
+        private DocumentController newDoc;
 
         public CollectionPageView()
         {
@@ -50,7 +51,6 @@ namespace Dash
             {
                 if (ViewModel != null)
                 {
-                    Debug.WriteLine("collection changed");
                     ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 }
 
@@ -70,28 +70,37 @@ namespace Dash
             if (!MainPage.Instance.IsShiftPressed())
             {
                 var keyString = xTextBox.Text;
-                if (keyString?.StartsWith("=") ?? false)
+                if (templateMode)
                 {
-                    try
-                    {
-                        var result = _dsl.Run(keyString.Substring(1));
-                        SetHackCaptionText(result == null
-                            ? new TextController(
-                                "Field not found, make sure the key name is correct and that you're accessing the right document!")
-                            : result);
-                    }
-                    catch (DSLException)
-                    {
-                        SetHackCaptionText(new TextController(keyString));
-                    }
+                    newDoc.SetField(KeyStore.DocumentContextKey,
+                        CurPage.DataDocument, true);
                 }
-                //_scope = new OuterReplScope();
-                //_scope.DeclareVariable("this", CurPage.DocumentController);
-                //var reference = DSL.InterpretUserInput(keyString, true, _scope);
-                //SetHackCaptionText(reference);
+                else
+                {
+                    if (keyString?.StartsWith("=") ?? false)
+                    {
+                        try
+                        {
+                            var result = _dsl.Run(keyString.Substring(1));
+                            SetHackCaptionText(result == null
+                                ? new TextController(
+                                    "Field not found, make sure the key name is correct and that you're accessing the right document!")
+                                : result);
+                        }
+                        catch (DSLException)
+                        {
+                            SetHackCaptionText(new TextController(keyString));
+                        }
+                    }
 
-                if (obj != null)
-                    obj.Handled = true;
+                    //_scope = new OuterReplScope();
+                    //_scope.DeclareVariable("this", CurPage.DocumentController);
+                    //var reference = DSL.InterpretUserInput(keyString, true, _scope);
+                    //SetHackCaptionText(reference);
+
+                    if (obj != null)
+                        obj.Handled = true;
+                }
             }
         }
 
@@ -146,6 +155,7 @@ namespace Dash
 
         public void SetHackCaptionText(FieldControllerBase caption)
         {
+            Debug.WriteLine("adding to pane");
             var dataBox = new DataBox(caption);
             XDocDisplay.DataContext = new DocumentViewModel(dataBox.Document);
         }
@@ -196,12 +206,12 @@ namespace Dash
                 _scope.DeclareVariable("this", CurPage.DocumentController);
                 _dsl = new DSL(_scope);
             }
+
             if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
             {
                 var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
                 if (x != null)
                 {
-                    Debug.WriteLine("x is not null");
                     try
                     {
                         x.Focus(FocusState.Keyboard);
@@ -213,10 +223,7 @@ namespace Dash
                 }
             }
 
-            if (templateMode)
-            {
-                CreateTemplate();
-            }
+            
         }
 
         private void XDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -385,32 +392,51 @@ namespace Dash
 
         private void TemplateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("PAGEDOCVIEW COUNT: "+PageDocumentViewModels.Count);
-            Debug.WriteLine("XDOC CHILDREN COUNT: "+xDocContainer.Children.Count);
-            Debug.WriteLine("FIRST DOC TITLE: "+PageDocumentViewModels[0].DataDocument.Title);
-            var ind = PageDocumentViewModels.IndexOf(CurPage);
-            Debug.WriteLine("INDEX OF CURPAGE: "+ind);
-            Debug.WriteLine("DATA OF CUR PAGE: "+PageDocumentViewModels[ind].LayoutDocument.GetDataDocument().GetField(KeyStore.DataKey));
-            templateMode = true;
-            CreateTemplate();
+            //Debug.WriteLine("PAGEDOCVIEW COUNT: "+PageDocumentViewModels.Count);
+            //Debug.WriteLine("XDOC CHILDREN COUNT: "+xDocContainer.Children.Count);
+            //Debug.WriteLine("FIRST DOC TITLE: "+PageDocumentViewModels[0].DataDocument.Title);
+            //var ind = PageDocumentViewModels.IndexOf(CurPage);
+            //Debug.WriteLine("INDEX OF CURPAGE: "+ind);
+            //Debug.WriteLine("DATA OF CUR PAGE: "+PageDocumentViewModels[ind].LayoutDocument.GetDataDocument().GetField(KeyStore.DataKey));
+            if (!templateMode)
+            {
+                templateMode = true;
+                templateButton.Content = "Remove Template";
+                CreateTemplate();
+            }
+            else
+            {
+                templateMode = false;
+                templateButton.Content = "Generate Template";
+                RemoveTemplate();
+            }
+        }
+
+        private void RemoveTemplate()
+        {
+            var ind = xThumbs.SelectedIndex;
+            if (PageDocumentViewModels.Count > 0)
+            {
+                CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+            }
         }
 
         private void CreateTemplate()
         {
             Debug.WriteLine("creating template...");
-            //var controllers = new List<DocumentController>();
-            //controllers.Add(CurPage.DocumentController.GetDataCopy());
-            CurPage.DocumentController.GetKeyValueAlias();
-            //controllers.Add(CurPage.DocumentController);
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            var parentCollection = docView.ParentCollection;
+            if (parentCollection != null)
+            {
+                var viewModel = docView.ViewModel;
+                var where = viewModel.Position.X + viewModel.Width + 70;
+                var point = new Point(where, viewModel.Position.Y);
+                parentCollection.ViewModel.AddDocument(CurPage.DocumentController.GetKeyValueAlias(point));
+            }
             var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-            //cnote.SetDocuments(controllers);
-            var newDoc = cnote.Document;
-            newDoc.GetField(KeyStore.DocumentContextKey, true);
-            //newDoc.SetField(KeyStore.DocumentContextKey,)
-            var docView = newDoc.MakeViewUI(null);
-            xDocContainer.Children.RemoveAt(1);
-            Grid.SetRow(docView, 0);
-            xDocContainer.Children.Add(docView);
+            newDoc = cnote.Document;
+            newDoc.SetFitToParent(true);
+            XDocDisplay.DataContext = new DocumentViewModel(newDoc);
 
         }
     }
