@@ -55,7 +55,6 @@ namespace Dash
 
             xOuterGrid.PointerPressed += OnPointerPressed;
             var color = xOuterGrid.Background;
-            Debug.WriteLine("COLLECTION MADE");
         }
 
         ~CollectionView()

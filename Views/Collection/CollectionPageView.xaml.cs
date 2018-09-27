@@ -29,7 +29,6 @@ namespace Dash
         public CollectionPageView()
         {
             this.InitializeComponent();
-            Debug.WriteLine("COLLECTION PAGE VIEW MADE");
             xTextBox.AddKeyHandler(VirtualKey.Enter, EnterPressed);
             xThumbs.Loaded += (sender, e) =>
             {
@@ -155,7 +154,6 @@ namespace Dash
 
         public void SetHackCaptionText(FieldControllerBase caption)
         {
-            Debug.WriteLine("adding to pane");
             var dataBox = new DataBox(caption);
             XDocDisplay.DataContext = new DocumentViewModel(dataBox.Document);
         }
@@ -197,7 +195,6 @@ namespace Dash
         
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Debug.WriteLine("selection changed");
             var ind = xThumbs.SelectedIndex;
             if (PageDocumentViewModels.Count > 0)
             {
@@ -392,12 +389,6 @@ namespace Dash
 
         private void TemplateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //Debug.WriteLine("PAGEDOCVIEW COUNT: "+PageDocumentViewModels.Count);
-            //Debug.WriteLine("XDOC CHILDREN COUNT: "+xDocContainer.Children.Count);
-            //Debug.WriteLine("FIRST DOC TITLE: "+PageDocumentViewModels[0].DataDocument.Title);
-            //var ind = PageDocumentViewModels.IndexOf(CurPage);
-            //Debug.WriteLine("INDEX OF CURPAGE: "+ind);
-            //Debug.WriteLine("DATA OF CUR PAGE: "+PageDocumentViewModels[ind].LayoutDocument.GetDataDocument().GetField(KeyStore.DataKey));
             if (!templateMode)
             {
                 templateMode = true;
@@ -423,7 +414,6 @@ namespace Dash
 
         private void CreateTemplate()
         {
-            Debug.WriteLine("creating template...");
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             var parentCollection = docView.ParentCollection;
             if (parentCollection != null)

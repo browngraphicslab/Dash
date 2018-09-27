@@ -767,13 +767,11 @@ namespace Dash
                 {
                     cpar.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                     e.DataView.ReportOperationCompleted(DataPackageOperation.None);
-                    Debug.WriteLine("NEW DOCUMENT DRAGGED");
                     return;
                 }
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                 if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
                 {
-                    Debug.WriteLine("adding a field");
                     RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
 
                 }
