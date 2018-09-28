@@ -89,11 +89,12 @@ namespace Dash
 
         private void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
-            var activeLayout = schema.Prototype.GetActiveLayout().MakeDelegate();
-            protoInstance.SetActiveLayout(activeLayout, true, false);
-            var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextController(CollectionView.CollectionViewType.Schema.ToString()));
-            activeLayout.SetFields(defaultLayoutFields, true);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            //var activeLayout = schema.Prototype.GetActiveLayout().MakeDelegate();
+            //protoInstance.SetActiveLayout(activeLayout, true, false);
+            //var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
+            //defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextController(CollectionView.CollectionViewType.Schema.ToString()));
+            //activeLayout.SetFields(defaultLayoutFields, true);
         }
 
         private FieldControllerBase ParseChild(JToken jtoken, DocumentSchema parentSchema)
@@ -127,7 +128,6 @@ namespace Dash
             SetDefaultFieldsOnPrototype(schema.Prototype, fields);
 
             var protoInstance = schema.Prototype.MakeDelegate();
-            //DBTest.DBDoc.AddChild(protoInstance);
             SetDefaultsOnActiveLayout(schema, protoInstance);
             protoInstance.SetFields(fields, true);
             return protoInstance;
@@ -293,7 +293,8 @@ namespace Dash
 
         public void SetDefaultLayoutOnPrototype(DocumentController prototype)
         {
-            prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            // prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
         }
 
         private string ConvertPathToUniqueName(string path)

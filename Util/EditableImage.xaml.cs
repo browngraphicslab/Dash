@@ -43,7 +43,7 @@ namespace Dash
         public EditableImage(DocumentController document, Context context)
         {
             InitializeComponent();
-            LayoutDocument = document.GetActiveLayout() ?? document;
+            LayoutDocument = document;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.Unloaded += Image_Unloaded;
@@ -389,7 +389,7 @@ namespace Dash
                     _annotationOverlay.EndAnnotation(point.Position);
                     e.Handled = true;
                 }
-                else if(point.Properties.IsLeftButtonPressed)
+                else if(point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
                 {
                     _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;

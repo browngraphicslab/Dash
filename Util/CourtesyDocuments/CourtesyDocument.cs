@@ -66,7 +66,8 @@ namespace Dash
         /// </summary>
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
-            dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);

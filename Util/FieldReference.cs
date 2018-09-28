@@ -79,11 +79,21 @@ namespace Dash
         public FieldControllerBase DereferenceToRoot(Context context)
         {
             context = new Context(context);
-            context.AddDocumentContext(GetDocumentController(context));
-            FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceController)
+            var documentController = GetDocumentController(context);
+            if (documentController == null)
             {
-                context?.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
+                return null;
+            }
+            context.AddDocumentContext(documentController);
+            FieldControllerBase reference = Dereference(context);
+            while (reference is ReferenceController referenceController)
+            {
+                documentController = referenceController.GetDocumentController(context);
+                if (documentController == null)
+                {
+                    return null;
+                }
+                context.AddDocumentContext(documentController);
                 reference = reference.Dereference(context);
             }
 

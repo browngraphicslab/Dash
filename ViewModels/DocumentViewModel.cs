@@ -39,20 +39,20 @@ namespace Dash
         public void Load()
         {
             //UnLoad();
-            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            DocumentController.AddFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
         public void UnLoad()
         {
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
-        public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
+        public DocumentController LayoutDocument => DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
         public bool ResizersVisible = true;
         public bool ShowLocalContext
@@ -139,6 +139,8 @@ namespace Dash
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
                 OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
+                //create render transform for content zooming/panning!
+                _content.RenderTransform = new CompositeTransform();
             }
         }
 
@@ -195,7 +197,7 @@ namespace Dash
             }
             else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
@@ -216,35 +218,36 @@ namespace Dash
         /// <param name="context"></param>
         void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            if (args.Action == FieldUpdatedAction.Remove)
-            {
-                Content = null;
-                _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                _lastLayout = LayoutDocument;
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                LayoutDocument_DataChanged(null, null, new Context(DocumentController));
-            }
-            else
-            {
-                var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
-                // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
-                // if a field of the activelayout changed, we ignore that here since it should update the layout directly
-                // through bindings.
-                if (fargs == null && _lastLayout != LayoutDocument)
-                {
-                    var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
-                    if (curActive == null)
-                    {
-                        curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
-                        curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
-                        DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
-                    }
-                    _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                    _lastLayout = LayoutDocument;
-                    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
-                    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
-                }
-            }
+            Content = null;
+            //if (args.Action == FieldUpdatedAction.Remove)
+            //{
+            //    Content = null;
+            //    _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //    _lastLayout = LayoutDocument;
+            //    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+            //}
+            //else
+            //{
+            //    var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            //    // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
+            //    // if a field of the activelayout changed, we ignore that here since it should update the layout directly
+            //    // through bindings.
+            //    if (fargs == null && _lastLayout != LayoutDocument)
+            //    {
+            //        var curActive = DocumentController.GetField(KeyStore.DocumentTypeKey, true) as DocumentController;
+            //        if (curActive == null)
+            //        {
+            //            curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
+            //            curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+            //            DocumentController.SetField(KeyStore.DocumentTypeKey, curActive, true);
+            //        }
+            //        _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //        _lastLayout = LayoutDocument;
+            //        LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            //        LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+            //    }
+            //}
         }
         ~DocumentViewModel()
         {
