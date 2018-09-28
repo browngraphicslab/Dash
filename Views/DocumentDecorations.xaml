@@ -5,7 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:dash="using:Dash"
+    xmlns:dashViews="using:Dash.Views"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
@@ -42,104 +42,9 @@
                 />
             </Storyboard>
         </Grid.Resources>
+        <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
 
-
-            <!--Key Value Flyout-->
-            <Border x:Name="xKeyValueBorder" Grid.Row="2" Height="0" Width="0" Background="#60000000">
-                <Border.Resources>
-                    <Storyboard x:Name="xQuickEntryIn">
-                        <DoubleAnimation 
-                            Storyboard.TargetName="xKeyValueBorder"
-                            Storyboard.TargetProperty="MinHeight"
-                            To="60"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xQuickEntryOut">
-                        <DoubleAnimation 
-                            Storyboard.TargetName="xKeyValueBorder"
-                            Storyboard.TargetProperty="MinHeight"
-                            To="0"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-
-                    </Storyboard>
-                    <Storyboard x:Name="xKeyEditFailure">
-                        <ColorAnimation 
-                            Storyboard.TargetName="xKeyBox"
-                            Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                            To="Red"
-                            AutoReverse="True"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xValueEditFailure">
-                        <ColorAnimation 
-                            Storyboard.TargetName="xValueBox"
-                            Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                            To="Red"
-                            AutoReverse="True"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xValueErrorFailure">
-                        <ColorAnimation 
-                            Storyboard.TargetName="xValueBox"
-                            Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                            To="Navy"
-                            AutoReverse="True"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xKeyEditSuccess">
-                        <ColorAnimation 
-                            Storyboard.TargetName="xKeyBox"
-                            Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                            To="ForestGreen"
-                            AutoReverse="True"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xValueEditSuccess">
-                        <ColorAnimation 
-                            Storyboard.TargetName="xValueBox"
-                            Storyboard.TargetProperty="(TextBox.Background).(SolidColorBrush.Color)"
-                            To="ForestGreen"
-                            AutoReverse="True"
-                            Duration="0:0:0.2"
-                            EnableDependentAnimation="True"/>
-                    </Storyboard>
-                </Border.Resources>
-                <Grid>
-                    <Grid Margin="0, 0, 0, 0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="1"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <local:ActionTextBox
-                            x:Name="xKeyBox"
-                            Margin="7, 0, 3, 0"
-                            Padding="7, 3, 0, 0"
-                            MaxLength="30"
-                            Grid.Column="0"
-                            AcceptsReturn="False"
-                            IsSpellCheckEnabled="False"
-                            Height="25"/>
-                        <local:ActionTextBox
-                            x:Name="xValueBox"
-                            Margin="3, 0, 7, 0"
-                            Padding="7, 3, 0, 0"
-                            Grid.Column="2"
-                            AcceptsReturn="False"
-                            IsSpellCheckEnabled="False"
-                            PlaceholderText="Value..."
-                            Height="25"/>
-                    </Grid>
-                </Grid>
-            </Border>
-
-            <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+        <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
                 <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
                 <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
