@@ -354,7 +354,7 @@ namespace Dash
                         }
                         else if (data is ListController<DocumentController>)
                         {
-                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            if (MainPage.Instance.IsCtrlPressed())
                             {
                                 if (!containsInternalContent)
                                 {
