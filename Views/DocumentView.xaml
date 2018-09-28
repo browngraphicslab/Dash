@@ -14,9 +14,7 @@
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
-    UseLayoutRounding="False"
-    
-    >
+    UseLayoutRounding="False">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
@@ -177,7 +175,7 @@
             <Rectangle x:Name="xDocumentBackground" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
                 <ContentPresenter.RenderTransform>
-                    <TransformGroup x:Name="xContentTransform"></TransformGroup>
+                    <MatrixTransform x:Name="xContentTransform"></MatrixTransform>
                 </ContentPresenter.RenderTransform>
             </ContentPresenter>
         </Grid>

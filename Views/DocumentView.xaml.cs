@@ -213,8 +213,6 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
-                //store this point to calculate pointer movement for content panning
-                //_pointerPoint = e.GetCurrentPoint(this).Position;
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -1301,32 +1299,30 @@ namespace Dash
         /// </summary>
         private void PanContent(double deltaX, double deltaY)
         {
-            if (!(xContentTransform.Value.OffsetX + deltaX > 0 && xContentTransform.Value.OffsetY + deltaY > 0))
+            if (!(xContentTransform.Matrix.OffsetX + deltaX > 0 && xContentTransform.Matrix.OffsetY + deltaY > 0))
             {
-                //make translate transform and add to translate group
-                TranslateTransform trans = new TranslateTransform();
-                bool moveXAllowed = xContentTransform.Value.OffsetX + deltaX <= 0 &&
-                    xContentTransform.Value.M11 * ViewModel.ActualSize.X + xContentTransform.Value.OffsetX + deltaX + 0.2 >=
+                bool moveXAllowed = xContentTransform.Matrix.OffsetX + deltaX <= 0 &&
+                    xContentTransform.Matrix.M11 * ViewModel.ActualSize.X + xContentTransform.Matrix.OffsetX + deltaX + 0.2 >=
                     ViewModel.ActualSize.X;
                 bool moveYAllowed =
-                    xContentTransform.Value.OffsetY + deltaY <= 0 && xContentTransform.Value.M22 * ViewModel.ActualSize.Y + xContentTransform.Value.OffsetY + deltaY + 0.2 >=
+                    xContentTransform.Matrix.OffsetY + deltaY <= 0 && xContentTransform.Matrix.M22 * ViewModel.ActualSize.Y + xContentTransform.Matrix.OffsetY + deltaY + 0.2 >=
                     ViewModel.ActualSize.Y;
-                trans.X = moveXAllowed ? deltaX : 0;
-                trans.Y = moveYAllowed ? deltaY : 0;
-                xContentTransform.Children.Add(trans);
+                
+                var tgroup = new TransformGroup();
+                tgroup.Children.Add(xContentTransform);
+                tgroup.Children.Add(new TranslateTransform(){ X = moveXAllowed ? deltaX : 0, Y = moveYAllowed ? deltaY : 0 });
+                xContentTransform.Matrix = tgroup.Value;
             }
         }
 
         //checks if we should be panning content
         private void LayoutRoot_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            
             //if ctrl is pressed and either or both of left/right btns, we should pan content
             if (this.IsCtrlPressed() && this.IsLeftBtnPressed())
             {
-                double deltaX = - _pointerPoint.X + e.GetCurrentPoint(LayoutRoot).Position.X;
-                double deltaY = - _pointerPoint.Y + e.GetCurrentPoint(LayoutRoot).Position.Y;
-                PanContent(deltaX, deltaY);
+                var curPt = e.GetCurrentPoint(LayoutRoot).Position;
+                PanContent(-_pointerPoint.X + curPt.X, -_pointerPoint.Y + curPt.Y);
             }
 
             _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
@@ -1353,7 +1349,7 @@ namespace Dash
                 double deltaScale = 1 + wheelValue / 500;
 
                 //ensures zoom level can't be less than 1
-                if (xContentTransform.Value.M11 * deltaScale <= 1) deltaScale = 1 / xContentTransform.Value.M11;
+                if (xContentTransform.Matrix.M11 * deltaScale <= 1) deltaScale = 1 / xContentTransform.Matrix.M11;
                
                 ScaleTransform scale = new ScaleTransform();
                 scale.ScaleX = deltaScale;
@@ -1363,7 +1359,10 @@ namespace Dash
                 scale.CenterX = e.GetCurrentPoint(LayoutRoot).Position.X;
                 scale.CenterY = e.GetCurrentPoint(LayoutRoot).Position.Y;
 
-                xContentTransform.Children.Add(scale);
+                var tgroup = new TransformGroup();
+                tgroup.Children.Add(xContentTransform);
+                tgroup.Children.Add(scale);
+                xContentTransform.Matrix = tgroup.Value;
 
                 //use transform bounds to check if content has gotten out of bounds and if so, pan to compensate
                 var tb = xContentTransform.TransformBounds(new Rect(0, 0, ViewModel.ActualSize.X, ViewModel.ActualSize.Y));
