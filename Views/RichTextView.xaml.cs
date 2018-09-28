@@ -665,6 +665,7 @@ namespace Dash
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
         public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
         {
+            return;
             ClearSearchHighlights();
         }
 

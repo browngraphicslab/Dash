@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
@@ -324,17 +325,12 @@ namespace Dash
                 var doc =  MainPage.Instance.MainSplitter;
                 // renders a bitmap for each selected document and blits it onto the parent bitmap at the correct position
                 var rtb = new RenderTargetBitmap();
-                var s = new Point(Math.Ceiling(doc.ActualWidth), Math.Ceiling(doc.ActualHeight));
-                var transformToVisual = doc.TransformToVisual(Window.Current.Content);
-                var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
-                s = new Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
-                var buf = await rtb.GetPixelsAsync();
+                var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, doc.ActualWidth, doc.ActualHeight));
+                await rtb.RenderAsync(doc);
+                var buf = (await rtb.GetPixelsAsync()).ToArray();
                 var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-                var miniSBitmap = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
-                miniSBitmap.CopyToBuffer(miniBitmap.PixelBuffer);
-                var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
-                parentBitmap.Blit(pos, miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
+                miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+                parentBitmap.Blit(new Point(rect.Left - tl.X, rect.Top - tl.Y), miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
                     Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
             } catch (Exception)
             {
