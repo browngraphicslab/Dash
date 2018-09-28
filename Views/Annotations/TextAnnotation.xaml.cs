@@ -47,7 +47,7 @@ namespace Dash
             // startIndex is either 0 or the last page's end index + 1
             var startIndex = startPage > 0 ? ParentOverlay.PageEndIndices[startPage - 1] + 1 : 0;
             var endIndex = ParentOverlay.PageEndIndices[startPage];
-            for (var index = startIndex; index <= endIndex; index++)
+            for (var index = startIndex; index < endIndex; index++)
             {
                 var selectableElement = ParentOverlay.TextSelectableElements[index];
                 var b = selectableElement.Bounds;
