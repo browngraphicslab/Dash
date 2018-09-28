@@ -70,6 +70,7 @@ namespace Dash
             };
             xShowLinesButton.AddFieldBinding(ToggleButton.IsCheckedProperty, lineVisBinding);
 
+            //TODO: NEED TO ADD LISTENER PER CURRENT PRES, otherwise pinned nodes is null
             ViewModel.PinnedNodes.CollectionChanged += PinnedNodes_CollectionChanged;
             if (ViewModel.PinnedNodes.Count == 0) xHelpPrompt.Visibility = Visibility.Visible;
 
