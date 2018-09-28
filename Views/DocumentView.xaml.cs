@@ -1000,6 +1000,26 @@ namespace Dash
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
 
+                if (MainPage.Instance.IsAltPressed())
+                {
+                    var curLayout = ViewModel.LayoutDocument;
+                    var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position);
+                    draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
+                    {
+                        curLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.X);
+                        curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+                    }
+                    curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
+                    curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
+
+                    curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey,null), true);
+                    curLayout.DocumentType = draggedLayout.DocumentType;
+                    updateBindings();
+                    e.Handled = true;
+                    return;
+                }
+
                 var dragDocs = dm.DraggedDocuments;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
@@ -1022,76 +1042,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        void drop(bool footer, DocumentController newFieldDoc)
-        {
-            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
-
-            // newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
-            newFieldDoc.SetWidth(double.NaN);
-            newFieldDoc.SetPosition(new Point(100, 100));
-            var activeLayout = ViewModel.LayoutDocument;
-            if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
-            {
-                if (activeLayout.GetField(KeyStore.DataKey, true) == null)
-                {
-                    var fields = activeLayout
-                        .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData
-                        .ToArray().ToList();
-                    if (!footer)
-                        fields.Insert(0, newFieldDoc);
-                    else fields.Add(newFieldDoc);
-                    activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                }
-                else
-                {
-                    var listCtrl =
-                        activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                    if (!footer)
-                        listCtrl.Insert(0, newFieldDoc);
-                    else listCtrl.Add(newFieldDoc);
-                }
-            }
-            else
-            {
-                var curLayout = activeLayout;
-                if (ViewModel.DocumentController?.GetActiveLayout() != null
-                ) // wrap existing activeLayout into a new StackPanel activeLayout
-                {
-                    curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                    curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
-                    curLayout.SetWidth(double.NaN);
-                    curLayout.SetHeight(double.NaN);
-                }
-                else // need to create a stackPanel activeLayout and add the document to it
-                {
-                    curLayout =
-                        activeLayout
-                                .MakeCopy() as
-                            DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
-                    curLayout.Tag = "StackPanel DocView Layout";
-                    curLayout.SetWidth(double.NaN);
-                    curLayout.SetHeight(double.NaN);
-                    curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                }
-
-                activeLayout = new StackLayout(new DocumentController[]
-                    {footer ? curLayout : newFieldDoc, footer ? newFieldDoc : curLayout}).Document;
-                activeLayout.Tag = "StackLayout";
-                // we need to move the Height and Width fields from the current layout to the new active layout.
-                // this is because we want any bindings that were made to the current layout to still fire when changes
-                // are made to the new layout.
-                activeLayout.SetField(KeyStore.PositionFieldKey, curLayout.GetField(KeyStore.PositionFieldKey), true);
-                activeLayout.SetField(KeyStore.WidthFieldKey, curLayout.GetField(KeyStore.WidthFieldKey), true);
-                activeLayout.SetField(KeyStore.HeightFieldKey, curLayout.GetField(KeyStore.HeightFieldKey), true);
-                //activeLayout.SetPosition(ViewModel.Position);
-                //activeLayout.SetWidth(ViewModel.ActualSize.X);
-                //activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
-                activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
-            }
-        }
-
+        
         public bool IsTopLevel()
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;

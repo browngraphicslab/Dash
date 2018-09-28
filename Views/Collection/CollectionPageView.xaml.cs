@@ -138,13 +138,8 @@ namespace Dash
 
         public void SetHackCaptionText(FieldControllerBase caption)
         {
-            var textBox = xTextBox;
-            xDocContainer.Children.Clear();
-            xDocContainer.Children.Add(textBox);
             var dataBox = new DataBox(caption);
-            var docView = dataBox.Document.MakeViewUI(null);
-            Grid.SetRow(docView, 0);
-            xDocContainer.Children.Add(docView);
+            XDocDisplay.DataContext = new DocumentViewModel(dataBox.Document);
         }
         public DocumentViewModel CurPage
         {

@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.HockeyApp;
 
 namespace Dash
 {

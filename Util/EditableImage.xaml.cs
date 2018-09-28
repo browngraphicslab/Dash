@@ -43,7 +43,7 @@ namespace Dash
         public EditableImage(DocumentController document, Context context)
         {
             InitializeComponent();
-            LayoutDocument = document.GetActiveLayout() ?? document;
+            LayoutDocument = document;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.Unloaded += Image_Unloaded;
