@@ -17,41 +17,14 @@
     UseLayoutRounding="False">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
-            <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
-        </Storyboard>
-        <Storyboard x:Name="FadeIn" SpeedRatio="0.7">
-            <DoubleAnimation
-                Storyboard.TargetName="Root"
-                Storyboard.TargetProperty="Opacity"
-                From="0.0" To="1.0" Duration="0:0:0.2"/>
-        </Storyboard>
-        <Storyboard x:Name="xQuickEntryIn" x:FieldModifier="public">
-            <DoubleAnimation 
-                Storyboard.TargetName="xQuickEntryRow"
-                Storyboard.TargetProperty="MinHeight"
-                To="60"
-                Duration="0:0:0.2"
-                EnableDependentAnimation="True"/>
-        </Storyboard>
-        <Storyboard x:Name="xQuickEntryOut" x:FieldModifier="public">
-            <DoubleAnimation 
-                Storyboard.TargetName="xQuickEntryRow"
-                Storyboard.TargetProperty="MinHeight"
-                To="0"
-                Duration="0:0:0.2"
-                EnableDependentAnimation="True"/>
+            <FadeOutThemeAnimation TargetName="Root"/>
         </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 
     <Grid x:Name="xMasterStack">
-        <Grid.RowDefinitions>
-            <RowDefinition x:Name="xQuickEntryRow" x:FieldModifier="public" Height="0"/>
-            <RowDefinition  Height="*"/>
-        </Grid.RowDefinitions>
-
-        <Grid x:Name="LayoutRoot" BorderThickness="0" Grid.Row="1" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
+        <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
                 </Grid.Clip>
@@ -100,14 +73,14 @@
                 </ContentPresenter.RenderTransform>
             </ContentPresenter>
         </Grid>
-        <Grid x:Name="xBackgroundPinBox" Grid.Row="1" Margin="-20 -20 -20 0" Height="20" Width="20" CornerRadius="10" 
+        <Grid x:Name="xBackgroundPinBox" Margin="-20 -20 -20 0" Height="20" Width="20" CornerRadius="10" 
               Tapped="xBackgroundPin_Tapped" Background="#40FFFFFF" VerticalAlignment="Top"  HorizontalAlignment="Right"  
               PointerPressed="xBackgroundPin_PointerPressed"  PointerReleased="xBackgroundPin_PointerReleased" >
             <TextBlock x:Name="xBackgroundPin" Text="&#xE77A;" FontSize="18" Height="20" Width="20" FontFamily="Segoe MDL2 Assets" Foreground="Green" Padding="0"/>
         </Grid>
 
         <!-- border to highlight search results-->
-        <Border x:Name="xDocHighlight"  Grid.Row="1"  BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" >
+        <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" >
             <Border.Resources>
                 <Storyboard x:Name="xToRed">
                     <ColorAnimation 
