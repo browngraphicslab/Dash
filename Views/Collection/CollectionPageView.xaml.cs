@@ -71,8 +71,11 @@ namespace Dash
                 var keyString = xTextBox.Text;
                 if (templateMode)
                 {
-                    newDoc.SetField(KeyStore.DocumentContextKey,
-                        CurPage.DataDocument, true);
+                    if (CurPage != null)
+                    {
+                        newDoc.SetField(KeyStore.DocumentContextKey,
+                            CurPage.DataDocument, true);
+                    }
                 }
                 else
                 {
