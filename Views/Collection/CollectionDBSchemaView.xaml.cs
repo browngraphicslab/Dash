@@ -66,37 +66,10 @@ namespace Dash
         public CollectionDBSchemaView()
         {
             InitializeComponent();
+            Unloaded += CollectionDBSchemaView_Unloaded;
+            Loaded += CollectionDBSchemaView_Loaded;
             //Warning: code does not work yet -Brandon
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
-            var docs = ParentDocument.GetDataDocument().
-                GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
-            var keys = new HashSet<KeyController>();
-            foreach (var doc in docs)
-            {
-                foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
-                {
-                    keys.Add(field.Key);
-                }
-            }
 
-            xDataGrid.AutoGenerateColumns = false;
-            xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
-            xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
-            xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
-
-            foreach (var key in keys)
-            {
-                var column = new DataGridDictionaryColumn(key)
-                {
-                    Header = key,
-                    CanUserEdit = true,
-                    SizeMode = DataGridColumnSizeMode.Auto
-                };
-
-                xDataGrid.Columns.Add(column);
-            }
-
-            xDataGrid.ItemsSource = docs;
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -126,6 +99,48 @@ namespace Dash
 
         public void SetDropIndicationFill(Brush fill)
         {
+        }
+
+        public void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
+            if (ParentDocument == null)
+                return;
+            var test = ParentDocument.GetDataDocument();
+            var docs = (ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) ??
+                        ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null))?.TypedData;
+            var keys = new HashSet<KeyController>();
+            foreach (var doc in docs)
+            {
+                foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+                {
+                    keys.Add(field.Key);
+                }
+            }
+
+            xDataGrid.AutoGenerateColumns = false;
+            xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
+            xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
+            xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
+
+            foreach (var key in keys)
+            {
+                var column = new DataGridDictionaryColumn(key)
+                {
+                    Header = key,
+                    CanUserEdit = true,
+                    SizeMode = DataGridColumnSizeMode.Auto
+                };
+
+                xDataGrid.Columns.Add(column);
+            }
+
+            xDataGrid.ItemsSource = docs;
+        }
+
+        public void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ParentDocument = null;
         }
     }
 
@@ -187,25 +202,30 @@ namespace Dash
 
         public override void PrepareCell(object container, object value, object item)
         {
-            base.PrepareCell(container, value, item); //Scrap in favor of Databox.Makeview
+            //DataBox.MakeView(value, null);
             var contentPresenter = (ContentPresenter)container;
-            switch (value)
-            {
-            case string s:
-                contentPresenter.Content = new TextBlock { Text = s };
-                break;
-            case bool b:
-                CheckBox checkBox = new CheckBox
-                {
-                    IsChecked = b,
-                };
-                contentPresenter.Content = checkBox;
-                contentPresenter.HorizontalAlignment = HorizontalAlignment.Center;
-                break;
-            default:
-                contentPresenter.Content = new TextBlock { Text = "Unrecognized data type" };
-                break;
-            }
+            
+            
+            base.PrepareCell(container, value, item);//Scrap in favor of Databox.Makeview
+            contentPresenter = DataBox.MakeView(value as DocumentController, null) as ContentPresenter;
+
+            //switch (value)
+            //{
+            //case string s:
+            //    contentPresenter.Content = new TextBlock { Text = s };
+            //    break;
+            //case bool b:
+            //    CheckBox checkBox = new CheckBox
+            //    {
+            //        IsChecked = b,
+            //    };
+            //    contentPresenter.Content = checkBox;
+            //    contentPresenter.HorizontalAlignment = HorizontalAlignment.Center;
+            //    break;
+            //default:
+            //    contentPresenter.Content = new TextBlock { Text = "Unrecognized data type" };
+            //    break;
+            //}
         }
     }
 }
