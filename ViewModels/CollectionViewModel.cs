@@ -753,11 +753,6 @@ namespace Dash
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
 
-                //adds all docs in the group, if applicable
-                var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
-                var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-                adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
-
                 var dragModel = e.DataView.GetDragModel();
 
                 var cpar = ContainerDocument;

@@ -10,6 +10,7 @@ using System.Timers;
 using Windows.Storage;
 using DashShared;
 using Microsoft.Data.Sqlite;
+using Timer = System.Threading.Timer;
 
 namespace Dash
 {
@@ -20,7 +21,8 @@ namespace Dash
         /// </summary>
         private SqliteConnection _db;
         private SqliteTransaction _currentTransaction;
-        private readonly System.Timers.Timer _backupTimer, _saveTimer, _cleanupTimer;
+        private readonly System.Timers.Timer _backupTimer, _cleanupTimer;
+        private readonly System.Threading.Timer _saveTimer;
         private int _numBackups = DashConstants.DefaultNumBackups;
         public bool NewChangesToBackup { get; set; }
 
@@ -59,9 +61,7 @@ namespace Dash
             createFieldCommand.ExecuteNonQuery();
             _currentTransaction = _db.BeginTransaction();
 
-            _saveTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalSave);
-            _saveTimer.Elapsed += Timer_Elapsed;
-            _saveTimer.Start();
+            _saveTimer = new Timer(SaveTimer_Elapsed, null, 0, DashConstants.MillisecondBetweenLocalSave);
             //Application.Current.Suspending += (sender, args) => { _currentTransaction.Commit(); };
             //Application.Current.Resuming += (sender, o) => { _currentTransaction = _db.BeginTransaction(); };
 
@@ -76,6 +76,14 @@ namespace Dash
             NewChangesToBackup = false;
         }
 
+        private void SaveTimer_Elapsed(object state)
+        {
+            _transactionMutex.WaitOne();
+            _currentTransaction.Commit();
+            _currentTransaction = _db.BeginTransaction();
+            _transactionMutex.ReleaseMutex();
+        }
+
         private async void CleanupDocuments()
         {
             var fields = new HashSet<FieldModel>();
@@ -87,16 +95,6 @@ namespace Dash
 
         public override void SetNumBackups(int numBackups) { }
         static public bool SuspendTimer = false;
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            if (!SuspendTimer)
-            {
-                _transactionMutex.WaitOne();
-                _currentTransaction.Commit();
-                _currentTransaction = _db.BeginTransaction();
-                _transactionMutex.ReleaseMutex();
-            }
-        }
 
         private void CopyAsBackup()
         {
@@ -533,7 +531,7 @@ namespace Dash
 
         public override Task Close()
         {
-            _saveTimer.Stop();
+            _saveTimer.Dispose();
             _transactionMutex.WaitOne();
             CleanupDocuments();
             _currentTransaction?.Commit();

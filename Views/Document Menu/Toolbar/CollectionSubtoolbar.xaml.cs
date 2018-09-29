@@ -110,6 +110,26 @@ namespace Dash
                 }
             }
         }
+        private void FitParent_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var fitting = !_collection.ViewModel.ContainerDocument.GetFitToParent();
+                _collection.ViewModel.ContainerDocument.SetFitToParent(fitting);
+                if (fitting)
+                {
+                    _collection.ViewModel.FitContents(null);
+                    xFitParentIcon.Text = ((char)0xE73F).ToString();
+                    _fit.Content = "Stop Fitting to Bounds";
+                    
+                }
+                else
+                {
+                    xFitParentIcon.Text = ((char)0xE740).ToString();
+                    _fit.Content = "Fit Contents to Bounds";
+                }
+            }
+        }
 
         /// <summary>
         /// Binds the drop down selection of view options with the view of the collection.
@@ -141,15 +161,26 @@ namespace Dash
             _collection = thisCollection;
             xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionView.CollectionViewType)), _collection.ViewModel.ViewType);
 	        _docController = docController;
+            var fitting = _collection.ViewModel.ContainerDocument.GetFitToParent();
+            if (fitting)
+            {
+                xFitParentIcon.Text = ((char)0xE73F).ToString();
+                _fit.Content = "Stop Fitting to Bounds";
+
+            }
+            else
+            {
+                xFitParentIcon.Text = ((char)0xE740).ToString();
+                _fit.Content = "Fit Contents to Bounds";
+            }
         }
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-	            _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
+	        _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
 	    }
 
-        private ToolTip _break;
-        private ToolTip _color;
+        private ToolTip _break, _color, _fit;
 
         private void SetUpToolTips()
         {
@@ -163,6 +194,14 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xBreakGroup, _break);
+
+            _fit = new ToolTip()
+            {
+                Content = "Fit Contents to Bounds",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFitParent, _fit);
 
             _color = new ToolTip()
             {

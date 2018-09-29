@@ -389,7 +389,7 @@ namespace Dash
                     _annotationOverlay.EndAnnotation(point.Position);
                     e.Handled = true;
                 }
-                else if(point.Properties.IsLeftButtonPressed)
+                else if(point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
                 {
                     _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;
