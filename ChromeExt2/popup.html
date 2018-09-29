@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>   
+        body {
+            width: 170px;
+            height: 45px;
+        }   
+        button {
+            position: relative;
+            display: block;
+            margin: 0 auto;
+            height: 30px;
+            width: 80px;
+            outline: none;
+            padding: 0px 5px;
+            border-radius: 5px 5px;
+            border: 0;
+            cursor: pointer;
+        }
+        span::before {
+            position: relative;
+            display: inline-block;
+            content: "";
+            left: 0px;
+            top: 2px;
+            border-radius: 50% 50%;
+            background: tomato;
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+        }
+        span {
+            position:relative;
+            display: block;
+            margin-top: 3px;
+            text-align: center;
+        }
+        span.active::before {
+            background: #48c44c;
+        }
+    </style>
+</head>
+<body>
+<button id="btnSticky">Activate</button>
+<span id="status">Click to connect</span>
+<script src="popup.js"></script>
+</body>
+</html>
