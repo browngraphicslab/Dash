@@ -678,7 +678,7 @@ namespace Dash
         #region Marquee Select
 
         Rectangle _marquee;
-        Point _marqueeAnchor;
+        public Point _marqueeAnchor;
         bool _isMarqueeActive;
         private MarqueeInfo mInfo;
 
@@ -730,6 +730,11 @@ namespace Dash
             {
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
+
+                //if (_marquee == null)
+                //{
+                //    dX = dX + MainPage.Instance.xMainTreeView.ActualWidth;
+                //}
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -802,8 +807,12 @@ namespace Dash
 		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
 		    {
                 handledTouch.Add(args);
-		        NumFingers++;
-		    }
+                NumFingers++;
+                //var docview = this.GetFirstAncestorOfType<DocumentView>();
+                //      if (SelectionManager.IsSelected(docview))
+                //    //SelectionManager.Select(docview, false);
+                //SelectionManager.TryInitiateDragDrop(docview, args, null);
+            }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
 			{
@@ -818,8 +827,8 @@ namespace Dash
 						SelectionManager.DeselectAll();
 
 					GetOuterGrid().CapturePointer(args.Pointer);
-					_marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-					_isMarqueeActive = true;
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
 					    ParentDocument.ManipulationMode = ManipulationModes.None;
@@ -927,7 +936,7 @@ namespace Dash
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    OnPointerReleased(null, null);
+                    ResetMarquee();
                 } else
                 {
                     var bounds = GetBoundingRectFromSelection();

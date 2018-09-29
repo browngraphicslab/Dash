@@ -6,6 +6,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Frame = Microsoft.Office.Interop.Word.Frame;
 using Point = Windows.Foundation.Point;
 
 namespace Dash
@@ -132,13 +133,27 @@ namespace Dash
                 e.Handled = true;
             } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
-                //only do marquee if main collection (for now)
-                var mainColl = MainPage.Instance.ViewModel;
-
-                //handle touch interactions with just one finger - equivalent to drag without ctr
-                if (_freeformView.StartMarquee(((FrameworkElement)sender).TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position)))
+                ////only do marquee if main collection (for now)
+                //var mainColl = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformBase>();
+                var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
+                if (docView?.IsTopLevel() ?? false)
                 {
-                    e.Handled = true;
+                    var point = (Window.Current.Content)//_freeformView
+                    .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
+                //gets funky with nested collections, but otherwise works
+                //point = new Point(point.X - MainPage.Instance.xMainTreeView.ActualWidth, point.Y);
+                ////handle touch interactions with just one finger - equivalent to drag without ctr
+                if (_freeformView.StartMarquee(point))
+                    {
+                        e.Handled = true;
+                    }
+                }
+                else if(docView != null && CollectionFreeformBase.NumFingers == 1)
+                {
+                    //drag document 
+                    if (!SelectionManager.IsSelected(docView))
+                        SelectionManager.Select(docView, false);
+                    SelectionManager.TryInitiateDragDrop(docView, null, null);
                 }
             }
         }
