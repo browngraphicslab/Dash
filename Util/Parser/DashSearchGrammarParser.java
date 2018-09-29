@@ -616,7 +616,7 @@ public class DashSearchGrammarParser extends Parser {
 				setState(64);
 				match(T__1);
 				setState(65);
-				query();
+				query(0);
 				setState(66);
 				match(T__2);
 				}
@@ -674,21 +674,12 @@ public class DashSearchGrammarParser extends Parser {
 	public final Not_search_termContext not_search_term() throws RecognitionException {
 		Not_search_termContext _localctx = new Not_search_termContext(_ctx, getState());
 		enterRule(_localctx, 18, RULE_not_search_term);
-		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
+			setState(72);
+			match(T__5);
 			setState(73);
-			_errHandler.sync(this);
-			_la = _input.LA(1);
-			if (_la==T__5) {
-				{
-				setState(72);
-				match(T__5);
-				}
-			}
-
-			setState(75);
 			search_term();
 			}
 		}
@@ -704,17 +695,17 @@ public class DashSearchGrammarParser extends Parser {
 	}
 
 	public static class QueryContext extends ParserRuleContext {
-		public List<Not_search_termContext> not_search_term() {
-			return getRuleContexts(Not_search_termContext.class);
+		public QueryContext query() {
+			return getRuleContext(QueryContext.class,0);
 		}
-		public Not_search_termContext not_search_term(int i) {
-			return getRuleContext(Not_search_termContext.class,i);
+		public OperatorContext operator() {
+			return getRuleContext(OperatorContext.class,0);
 		}
-		public List<OperatorContext> operator() {
-			return getRuleContexts(OperatorContext.class);
+		public Not_search_termContext not_search_term() {
+			return getRuleContext(Not_search_termContext.class,0);
 		}
-		public OperatorContext operator(int i) {
-			return getRuleContext(OperatorContext.class,i);
+		public Search_termContext search_term() {
+			return getRuleContext(Search_termContext.class,0);
 		}
 		public QueryContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -736,32 +727,65 @@ public class DashSearchGrammarParser extends Parser {
 	}
 
 	public final QueryContext query() throws RecognitionException {
-		QueryContext _localctx = new QueryContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_query);
+		return query(0);
+	}
+
+	private QueryContext query(int _p) throws RecognitionException {
+		ParserRuleContext _parentctx = _ctx;
+		int _parentState = getState();
+		QueryContext _localctx = new QueryContext(_ctx, _parentState);
+		QueryContext _prevctx = _localctx;
+		int _startState = 20;
+		enterRecursionRule(_localctx, 20, RULE_query, _p);
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(82);
+			{
+			}
+			_ctx.stop = _input.LT(-1);
+			setState(86);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
+					if ( _parseListeners!=null ) triggerExitRuleEvent();
+					_prevctx = _localctx;
 					{
-					{
-					setState(77);
-					not_search_term();
-					setState(78);
-					operator();
+					setState(84);
+					_errHandler.sync(this);
+					switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
+					case 1:
+						{
+						_localctx = new QueryContext(_parentctx, _parentState);
+						pushNewRecursionContext(_localctx, _startState, RULE_query);
+						setState(76);
+						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
+						setState(77);
+						operator();
+						setState(78);
+						not_search_term();
+						}
+						break;
+					case 2:
+						{
+						_localctx = new QueryContext(_parentctx, _parentState);
+						pushNewRecursionContext(_localctx, _startState, RULE_query);
+						setState(80);
+						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
+						setState(81);
+						operator();
+						setState(82);
+						search_term();
+						}
+						break;
 					}
 					} 
 				}
-				setState(84);
+				setState(88);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
-			setState(85);
-			not_search_term();
 			}
 		}
 		catch (RecognitionException re) {
@@ -770,34 +794,52 @@ public class DashSearchGrammarParser extends Parser {
 			_errHandler.recover(this, re);
 		}
 		finally {
-			exitRule();
+			unrollRecursionContexts(_parentctx);
 		}
 		return _localctx;
 	}
 
+	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
+		switch (ruleIndex) {
+		case 10:
+			return query_sempred((QueryContext)_localctx, predIndex);
+		}
+		return true;
+	}
+	private boolean query_sempred(QueryContext _localctx, int predIndex) {
+		switch (predIndex) {
+		case 0:
+			return precpred(_ctx, 2);
+		case 1:
+			return precpred(_ctx, 1);
+		}
+		return true;
+	}
+
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\fZ\4\2\t\2\4\3\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\f\\\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4"+
 		"\f\t\f\3\2\3\2\3\3\3\3\3\3\3\3\5\3\37\n\3\6\3!\n\3\r\3\16\3\"\5\3%\n\3"+
 		"\3\3\5\3(\n\3\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\6\5\6\62\n\6\3\6\3\6\5\6\66"+
 		"\n\6\3\7\3\7\5\7:\n\7\3\b\3\b\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\n"+
-		"\3\n\5\nI\n\n\3\13\5\13L\n\13\3\13\3\13\3\f\3\f\3\f\7\fS\n\f\f\f\16\f"+
-		"V\13\f\3\f\3\f\3\f\2\2\r\2\4\6\b\n\f\16\20\22\24\26\2\3\3\2\n\13\2Z\2"+
-		"\30\3\2\2\2\4\'\3\2\2\2\6)\3\2\2\2\b.\3\2\2\2\n\61\3\2\2\2\f9\3\2\2\2"+
-		"\16;\3\2\2\2\20=\3\2\2\2\22H\3\2\2\2\24K\3\2\2\2\26T\3\2\2\2\30\31\t\2"+
-		"\2\2\31\3\3\2\2\2\32(\3\2\2\2\33\34\5\2\2\2\34\36\7\3\2\2\35\37\7\f\2"+
-		"\2\36\35\3\2\2\2\36\37\3\2\2\2\37!\3\2\2\2 \33\3\2\2\2!\"\3\2\2\2\" \3"+
-		"\2\2\2\"#\3\2\2\2#%\3\2\2\2$ \3\2\2\2$%\3\2\2\2%&\3\2\2\2&(\5\2\2\2\'"+
-		"\32\3\2\2\2\'$\3\2\2\2(\5\3\2\2\2)*\7\n\2\2*+\7\4\2\2+,\5\4\3\2,-\7\5"+
-		"\2\2-\7\3\2\2\2./\7\f\2\2/\t\3\2\2\2\60\62\7\f\2\2\61\60\3\2\2\2\61\62"+
-		"\3\2\2\2\62\63\3\2\2\2\63\65\7\6\2\2\64\66\7\f\2\2\65\64\3\2\2\2\65\66"+
-		"\3\2\2\2\66\13\3\2\2\2\67:\5\b\5\28:\5\n\6\29\67\3\2\2\298\3\2\2\2:\r"+
-		"\3\2\2\2;<\t\2\2\2<\17\3\2\2\2=>\5\16\b\2>?\7\7\2\2?@\5\16\b\2@\21\3\2"+
-		"\2\2AI\5\6\4\2BC\7\4\2\2CD\5\26\f\2DE\7\5\2\2EI\3\2\2\2FI\5\16\b\2GI\5"+
-		"\20\t\2HA\3\2\2\2HB\3\2\2\2HF\3\2\2\2HG\3\2\2\2I\23\3\2\2\2JL\7\b\2\2"+
-		"KJ\3\2\2\2KL\3\2\2\2LM\3\2\2\2MN\5\22\n\2N\25\3\2\2\2OP\5\24\13\2PQ\5"+
-		"\f\7\2QS\3\2\2\2RO\3\2\2\2SV\3\2\2\2TR\3\2\2\2TU\3\2\2\2UW\3\2\2\2VT\3"+
-		"\2\2\2WX\5\24\13\2X\27\3\2\2\2\f\36\"$\'\61\659HKT";
+		"\3\n\5\nI\n\n\3\13\3\13\3\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\7\fW"+
+		"\n\f\f\f\16\fZ\13\f\3\f\2\3\26\r\2\4\6\b\n\f\16\20\22\24\26\2\3\3\2\n"+
+		"\13\2\\\2\30\3\2\2\2\4\'\3\2\2\2\6)\3\2\2\2\b.\3\2\2\2\n\61\3\2\2\2\f"+
+		"9\3\2\2\2\16;\3\2\2\2\20=\3\2\2\2\22H\3\2\2\2\24J\3\2\2\2\26M\3\2\2\2"+
+		"\30\31\t\2\2\2\31\3\3\2\2\2\32(\3\2\2\2\33\34\5\2\2\2\34\36\7\3\2\2\35"+
+		"\37\7\f\2\2\36\35\3\2\2\2\36\37\3\2\2\2\37!\3\2\2\2 \33\3\2\2\2!\"\3\2"+
+		"\2\2\" \3\2\2\2\"#\3\2\2\2#%\3\2\2\2$ \3\2\2\2$%\3\2\2\2%&\3\2\2\2&(\5"+
+		"\2\2\2\'\32\3\2\2\2\'$\3\2\2\2(\5\3\2\2\2)*\7\n\2\2*+\7\4\2\2+,\5\4\3"+
+		"\2,-\7\5\2\2-\7\3\2\2\2./\7\f\2\2/\t\3\2\2\2\60\62\7\f\2\2\61\60\3\2\2"+
+		"\2\61\62\3\2\2\2\62\63\3\2\2\2\63\65\7\6\2\2\64\66\7\f\2\2\65\64\3\2\2"+
+		"\2\65\66\3\2\2\2\66\13\3\2\2\2\67:\5\b\5\28:\5\n\6\29\67\3\2\2\298\3\2"+
+		"\2\2:\r\3\2\2\2;<\t\2\2\2<\17\3\2\2\2=>\5\16\b\2>?\7\7\2\2?@\5\16\b\2"+
+		"@\21\3\2\2\2AI\5\6\4\2BC\7\4\2\2CD\5\26\f\2DE\7\5\2\2EI\3\2\2\2FI\5\16"+
+		"\b\2GI\5\20\t\2HA\3\2\2\2HB\3\2\2\2HF\3\2\2\2HG\3\2\2\2I\23\3\2\2\2JK"+
+		"\7\b\2\2KL\5\22\n\2L\25\3\2\2\2MX\b\f\1\2NO\f\4\2\2OP\5\f\7\2PQ\5\24\13"+
+		"\2QW\3\2\2\2RS\f\3\2\2ST\5\f\7\2TU\5\22\n\2UW\3\2\2\2VN\3\2\2\2VR\3\2"+
+		"\2\2WZ\3\2\2\2XV\3\2\2\2XY\3\2\2\2Y\27\3\2\2\2ZX\3\2\2\2\f\36\"$\'\61"+
+		"\659HVX";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

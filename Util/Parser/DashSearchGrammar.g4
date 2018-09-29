@@ -59,10 +59,12 @@ grammar DashSearchGrammar;
 							| kv_search
 							;
 
-	not_search_term			: '!'? search_term
+	not_search_term			: '!' search_term
 							;
 
-	query					: (not_search_term operator)* not_search_term
+	query					: 
+							| query operator not_search_term
+							| query operator search_term
 							;
 
 /*
