@@ -14,23 +14,18 @@ namespace Dash.Views.Collection
             this.InitializeComponent();
         }
 
-        private void Collection_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void Collection_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             collection?.TriggerActionFromSelection(VirtualKey.C, true);
-            e.Handled = true;
+            //e.Handled = true;
         }
 
-        private void Group_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void Group_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             collection?.TriggerActionFromSelection(VirtualKey.G, true);
-            e.Handled = true;
-        }
-
-        private void Collection_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
+            //e.Handled = true;
         }
     }
 }

@@ -132,8 +132,11 @@ namespace Dash
                 e.Handled = true;
             } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
+                //only do marquee if main collection (for now)
+                var mainColl = MainPage.Instance.ViewModel;
+
                 //handle touch interactions with just one finger - equivalent to drag without ctr
-               if (_freeformView.StartMarquee(_freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position)))
+                if (_freeformView.StartMarquee(((FrameworkElement)sender).TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position)))
                 {
                     e.Handled = true;
                 }

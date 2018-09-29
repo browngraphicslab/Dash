@@ -818,7 +818,7 @@ namespace Dash
 						SelectionManager.DeselectAll();
 
 					GetOuterGrid().CapturePointer(args.Pointer);
-					_marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
+					_marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
 					_isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
