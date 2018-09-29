@@ -99,7 +99,7 @@ namespace Dash
 
                 // assign the new datacontext to a variable, and add events
                 _dataContextDocument =  dc.GetDataDocument();
-                _layoutContextDocument = dc.GetActiveLayout() ?? dc;
+                _layoutContextDocument = dc;
                 _dataContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
                 _dataContextDocument.FieldModelUpdated += ViewDocumentFieldUpdated;
                 _layoutContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;

@@ -45,8 +45,8 @@ namespace Dash
         public static void SetOperatorLayout(Func<ReferenceController, CourtesyDocument> layoutFunc, DocumentController docContainingOp)
         {
             var layoutDoc = layoutFunc(new DocumentReferenceController(docContainingOp, KeyStore.OperatorKey)).Document;
-            docContainingOp.SetActiveLayout(layoutDoc, true, true);
-
+            // docContainingOp.SetActiveLayout(layoutDoc, true, true);
+            throw new Exception("AtiveLayout code has not been updated yet");
         }
     }
 }

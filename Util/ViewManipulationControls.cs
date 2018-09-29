@@ -142,7 +142,7 @@ namespace Dash
                 }
             }
         }
-        
+
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;

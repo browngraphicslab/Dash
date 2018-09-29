@@ -768,6 +768,9 @@
       <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\SelectableElement.cs" />
+    <Compile Include="Views\QuickEntryPanel.xaml.cs">
+      <DependentUpon>QuickEntryPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -1375,6 +1378,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PresentationViewTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\QuickEntryPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
