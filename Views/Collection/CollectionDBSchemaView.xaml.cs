@@ -26,39 +26,11 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
-        private DocumentController _parentDocument;
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
-        private Dictionary<KeyController, HashSet<TypeInfo>> _typedHeaders;
-
-        /// <summary>
-        ///     Each element in the list renders a column in the records list view
-        /// </summary>
-        private ObservableCollection<CollectionDBSchemaColumnViewModel> ColumnViewModels { get; }
-
-        /// <summary>
-        ///     The observable collection of all documents displayed in the schema, a pointer to this is held by every
-        ///     columnviewmodel so be very careful about changing it (i.e. don't add a setter)
-        /// </summary>
-        private ObservableCollection<DocumentController> CollectionDocuments { get; }
-
-        ////bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
-        //public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
-        //    new ObservableCollection<CollectionDBSchemaRecordViewModel>();
-
-        public ObservableCollection<HeaderViewModel> SchemaHeaders { get; }
-
-        public CollectionViewModel ViewModel { get; set; }
-
-        public DocumentController ParentDocument
+        //ICollectionView implementation
+        public void SetDropIndicationFill(Brush fill)
         {
-            get => _parentDocument;
-            set
-            {
-                _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-            }
         }
 
         public UserControl UserControl => this;
@@ -66,10 +38,7 @@ namespace Dash
         public CollectionDBSchemaView()
         {
             InitializeComponent();
-            Unloaded += CollectionDBSchemaView_Unloaded;
-            Loaded += CollectionDBSchemaView_Loaded;
-            //Warning: code does not work yet -Brandon
-
+            DataContextChanged += OnDataContextChanged;
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -81,34 +50,18 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newHvm = new HeaderViewModel
-            {
-                SchemaView = this,
-                SchemaDocument = ParentDocument,
-                Width = 150,
-                FieldKey = new KeyController("New Field", Guid.NewGuid().ToString())
-            };
-            SchemaHeaders.Add(newHvm);
-
-            //var cvm = new CollectionDBSchemaColumnViewModel(newHvm.FieldKey, CollectionDocuments, newHvm);
-            //ColumnViewModels.Add(cvm);
-            //cvm.PropertyChanged += Cvm_PropertyChanged;
+            xDataGrid.Columns.Add(new DataGridDictionaryColumn(new KeyController("New Column")));
 
             e.Handled = true;
         }
 
-        public void SetDropIndicationFill(Brush fill)
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-        }
-
-        public void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
-        {
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
-            if (ParentDocument == null)
+            if (ViewModel == null)
+            {
                 return;
-            var test = ParentDocument.GetDataDocument();
-            var docs = (ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) ??
-                        ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null))?.TypedData;
+            }
+            var docs = ViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var keys = new HashSet<KeyController>();
             foreach (var doc in docs)
             {
@@ -129,18 +82,15 @@ namespace Dash
                 {
                     Header = key,
                     CanUserEdit = true,
-                    SizeMode = DataGridColumnSizeMode.Auto
+                    CanUserResize = true,
+                    SizeMode = DataGridColumnSizeMode.Fixed,
+                    Width = 200
                 };
 
                 xDataGrid.Columns.Add(column);
             }
 
             xDataGrid.ItemsSource = docs;
-        }
-
-        public void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            ParentDocument = null;
         }
     }
 
@@ -167,13 +117,14 @@ namespace Dash
 
         public override object CreateContainer(object rowItem)
         {
-            var contentPresenter = new ContentPresenter();
+            var contentPresenter = new MyContentPresenter();
+            contentPresenter.SetDocumentAndKey((DocumentController)rowItem, Key);
             return contentPresenter;
         }
 
         public override object GetContainerType(object rowItem)
         {
-            return typeof(ContentPresenter);
+            return typeof(MyContentPresenter);
         }
 
         protected override DataGridFilterControlBase CreateFilterControl()
@@ -194,38 +145,31 @@ namespace Dash
             editorContent.ClearValue(TextBox.TextProperty);
         }
 
-        //public override object GetValueForInstance(object instance)
-        //{
-        //    //return null;
-        //    return ((Customer)instance).Params.TryGetValue(Key, out var value) ? value : "<null>";
-        //}
-
         public override void PrepareCell(object container, object value, object item)
         {
-            //DataBox.MakeView(value, null);
-            var contentPresenter = (ContentPresenter)container;
-            
-            
-            base.PrepareCell(container, value, item);//Scrap in favor of Databox.Makeview
-            contentPresenter = DataBox.MakeView(value as DocumentController, null) as ContentPresenter;
+            base.PrepareCell(container, value, item);
 
-            //switch (value)
-            //{
-            //case string s:
-            //    contentPresenter.Content = new TextBlock { Text = s };
-            //    break;
-            //case bool b:
-            //    CheckBox checkBox = new CheckBox
-            //    {
-            //        IsChecked = b,
-            //    };
-            //    contentPresenter.Content = checkBox;
-            //    contentPresenter.HorizontalAlignment = HorizontalAlignment.Center;
-            //    break;
-            //default:
-            //    contentPresenter.Content = new TextBlock { Text = "Unrecognized data type" };
-            //    break;
-            //}
+            var thisDoc = (DocumentController)item;
+            var cp = (MyContentPresenter)container;
+            var doc = cp.Document;
+            var key = cp.Key;
+            if (!ReferenceEquals(doc, item) || key != Key)
+            {
+                cp.SetDocumentAndKey(thisDoc, Key);
+            }
+        }
+    }
+
+    public class MyContentPresenter : ContentPresenter
+    {
+        public DocumentController Document { get; private set; }
+        public KeyController Key { get; private set; }
+
+        public void SetDocumentAndKey(DocumentController doc, KeyController key)
+        {
+            Document = doc;
+            Key = key;
+            DataBox.BindContent(this, Document, Key, null);
         }
     }
 }
