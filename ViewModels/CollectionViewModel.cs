@@ -791,7 +791,15 @@ namespace Dash
                                     MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
                                 }
 
-                                d.DraggedDocCollectionViews[i]?.RemoveDocument(d.DraggedDocuments[i]);
+                                if (d.DraggedDocCollectionViews[i] == null)
+                                {
+                                    var overlay = d.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
+                                    overlay?.EmbeddedDocsList.Remove(d.DraggedDocuments[i]);
+                                }
+                                else
+                                {
+                                    d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                                }
 
                             }
                         }

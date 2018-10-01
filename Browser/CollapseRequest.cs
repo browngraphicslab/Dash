@@ -25,10 +25,21 @@ namespace Dash
                     {
                         var uri = new Uri(url);
 
+                        var note = new RichTextNote("PDF HEADER");
+                        note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
+                        note.Document.SetHeight(45);
                         var layout = await new PdfToDashUtil().UriToDoc(uri);
+                        layout.SetHeight(MainPage.Instance.ActualHeight - 45);
+                        layout.SetWidth(double.NaN);
                         layout.SetField<BoolController>(KeyStore.AbstractInterfaceKey, true, true);
+                        layout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                        var c2 = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, new DocumentController[] { layout });
+                        var docs = new List<DocumentController>(new DocumentController[] {note.Document, layout });
+                        var coll = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs);
+                        coll.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                        coll.Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
 
-                        SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Right, layout, true);
+                        SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Right, coll.Document, true);
                     }
                     else
                     {
