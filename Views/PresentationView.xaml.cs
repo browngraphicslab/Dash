@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI;
@@ -33,14 +34,34 @@ namespace Dash
         private PointController _panPos;
         private DocumentController _startCollection;
 
+        public string CurrTitle
+        {
+            get => ViewModel?.CurrPres?.Title ?? "New Presentation";
+            set => ViewModel.CurrPres.SetTitle(value);
+        }
+
+        public ObservableCollection<DocumentController> Presentations
+        {
+            get => ViewModel?.Presentations;
+        }
+
+        public ObservableCollection<string> PresTitles
+        {
+            get => ViewModel?.PresTitles;
+        }
+
         public PresentationView()
         {
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             xHelpPrompt.Text = "Pinned items will appear here.\rAdd content from right-click\rcontext menu.";
+            xTitle.PropertyChanged += XTitleBox_PropertyChanged;
         }
 
+
+
         private PresentationViewModel _oldViewModel;
+
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (_oldViewModel == args.NewValue) return;
@@ -79,7 +100,8 @@ namespace Dash
             RemoveLines();
         }
 
-        private void PinnedNodes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => DrawLinesWithNewDocs();
+        private void PinnedNodes_CollectionChanged(object sender,
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => DrawLinesWithNewDocs();
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e) => PlayStopClick();
 
@@ -109,10 +131,11 @@ namespace Dash
                     xPinnedNodesListView.SelectedIndex = 0;
                     NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
-                    _startCollection = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    _startCollection =
+                        MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
                     _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
                     _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
-                    NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
+                    NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
                     IsPresentationPlaying = true;
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -152,7 +175,8 @@ namespace Dash
             {
                 xPinnedNodesListView.SelectedIndex = xPinnedNodesListView.Items.Count - 1;
             }
-            if(selectedIndex == 1 && !_repeat)
+
+            if (selectedIndex == 1 && !_repeat)
             {
                 //disable back button
                 IsBackEnabled(false);
@@ -160,7 +184,7 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
@@ -178,6 +202,7 @@ namespace Dash
             {
                 xPinnedNodesListView.SelectedIndex = 0;
             }
+
             if (selectedIndex == xPinnedNodesListView.Items.Count - 2 && !_repeat)
             {
                 //end presentation
@@ -186,11 +211,12 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
         }
 
         // ON TRASH CLICK: remove from viewmodel
-        private void DeletePin(object sender, RoutedEventArgs e) => FullPinDelete((sender as Button)?.DataContext as DocumentController);
+        private void DeletePin(object sender, RoutedEventArgs e) =>
+            FullPinDelete((sender as Button)?.DataContext as DocumentController);
 
         public void FullPinDelete(DocumentController doc)
         {
@@ -204,6 +230,7 @@ namespace Dash
                 //end presentation
                 IsNextEnabled(false);
             }
+
             if (selectedIndex == 0 && !_repeat)
             {
                 //disable back button
@@ -214,7 +241,7 @@ namespace Dash
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            var dc = (DocumentController) e.ClickedItem;
+            var dc = (DocumentController)e.ClickedItem;
             NavigateToDocument(dc);
         }
 
@@ -225,17 +252,19 @@ namespace Dash
             if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true))
             {
                 var tree = DocumentTree.MainPageTree;
-                if (tree.Nodes.ContainsKey(dc))//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                if (tree.Nodes.ContainsKey(dc)
+                ) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
                 {
                     var docNode = tree.Nodes[dc];
-                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument,
+                        docNode.ViewDocument);
                 }
                 else
                 {
                     MainPage.Instance.SetCurrentWorkspace(dc);
                 }
             }
-        } 
+        }
 
         // these buttons are only enabled when the presentation is playing
         private void ResetBackNextButtons()
@@ -249,15 +278,16 @@ namespace Dash
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             xPinnedNodesListView.SelectedIndex = LastSelectedIndex;
-            NavigateToDocument((DocumentController) xPinnedNodesListView.SelectedItem);
+            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            var listView = (ListView) sender;
+            var listView = (ListView)sender;
             PinnedNodeFlyout.ShowAt(listView, e.GetPosition(listView));
-            var source = (FrameworkElement) e.OriginalSource;
-            _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ?? source.GetFirstAncestorOfType<PresentationViewTextBox>();
+            var source = (FrameworkElement)e.OriginalSource;
+            _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ??
+                       source.GetFirstAncestorOfType<PresentationViewTextBox>();
         }
 
         private void Edit_OnClick(object sender, RoutedEventArgs e) => _giveTextBoxFocusUponFlyoutClosing = true;
@@ -272,12 +302,12 @@ namespace Dash
                 _giveTextBoxFocusUponFlyoutClosing = false;
             }
         }
-        
+
         #region Presenation Lines
-       
+
         private double distSqr(Point a, Point b)
         {
-            return ((a.Y - b.Y)* (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
+            return ((a.Y - b.Y) * (a.Y - b.Y) + (a.X - b.X) * (a.X - b.X));
         }
 
         private List<Point> GetFourBeizerPoints(int i)
@@ -316,9 +346,9 @@ namespace Dash
             docAsides.Add(Tuple.Create(new Point(docAx, docATop), new Point(docAx, docATop - offset)));
             docAsides.Add(Tuple.Create(new Point(docARight, docAy), new Point(docARight + offset, docAy)));
             docAsides.Add(Tuple.Create(new Point(docAx, docABottom), new Point(docAx, docABottom + offset)));
-           
-             //the order goes left, top, right, bottom - in regualr UWP fashion
-             docBsides.Add(Tuple.Create(new Point(docBLeft, docBy), new Point(docBLeft - offset, docBy)));
+
+            //the order goes left, top, right, bottom - in regualr UWP fashion
+            docBsides.Add(Tuple.Create(new Point(docBLeft, docBy), new Point(docBLeft - offset, docBy)));
             docBsides.Add(Tuple.Create(new Point(docBx, docBTop), new Point(docBx, docBTop - offset)));
             docBsides.Add(Tuple.Create(new Point(docBRight, docBy), new Point(docBRight + offset, docBy)));
             docBsides.Add(Tuple.Create(new Point(docBx, docBBottom), new Point(docBx, docBBottom + offset)));
@@ -407,7 +437,12 @@ namespace Dash
 
                 //create nest of elements to show segment
                 var segment =
-                    new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
+                    new BezierSegment()
+                    {
+                        Point1 = startControlPt,
+                        Point2 = endControlPt,
+                        Point3 = endPoint
+                    };
 
                 var segments = new PathSegmentCollection {segment};
                 var pathFig = new PathFigure
@@ -477,7 +512,12 @@ namespace Dash
 
                 //create nest of elements to show segment
                 var segment =
-                    new BezierSegment() {Point1 = startControlPt, Point2 = endControlPt, Point3 = endPoint};
+                    new BezierSegment()
+                    {
+                        Point1 = startControlPt,
+                        Point2 = endControlPt,
+                        Point3 = endPoint
+                    };
                 var segments = new PathSegmentCollection {segment};
                 var pathFig = new PathFigure
                 {
@@ -545,7 +585,9 @@ namespace Dash
             }
 
         }
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+            Context c)
         {
             UpdatePaths();
         }
@@ -553,7 +595,8 @@ namespace Dash
         public void DrawLinesWithNewDocs()
         {
             var isChecked = xShowLinesButton.IsChecked;
-            if (isChecked != null && (bool) !isChecked || MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            if (isChecked != null && (bool)!isChecked ||
+                MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
             //show lines
             foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
@@ -619,6 +662,7 @@ namespace Dash
                 track.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, DocFieldUpdated);
             }
         }
+
         #endregion
 
         private void RepeatButton_OnChecked(object sender, RoutedEventArgs e)
@@ -641,6 +685,7 @@ namespace Dash
                 //end presentation
                 IsNextEnabled(false);
             }
+
             if (selectedIndex == 0)
             {
                 //disable back button
@@ -677,7 +722,8 @@ namespace Dash
 
             xNumberList.SelectionMode = ListViewSelectionMode.None;
             xNumberList.SelectedIndex = ind;
-            if (xNumberList.SelectedItem is PresentationNumberViewModel selectedNum) selectedNum.FontWeight = FontWeights.ExtraBold;
+            if (xNumberList.SelectedItem is PresentationNumberViewModel selectedNum)
+                selectedNum.FontWeight = FontWeights.ExtraBold;
         }
 
         public void ClearHighlightedMatch()
@@ -689,6 +735,7 @@ namespace Dash
                     (vm as PresentationNumberViewModel).FontWeight = FontWeights.Normal;
                 }
             }
+
             xNumberList.SelectedIndex = -1;
         }
 
@@ -731,6 +778,45 @@ namespace Dash
         public void TryPlayStopClick()
         {
             if (IsPresentationPlaying) PlayStopClick();
+        }
+
+
+        private void RenamePres(string name)
+        {
+            ViewModel.CurrPres?.SetField(KeyStore.TitleKey, new TextController(name), true);
+        }
+
+        private void XSettingsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsFlyout.ShowAt(xSettingsButton);
+        }
+
+        private void UIElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            //throw new NotImplementedException();
+            xSettingsFlyout.ShowAt(xSettingsButton);
+        }
+
+        private void XPresentations_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //find the presentation whose title matches the selection
+            DocumentController selectedPres = Presentations.Single(t => t.Title == (xPresentations.SelectedItem as string));
+            ViewModel.CurrPres = (xPresentations.SelectedItem as DocumentController);
+        }
+
+        private void XNewPresButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SetCurrentPresentation(ViewModel.MakeNewPres());
+            xTitle.Text = ViewModel.CurrPres.Title;
+        }
+
+        private void XTitleBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            // determines if the keybox is in a state where the user has submitted the inputted text
+
+            ViewModel.PresTitles.Remove(ViewModel.CurrPres.Title);
+            RenamePres(xTitle.Text);
+            ViewModel.PresTitles.Add(xTitle.Text);
         }
     }
 }

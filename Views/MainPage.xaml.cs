@@ -162,6 +162,7 @@ namespace Dash
                 }
                 LoadSettings();
 
+                //get current presentations if any and set data context of pres view to pres view model
                 var presentations = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
                 xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
 
