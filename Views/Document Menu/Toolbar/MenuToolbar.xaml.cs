@@ -320,7 +320,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(reb);
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -382,7 +382,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }

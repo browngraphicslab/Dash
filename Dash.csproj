@@ -185,7 +185,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
-    <Compile Include="CollectionFreeformBase.cs" />
+    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
@@ -525,6 +525,9 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Collection\CollectionStackView.xaml.cs">
+      <DependentUpon>CollectionStackView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -1114,6 +1117,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionStackView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

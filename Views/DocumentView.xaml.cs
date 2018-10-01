@@ -718,7 +718,7 @@ namespace Dash
             }
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
-            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
+            if (!wasHandled) // (ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (!MainPage.Instance.IsRightBtnPressed())
