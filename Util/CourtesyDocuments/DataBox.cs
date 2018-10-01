@@ -27,19 +27,19 @@ namespace Dash
         {
 	        //add field binding for content of content presenter
 	        ContentPresenter contentPresenter = new ContentPresenter();
-			BindContent(contentPresenter, documentController, KeyStore.DataKey, context);
+			BindContent(contentPresenter, documentController, context);
 
 	        return contentPresenter;
 
         }
 
-		public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key, Context context)
+		public static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
 		{
 			var converter = new DataFieldToMakeViewConverter(docController, context);
 
 			var contentBinding = new FieldBinding<FieldControllerBase>()
 			{
-				Key = key,
+				Key = KeyStore.DataKey,
 				Document = docController,
 				Converter = converter,
 				Mode = BindingMode.TwoWay,

@@ -165,7 +165,7 @@ namespace Dash
 
     public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
     {
-        public KeyController Key { get; set; }
+        public KeyController Key { get; private set; }
 
         public WindowsDictionaryColumn(KeyController key)
         {
@@ -181,12 +181,18 @@ namespace Dash
         {
             var contentPresenter = new MyContentPresenter();
             contentPresenter.SetDocumentAndKey(((DocumentController)dataItem).GetDataDocument(), Key);
+            contentPresenter.IsHitTestVisible = false;
             return contentPresenter;
         }
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
         {
             var tb = (TextBox) editingElement;
+
+            var doc = (DocumentController)editingElement.DataContext;
+            var dataDoc = doc.GetDataDocument();
+
+            tb.Text = DSL.GetScriptForField(dataDoc.GetField(Key), dataDoc);
 
             return string.Empty;
         }
@@ -205,7 +211,7 @@ namespace Dash
             }
             Document = doc;
             Key = key;
-            DataBox.BindContent(this, Document, Key, null);
+            DataBox.BindContent(this, new DataBox(new DocumentReferenceController(Document, Key)).Document, null);
         }
     }
 }
