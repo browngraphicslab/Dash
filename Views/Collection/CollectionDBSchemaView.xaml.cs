@@ -111,15 +111,12 @@ namespace Dash
 
         public override FrameworkElement CreateEditorContentVisual()
         {
-            var tb = new TextBox();
-            return tb;
+            return new TextBox();
         }
 
         public override object CreateContainer(object rowItem)
         {
-            var contentPresenter = new MyContentPresenter();
-            contentPresenter.SetDocumentAndKey((DocumentController)rowItem, Key);
-            return contentPresenter;
+            return new MyContentPresenter();
         }
 
         public override object GetContainerType(object rowItem)
@@ -137,7 +134,9 @@ namespace Dash
 
         public override void PrepareEditorContentVisual(FrameworkElement editorContent, Binding binding)
         {
-            editorContent.DataContext = binding.Source;
+            var doc = ((DocumentController)binding.Source).GetDataDocument();
+            var field = doc.GetField(Key);
+            ((TextBox)editorContent).Text = DSL.GetScriptForField(field, doc);
         }
 
         public override void ClearEditorContentVisual(FrameworkElement editorContent)
@@ -151,12 +150,7 @@ namespace Dash
 
             var thisDoc = (DocumentController)item;
             var cp = (MyContentPresenter)container;
-            var doc = cp.Document;
-            var key = cp.Key;
-            if (!ReferenceEquals(doc, item) || key != Key)
-            {
-                cp.SetDocumentAndKey(thisDoc, Key);
-            }
+            cp.SetDocumentAndKey(thisDoc, Key);
         }
     }
 
@@ -167,6 +161,10 @@ namespace Dash
 
         public void SetDocumentAndKey(DocumentController doc, KeyController key)
         {
+            if (Document == doc && Key == key)
+            {
+                return;
+            }
             Document = doc;
             Key = key;
             DataBox.BindContent(this, Document, Key, null);

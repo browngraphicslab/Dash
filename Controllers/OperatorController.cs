@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -13,7 +14,7 @@ namespace Dash
         /// <summary>
         /// The Data Type of the parameter, number, text, image for example
         /// </summary>
-        public TypeInfo Type { get; set; }
+        public DashShared.TypeInfo Type { get; set; }
 
         /// <summary>
         /// True if the parameter is required for the operator to run
@@ -22,7 +23,7 @@ namespace Dash
         /// </summary>
         public bool IsRequired { get; set; }
 
-        public IOInfo(TypeInfo type, bool isRequired)
+        public IOInfo(DashShared.TypeInfo type, bool isRequired)
         {
             Type = type;
             IsRequired = isRequired;
@@ -79,7 +80,7 @@ namespace Dash
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
+        public abstract ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; }
 
         /// <summary>
         /// The unique type of the operator, necessary for persistence and serialization
@@ -122,7 +123,7 @@ namespace Dash
         /// <summary>
         /// Get the type of the field, operators are always of the same type
         /// </summary>
-        public sealed override TypeInfo TypeInfo => TypeInfo.Operator;
+        public sealed override DashShared.TypeInfo TypeInfo => DashShared.TypeInfo.Operator;
 
         public override StringSearchModel SearchForString(string searchString)
         {
@@ -154,7 +155,12 @@ namespace Dash
         {
             var operatorCopy = GetDefaultController();
             Debug.Assert(operatorCopy is FieldModelController<OperatorModel>);
-            return (FieldModelController <OperatorModel> ) operatorCopy;
+            return (FieldModelController<OperatorModel>)operatorCopy;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName(this).ToString();
         }
     }
 }

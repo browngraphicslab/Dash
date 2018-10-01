@@ -163,6 +163,10 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\DateOperator.cs" />
+    <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
+    <Compile Include="Controllers\Operators\KeyOperator.cs" />
+    <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
@@ -846,7 +850,6 @@
     <Compile Include="Models\OperatorDocumentFactory.cs" />
     <Compile Include="Controllers\Operators\Binary\AddOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\DivideOperatorController.cs" />
-    <Compile Include="Controllers\Operators\ImageOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorController.cs" />
     <Compile Include="Models\ReferenceModel.cs" />

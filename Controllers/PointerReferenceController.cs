@@ -1,9 +1,11 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using Dash.Controllers.Operators;
+using Microsoft.Office.Interop.Word;
 
 namespace Dash
 {
-    class PointerReferenceController : ReferenceController
+    public class PointerReferenceController : ReferenceController
     {
         public ReferenceController DocumentReference { get; private set; }
 
@@ -32,6 +34,12 @@ namespace Dash
             base.Init();
             _lastDoc = DocumentReference?.GetDocumentController(null);
            _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<PointerReferenceOperator>() +
+                   $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
         }
 
         public override void DisposeField()
