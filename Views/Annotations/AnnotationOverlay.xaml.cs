@@ -820,7 +820,7 @@ namespace Dash
         public async void OnDrop(object sender, DragEventArgs e)
         {
             var where = e.GetPosition(XAnnotationCanvas);
-            if (e.DataView.HasDataOfType(Internal))
+            if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed())
             {
                 if (!this.IsShiftPressed())
                 {
@@ -830,7 +830,7 @@ namespace Dash
                     e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
                     e.Handled = e.AcceptedOperation != DataPackageOperation.None;
                 }
-                else
+                else 
                 {
                     var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
 
@@ -881,13 +881,13 @@ namespace Dash
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-
-            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
             {
                 Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
 
                 e.Handled = true;
             }
         }
+        
     }
 }

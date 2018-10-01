@@ -47,6 +47,7 @@
                 <RowDefinition />
                 <RowDefinition Height="80" />
             </Grid.RowDefinitions>
+            <ContentPresenter x:Name="XDocDisplay" Content="{Binding Content}"></ContentPresenter>
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
                                  IsSpellCheckEnabled="False" AcceptsReturn="True"

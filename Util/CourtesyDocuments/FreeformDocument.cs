@@ -24,7 +24,6 @@ namespace Dash
         {
 
             var grid = new Grid();
-            SetupBindings(grid, docController, context);
             LayoutDocuments(docController, context, grid);
 
             grid.Clip = new RectangleGeometry();

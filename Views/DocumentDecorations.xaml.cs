@@ -13,9 +13,12 @@ using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Media.Animation;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -143,7 +146,8 @@ namespace Dash
         {
             SetPositionAndSize();
         }
-        ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
+
+        private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
             this.InitializeComponent();
@@ -214,7 +218,9 @@ namespace Dash
             SelectionManager.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;
             SelectionManager.DragManipulationCompleted += (s,e) => 
                  ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
+
         }
+
 
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
         {

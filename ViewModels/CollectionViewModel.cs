@@ -112,6 +112,8 @@ namespace Dash
         /// </summary>
         public void FitContents(CollectionView cview)
         {
+            if (LocalSqliteEndpoint.SuspendTimer)
+                return;
             if (ContainerDocument.GetFitToParent() && ViewType == CollectionView.CollectionViewType.Freeform)
             {
                 var parSize = ContainerDocument.GetActualSize() ?? new Point();
@@ -322,8 +324,8 @@ namespace Dash
 
         public bool CreatesCycle(DocumentController newDoc)
         {
-            var curLayout = ContainerDocument.GetActiveLayout() ?? ContainerDocument;
-            var newLayout = newDoc.GetActiveLayout() ?? newDoc;
+            var curLayout = ContainerDocument;
+            var newLayout = newDoc;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType) && curLayout.GetDataDocument().Equals(newLayout.GetDataDocument()))
                 return true;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType))
@@ -331,7 +333,7 @@ namespace Dash
                 var newDocList = newLayout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                 foreach (var subDoc in newDocList.TypedData)
                 {
-                    var subLayout = subDoc.GetActiveLayout() ?? subDoc;
+                    var subLayout = subDoc;
                     if (subLayout.DocumentType.Equals(CollectionBox.DocumentType))
                     {
                         if (curLayout.GetDataDocument().Equals(subLayout.GetDataDocument()))
@@ -749,11 +751,6 @@ namespace Dash
                     Point lastPos = DocumentViewModels.Last().Position;
                     where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
                 }
-
-                //adds all docs in the group, if applicable
-                var docView = (sender as UserControl).GetFirstAncestorOfType<DocumentView>();
-                var adornmentGroups = SelectionManager.GetSelectedSiblings(docView).Where(dv => dv.ViewModel.IsAdornmentGroup).ToList();
-                adornmentGroups.ForEach(dv => AddDocument(dv.ViewModel.DataDocument));
 
                 var dragModel = e.DataView.GetDragModel();
 
