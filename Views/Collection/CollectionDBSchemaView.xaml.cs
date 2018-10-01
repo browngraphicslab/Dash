@@ -19,6 +19,7 @@ using Telerik.UI.Xaml.Controls.Grid.Commands;
 using DataGridSelectionMode = Telerik.UI.Xaml.Controls.Grid.DataGridSelectionMode;
 using DataGridTemplateColumn = Telerik.UI.Xaml.Controls.Grid.DataGridTemplateColumn;
 using Windows.UI.Xaml.Data;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -50,13 +51,21 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xDataGrid.Columns.Add(new DataGridDictionaryColumn(new KeyController("New Column")));
+            xDataGrid.Columns.Add(new WindowsDictionaryColumn(new KeyController("New Column")));
 
             e.Handled = true;
         }
 
+        private CollectionViewModel _oldViewModel;
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (ViewModel == _oldViewModel)
+            {
+                return;
+            }
+
+            _oldViewModel = ViewModel;
+
             if (ViewModel == null)
             {
                 return;
@@ -72,19 +81,19 @@ namespace Dash
             }
 
             xDataGrid.AutoGenerateColumns = false;
-            xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
-            xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
-            xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
+            //xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
+            //xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
+            //xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
 
             foreach (var key in keys)
             {
-                var column = new DataGridDictionaryColumn(key)
+                var column = new WindowsDictionaryColumn(key)
                 {
                     Header = key,
-                    CanUserEdit = true,
                     CanUserResize = true,
-                    SizeMode = DataGridColumnSizeMode.Fixed,
-                    Width = 200
+                    CanUserReorder = true,
+                    CanUserSort = true,
+                    Width = new DataGridLength(200)
                 };
 
                 xDataGrid.Columns.Add(column);
@@ -148,9 +157,38 @@ namespace Dash
         {
             base.PrepareCell(container, value, item);
 
-            var thisDoc = (DocumentController)item;
+            var thisDoc = (DocumentController)item;//This should be data doc I think
             var cp = (MyContentPresenter)container;
             cp.SetDocumentAndKey(thisDoc, Key);
+        }
+    }
+
+    public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
+    {
+        public KeyController Key { get; set; }
+
+        public WindowsDictionaryColumn(KeyController key)
+        {
+            Key = key;
+        }
+
+        protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
+        {
+            return new TextBox();
+        }
+
+        protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
+        {
+            var contentPresenter = new MyContentPresenter();
+            contentPresenter.SetDocumentAndKey(((DocumentController)dataItem).GetDataDocument(), Key);
+            return contentPresenter;
+        }
+
+        protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
+        {
+            var tb = (TextBox) editingElement;
+
+            return string.Empty;
         }
     }
 
