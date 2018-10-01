@@ -35,7 +35,6 @@ namespace Dash
         {
             MainPage.Instance.TogglePopup();
             var pdfView = new PdfView(docController);
-            SetupBindings(pdfView, docController, context);
             SetupPdfBinding(pdfView, docController, context);
             
             return pdfView;

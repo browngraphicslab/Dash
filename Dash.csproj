@@ -798,14 +798,10 @@
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\NoteDocuments.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">

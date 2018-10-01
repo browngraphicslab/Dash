@@ -18,6 +18,8 @@ namespace Dash.Views.Collection
         {
             this.InitializeComponent();
         }
+
+
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;

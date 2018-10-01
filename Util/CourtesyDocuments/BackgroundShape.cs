@@ -50,8 +50,6 @@ namespace Dash
             var corePath = new Path { StrokeThickness = 0 };
             pathBox.Child = corePath;
 
-            SetupBindings(pathBox, docController, context);
-
             BindPathShape(corePath, docController, context);
             BindPathFill(corePath, docController, context);
 

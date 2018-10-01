@@ -45,6 +45,8 @@ namespace Dash
             doc = doc.GetViewCopy();
             doc.SetWidth(double.NaN);
             doc.SetHeight(double.NaN);
+            doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+            doc.SetVerticalAlignment(VerticalAlignment.Stretch);
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 doc.SetFitToParent(false);
@@ -363,8 +365,7 @@ namespace Dash
             }
             else
             {
-                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,
-                    collectedDocuments: docs).Document;
+                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
             }
             TrySplit(dir, doc, true);
         }

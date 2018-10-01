@@ -183,19 +183,18 @@ namespace Dash
             // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
             //   bcz: need some better mechanism than this....
-            if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType)
-                //|| LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType)
-                )
-            {
-                if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
-                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
-                    ;
-                else
-                    Content = null; // forces layout to be recomputed by listeners who will access Content
-            }
-            else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
+            //if (LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
+            //    //|| LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType)
+            //    )
+            //{
+            //    if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+            //        (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
+            //        ;
+            //    else
+            //        Content = null; // forces layout to be recomputed by listeners who will access Content
+            //}
+            //else 
+            if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||

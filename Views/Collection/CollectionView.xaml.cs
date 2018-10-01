@@ -212,12 +212,6 @@ namespace Dash
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
-        private void NewCollectionFlyout_OnClick(object sender, RoutedEventArgs e)
-        {
-            var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
-        }
-
 
         #region ClickHandlers for collection context menu items
 
