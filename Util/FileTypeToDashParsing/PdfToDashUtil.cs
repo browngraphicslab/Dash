@@ -23,6 +23,16 @@ namespace Dash
             return GetPDFDoc(localFile, fileData.File.Name);
         }
 
+        //TODO This should be temporary for the chrome extension
+        public async Task<DocumentController> UriToDoc(Uri uri)
+        {
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var uniqueFilePath = Guid.NewGuid() + ".pdf";
+            var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+            await uri.GetHttpStreamToStorageFileAsync(localFile);
+            return GetPDFDoc(localFile);
+        }
+
         public DocumentController GetPDFDoc(StorageFile file, string title = null)
         {
             title = title ?? file.DisplayName;
@@ -90,5 +100,7 @@ namespace Dash
             }
             return localFile;
         }
+
+
     }
 }
