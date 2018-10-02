@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.FontIcons;
 using System.Diagnostics;
+using Dash.Views.Collection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,7 +18,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
@@ -211,12 +212,6 @@ namespace Dash
             Actions.DisplayDocument(ViewModel, note, @where);
         }
 
-        private void NewCollectionFlyout_OnClick(object sender, RoutedEventArgs e)
-        {
-            var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-            ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
-        }
-
 
         #region ClickHandlers for collection context menu items
 
@@ -258,6 +253,10 @@ namespace Dash
             case CollectionViewType.Freeform:
                 if (CurrentView is CollectionFreeformView) return;
                 CurrentView = new CollectionFreeformView();
+                break;
+            case CollectionViewType.Stacking:
+                if (CurrentView is CollectionStackView) return;
+                CurrentView = new CollectionStackView();
                 break;
             case CollectionViewType.Grid:
                 if (CurrentView is CollectionGridView) return;

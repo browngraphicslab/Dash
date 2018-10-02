@@ -179,8 +179,8 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            snap.SetFitToParent(true);
             return snap;
         }
 

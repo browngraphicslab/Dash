@@ -89,34 +89,9 @@ namespace Dash
             this.AddFieldBinding(RenderTransformProperty, binding);
             if (doc != null)
             {
-                BindWidth(this, doc, null);
-                BindHeight(this, doc, null);
+                CourtesyDocument.BindWidth(this, doc, null);
+                CourtesyDocument.BindHeight(this, doc, null);
             }
-        }
-        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.WidthFieldKey,
-                Context = context
-            };
-
-            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
-        }
-
-        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.HeightFieldKey,
-                Context = context
-            };
-
-            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
         private void UpdateVisibilityBinding()
         {
@@ -145,6 +120,9 @@ namespace Dash
                 FallbackValue = Visibility.Collapsed
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
+
+            CourtesyDocument.BindHorizontalAlignment(this, doc, null);
+            CourtesyDocument.BindVerticalAlignment(this,   doc, null);
         }
 
         // == CONSTRUCTORs ==
@@ -718,7 +696,7 @@ namespace Dash
             }
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
-            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
+            if (!wasHandled) // (ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (!MainPage.Instance.IsRightBtnPressed())

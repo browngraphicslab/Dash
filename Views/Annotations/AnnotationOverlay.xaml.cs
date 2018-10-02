@@ -202,16 +202,30 @@ namespace Dash
 
         private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
         {
-            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs &&
-                 listArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
+            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
-                listArgs.NewItems.ForEach((reg) => _embeddedViewModels.Add(
-                    new DocumentViewModel(reg)
-                    {
-                        Undecorated = true,
-                        ResizersVisible = true,
-                        DragWithinParentBounds = true
-                    }));
+                switch (listArgs.ListAction)
+                {
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                        listArgs.NewItems.ForEach((reg) => _embeddedViewModels.Add(
+                            new DocumentViewModel(reg)
+                            {
+                                Undecorated = true,
+                                ResizersVisible = true,
+                                DragWithinParentBounds = true
+                            }));
+                    break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                        listArgs.OldItems.ForEach((removedDoc) =>
+                        {
+                            foreach (var em in _embeddedViewModels.ToArray())
+                            {
+                                if (em.LayoutDocument.Equals(removedDoc))
+                                    _embeddedViewModels.Remove(em);
+                            }
+                        });
+                    break;
+                }
             }
         }
 
@@ -828,7 +842,38 @@ namespace Dash
                     // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
                     var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
-                    e.Handled = e.AcceptedOperation != DataPackageOperation.None;
+                    e.Handled = true;//  e.AcceptedOperation != DataPackageOperation.None;
+                    if (droppedDocs.Count > 0)
+                    {
+                        if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
+                        {
+                            var dragModel = e.DataView.GetDragModel();
+                            if (dragModel is DragDocumentModel d)
+                            {
+                                for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
+                                {
+                                    if (! this.GetDescendants().Contains(d.DraggedDocumentViews[i]))
+                                    {
+                                        EmbeddedDocsList.Add(droppedDocs.FirstOrDefault());
+                                    }
+                                    if (d.DraggedDocumentViews != null)
+                                    {
+                                        MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
+                                    }
+
+                                    if (d.DraggedDocCollectionViews[i] == null)
+                                    {
+                                        var overlay = d.DraggedDocumentViews[i]?.GetFirstAncestorOfType<AnnotationOverlay>();
+                                        if (overlay != this)
+                                        {
+                                            overlay?.EmbeddedDocsList.Remove(d.DraggedDocuments[i]);
+                                        }
+                                    } else
+                                        d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                                }
+                            }
+                        }
+                    }
                 }
                 else 
                 {

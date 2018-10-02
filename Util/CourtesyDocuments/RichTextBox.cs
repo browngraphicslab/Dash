@@ -93,7 +93,6 @@ namespace Dash
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupTextBinding(rtv, docController, context);
-                SetupBindings(rtv, docController, context);
 			
             return rtv;
         }

@@ -31,8 +31,6 @@ namespace Dash
 
         protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            
             SetupTextBinding(element, docController, context);
         }
 

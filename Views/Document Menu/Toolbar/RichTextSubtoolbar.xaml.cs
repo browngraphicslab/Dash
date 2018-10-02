@@ -35,9 +35,8 @@ namespace Dash
         }
 
         private RichEditBox _currBox;
-        private DocumentView _docs;
+        private DocumentView _documentView;
         private Dictionary<string, Button> _buttons;
-        private DocumentController _currentDocController;
         private Windows.UI.Color _currentColor;
 
         private sealed class MyFormatter : RichTextFormatter
@@ -331,14 +330,11 @@ namespace Dash
         /**
 		 * Setter for the documnentview of the richedittextbox, used for accessing text edit methods
 		 */
-        public void SetDocs(DocumentView docs)
+        public void SetSelectedDocumentView(DocumentView doc)
         {
-            _docs = docs;
-            _currentDocController = docs.ViewModel.DocumentController;
-            xMenuView?.SetRichTextBinding(_docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
-            Color ccol = _currentDocController.GetBackgroundColor() ?? Colors.Transparent;
-            //xOpacitySlider.Value = ccol.A / 255.0 * xOpacitySlider.Maximum;
-            xBackgroundColorPicker.SelectedColor = ccol;
+            _documentView = doc;
+            xMenuView?.SetRichTextBinding(doc.GetFirstDescendantOfType<RichTextView>()); // bcz: weird ... the selected view is a RichTextView, but it's not always in the visual tree (eg when in it's in CollectionStackingView) so we can't use this seemingly reasonable code: _docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
+            xBackgroundColorPicker.SelectedColor = _documentView.ViewModel.DocumentController.GetBackgroundColor() ?? Colors.Transparent;
         }
 
 
@@ -358,7 +354,7 @@ namespace Dash
 
         private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
         {
-            _docs?.ViewModel?.LayoutDocument?.SetBackgroundColor(e);
+            _documentView?.ViewModel?.LayoutDocument?.SetBackgroundColor(e);
         }
 
         #region Old Opacity/Color Code No Longer In Use
@@ -418,7 +414,7 @@ namespace Dash
                 xMenuView.Visibility = Visibility.Visible;
                 xMoreIcon.Visibility = Visibility.Collapsed;
                 xMoreIconBack.Visibility = Visibility.Visible;
-                xMenuView?.SetRichTextBinding(_docs.GetFirstDescendantOfType<RichTextView>());
+                xMenuView?.SetRichTextBinding(_documentView.GetFirstDescendantOfType<RichTextView>());
 
                 //_buttons.TryGetValue("Font", out var fontButton);
                 //if (fontButton != null)

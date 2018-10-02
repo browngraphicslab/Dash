@@ -193,7 +193,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
-    <Compile Include="CollectionFreeformBase.cs" />
+    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
@@ -533,6 +533,9 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Collection\CollectionStackView.xaml.cs">
+      <DependentUpon>CollectionStackView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -803,14 +806,10 @@
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\NoteDocuments.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">
@@ -1122,6 +1121,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionStackView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
