@@ -153,10 +153,14 @@
     <Content Include="Assets\loading.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="ChromeExt2\background.js" />
+    <Content Include="ChromeExt2\popup.html" />
+    <Content Include="ChromeExt2\popup.js" />
     <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="ChromeExt2\manifest.json" />
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />
@@ -167,6 +171,9 @@
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
+    <Compile Include="Browser\CollapseRequest.cs" />
+    <Compile Include="Browser\UrlChangedRequest.cs" />
+    <Compile Include="Browser\ActivateRequest.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
