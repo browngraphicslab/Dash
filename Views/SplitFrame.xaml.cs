@@ -132,13 +132,17 @@ namespace Dash
 
         public DocumentController TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
-            splitDoc = splitDoc.GetViewCopy();
-            splitDoc.SetWidth(double.NaN);
-            splitDoc.SetHeight(double.NaN);
+            if (splitDoc.GetHorizontalAlignment() != HorizontalAlignment.Stretch || splitDoc.GetVerticalAlignment() != VerticalAlignment.Stretch)
+            {
+                splitDoc = splitDoc.GetViewCopy();
+                splitDoc.SetWidth(double.NaN);
+                splitDoc.SetHeight(double.NaN);
+            }
             foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
             {
-                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)))
+                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)) is SplitFrame newFrame)
                 {
+                    ActiveFrame = newFrame;
                     break;
                 }
             }
