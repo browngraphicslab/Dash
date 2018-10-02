@@ -40,7 +40,7 @@ function updateSize(url) {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": true,
                         "url": url
-            });
+                    });
             }
         });
     });
@@ -59,12 +59,21 @@ function sendStatus() {
 // called when the button in the popup is clicked
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        
 
         if (request === "requestStatus") {
             sendStatus();
             return;
+        };
+
+        if (request.type === "extractTable") {
+            send(ws,
+                "extract",
+                {
+                    "$type": "Dash.TableExtractionRequest, Dash",
+                    "data": JSON.stringify(request.data)
+                });
         }
+
 
         if (request === "toggleActive") {
 

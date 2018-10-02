@@ -683,7 +683,7 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
-                GetSelectionCanvas().Children.Remove(_marquee);
+                GetSelectionCanvas()?.Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;

@@ -48,10 +48,10 @@ namespace OfficeInterop
 
                 if (message.StartsWith("activate"))
                 {
-                    var size = WindowAPI.GetControlSize(windowHandle);
+                    var sizex = WindowAPI.GetControlSize(windowHandle);
 
                     // place chrome in top-left corner
-                    WindowAPI.ModifyWindow(windowHandle, 0, 0, (int)size.Width, (int)size.Height);
+                    WindowAPI.ModifyWindow(windowHandle, 0, 0, (int)sizex.Width, (int)sizex.Height);
 
                     // ... notify Dash here that plugin was activated, pass 'size'.
 
@@ -62,20 +62,12 @@ namespace OfficeInterop
                 else if (message.StartsWith("expand"))
                 {
                     WindowAPI.UndoSticky(windowHandle);
-                    var size = WindowAPI.GetControlSize(windowHandle);
-                    Debug.WriteLine("Chrome window size:");
-                    Debug.WriteLine(size);
 
                     // ... notify Dash here
                 }
                 else if (message.StartsWith("collapse"))
                 {
                     WindowAPI.MakeSticky(windowHandle);
-                    var size = WindowAPI.GetControlSize(windowHandle);
-                    Debug.WriteLine("Chrome window size:");
-                    Debug.WriteLine(size);
-
-                    // ... notify Dash here
                 }
                 else
                 {
@@ -94,6 +86,15 @@ namespace OfficeInterop
                     ["DATA"] = message
                 });
 
+
+                // ... notify Dash here
+                var size = WindowAPI.GetControlSize(windowHandle);
+                OnSendRequest(new ValueSet()
+                {
+                    ["REQUEST"] = "SizeChrome",
+                    ["DEBUG"] = "Chrome window changed",
+                    ["DATA"] = "" + size.Width + "," + size.Height
+                });
             };
             _chrome.Start();
         }
@@ -104,11 +105,17 @@ namespace OfficeInterop
             _word = null;
         }
 
-        private static void onMoveSizeChanged(IntPtr hook, uint type, IntPtr hwnd, int idObject, int child, uint thread, uint time)
+        private void onMoveSizeChanged(IntPtr hook, uint type, IntPtr hwnd, int idObject, int child, uint thread, uint time)
         {
             var size = WindowAPI.GetControlSize(windowHandle);
             Debug.WriteLine("Size/Position of Chrome has changed.");
             Debug.WriteLine(size);
+            OnSendRequest(new ValueSet()
+            {
+                ["REQUEST"] = "SizeChrome",
+                ["DEBUG"] = "Chrome window changed",
+                ["DATA"] = "" + size.Width + "," + size.Height
+            });
         }
 
         //Event that is triggered when we want to send a message through the interop to Dash

@@ -16,6 +16,11 @@ namespace Dash
         public bool expanded { get; set; }
         public string url { get; set; }
 
+
+        static public SplitFrame LastFrame = null;
+
+        static Dictionary<Uri,DocumentController> Recent = new Dictionary<Uri,DocumentController>();
+
         public override async Task Handle(BrowserView browser)
         {
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -23,29 +28,40 @@ namespace Dash
                 {
                     if (!expanded)
                     {
-                        var uri = new Uri(url);
 
-                        var note = new RichTextNote("PDF HEADER");
-                        note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
-                        note.Document.SetHeight(45);
-                        var layout = await new PdfToDashUtil().UriToDoc(uri);
-                        layout.SetHeight(MainPage.Instance.ActualHeight - 45);
-                        layout.SetWidth(double.NaN);
-                        layout.SetField<BoolController>(KeyStore.AbstractInterfaceKey, true, true);
-                        layout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
-                        var c2 = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, new DocumentController[] { layout });
-                        var docs = new List<DocumentController>(new DocumentController[] {note.Document, layout });
-                        var coll = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs);
-                        coll.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
-                        coll.Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
+                        var uri    = new Uri(url);
+                        var pdfDoc = Recent.ContainsKey(uri) ? Recent[uri] : null;
+                        if (pdfDoc == null)
+                        { 
+                            var note = new RichTextNote("PDF HEADER");
+                            note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
+                            note.Document.SetHeight(45);
+                            var layout = await new PdfToDashUtil().UriToDoc(uri);
+                            layout.SetHeight(MainPage.Instance.ActualHeight - 45);
+                            layout.SetWidth(double.NaN);
+                            layout.SetField<BoolController>(KeyStore.AbstractInterfaceKey, true, true);
+                            layout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                            var docs = new List<DocumentController>(new DocumentController[] { note.Document, layout });
+                            var coll = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs);
+                            coll.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                            coll.Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
+                            pdfDoc = coll.Document;
+                            Recent.Add(uri, pdfDoc);
+                        }
 
-                        SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Right, coll.Document, true);
+                        if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
+                            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Right, pdfDoc, true);
+                        else LastFrame.OpenDocument(pdfDoc);
+                        LastFrame = SplitFrame.ActiveFrame;
                     }
                     else
                     {
-                        var thisPdfDoc = MainPage.Instance.MainSplitter.GetChildFrames().FirstOrDefault(fr =>
-                            fr.DocumentController.GetField<BoolController>(KeyStore.AbstractInterfaceKey) != null);
-                        thisPdfDoc?.Delete();
+                        if (LastFrame != null)
+                            LastFrame.Delete();
+                        LastFrame = null;
+                        //var thisPdfDoc = MainPage.Instance.MainSplitter.GetChildFrames().FirstOrDefault(fr =>
+                        //    fr.DocumentController.GetField<BoolController>(KeyStore.AbstractInterfaceKey) != null);
+                        //thisPdfDoc?.Delete();
                     }
                 });
         }

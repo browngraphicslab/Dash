@@ -15,7 +15,6 @@ namespace Dash
     public class InkController : FieldModelController<InkModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
-        private Image _icon = new Image();
 
         public InkController() : base(new InkModel())
         {

@@ -72,17 +72,14 @@ namespace Dash
             CurSplitMode = SplitMode.Content;
         }
 
-        public bool DocViewTrySplit(SplitFrame sender, SplitFrame.SplitEventArgs args)
+        public SplitFrame DocViewTrySplit(SplitFrame sender, SplitFrame.SplitEventArgs args)
         {
+            SplitFrame newPane = null;
             switch (args.Direction)
             {
                 case SplitFrame.SplitDirection.Down:
                 case SplitFrame.SplitDirection.Up:
-                    if (_allowedSplits == SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
-                    {
-                        return false;
-                    }
-                    else
+                    if (_allowedSplits != SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
                     {
                         if (CurSplitMode == SplitMode.Content)
                         {
@@ -97,7 +94,7 @@ namespace Dash
                             ResizeDirection = GridSplitter.GridResizeDirection.Rows,
                             ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
                         };
-                        var newPane = new SplitFrame()
+                        newPane = new SplitFrame()
                         {
                             DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
@@ -150,11 +147,7 @@ namespace Dash
                     break;
                 case SplitFrame.SplitDirection.Left:
                 case SplitFrame.SplitDirection.Right:
-                    if (_allowedSplits == SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
-                    {
-                        return false;
-                    }
-                    else
+                    if (_allowedSplits != SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
                     {
                         if (CurSplitMode == SplitMode.Content)
                         {
@@ -169,7 +162,7 @@ namespace Dash
                             ResizeDirection = GridSplitter.GridResizeDirection.Columns,
                             ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
                         };
-                        var newPane = new SplitFrame()
+                        newPane = new SplitFrame()
                         {
                             DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
@@ -221,7 +214,7 @@ namespace Dash
                     break;
             }
 
-            return true;
+            return newPane;
         }
 
         private void WrapFrameInManager(SplitFrame frame)

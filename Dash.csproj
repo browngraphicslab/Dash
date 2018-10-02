@@ -172,6 +172,7 @@
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
     <Compile Include="Browser\CollapseRequest.cs" />
+    <Compile Include="Browser\TableExtractionRequest.cs" />
     <Compile Include="Browser\UrlChangedRequest.cs" />
     <Compile Include="Browser\ActivateRequest.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
