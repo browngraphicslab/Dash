@@ -155,7 +155,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return DSL.GetFuncName<KeyOperator>() + $"({Name})";
+            return DSL.GetFuncName<KeyOperator>() + $"(\"{Name}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

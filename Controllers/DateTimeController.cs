@@ -121,7 +121,7 @@ namespace Dash.Controllers
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return DSL.GetFuncName<DateOperator>() + $"({Data})";
+            return DSL.GetFuncName<DateOperator>() + $"(\"{Data}\")";
         }
     }
 }

@@ -1341,7 +1341,7 @@ namespace Dash
             {
                 return "this";
             }
-            return DSL.GetFuncName<IdToDocumentOperator>() + $"({Id})";
+            return DSL.GetFuncName<IdToDocumentOperator>() + $"(\"{Id}\")";
         }
 
         #endregion

@@ -1,24 +1,13 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using static Dash.CollectionDBSchemaHeader;
 using Windows.UI.Xaml.Media;
 using Telerik.UI.Xaml.Controls.Grid;
 using Telerik.UI.Xaml.Controls.Grid.Primitives;
-using DataGridColumn = Telerik.UI.Xaml.Controls.Grid.DataGridColumn;
-using DataGridTextColumn = Telerik.UI.Xaml.Controls.Grid.DataGridTextColumn;
-using Telerik.Data.Core;
-using Telerik.UI.Xaml.Controls.Grid.Commands;
-using DataGridSelectionMode = Telerik.UI.Xaml.Controls.Grid.DataGridSelectionMode;
-using DataGridTemplateColumn = Telerik.UI.Xaml.Controls.Grid.DataGridTemplateColumn;
 using Windows.UI.Xaml.Data;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 
@@ -50,6 +39,28 @@ namespace Dash
             xDataGrid.CanUserReorderColumns = true;
             xDataGrid.ColumnWidth = new DataGridLength(200);
             xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
+            xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
+        }
+
+        private void XDataGridOnCellEditEnding(object sender, DataGridCellEditEndingEventArgs args)
+        {
+            if (args.EditAction == DataGridEditAction.Commit)
+            {
+                var box = (TextBox)args.EditingElement;
+                var doc = ((DocumentViewModel)box.DataContext).DataDocument;
+                var col = (WindowsDictionaryColumn)args.Column;
+                using (UndoManager.GetBatchHandle())
+                {
+                    try
+                    {
+                        var field = DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
+                        doc.SetField(col.Key, field, true);
+                    }
+                    catch (DSLException e)
+                    {
+                    }
+                }
+            }
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -236,7 +247,11 @@ namespace Dash
 
         protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
         {
-            return new TextBox();
+            var tb = new ActionTextBox();
+            tb.AddKeyHandler(VirtualKey.Enter, args =>
+            {
+            });
+            return tb;
         }
 
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
