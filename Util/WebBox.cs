@@ -18,11 +18,7 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var webView = new WebBoxView(docController);
-            
-            SetupBindings(webView, docController, context);
-            
-            return webView;
+           return new WebBoxView(docController);
         }
 
         // document.getElementsByTagName('table')

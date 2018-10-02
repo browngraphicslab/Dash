@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.HockeyApp;
 
 namespace Dash
 {
@@ -95,21 +96,17 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(GridViewLayout.DocumentType, GridViewLayout.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
+                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(GridLayout.DocumentType, GridLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView, ImageBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, PdfBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DishReplBox.DocumentType, DishReplBox.MakeView, null);

@@ -89,6 +89,7 @@ namespace Dash
                 DocumentModel.DocumentType = value;
                 //If there is an issue here it is probably because 'enforceTypeCheck' is set to false.
                 this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
+                UpdateOnServer(null);
             }
         }
         
@@ -473,13 +474,19 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being added to the list</param>
-        public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
+        public void AddToListField<T>(KeyController key, T value, int? index = null) where T: FieldControllerBase
         {
-            GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
+            if (index is int intIndex)
+            {
+                GetFieldOrCreateDefault<ListController<T>>(key).Insert(intIndex, value);
+            }
+            else
+            {
+                GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
+            }
 
             foreach (var d in GetDelegates().TypedData)
             {
-                var items = d.GetField<ListController<T>>(key, true);
                 var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
                 mapping.Add(this, d);
                 if (value is DocumentController)
@@ -496,11 +503,11 @@ namespace Dash
                         if ((mapping[this] as DocumentController).GetField(f.Key, true) == null)
                             (mapping[this] as DocumentController).SetField(f.Key, new DocumentReferenceController(this, f.Key, true), true);
 
-                    d.AddToListField(key, delgateValue);
+                    d.AddToListField(key, delgateValue, index);
                 }
                 else
                 {
-                    items.Add(value);
+                    d.AddToListField(key, value, index);
                 }
             }
         }
@@ -850,11 +857,11 @@ namespace Dash
         /// <param name="field"></param>
         /// <param name="forceMask"></param>
         /// <returns></returns>
-        bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        (bool updated, DocumentFieldUpdatedEventArgs args, Context c) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
             {
-                return RemoveField(key);
+                return (RemoveField(key), null, null);
             }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
@@ -883,8 +890,6 @@ namespace Dash
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
                 var reference = new DocumentFieldReference(this, key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
-                //if (key.Name != "_Cache Access Key")
-                    generateDocumentFieldUpdatedEvents(updateArgs, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                     ; // need to see if any prototype operators need to be run
@@ -893,9 +898,9 @@ namespace Dash
                 else
                     setupFieldChangedListeners(key, field, oldField, new Context(doc));
 
-                return true;
+                return (true, updateArgs, new Context(doc));
             }
-            return false;
+            return (false, null, null);
         }
 
 
@@ -917,20 +922,15 @@ namespace Dash
             UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false), 
                 () => SetField(key, oldVal, forceMask, false));
 
-            var fieldChanged = SetFieldHelper(key, field, forceMask);
+            var (fieldChanged, args, c) = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
                 UpdateOnServer(withUndo ? newEvent : null);
+                if (args != null)
+                {
+                    generateDocumentFieldUpdatedEvents(args, c);
+                }
             }
-
-            //if (key.Equals(KeyStore.ActiveLayoutKey) && field is DocumentController doc)
-            //{
-            //    if (doc.DocumentType.Equals(TemplateBox.DocumentType))
-            //    {
-            //        // TODO: ask tyler about this next line? -sy
-            //        //TypeInfo = TypeInfo.Template;
-            //    }
-            //}
 
             return fieldChanged;
         }
@@ -970,21 +970,33 @@ namespace Dash
             //TODO this should delay field updates until all fields are set
             bool shouldSave = false;
             var oldFields = new Dictionary<KeyController, FieldControllerBase>();
-            foreach (var kv in fields)
+            var keyValuePairs = fields.ToList();
+            foreach (var kv in keyValuePairs)
             {
                 oldFields[kv.Key] = GetField(kv.Key);
             }
+
+            var argList = new List<(DocumentFieldUpdatedEventArgs args, Context c)>(keyValuePairs.Count);
+
             // update with each of the new fields
-            foreach (var field in fields.ToArray().Where((f) => f.Key != null))
+            foreach (var field in keyValuePairs.Where((f) => f.Key != null))
             {
-                if (SetFieldHelper(field.Key, field.Value, forceMask))
+                var (updated, args, c) = SetFieldHelper(field.Key, field.Value, forceMask);
+                shouldSave |= updated;
+                if (args != null)
                 {
-                    shouldSave = true;
+                    argList.Add((args, c));
                 }
             }
+
+            foreach (var (args, c) in argList)
+            {
+                generateDocumentFieldUpdatedEvents(args, c);
+            }
+
             if (shouldSave)
             {
-                UndoCommand newEvent = new UndoCommand(() => SetFields(fields, forceMask, false), () => SetFields(oldFields, forceMask, false));
+                UndoCommand newEvent = new UndoCommand(() => SetFields(keyValuePairs, forceMask, false), () => SetFields(oldFields, forceMask, false));
                 UpdateOnServer(withUndo ? newEvent : null);
             }
         }
@@ -1267,21 +1279,6 @@ namespace Dash
 			context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument());
-
-            // if the document has a layout already, use that underlying layout's data to generate
-            // the view
-            var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
-            if (fieldModelController != null)
-            {
-                var doc = fieldModelController.DereferenceToRoot<DocumentController>(context);
-
-                if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
-                {
-                    return makeAllViewUI(context);
-                }
-                Debug.Assert(doc != null);
-                return doc.MakeViewUI(context);
-            }
 
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {

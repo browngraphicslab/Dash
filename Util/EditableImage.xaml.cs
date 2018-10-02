@@ -43,7 +43,7 @@ namespace Dash
         public EditableImage(DocumentController document, Context context)
         {
             InitializeComponent();
-            LayoutDocument = document.GetActiveLayout() ?? document;
+            LayoutDocument = document;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.Unloaded += Image_Unloaded;
@@ -179,7 +179,6 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
-            _docview.ViewModel.DecorationState = false;
             IsCropping = true;
         }
 
@@ -191,7 +190,7 @@ namespace Dash
 
         public async Task Crop(Rect rectangleGeometry)
         {
-            transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
+            await transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
         }
         /// <summary>
         ///     crops the image with respect to the values of the rectangle passed in
@@ -355,7 +354,6 @@ namespace Dash
                     IsCropping = false;
                     xGrid.Children.Remove(_cropControl);
                     await Crop(_cropControl.GetBounds());
-                    _docview.ViewModel.DecorationState = false;
 
                     break;
                 case VirtualKey.Left:
@@ -375,7 +373,6 @@ namespace Dash
         {
             if (!IsCropping) return;
             IsCropping = false;
-            _docview.ViewModel.DecorationState = true;
             xGrid.Children.Remove(_cropControl);
         }
 
@@ -392,7 +389,7 @@ namespace Dash
                     _annotationOverlay.EndAnnotation(point.Position);
                     e.Handled = true;
                 }
-                else if(point.Properties.IsLeftButtonPressed)
+                else if(point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
                 {
                     _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;

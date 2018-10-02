@@ -138,13 +138,8 @@ namespace Dash
 
         public void SetHackCaptionText(FieldControllerBase caption)
         {
-            var textBox = xTextBox;
-            xDocContainer.Children.Clear();
-            xDocContainer.Children.Add(textBox);
             var dataBox = new DataBox(caption);
-            var docView = dataBox.Document.MakeViewUI(null);
-            Grid.SetRow(docView, 0);
-            xDocContainer.Children.Add(docView);
+            XDocDisplay.DataContext = new DocumentViewModel(dataBox.Document);
         }
         public DocumentViewModel CurPage
         {
@@ -286,7 +281,7 @@ namespace Dash
             foreach (object m in e.Items)
             {
                 int ind = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.AddDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
+                e.Data.SetDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
             }
         }
 
@@ -329,7 +324,7 @@ namespace Dash
 
         private void XTextBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.TryGetLoneDragModel(out DragModelBase dragModel) && dragModel is DragFieldModel field)
+            if (e.DataView.GetDragModel() is DragFieldModel field)
             {
                 KeyController fieldKey = field.DraggedRefs.First().FieldKey;
 
@@ -368,7 +363,7 @@ namespace Dash
 
                 i++;
             }
-            args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
+            args.Data.SetDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

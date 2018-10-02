@@ -13,9 +13,12 @@ using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Media.Animation;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -143,7 +146,8 @@ namespace Dash
         {
             SetPositionAndSize();
         }
-        ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
+
+        private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
             this.InitializeComponent();
@@ -214,7 +218,9 @@ namespace Dash
             SelectionManager.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;
             SelectionManager.DragManipulationCompleted += (s,e) => 
                  ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
+
         }
+
 
         private void DocumentDecorations_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -523,7 +529,6 @@ namespace Dash
             if (doc.ViewModel != null)
             {
                 VisibilityState = Visibility.Visible;
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, true);
             }
         }
 
@@ -533,9 +538,6 @@ namespace Dash
             if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
                 VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
-
-            if (doc.ViewModel != null)
-                MainPage.Instance.HighlightTreeView(doc.ViewModel.DocumentController, false);
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -571,12 +573,11 @@ namespace Dash
             foreach (var docView in SelectedDocs)
             {
                 var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
-                args.Data.AddDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionView>(new CollectionView[] { docCollectionView } ) });
+                args.Data.SetDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionViewModel>(new[] { docCollectionView.ViewModel } ) });
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                docView.ViewModel.DecorationState = false;
             }
         }
 
@@ -851,7 +852,7 @@ namespace Dash
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
             switch (currEditLink?.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     xTypeZoom.IsSelected = true;
                     break;
                 case LinkBehavior.Annotate:
@@ -888,7 +889,7 @@ namespace Dash
             switch (selected)
             {
                 case "Zoom":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Zoom);
+                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)
                     {
@@ -994,9 +995,11 @@ namespace Dash
         }
         private void CommitHeaderText()
         {
-            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
             {
-                doc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
+                var targetDoc = doc.GetField<TextController>(HeaderFieldKey)?.Data != null ? doc : doc.GetDataDocument();
+
+                targetDoc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
             }
             xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
             ResetHeader();
@@ -1009,14 +1012,18 @@ namespace Dash
                 {
                     HeaderFieldKey = KeyController.IsPresent(newkey) ? new KeyController(newkey) : new KeyController(newkey, Guid.NewGuid().ToString());
                 }
-                xHeaderText.Text = SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
-                foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+                var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
+                xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                if (SelectedDocs.Count > 1)
                 {
-                    var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
-                    if (dvalue != xHeaderText.Text)
+                    foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
                     {
-                        xHeaderText.Text = "...";
-                        break;
+                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        if (dvalue != xHeaderText.Text)
+                        {
+                            xHeaderText.Text = "...";
+                            break;
+                        }
                     }
                 }
                 xHeaderText.Foreground = new SolidColorBrush(Colors.Black);

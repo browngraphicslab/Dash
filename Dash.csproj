@@ -189,7 +189,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
-    <Compile Include="CollectionFreeformBase.cs" />
+    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
@@ -529,6 +529,9 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Collection\CollectionStackView.xaml.cs">
+      <DependentUpon>CollectionStackView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -772,10 +775,14 @@
       <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\SelectableElement.cs" />
+    <Compile Include="Views\QuickEntryPanel.xaml.cs">
+      <DependentUpon>QuickEntryPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SplitFrame.Navigation.cs" />
     <Compile Include="Views\SplitFrame.xaml.cs">
       <DependentUpon>SplitFrame.xaml</DependentUpon>
     </Compile>
@@ -795,14 +802,10 @@
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\NoteDocuments.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">
@@ -934,6 +937,15 @@
     </Compile>
     <Compile Include="Views\Tag.xaml.cs">
       <DependentUpon>Tag.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeView\TreeView.xaml.cs">
+      <DependentUpon>TreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeView\TreeViewList.xaml.cs">
+      <DependentUpon>TreeViewList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TreeView\TreeViewNode.xaml.cs">
+      <DependentUpon>TreeViewNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
@@ -1104,6 +1116,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionStackView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1371,6 +1387,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\QuickEntryPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1460,6 +1480,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Tag.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeViewList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeView\TreeViewNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

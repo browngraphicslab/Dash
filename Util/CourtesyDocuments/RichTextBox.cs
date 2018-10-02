@@ -70,7 +70,7 @@ namespace Dash
         public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
-            return rtv.GetRegionDocument();
+            return rtv?.GetRegionDocument();
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
@@ -79,7 +79,7 @@ namespace Dash
             var refToRichText = dataField as ReferenceController;
             rtv = new RichTextView()
             {
-                LayoutDocument = docController.GetActiveLayout() ?? docController,
+                LayoutDocument = docController,
                 DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
             };
             rtv.ManipulationMode = ManipulationModes.All;
@@ -90,7 +90,6 @@ namespace Dash
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
             SetupTextBinding(rtv, docController, context);
-            SetupBindings(rtv, docController, context);
 
             return rtv;
         }

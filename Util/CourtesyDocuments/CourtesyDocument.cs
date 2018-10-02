@@ -66,7 +66,8 @@ namespace Dash
         /// </summary>
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
-            dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
@@ -99,68 +100,61 @@ namespace Dash
             };
         }
 
-        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
-        {
-            //Set width and height
-            //BindWidth(element, docController, context);
-            //BindHeight(element, docController, context);
-
-            //Set alignments
-            //BindHorizontalAlignment(element, docController, context);
-            //BindVerticalAlignment(element, docController, context);
-        }
-
-        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
+        public static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Context = context
+                Context = context,
+                Tag="BindWidth in CourtesyDocument"
             };
 
             element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
         }
 
-        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
+        public static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Context = context
+                Context = context,
+                Tag="BindHeight in CourtesyDocument"
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
 
-        protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
-            Context context)
+        public static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
+            Context context=null)
         {
-            var binding = new FieldBinding<TextController>()
+            var binding = docController == null ? null : new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
                 Key = KeyStore.HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
-                Context = context
+                Context = context,
+                Tag = "HorizontalAlignment binding in CourtesyDocument",
             };
 
             element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
-        protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
+        public static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var binding = new FieldBinding<TextController>()
+            var binding = docController == null ? null : new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
                 Key = KeyStore.VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
-                Context = context
+                Context = context,
+                Tag = "VerticalAlignment binding in CourtesyDocument",
             };
 
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
@@ -242,7 +236,7 @@ namespace Dash
     }
 
     public enum LinkBehavior {
-        Zoom,
+        Follow,
         Annotate,
         Dock,
         Float,
@@ -284,12 +278,11 @@ namespace Dash
 
         public static bool GetFitToParent(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null);
-            return data?.Data == "true";
+            return document.GetDereferencedField<BoolController>(KeyStore.CollectionFitToParentKey, null)?.Data ?? false;
         }
         public static void    SetFitToParent(this DocumentController document, bool fit)
         {
-            document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
+            document.SetField<BoolController>(KeyStore.CollectionFitToParentKey, fit, true);
         }
         public static void    SetTitle(this DocumentController document, string title)
         {
