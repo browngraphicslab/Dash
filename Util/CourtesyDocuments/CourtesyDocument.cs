@@ -251,7 +251,7 @@ namespace Dash
         }
         public static LinkBehavior GetLinkBehavior(this DocumentController document)
         {
-            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            var data = document.GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null)?.Data;
             return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
         }
 
@@ -262,7 +262,7 @@ namespace Dash
         }
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
-            var data = document.GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data;
+            var data = document.GetDereferencedField<TextController>(KeyStore.HorizontalAlignmentKey,null)?.Data;
             return data == null ? HorizontalAlignment.Stretch : Enum.Parse<HorizontalAlignment>(data);
         }
 
@@ -272,7 +272,7 @@ namespace Dash
         }
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
-            var data =  document.GetField<TextController>(KeyStore.VerticalAlignmentKey)?.Data ; 
+            var data =  document.GetDereferencedField<TextController>(KeyStore.VerticalAlignmentKey,null)?.Data ; 
             return data == null ? VerticalAlignment.Stretch : Enum.Parse<VerticalAlignment>(data);
         }
 
@@ -325,7 +325,7 @@ namespace Dash
         }
         public static Point?  GetActualSize(this DocumentController document)
         {
-            return document.GetField<PointController>(KeyStore.ActualSizeKey)?.Data;
+            return document.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null)?.Data;
         }
 
         public static bool    GetHidden(this DocumentController document)
@@ -406,7 +406,7 @@ namespace Dash
 
         public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
-            var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            var t = regionDocumentController.GetDataDocument().GetDereferencedField<TextController>(KeyStore.RegionTypeKey, null);
             var annoType = t == null
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);

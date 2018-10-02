@@ -733,81 +733,89 @@ namespace Dash
             {
                 e.Handled = true;
                 var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
-                // accept move, then copy, and finally accept whatever they requested (for now)
-                e.AcceptedOperation = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && !fromFileSystem && !MainPage.Instance.IsShiftPressed()
-                    ? DataPackageOperation.Move :
-                    e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && fromFileSystem ?
-                        DataPackageOperation.Copy
-                        : e.DataView.RequestedOperation;
+
+                var dragModel        = e.DataView.GetDragModel();
+                var dragDocModel     = dragModel as DragDocumentModel;
+                var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
+                var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
+                var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
+                var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
+                var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
+
+                e.AcceptedOperation = isSettingContext ? DataPackageOperation.None : 
+                                      isLinking        ? DataPackageOperation.Link :  
+                                      isMoving         ? DataPackageOperation.Move :
+                                      isCopying        ? DataPackageOperation.Copy : 
+                                      DataPackageOperation.None;
 
                 RemoveDragDropIndication(sender as ICollectionView);
-
-                var senderView = (sender as CollectionView)?.CurrentView;
+                
                 var where = new Point();
-                if (senderView is CollectionFreeformBase freeformBase)
-                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
-                else if (DocumentViewModels.Count > 0)
+                if ((sender as CollectionView)?.CurrentView is CollectionFreeformBase freeformBase)
                 {
-                    Point lastPos = DocumentViewModels.Last().Position;
-                    where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
                 }
-
-                var dragModel = e.DataView.GetDragModel();
-
-                var cpar = ContainerDocument;
-
-                if (MainPage.Instance.IsAltPressed() && dragModel is DragDocumentModel dragDocModel && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this &&
+                else if (DocumentViewModels.LastOrDefault() is DocumentViewModel last)
+                {
+                    where = new Point(last.Position.X + DocumentViewModels.Last().ActualSize.X, last.Position.Y);
+                }
+                
+                if (isSettingContext && dragDocModel != null && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this &&
                     (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
-                    cpar.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
-                    e.DataView.ReportOperationCompleted(DataPackageOperation.None);
-                    return;
+                    ContainerDocument.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
                 }
-                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
+                else
                 {
-                    RouteDataBoxReferencesThroughCollection(cpar, docsToAdd);
+                    var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
+                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
                 }
-
-                if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
-                {
-                    if(dragModel is DragDocumentModel d)
-                    {
-                        for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
-                        {
-                            if (d.DraggedDocCollectionViews[i] == this)
-
-                            {
-                                docsToAdd.Remove(d.DraggedDocuments[i]);
-                                if (d.DraggedDocumentViews?[i] != null)
-                                {
-                                    d.DraggedDocumentViews[i].Visibility = Visibility.Visible;
-                                }
-                            }
-                            else
-                            {
-                                if (d.DraggedDocumentViews != null)
-                                {
-                                    MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                }
-
-                                if (d.DraggedDocCollectionViews[i] == null)
-                                {
-                                    var overlay = d.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
-                                    overlay?.EmbeddedDocsList.Remove(d.DraggedDocuments[i]);
-                                }
-                                else
-                                {
-                                    d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
-                                }
-
-                            }
-                        }
-                    }
-                }
-                AddDocuments(docsToAdd);
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
+        }
+
+        private async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving)
+        {
+            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
+            {
+                RouteDataBoxReferencesThroughCollection(ContainerDocument, docsToAdd);
+            }
+
+            if (isMoving && dragModel is DragDocumentModel dragDocModel)
+            {
+                for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
+                {
+                    if (dragDocModel.DraggedDocCollectionViews[i] == this)
+
+                    {
+                        docsToAdd.Remove(dragDocModel.DraggedDocuments[i]);
+                        if (dragDocModel.DraggedDocumentViews?[i] != null)
+                        {
+                            dragDocModel.DraggedDocumentViews[i].Visibility = Visibility.Visible;
+                        }
+                    }
+                    else
+                    {
+                        if (dragDocModel.DraggedDocumentViews != null)
+                        {
+                            MainPage.Instance.ClearFloaty(dragDocModel.DraggedDocumentViews[i]);
+                        }
+
+                        if (dragDocModel.DraggedDocCollectionViews[i] == null)
+                        {
+                            var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
+                            overlay?.EmbeddedDocsList.Remove(dragDocModel.DraggedDocuments[i]);
+                        }
+                        else
+                        {
+                            dragDocModel.DraggedDocCollectionViews[i].RemoveDocument(dragDocModel.DraggedDocuments[i]);
+                        }
+
+                    }
+                }
+            }
+
+            return docsToAdd;
         }
 
         public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
