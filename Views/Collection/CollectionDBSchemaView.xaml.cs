@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
@@ -36,10 +37,19 @@ namespace Dash
 
         public UserControl UserControl => this;
 
+        private HashSet<KeyController> Keys { get; } = new HashSet<KeyController>();
+
         public CollectionDBSchemaView()
         {
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
+
+            xDataGrid.AutoGenerateColumns = false;
+            xDataGrid.CanUserSortColumns = true;
+            xDataGrid.CanUserResizeColumns = true;
+            xDataGrid.CanUserReorderColumns = true;
+            xDataGrid.ColumnWidth = new DataGridLength(200);
+            xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -51,7 +61,7 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xDataGrid.Columns.Add(new WindowsDictionaryColumn(new KeyController("New Column")));
+            AddKey(new KeyController("New Column"));
 
             e.Handled = true;
         }
@@ -64,42 +74,94 @@ namespace Dash
                 return;
             }
 
+            if (_oldViewModel != null)
+            {
+                foreach (var doc in _oldViewModel.DocumentViewModels)
+                {
+                    doc.DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
+                }
+                _oldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModelsOnCollectionChanged;
+            }
+
             _oldViewModel = ViewModel;
 
             if (ViewModel == null)
             {
                 return;
             }
-            var docs = ViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+            ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModelsOnCollectionChanged;
+
+            Keys.Clear();
+            xDataGrid.Columns.Clear();
+            var docs = ViewModel.DocumentViewModels;
             var keys = new HashSet<KeyController>();
             foreach (var doc in docs)
             {
-                foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+                foreach (var field in doc.DataDocument.EnumDisplayableFields())
                 {
                     keys.Add(field.Key);
                 }
+                doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
             }
-
-            xDataGrid.AutoGenerateColumns = false;
-            //xDataGrid.UserEditMode = DataGridUserEditMode.Inline;
-            //xDataGrid.SelectionUnit = DataGridSelectionUnit.Cell;
-            //xDataGrid.ColumnResizeHandleDisplayMode = DataGridColumnResizeHandleDisplayMode.Always;
 
             foreach (var key in keys)
             {
-                var column = new WindowsDictionaryColumn(key)
-                {
-                    Header = key,
-                    CanUserResize = true,
-                    CanUserReorder = true,
-                    CanUserSort = true,
-                    Width = new DataGridLength(200)
-                };
+                AddKey(key);
+            }
+        }
 
-                xDataGrid.Columns.Add(column);
+        private void DataDocumentOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs)
+            {
+                AddKey(dargs.Reference.FieldKey);
+            }
+        }
+
+        private void AddKey(KeyController key)
+        {
+            if (Keys.Contains(key))
+            {
+                return;
             }
 
-            xDataGrid.ItemsSource = docs;
+            Keys.Add(key);
+
+            var column = new WindowsDictionaryColumn(key)
+            {
+                Header = key,
+            };
+
+            xDataGrid.Columns.Add(column);
+        }
+
+        private void DocumentViewModelsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            switch (args.Action)
+            {
+            case NotifyCollectionChangedAction.Add:
+                foreach (var argsNewItem in args.NewItems)
+                {
+                    var documentViewModel = (DocumentViewModel)argsNewItem;
+                    var dataDoc = documentViewModel.DataDocument;
+                    dataDoc.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
+                    foreach (var field in documentViewModel.DataDocument.EnumDisplayableFields())
+                    {
+                        AddKey(field.Key);
+                    }
+                }
+
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                foreach (var argsNewItem in args.OldItems)
+                {
+                    ((DocumentViewModel)argsNewItem).DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+            }
         }
     }
 
@@ -180,7 +242,7 @@ namespace Dash
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
             var contentPresenter = new MyContentPresenter();
-            contentPresenter.SetDocumentAndKey(((DocumentController)dataItem).GetDataDocument(), Key);
+            contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
             contentPresenter.IsHitTestVisible = false;
             return contentPresenter;
         }
@@ -189,8 +251,8 @@ namespace Dash
         {
             var tb = (TextBox) editingElement;
 
-            var doc = (DocumentController)editingElement.DataContext;
-            var dataDoc = doc.GetDataDocument();
+            var doc = (DocumentViewModel)editingElement.DataContext;
+            var dataDoc = doc.DataDocument;
 
             tb.Text = DSL.GetScriptForField(dataDoc.GetField(Key), dataDoc);
 
