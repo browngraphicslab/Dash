@@ -123,8 +123,8 @@ namespace Dash
                     // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
                     // an arbitrary size for it and zero out its pan position so that it will FitToParent
                     if (vcopy.DocumentType.Equals(RichTextBox.DocumentType) ||
-                        !double.IsNaN(vcopy.GetWidthField().Data) ||
-                        !double.IsNaN(vcopy.GetHeightField().Data))
+                        !double.IsNaN(vcopy.GetWidthField()?.Data ?? double.NaN) ||
+                        !double.IsNaN(vcopy.GetHeightField()?.Data ?? double.NaN))
                         docs.Add(vcopy);
                     else
                     {

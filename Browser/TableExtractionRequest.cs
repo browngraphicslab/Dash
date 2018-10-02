@@ -26,48 +26,55 @@ namespace Dash
             }
 
             double x = 400;
-            foreach (var table in tables)
+            foreach (var rows in tables.OfType<JArray>())
             {
-                if (!(table is JArray rows))
+                var tab = ParseTable(rows.OfType<JObject>());
+                if (tab != null)
                 {
-                    continue;
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                        () => MainPage.Instance.AddFloatingDoc(tab, new Point(400, 300), new Point(x, 400)));
+                    x += 450;
                 }
-                var tab = ParseTable(rows);
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                    () => { MainPage.Instance.AddFloatingDoc(tab, new Point(400, 300), new Point(x, 400)); });
-                x += 450;
             }
         }
 
-        private DocumentController ParseTable(JArray rows)
+        private DocumentController ParseTable(IEnumerable<JObject> rows)
         {
-            var prototype = new DocumentController();
-
-            var docs = new List<DocumentController>();
-
-            foreach (var row in rows)
+            var columns = rows.FirstOrDefault()?.GetEnumerator();
+            if (columns != null)
             {
-                if (!(row is JObject obj))
+                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, 200, 200).Document;
+                prototype.GetDataDocument().SetTitle("Prototype Row Record");
+                foreach (var c in rows.FirstOrDefault())
                 {
-                    continue;
+                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key), "<" + c.Key + ">", true);
                 }
 
-                var doc = ParseRow(obj, prototype);
-                docs.Add(doc);
-            }
+                columns.MoveNext();
+                var primaryKey = new KeyController(columns.Current.Key ?? "<empty>"); // choose a better primary key -- this should become the document's title, too.
 
-            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                var protobox = new DataBox(new DocumentReferenceController(prototype.GetDataDocument(), primaryKey), 0, 0, 100, 50).Document;
+                CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
+                prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
+
+                var docs = rows.Select((jobj, index) => ParseRow(jobj, index, prototype)).ToList().Prepend(prototype);
+
+                return new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+            }
+            return null;
         }
 
-        private DocumentController ParseRow(JObject obj, DocumentController proto)
+        private DocumentController ParseRow(JObject obj, int index, DocumentController proto)
         {
-            var doc = proto.MakeDelegate();
-
+            var doc = proto.GetDataInstance();
+            var datadoc = doc.GetDataDocument();
+            datadoc.SetTitle("Row " + index);
+            
             foreach (var kvp in obj)
             {
                 var key = new KeyController(kvp.Key);
                 var val = _parser.ParseValue(kvp.Value);
-                doc.SetField(key, val, true);
+                datadoc.SetField(key, val, true);
             }
 
             return doc;
