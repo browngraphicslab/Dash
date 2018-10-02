@@ -247,11 +247,7 @@ namespace Dash
 
         protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
         {
-            var tb = new ActionTextBox();
-            tb.AddKeyHandler(VirtualKey.Enter, args =>
-            {
-            });
-            return tb;
+            return new TextBox();
         }
 
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
