@@ -82,19 +82,7 @@ namespace Dash
             //DBTest.DBDoc.AddChild(protoInstance);
             protoInstance.SetField(key, field, true);
 
-            SetDefaultsOnActiveLayout(schema, protoInstance);
             return protoInstance;
-        }
-
-
-        private void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
-        {
-            throw new Exception("ActiveLayout code has not been updated yet");
-            //var activeLayout = schema.Prototype.GetActiveLayout().MakeDelegate();
-            //protoInstance.SetActiveLayout(activeLayout, true, false);
-            //var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            //defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextController(CollectionView.CollectionViewType.Schema.ToString()));
-            //activeLayout.SetFields(defaultLayoutFields, true);
         }
 
         private FieldControllerBase ParseChild(JToken jtoken, DocumentSchema parentSchema)
@@ -128,7 +116,6 @@ namespace Dash
             SetDefaultFieldsOnPrototype(schema.Prototype, fields);
 
             var protoInstance = schema.Prototype.MakeDelegate();
-            SetDefaultsOnActiveLayout(schema, protoInstance);
             protoInstance.SetFields(fields, true);
             return protoInstance;
         }
@@ -257,10 +244,8 @@ namespace Dash
         public DocumentSchema(string basePath)
         {
             BasePath = basePath;
-            Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                new DocumentType(UtilShared.GetDeterministicGuid(BasePath), BasePath));
+            Prototype = new DocumentController();
             Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(Prototype.DocumentType.Type + "API"), true);
-            SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
         }
 
@@ -270,7 +255,7 @@ namespace Dash
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
             // bcz: if jToken.Path is "", then it seems to cause problems later on because the key doesn't have a name (I think it gets filtered out of the KeyValue pane list)
-            return new KeyController(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path), DashShared.UtilShared.GetDeterministicGuid(uniqueName));
+            return new KeyController(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)
@@ -289,12 +274,6 @@ namespace Dash
                 _schemas.Add(currentSchema);
             }
             return currentSchema;
-        }
-
-        public void SetDefaultLayoutOnPrototype(DocumentController prototype)
-        {
-            throw new Exception("ActiveLayout code has not been updated yet");
-            // prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
         }
 
         private string ConvertPathToUniqueName(string path)

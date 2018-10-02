@@ -168,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\CollapseRequest.cs" />
+    <Compile Include="Browser\TableExtractionRequest.cs" />
     <Compile Include="Browser\UrlChangedRequest.cs" />
     <Compile Include="Browser\ActivateRequest.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />

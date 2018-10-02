@@ -59,12 +59,23 @@ function sendStatus() {
 // called when the button in the popup is clicked
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        
 
         if (request === "requestStatus") {
             sendStatus();
             return;
+        };
+
+        if (request.type === "extractTable") {
+            for (var table of request.data) {
+                send(ws,
+                    "extract",
+                    {
+                        "$type": "Dash.TableExtractionRequest, Dash",
+                        "data": JSON.stringify(table)
+                    });
+            }
         }
+
 
         if (request === "toggleActive") {
 
