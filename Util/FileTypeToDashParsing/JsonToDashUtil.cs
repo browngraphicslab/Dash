@@ -10,6 +10,7 @@ using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -188,12 +189,14 @@ namespace Dash
                     case JTokenType.Integer:
                     case JTokenType.Float:
                         return new NumberController(jtoken.ToObject<double>());
-                    case JTokenType.String:
                     case JTokenType.Boolean:
+                        return new BoolController(jtoken.ToObject<bool>());
                     case JTokenType.Date:
+                        return new DateTimeController(jtoken.ToObject<DateTime>());
                     case JTokenType.Uri:
                     case JTokenType.Guid:
                     case JTokenType.TimeSpan:
+                    case JTokenType.String:
                         return ParseText(jtoken.ToObject<string>());
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -208,16 +211,22 @@ namespace Dash
 
         private FieldControllerBase ParseText(string text)
         {
-            string[] imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
+            string[] imageExtensions = { ".jpg", ".bmp", ".gif", ".png" }; //  etc
             if (imageExtensions.Any(text.EndsWith))
             {
                 return new ImageController(new Uri(text));
             }
 
-            if (text.Equals("pdf"))
+            if (text.EndsWith(".pdf"))
             {
                 return new PdfController(new Uri(text));
             }
+
+            if (double.TryParse(text, out var result))
+            {
+                return new NumberController(result);
+            }
+
             return new TextController(text);
         }
 

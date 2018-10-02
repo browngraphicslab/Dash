@@ -40,7 +40,7 @@ function updateSize(url) {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": true,
                         "url": url
-            });
+                    });
             }
         });
     });
@@ -66,14 +66,12 @@ chrome.runtime.onMessage.addListener(
         };
 
         if (request.type === "extractTable") {
-            for (var table of request.data) {
-                send(ws,
-                    "extract",
-                    {
-                        "$type": "Dash.TableExtractionRequest, Dash",
-                        "data": JSON.stringify(table)
-                    });
-            }
+            send(ws,
+                "extract",
+                {
+                    "$type": "Dash.TableExtractionRequest, Dash",
+                    "data": JSON.stringify(request.data)
+                });
         }
 
 
