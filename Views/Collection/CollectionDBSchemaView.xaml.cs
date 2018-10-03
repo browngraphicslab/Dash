@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -250,12 +251,25 @@ namespace Dash
             return new TextBox();
         }
 
+        private static int count = 0;
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
-            var contentPresenter = new MyContentPresenter();
-            contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
-            contentPresenter.IsHitTestVisible = false;
-            return contentPresenter;
+            var doc = ((DocumentViewModel)dataItem).DataDocument;
+            var textblock = new TextBlock();
+            var binding = new FieldBinding<FieldControllerBase>
+            {
+                Document = doc,
+                Key = Key,
+                Converter = new ObjectToStringConverter(),
+                Mode = BindingMode.OneWay,
+            };
+            textblock.AddFieldBinding(TextBlock.TextProperty, binding);
+            Debug.WriteLine($"Count: {++count}");
+            return textblock;
+            //var contentPresenter = new MyContentPresenter();
+            //contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
+            //contentPresenter.IsHitTestVisible = false;
+            //return contentPresenter;
         }
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
