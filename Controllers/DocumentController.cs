@@ -1443,7 +1443,13 @@ namespace Dash
             spaces += "  ";
             newContext =  ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
-            spaces = spaces.Substring(2);
+            try
+            {
+                spaces = spaces.Substring(2);
+            } catch (Exception)
+            {
+
+            }
         }
 
         /// <summary>
