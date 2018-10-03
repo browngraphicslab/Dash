@@ -257,14 +257,24 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+        private void xThumbs_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (xThumbs.IsPointerOver() && args.DropResult == DataPackageOperation.Move)
+            {
+                var ind =  ViewModel.DocumentViewModels.IndexOf(_dragDoc);
+                ViewModel.RemoveDocument(_dragDoc.DocumentController);
+                ViewModel.InsertDocument(_dragDoc.DocumentController, ind);
+            }
+        }
+        private DocumentViewModel _dragDoc;
         private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
             foreach (object m in e.Items)
             {
-                int ind = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                var dm = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController);
+                var startInd = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
+                _dragDoc     = PageDocumentViewModels[startInd];
+                var dm = new DragDocumentModel(PageDocumentViewModels[startInd].DocumentController);
                 dm.DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] { ViewModel });
                 e.Data.SetDragModel(dm);
             }

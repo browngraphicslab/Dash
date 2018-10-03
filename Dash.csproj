@@ -565,12 +565,6 @@
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Collection\TreeViewCollectionNode.xaml.cs">
-      <DependentUpon>TreeViewCollectionNode.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Collection\TreeViewNode.xaml.cs">
-      <DependentUpon>TreeViewNode.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
@@ -1161,14 +1155,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\TimelineElement.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Collection\TreeViewCollectionNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Collection\TreeViewNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

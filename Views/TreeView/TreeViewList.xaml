@@ -18,7 +18,7 @@
     Drop="TreeViewList_OnDrop">
 
     <Grid>
-        <ItemsControl x:Name="XListControl" ItemsSource="{x:Bind ViewModel.BindableDocumentViewModels, Mode=OneWay}">
+        <ItemsControl x:Name="XListControl" ItemsSource="{x:Bind ViewModel.DocumentViewModels, Mode=OneWay}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:TreeViewNode x:Name="XNode" FilterFunc="{Binding ElementName=XList, Path=FilterFunc}" CanDrag="True" DragStarting="TreeViewNode_OnDragStarting"></local:TreeViewNode>

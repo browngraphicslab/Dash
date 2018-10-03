@@ -137,7 +137,7 @@ namespace Dash
             return docDelegate;
         }
         /// <summary>
-        /// Creates an instance of a document's data and copies the documents view.
+        /// Creates an instance of a document's data and its view.
         /// </summary>
         /// <param name="where"></param
         /// <returns></returns>
