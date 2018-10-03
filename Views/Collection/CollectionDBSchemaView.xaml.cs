@@ -284,7 +284,7 @@ namespace Dash
             }
             Document = doc;
             Key = key;
-            DataBox.BindContent(this, new DataBox(new DocumentReferenceController(Document, Key)).Document, null);
+            TableBox.BindContent(this, new TableBox(new DocumentReferenceController(Document, Key)).Document, null);
         }
     }
 }

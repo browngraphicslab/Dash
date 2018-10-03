@@ -34,7 +34,7 @@ namespace Dash
 
         }
 
-        protected static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
+        public static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
         {
             var converter = new TableFieldToMakeViewConverter(docController, KeyStore.DataKey, context);
 
