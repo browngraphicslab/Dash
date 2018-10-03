@@ -173,14 +173,18 @@ namespace Dash
                             var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
 ;
                             var correctedFont = fontFamily;
-                            if ((fontFamily?.Contains("Times") ?? false))
+                            if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
                             {
                                 correctedFont = "Georgia";
                             }
-
-                            if (!fontMap.ContainsKey(correctedFont.ToString()))
+                            else if (fontFamily?.Contains("Impact", StringComparison.OrdinalIgnoreCase) ?? false)
                             {
-                                fontMap.Add(correctedFont.ToString(), fontNum);
+                                correctedFont = "Impact";
+                            }
+
+                            if (!fontMap.ContainsKey(fontFamily))
+                            {
+                                fontMap.Add(fontFamily, fontNum);
                                 fontStringBuilder.Append("\\f" + fontNum + " " + correctedFont + "; ");
                                 fontNum++;
                             }
@@ -189,7 +193,7 @@ namespace Dash
 
 
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("{\\rtf1\\ansi {" + fontStringBuilder + "}\\f0\\pard{\\f0");
+                    sb.Append("{\\rtf1\\ansi {" + fontStringBuilder + "}\\pard{\\sa120 ");
                     allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
 
                     // get the indices from our selections and ignore any duplicate selections
@@ -214,11 +218,12 @@ namespace Dash
                     var currentFontSize = 0;
                     var isItalic = false;
                     var isBold = false;
+                    var currentFont = "";
                     foreach (var index in indices)
                     {
                         if (prevIndex + 1 != index)
                         {
-                            sb.Append("\r\n\r\n");
+                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
                         }
 
                         var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
@@ -229,47 +234,47 @@ namespace Dash
                               !char.IsLower(sb[sb.Length - 1]))) &&
                             _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
                             _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
-                            sb.Append("\r\n\r\n");
+                        {
+                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
+                        }
+                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                            .GetFontName();
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
-                            if ((int) selectableElement.TextData.GetFontSize() != currentFontSize)
+                            sb.Append("{\\sa120");
+                            sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+
+                            if (selectableElement.TextData.GetFont().GetFontProgram()
+                                         .GetFontNames().IsItalic())
                             {
-                                if (isItalic && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                                        .IsItalic())
-                                {
-                                    sb.Append("}");
-                                    isItalic = false;
-                                }
-                                else if (!isItalic && selectableElement.TextData.GetFont().GetFontProgram()
-                                             .GetFontNames().IsItalic())
-                                {
-                                    sb.Append("{\\i");
-                                    isItalic = true;
-                                }
-
-                                if (isBold && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames().GetFontName()
-                                    .Contains("Bold"))
-                                {
-                                    sb.Append("}");
-                                    isBold = false;
-                                }
-                                else if (!isBold && selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                                             .GetFontName().Contains("Bold"))
-                                {
-                                    sb.Append("{\\b");
-                                    isBold = true;
-                                }
-
-                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
-                                currentFontSize = (int)selectableElement.TextData.GetFontSize();
+                                sb.Append("\\i");
                             }
-                            sb.Append((string)selectableElement.Contents);
+
+                            if (selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                                         .GetFontName().Contains("Bold"))
+                            {
+                                sb.Append("\\b");
+                            }
+
+                            sb.Append("\\f" + fontMap[font] + " ");
+
+                            var contents = (string)selectableElement.Contents;
+                            if (char.IsWhiteSpace(contents, 0))
+                            {
+                                sb.Append("\\~");
+                            }
+                            else if (contents.Equals("-"))
+                            {
+                                sb.Append("\\_");
+                            }
+                            else
+                            {
+                                sb.Append((string)selectableElement.Contents + "}");
+                            }
                         }
 
                         prevIndex = index;
                     }
-
-                    sb.Append("\\f10 Test Font}}");
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetRtf(sb.ToString());
