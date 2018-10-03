@@ -17,22 +17,23 @@
             <RowDefinition Height ="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Rectangle Height="60" Width="Auto" Grid.Row="0" Fill="{StaticResource DashDarkBlueBrush}" Margin="-20, -50, -20, -20" PointerPressed="UIElement_OnPointerPressed"></Rectangle>
+        <Rectangle Height="60" Width="Auto" Grid.Row="0" Fill="{StaticResource DashDarkBlueBrush}" Margin="-20, -50, -20, -20" ></Rectangle>
         
         <Button x:Name="xClosePresentation" Grid.Row="0" Margin="241,-10,0,0" Click="XClosePresentation_OnClick" Background="LightGray" >
           <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />
         </Button>
-        <Grid x:Name="xSettingsGrid" Background="Transparent" Grid.Row="0" PointerPressed="XSettingsGrid_OnPointerPressed" HorizontalAlignment="Left" Width="32" Height="32" Margin="-5,-10,0,0" >
-            <FlyoutBase.AttachedFlyout>
-                <Flyout x:Name="xSettingsFlyout">
-                    <StackPanel Spacing="20">
-                        <ComboBox x:Name="xPresentations" Width ="200" Height="30" HorizontalAlignment="Center" ItemsSource="{x:Bind PresTitles}" DisplayMemberPath="a" SelectionChanged="XPresentations_OnSelectionChanged"></ComboBox>
-                        <Button x:Name="xNewPresButton" Width="200" Height="30" HorizontalAlignment="Center" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Click="XNewPresButton_OnClick">+ New Pres</Button>
-                    </StackPanel>
-                </Flyout>
-            </FlyoutBase.AttachedFlyout>
-            <Ellipse x:Name="xSettingsButton" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0" Fill="{StaticResource DashDarkBlueBrush}" ></Ellipse>
-            <TextBlock x:Name="xSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="7"/>
+        <Grid x:Name="xSettingsGrid" Background="Transparent" Grid.Row="0"  HorizontalAlignment="Left" Width="32" Height="32" Margin="-5,-10,0,0" >
+            <Ellipse x:Name="xSettingsButton" Width="32" Height="32" HorizontalAlignment="Center"  VerticalAlignment="Bottom" Margin="0" Fill="{StaticResource DashDarkBlueBrush}" >
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout x:Name="xSettingsFlyout">
+                        <StackPanel Spacing="20">
+                            <ComboBox x:Name="xPresentations" Width ="200" Height="30" x:FieldModifier="public" HorizontalAlignment="Center" ItemsSource="{Binding Presentations}"  DisplayMemberPath="Title" SelectionChanged="XPresentations_OnSelectionChanged"></ComboBox>
+                            <Button x:Name="xNewPresButton" Width="200" Height="30" HorizontalAlignment="Center" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Click="XNewPresButton_OnClick">+ New Pres</Button>
+                        </StackPanel>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Ellipse>
+            <TextBlock x:Name="xSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom"  Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="7" PointerPressed="XSettingsGrid_OnPointerPressed"/>
             <ToolTipService.ToolTip>
                 <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30" />
             </ToolTipService.ToolTip>
@@ -126,7 +127,7 @@
                 </Storyboard>
             </StackPanel.Resources>
             <!--TO DO: ADD SETTINGS BTN -->
-            <TextBlock x:Name="xPresentationTitle"  Opacity="0"  Foreground="White" TextAlignment="Center" Text="Presentation Mode" FontSize="20"   PointerPressed="XSettingsGrid_OnPointerPressed" Padding="0, 0, 0, 20" Margin="-10,-28,0,0"/>
+            <TextBlock x:Name="xPresentationTitle"  Opacity="0"  Foreground="White" TextAlignment="Center" Text="Presentation Mode" FontSize="20" Width="200"  HorizontalAlignment="Center"  Padding="0, 0, 0, 20" Margin="-10,-28,0,0"/>
 
             <!--<TextBlock x:Name="xTitle" Opacity="1"  TextAlignment="Center" Text="{x:Bind CurrTitle, Mode=OneWay}" FontSize="26" Padding="0, 0, 0, 15" Margin="0,5,0,0"/>-->
             <local:EditableTextBlock Opacity="1"  TextAlignment="Center" Text="{x:Bind CurrTitle, Mode=OneWay}" HorizontalContentAlignment="Center" MinWidth="265" FontSize="26" Padding="0, 0, 0, 15" Margin="0,5,0,0" HorizontalAlignment="Left" x:Name="xTitle" ></local:EditableTextBlock>
@@ -138,7 +139,7 @@
 
             </CommandBar>
             <TextBlock x:Name="xHelpPrompt" x:FieldModifier="public" Visibility="Collapsed" Opacity="0"  TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
-            <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
+            <Grid Margin="0, 30, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>

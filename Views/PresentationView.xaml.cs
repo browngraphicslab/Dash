@@ -45,11 +45,6 @@ namespace Dash
             get => ViewModel?.Presentations;
         }
 
-        public ObservableCollection<string> PresTitles
-        {
-            get => ViewModel?.PresTitles;
-        }
-
         public PresentationView()
         {
             InitializeComponent();
@@ -780,43 +775,38 @@ namespace Dash
             if (IsPresentationPlaying) PlayStopClick();
         }
 
-
-        private void RenamePres(string name)
-        {
-            ViewModel.CurrPres?.SetField(KeyStore.TitleKey, new TextController(name), true);
-        }
-
+        //opens settings menu to change the working presentation
         private void XSettingsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             xSettingsFlyout.ShowAt(xSettingsButton);
         }
 
-        private void UIElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            //throw new NotImplementedException();
-            xSettingsFlyout.ShowAt(xSettingsButton);
-        }
-
         private void XPresentations_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //find the presentation whose title matches the selection
-            DocumentController selectedPres = Presentations.Single(t => t.Title == (xPresentations.SelectedItem as string));
+            //update CurrPres accordingly
             ViewModel.CurrPres = (xPresentations.SelectedItem as DocumentController);
+            if (ViewModel?.CurrPres != null) xTitle.Text = ViewModel.CurrPres.Title;
         }
 
+        /// <summary>
+        /// Create new pres & set it to be the current presentation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XNewPresButton_OnClick(object sender, RoutedEventArgs e)
         {
             ViewModel.SetCurrentPresentation(ViewModel.MakeNewPres());
             xTitle.Text = ViewModel.CurrPres.Title;
         }
 
+        /// <summary>
+        /// Typing into the title box should change the name of the current presentation to the string entered
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XTitleBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // determines if the keybox is in a state where the user has submitted the inputted text
-
-            ViewModel.PresTitles.Remove(ViewModel.CurrPres.Title);
-            RenamePres(xTitle.Text);
-            ViewModel.PresTitles.Add(xTitle.Text);
+            ViewModel.RenamePres(ViewModel.CurrPres, xTitle.Text);
         }
     }
 }
