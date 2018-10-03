@@ -171,6 +171,7 @@
     <Compile Include="Browser\TableExtractionRequest.cs" />
     <Compile Include="Browser\UrlChangedRequest.cs" />
     <Compile Include="Browser\ActivateRequest.cs" />
+    <Compile Include="Controllers\Operators\JoinOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
@@ -1506,13 +1507,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="DashShared\DashShared.csproj">
-      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
-      <Name>DashShared</Name>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
   </ItemGroup>
@@ -1594,6 +1588,12 @@
     <SDKReference Include="WindowsDesktop, Version=10.0.17134.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DashShared\DashShared.csproj">
+      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
+      <Name>DashShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

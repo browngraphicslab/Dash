@@ -103,6 +103,7 @@ namespace Dash
             coll_title,
             rtf_title,
             inside,
+            join,
 
             // images
             image,
