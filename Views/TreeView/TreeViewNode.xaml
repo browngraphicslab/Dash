@@ -13,35 +13,9 @@
     DataContextChanged="TreeViewNode_OnDataContextChanged"
     Loaded="TreeViewNode_OnLoaded"
     Unloaded="TreeViewNode_OnUnloaded">
-    <UserControl.Resources>
-        <local:ExpandedToArrowConverter x:Key="ExpandedToArrowConverter"></local:ExpandedToArrowConverter>
-    </UserControl.Resources>
 
     <Grid>
-        <Grid.ContextFlyout>
-            <MenuFlyout x:Name="MenuFlyout" Opening="MenuFlyout_OnOpening"  Closed="MenuFlyout_OnClosed">
-                <MenuFlyoutItem Text="Go To" Click="GotoFlyoutItem_OnClick"></MenuFlyoutItem>
-                <MenuFlyoutItem Text="Open" Click="OpenFlyoutItem_OnClick"></MenuFlyoutItem>
-                <MenuFlyoutItem Text="Rename" Click="RenameFlyoutItem_OnClick"></MenuFlyoutItem>
-                <MenuFlyoutItem Text="Delete" Click="DeleteFlyoutItem_OnClick"></MenuFlyoutItem>
-            </MenuFlyout>
-        </Grid.ContextFlyout>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBlock x:Name="XArrowBlock" Foreground="{StaticResource InverseTextColor}" FontFamily="{StaticResource FontAwesome}" Text="{x:Bind IsExpanded, Converter={StaticResource ExpandedToArrowConverter}, Mode=OneWay}" Tapped="XArrowBlock_OnTapped" Visibility="{x:Bind IsCollection, Mode=OneWay}"></TextBlock>
-        <Border x:Name="XTitleBorder"  Grid.Column="1" Grid.Row="0" Visibility="{x:Bind Not(IsEditing), Mode=OneWay}" HorizontalAlignment="Left">
-            <TextBlock x:Name="XTitleBlock" Foreground="{StaticResource InverseTextColor}"
-                   Tapped="XTitleBlock_OnTapped" DoubleTapped="XTitleBlock_OnDoubleTapped" IsDoubleTapEnabled="True"></TextBlock>
-        </Border>
-        <TextBox x:Name="XRenameBox" Grid.Column="1" Grid.Row="0" Visibility="{x:Bind IsEditing, Mode=OneWay}"
-                 GotFocus="XRenameBox_OnGotFocus" LostFocus="XRenameBox_OnLostFocus"
-                 KeyDown="XRenameBox_OnKeyDown"></TextBox>
+        <TextBlock Text="Hello"></TextBlock>
         <local:TreeViewList x:Name="XTreeViewList" Grid.Row="1" Grid.Column="1" Visibility="{x:Bind IsExpanded, Mode=OneWay}" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
     </Grid>
 </UserControl>

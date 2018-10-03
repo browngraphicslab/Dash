@@ -110,7 +110,6 @@ namespace Dash.Views.TreeView
                 if (value == _isEditing) return;
                 _isEditing = value;
                 OnPropertyChanged();
-                XRenameBox.Focus(FocusState.Programmatic);
             }
         }
 
@@ -123,7 +122,6 @@ namespace Dash.Views.TreeView
         public void Select()
         {
             IsSelected = true;
-            XTitleBorder.Background = SelectedBrush;
         }
 
         /// <summary>
@@ -132,7 +130,6 @@ namespace Dash.Views.TreeView
         public void Deselect()
         {
             IsSelected = false;
-            XTitleBorder.Background = null;
         }
 
         public TreeViewNode()
@@ -168,15 +165,13 @@ namespace Dash.Views.TreeView
 
             if (ViewModel != null)
             {
-                XTitleBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController> { Document = ViewModel.DocumentController, Key = KeyStore.TitleKey, Mode = BindingMode.OneWay });
-
                 SplitDocumentOnActiveDocumentChanged(SplitFrame.ActiveFrame);
 
                 var collectionField = ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 if (collectionField != null)
                 {
                     IsCollection = true;
-                    IsExpanded = true;
+                    IsExpanded = false;
                     XTreeViewList.DataContext = new CollectionViewModel(ViewModel.DocumentController, KeyStore.DataKey);
                 }
             }
@@ -194,7 +189,6 @@ namespace Dash.Views.TreeView
 
         private void SplitDocumentOnActiveDocumentChanged(SplitFrame splitFrame)
         {
-            XTitleBlock.FontWeight = ViewModel?.DataDocument.Equals(splitFrame.DocumentController.GetDataDocument()) == true ? FontWeights.Bold : FontWeights.Normal;
         }
 
         #region Renaming
@@ -203,9 +197,6 @@ namespace Dash.Views.TreeView
         {
             using (UndoManager.GetBatchHandle())
             {
-                if (ViewModel.DocumentController.GetField<TextController>(KeyStore.TitleKey) != null)
-                    ViewModel.DocumentController.SetTitle(XRenameBox.Text);
-                else ViewModel.DataDocument.SetTitle(XRenameBox.Text);
                 IsEditing = false;
             }
         }
@@ -224,18 +215,12 @@ namespace Dash.Views.TreeView
         {
             void FocusResizeBox(object s, object o)
             {
-                MenuFlyout.Closed -= FocusResizeBox;
                 IsEditing = true;
-                XRenameBox.Focus(FocusState.Keyboard);
             }
-
-            MenuFlyout.Closed += FocusResizeBox; //Psuedo-hack to get focusing the text box to work
         }
 
         private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            XRenameBox.Text = ViewModel.DocumentController.Title ?? ViewModel.DataDocument.Title;
-            XRenameBox.SelectAll();
         }
 
         private void XRenameBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -401,12 +386,6 @@ namespace Dash.Views.TreeView
 
         private void MenuFlyout_OnClosed(object sender, object e)
         {
-            var itemsToRemove = MenuFlyout.Items?.Where(mfi => mfi.Tag is bool b && b).ToList();
-            if (itemsToRemove == null) return;
-            foreach (var menuFlyoutItemBase in itemsToRemove)
-            {
-                MenuFlyout.Items?.Remove(menuFlyoutItemBase);
-            }
         }
 
         private void MenuFlyout_OnOpening(object sender, object e)
@@ -416,7 +395,6 @@ namespace Dash.Views.TreeView
                 foreach (var collectionItem in GetCollectionItems())
                 {
                     collectionItem.Tag = true;
-                    MenuFlyout.Items?.Add(collectionItem);
                 }
             }
         }

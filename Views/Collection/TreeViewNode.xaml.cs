@@ -50,41 +50,10 @@ namespace Dash
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
         private readonly ObservableCollection<SnapshotView> _items = new ObservableCollection<SnapshotView>();
-        private bool _snapStarted;
 
         public TreeViewNode()
         {
             InitializeComponent();
-            SetupTooltips();
-        }
-
-        private ToolTip _snapshots;
-        private void SetupTooltips()
-        {
-            _snapshots = new ToolTip()
-            {
-                Content = "View Snapshots",
-                Placement = PlacementMode.Bottom,
-                VerticalOffset = 5
-            };
-            ToolTipService.SetToolTip(XSnapshotArrowBlock, _snapshots);
-        }
-
-        public void UpdateSnapshots()
-        {
-            var snapshots = ViewModel?.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
-            if (snapshots != null && snapshots.Count > _items.Count && !_snapStarted)
-            {
-                _snapStarted = true;
-                XSnapshotArrowBlock.Visibility = Visibility.Visible;
-
-                NewSnapshot();
-            }
-
-            if (snapshots == null || snapshots.Count == 0)
-            {
-                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-            }
         }
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -100,91 +69,20 @@ namespace Dash
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
             if (sender is FontIcon icon && ToolTipService.GetToolTip(icon) is ToolTip tipIcon) tipIcon.IsOpen = false;
         }
-
-        public async void NewSnapshot()
-        {
-            var snapshots = (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>);
-            int index = _items.Count;
-            DocumentController doc = snapshots?[index];
-
-            string image = null;
-            string time = null;
-            if (snapshots != null)
-            {
-                image = doc.GetField<TextController>(KeyStore.SnapshotImage, true)?.Data;
-                time = doc.GetField<TextController>(KeyStore.DateModifiedKey, true)?.Data;
-            }
-
-            if (image == null)
-            {
-                image = await Util.ExportAsImage(SplitFrame.ActiveFrame.Document, "snapshot.png", true);
-                doc?.SetField<TextController>(KeyStore.SnapshotImage, image, true);
-                time = DateTime.Now.ToString(new CultureInfo("en-US"));
-                doc?.SetField<TextController>(KeyStore.DateModifiedKey, time, true);
-            }
-
-            var newSnapshot = new SnapshotView(time, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + image, index);
-            _items.Add(newSnapshot);
-            _snapStarted = false;
-
-        }
-
-        private void snapshotsFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-        {
-            UpdateSnapshots();
-        }
-
+        
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            oldViewModel?.DocumentController.GetDataDocument().RemoveFieldUpdatedListener(KeyStore.SnapshotsKey, snapshotsFieldUpdated);
             if (Equals(args.NewValue, oldViewModel))
             {
-                var dvm = (DocumentViewModel)args.NewValue;
-                if (dvm != null)
-                {
-                    dvm.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.SnapshotsKey, snapshotsFieldUpdated);
-                    snapshotsFieldUpdated(null, null, null);
-                }
                 return;
             }
             if (args.NewValue != null)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
-
-                var textBlockBinding = new FieldBinding<TextController>
-                {
-                    Document = dvm.DataDocument,
-                    Key = KeyStore.TitleKey,
-                    FallbackValue = "Untitled",
-                    Mode = BindingMode.OneWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument()),
-                    Tag = "TreeViewNode text block binding"
-                };
-
-                var textBoxBinding = new FieldBinding<TextController>
-                {
-                    Document = dvm.DataDocument,
-                    Key = KeyStore.TitleKey,
-                    FallbackValue = "Untitled",
-                    Mode = BindingMode.TwoWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument()),
-                    FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
-                    Tag = "TreeViewNode text box binding"
-                };
-
-                var headerBinding = new FieldBinding<NumberController>
-                {
-                    Document = dvm.DocumentController,
-                    Key = KeyStore.SelectedKey,
-                    FallbackValue = new SolidColorBrush(Colors.Transparent),
-                    Mode = BindingMode.OneWay,
-                    Converter = new SelectedToColorConverter()
-                };
                 
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
-                var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
 
                 if (collection != null)
                 {
@@ -192,31 +90,13 @@ namespace Dash
                     CollectionTreeView.DataContext = collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                     //xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-                    xArrowBlock.Visibility = Visibility.Visible;
-                    textBlockBinding.Tag = "TreeViewNodeCol";
                 }
                 else
                 {
                     //xArrowBlock.Text = "";
-                    xArrowBlock.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
-                if (snapshots != null && snapshots.Count != 0)
-                {
-                    XSnapshotArrowBlock.Visibility = Visibility.Visible;
-                    textBlockBinding.Tag = "TreeViewNodeSnapCol";
-                }
-                else
-                {
-                    XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-                    XSnapshotsPopup.Visibility = Visibility.Collapsed;
-                }
-                XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
-                XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
-                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
-
-                UpdateSnapshots();
             }
         }
 
@@ -241,40 +121,10 @@ namespace Dash
             if (CollectionTreeView.Visibility == Visibility.Collapsed)
             {
                 CollectionTreeView.Visibility = Visibility.Visible;
-
-                xCollectionIn.Begin();
-
-                var centX = (float)xArrowBlock.ActualWidth / 2 + 1;
-                var centY = (float)xArrowBlock.ActualHeight / 2 + 1;
-                //open search bar
-                xArrowBlock.Rotate(90.0f, centX, centY, 300).Start();
             }
             else
             {
-
-                xCollectionOut.Begin();
                 CollectionTreeView.Visibility = Visibility.Collapsed;
-
-                var centX = (float)xArrowBlock.ActualWidth / 2;
-                var centY = (float)xArrowBlock.ActualHeight / 2;
-                //open search bar
-
-                xArrowBlock.Rotate(0.0f, centX, centY, 300).Start();
-            }
-        }
-
-        private void XSnapshotBlock_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-            if (ToolTipService.GetToolTip(XSnapshotArrowBlock) is ToolTip tip) tip.IsOpen = false;
-            //Toggle visibility
-            if (XSnapshotsPopup.Visibility == Visibility.Collapsed)
-            {
-                XSnapshotsPopup.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                XSnapshotsPopup.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -304,9 +154,6 @@ namespace Dash
             //if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus, false))
             //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
             //TODO TreeView
-
-	        XBlockBorder.Background = Application.Current.Resources["DashLightBlueBrush"] as Brush;
-            XTextBlock.Foreground = new SolidColorBrush(Windows.UI.Colors.White);
         }
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -333,10 +180,6 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             UndoManager.StartBatch();
-            xBorder.Visibility = Visibility.Visible;
-            XTextBlock.Visibility = Visibility.Collapsed;
-            XTextBox.Focus(FocusState.Keyboard);
-            XTextBox.SelectAll();
         }
         
 
@@ -347,8 +190,6 @@ namespace Dash
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            xBorder.Visibility = Visibility.Collapsed;
-            XTextBlock.Visibility = Visibility.Visible;
             UndoManager.EndBatch();
         }
 
@@ -358,8 +199,6 @@ namespace Dash
             //finish rename on enter
             if (e.Key == VirtualKey.Enter)
             {
-                xBorder.Visibility = Visibility.Collapsed;
-                XTextBlock.Visibility = Visibility.Visible;
             }
         }
 
@@ -367,35 +206,6 @@ namespace Dash
         {
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
-        }
-
-        private void DeleteSnap_OnClick(object sender, TappedRoutedEventArgs e)
-        {
-            var data = (SnapshotView)((e.OriginalSource as TextBlock)?.DataContext ?? (e.OriginalSource as Grid)?.DataContext);
-            if (data == null) return;
-
-            int index = data.Index;
-            if (!_items.Count.Equals(0))
-            {
-                _items.RemoveAt(index);
-            }
-            
-         
-            (ViewModel.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as
-                ListController<DocumentController>)?.RemoveAt(index);
-            foreach (var snap in _items)
-            {
-                if (snap.Index > index)
-                {
-                    snap.Index -= 1;
-                }
-            }
-
-            if (_items.Count == 0)
-            {
-                XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
-            }
-
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -412,10 +222,6 @@ namespace Dash
                 //    MainPage.Instance.SetCurrentWorkspace(docToFocus);
                 //TODO TreeView
             }
-
-            SelectedTitle.Text = item.Title;
-            SelectedImage.Source = new BitmapImage(new Uri(item.Image));
-            XSnapshotSelected.Visibility = Visibility.Visible;
         }
 
         private void TextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -426,8 +232,6 @@ namespace Dash
             var text = (sender as TextBox).Text;
             var newTitle = text + newKey;
             newTitle = newKey == "back" ? text.Substring(0, text.Length ) : newTitle;
-
-            SelectedTitle.Text = newTitle;
 
             var item = (sender as TextBox)?.DataContext as SnapshotView;
             item.Title = newTitle;

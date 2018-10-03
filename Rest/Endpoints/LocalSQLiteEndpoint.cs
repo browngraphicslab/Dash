@@ -120,8 +120,6 @@ namespace Dash
 
         public override void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
         {
-            var watch = Stopwatch.StartNew();
-
             _transactionMutex.WaitOne();
             var addDocCommand = new SqliteCommand
             {
@@ -133,9 +131,8 @@ namespace Dash
             };
             addDocCommand.Parameters.AddWithValue("@id", newDocument.Id);
             addDocCommand.Parameters.AddWithValue("@field", newDocument.Serialize());
-            watch.Stop();
 
-            if (!SafeExecuteMutateQuery(addDocCommand, error, "AddDocument", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(addDocCommand, error, "AddDocument", 1)) return;
 
             success?.Invoke(newDocument);
             NewChangesToBackup = true;
@@ -145,32 +142,29 @@ namespace Dash
         {
             if (RichTextView._searchHighlight)
             {
-                return;
-            }
-            var watch = Stopwatch.StartNew();
-
-            _transactionMutex.WaitOne();
-            var updateDocCommand =
-                new SqliteCommand
-                {
+                _transactionMutex.WaitOne();
+                var updateDocCommand =
+                    new SqliteCommand
+                    {
                     //i.e. "Set the field attribute in the database to the field serialization (below) only for the tuplet with the document ID (also specified below)"
                     CommandText = @"UPDATE `Fields` SET `field`=@field WHERE `id`=@id;",
-                    Connection = _db,
-                    Transaction = _currentTransaction
-                };
-            updateDocCommand.Parameters.AddWithValue("@id", documentToUpdate.Id);
-            updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
-            watch.Stop();
+                        Connection = _db,
+                        Transaction = _currentTransaction
+                    };
+                updateDocCommand.Parameters.AddWithValue("@id", documentToUpdate.Id);
+                updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
 
-            if (!SafeExecuteMutateQuery(updateDocCommand, error, "UpdateDocument", watch.ElapsedMilliseconds)) return;
+                if (SafeExecuteMutateQuery(updateDocCommand, error, "UpdateDocument", 1))
+                {
 
-            success?.Invoke(documentToUpdate);
-            NewChangesToBackup = true;
+                    success?.Invoke(documentToUpdate);
+                    NewChangesToBackup = true;
+                }
+            }
         }
 
         public override void DeleteDocument(FieldModel documentToDelete, Action success, Action<Exception> error)
         {
-            var watch = Stopwatch.StartNew();
 
             _transactionMutex.WaitOne();
             var deleteDocCommand = new SqliteCommand
@@ -181,9 +175,8 @@ namespace Dash
                 Transaction = _currentTransaction
             };
             deleteDocCommand.Parameters.AddWithValue("@id", documentToDelete.Id);
-            watch.Stop();
 
-            if (!SafeExecuteMutateQuery(deleteDocCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(deleteDocCommand, error, "DeleteDocument", 1)) return;
 
             success?.Invoke();
             NewChangesToBackup = true;

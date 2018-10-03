@@ -59,7 +59,7 @@ namespace Dash
 
         private void EnterPressed(KeyRoutedEventArgs obj)
         {
-            if (!MainPage.Instance.IsShiftPressed())
+            if (obj == null || !MainPage.Instance.IsShiftPressed())
             {
                 var keyString = xTextBox.Text;
                 if (keyString?.StartsWith("=") ?? false)
@@ -271,7 +271,10 @@ namespace Dash
                 else if (args.Items.FirstOrDefault() is DocumentViewModel draggedDoc)
                 {
                     docList.Remove(draggedDoc.DocumentController);
-                    ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
+                    var lc = ViewModel.ContainerDocument.GetDataDocument().GetField<ListController<DocumentController>>(ViewModel.CollectionKey);
+                    foreach (var dm in lc.TypedData.ToArray())
+                        if (dm.Equals(draggedDoc.DocumentController))
+                            lc.Remove(dm);
                 }
             }
         }

@@ -36,10 +36,10 @@ namespace Dash
 
         protected static void SetupBindings(EditableTextBlock element, DocumentController docController, Context context)
         {
-            BindFontWeight(element, docController, context);
-            BindFontSize(element, docController, context);
-            BindTextAlignment(element, docController, context);
-            BindBackgroundColor(element, docController, context);
+            //BindFontWeight(element, docController, context);
+            //BindFontSize(element, docController, context);
+            //BindTextAlignment(element, docController, context);
+            //BindBackgroundColor(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
         /// <summary>
