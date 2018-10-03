@@ -454,7 +454,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.ViewModel.Content as CollectionView;
-                    cview?.ViewModel?.FitContents(cview);
+                    cview?.ViewModel?.FitContents();
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }

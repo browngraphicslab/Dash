@@ -93,5 +93,10 @@ namespace Dash
         {
             return StringSearchModel.False;
         }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
