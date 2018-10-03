@@ -21,7 +21,6 @@ namespace Dash
         public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public CollectionViewModel OldViewModel = null;
-        public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         private DSL _dsl;
         private OuterReplScope _scope;
         private DocumentController newDoc;
@@ -32,7 +31,6 @@ namespace Dash
             xTextBox.AddKeyHandler(VirtualKey.Enter, EnterPressed);
             xThumbs.Loaded += (sender, e) =>
             {
-                DataContextChanged -= CollectionPageView_DataContextChanged;
                 DataContextChanged += CollectionPageView_DataContextChanged;
                 if (ViewModel != null)
                     CollectionPageView_DataContextChanged(null, null);
@@ -48,13 +46,13 @@ namespace Dash
             };
             Unloaded += (sender, e) =>
             {
-                if (ViewModel != null)
-                {
-                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-                }
+                //if (ViewModel != null)
+                //{
+                //    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                //}
 
-                if (OldViewModel != null)
-                    OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                //if (OldViewModel != null)
+                //    OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 OldViewModel = null;
             };
 
@@ -106,12 +104,6 @@ namespace Dash
             }
         }
 
-        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            PageDocumentViewModels = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels.Select((vm) => new DocumentViewModel(vm.DocumentController) { Undecorated = true, IsDimensionless = true }));
-            CurPage = PageDocumentViewModels.LastOrDefault();
-        }
-
         private void CollectionPageView_LosingFocus(UIElement sender, LosingFocusEventArgs args)
         {
             if (args.FocusState == FocusState.Pointer)
@@ -127,10 +119,10 @@ namespace Dash
             else if (args.FocusState == FocusState.Keyboard)
             {
                 //if (this.GetDescendantsOfType<RichEditBox>().Contains(args.OldFocusedElement))
-                    args.Handled = args.Cancel = true;
+                args.Handled = args.Cancel = true;
             }
         }
-        
+
 
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -138,8 +130,8 @@ namespace Dash
                 args.Handled = true;
             if (ViewModel != null && ViewModel != OldViewModel)
             {
-                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
-                DocumentViewModels_CollectionChanged(null, null);
+                Debug.WriteLine("Data Context changing...");
+                CurPage = xThumbs.SelectedItem as DocumentViewModel;
                 OldViewModel = ViewModel;
             }
         }
@@ -160,19 +152,31 @@ namespace Dash
             var dataBox = new DataBox(caption);
             XDocDisplay.DataContext = new DocumentViewModel(dataBox.Document);
         }
+
+
         public DocumentViewModel CurPage
         {
-            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : PageDocumentViewModels.FirstOrDefault(); }
+
+            get
+            {
+                return (xThumbs.SelectedIndex < ViewModel.DocumentViewModels.Count && xThumbs.SelectedIndex >= 0)
+                    ? ViewModel.DocumentViewModels[xThumbs.SelectedIndex]
+                    : ViewModel.DocumentViewModels.FirstOrDefault();
+            }
+            //get
+            //{
+            //    return xThumbs.SelectedItem as DocumentViewModel;
+            //}
             set
             {
                 _scope = new OuterReplScope();
                 _scope.DeclareVariable("this", value?.DocumentController);
                 _dsl = new DSL(_scope);
-                
+
                 EnterPressed(null);
             }
         }
-        
+
 
         public void SetDropIndicationFill(Brush fill)
         {
@@ -182,7 +186,7 @@ namespace Dash
         {
             if (CurPage != null)
             {
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
+                var ind = ViewModel.DocumentViewModels.IndexOf(CurPage);
                 xThumbs.SelectedIndex = Math.Max(0, ind - 1);
             }
         }
@@ -191,23 +195,24 @@ namespace Dash
         {
             if (CurPage != null)
             {
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
-                xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
+                var ind = ViewModel.DocumentViewModels.IndexOf(CurPage);
+                xThumbs.SelectedIndex = Math.Min(ViewModel.DocumentViewModels.Count - 1, ind + 1);
             }
         }
-        
+
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var ind = xThumbs.SelectedIndex;
-            if (PageDocumentViewModels.Count > 0)
+            int ind = xThumbs.SelectedIndex;
+            Debug.WriteLine("selected index:" + ind);
+            if (ViewModel.DocumentViewModels.Count > 0)
             {
-                CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+                CurPage = xThumbs.SelectedItem as DocumentViewModel;
                 _scope = new OuterReplScope();
                 _scope.DeclareVariable("this", CurPage.DocumentController);
                 _dsl = new DSL(_scope);
             }
 
-            if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
+            if (xThumbs.ItemsPanelRoot != null && ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
             {
                 var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
                 if (x != null)
@@ -216,14 +221,15 @@ namespace Dash
                     {
                         x.Focus(FocusState.Keyboard);
                         x.Focus(FocusState.Pointer);
-                    } catch (Exception)
+                    }
+                    catch (Exception)
                     {
 
                     }
                 }
             }
 
-            
+
         }
 
         private void XDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -253,7 +259,8 @@ namespace Dash
             try
             {
                 args.Cancel = true;
-            } catch (Exception)
+            }
+            catch (Exception)
             {
 
             }
@@ -261,7 +268,8 @@ namespace Dash
 
         private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            try { 
+            try
+            {
                 xThumbs.Focus(FocusState.Pointer);
             }
             catch (Exception)
@@ -271,8 +279,8 @@ namespace Dash
         }
         private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (!(FocusManager.GetFocusedElement() is FrameworkElement focus) || 
-                focus.GetFirstAncestorOfType<CollectionPageView>() != this || 
+            if (!(FocusManager.GetFocusedElement() is FrameworkElement focus) ||
+                focus.GetFirstAncestorOfType<CollectionPageView>() != this ||
                 xThumbs.GetDescendants().Contains(focus))
             {
                 xThumbs.Focus(FocusState.Pointer);
@@ -293,6 +301,7 @@ namespace Dash
                 else if (args.Items.FirstOrDefault() is DocumentViewModel draggedDoc)
                 {
                     docList.Remove(draggedDoc.DocumentController);
+                    Debug.WriteLine("first or default");
                     ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
                 }
             }
@@ -303,7 +312,8 @@ namespace Dash
             foreach (object m in e.Items)
             {
                 int ind = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.SetDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
+                Debug.WriteLine("drag item index: "+ind);
+                e.Data.SetDragModel(new DragDocumentModel(ViewModel.DocumentViewModels[ind].DocumentController));
             }
         }
 
@@ -326,7 +336,7 @@ namespace Dash
             if (!this.IsRightBtnPressed())
                 e.Handled = true;
             else e.Complete();
-         }
+        }
 
         /// <summary>
         /// when we're left-dragging the splitter, we don't want to let events fall through to the ManipulationControls which would cancel the manipulation.
@@ -336,7 +346,7 @@ namespace Dash
         /// <param name="e"></param>
         private void xSplitter_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
         }
 
         private void xSplitter_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -392,7 +402,7 @@ namespace Dash
 
         private void TemplateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!templateMode)
+            if (!templateMode && CurPage!=null)
             {
                 templateMode = true;
                 templateButton.Content = "Remove Template";
@@ -409,9 +419,10 @@ namespace Dash
         private void RemoveTemplate()
         {
             var ind = xThumbs.SelectedIndex;
-            if (PageDocumentViewModels.Count > 0)
+            if (ViewModel.DocumentViewModels.Count > 0)
             {
-                CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+                //CurPage = ViewModel.DocumentViewModels[ind];
+                CurPage = xThumbs.SelectedItem as DocumentViewModel;
             }
         }
 
