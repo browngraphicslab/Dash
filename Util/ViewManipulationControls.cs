@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.Devices.Input;
 using Windows.System;
 using Windows.UI.Input;
@@ -37,6 +38,8 @@ namespace Dash
 
         public PointerDeviceType BlockedInputType { get; set; }
         public bool FilterInput { get; set; }
+
+        private bool DraggingDoc;
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
@@ -95,6 +98,13 @@ namespace Dash
             }
         }
 
+        private void DragManipCompletedTouch(object sender, EventArgs e)
+        {
+            CollectionFreeformBase.NumFingers--;
+            DraggingDoc = false;
+            SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;
+        }
+
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
@@ -103,22 +113,16 @@ namespace Dash
                 //e.Complete();
                 _processManipulation = false;
             }
-            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel())
+            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !DraggingDoc)
             {
                 //drag document 
                 if (!SelectionManager.IsSelected(docView))
                 {
                     SelectionManager.Select(docView, false);
-                    try
-                    {
-                        SelectionManager.TryInitiateDragDrop(docView, null, e);
-                    }
-                    catch (Exception exception)
-                    {
-                        Console.WriteLine(exception);
-                    }
+                    SelectionManager.DragManipulationCompleted += DragManipCompletedTouch;
+                    DraggingDoc = true;
 
-                    CollectionFreeformBase.NumFingers--;
+                    SelectionManager.TryInitiateDragDrop(docView, null, e);
                 }
             }
             else if (!(_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent()))

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
@@ -245,7 +246,8 @@ namespace Dash
                 e.Complete();
             }
 
-            _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs : new List<DocumentView>(new[] { draggedView });
+            Debug.WriteLine("DragViews in initiate");
+            _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
             {
@@ -288,7 +290,7 @@ namespace Dash
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.SetDragModel(new DragDocumentModel(_dragViews,
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews.ToArray().ToList(),
                 _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList(),
                 offsets.ToList(), args.GetPosition(docView)));
 
