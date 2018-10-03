@@ -33,20 +33,8 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            // create the pdf view
-            //var pdfView = new PdfView() { DataContext = docController,
-            //    LayoutDocument = docController.GetActiveLayout() ?? docController,
-            //    DataDocument = docController.GetDataDocument()
-            //};
-            //var pdf = pdfView.Pdf;
-
-            //// make the pdf respond to resizing, interactions etc...
-            //SetupBindings(pdfView, docController, context);
-            //SetupPdfBinding(pdf, docController, context);
-
             MainPage.Instance.TogglePopup();
             var pdfView = new PdfView(docController);
-            SetupBindings(pdfView, docController, context);
             SetupPdfBinding(pdfView, docController, context);
             
             return pdfView;

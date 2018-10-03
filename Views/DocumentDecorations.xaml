@@ -5,7 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:dash="using:Dash"
+    xmlns:dashViews="using:Dash.Views"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
@@ -23,6 +23,7 @@
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ContentRow" x:FieldModifier="public"/>
             <RowDefinition x:Name="XSuggestRow" Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.Resources>
             <Storyboard x:Name="xFadeAnimationIn">
@@ -41,8 +42,9 @@
                 />
             </Storyboard>
         </Grid.Resources>
+        <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
 
-            <Grid x:Name="xResizeFrame" Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+        <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
                 <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
                 <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
@@ -67,7 +69,7 @@
                 </Canvas>
             </Grid>
 
-            <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+            <Border Grid.RowSpan="2"  VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
             <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >

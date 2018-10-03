@@ -95,7 +95,8 @@ namespace Dash
             }
 
             outDoc.SetField(KeyStore.TitleKey, new TextController(caption), true);
-            workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDoc, true);
+           // workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDoc, true);
+            throw new System.Exception("ActiveLayoutKey code has not been updated yet");
 
             return outDoc;
         }

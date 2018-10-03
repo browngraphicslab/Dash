@@ -52,7 +52,8 @@ namespace Dash
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
             var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp, KeyStore.OperatorKey)).Document;
-            execOp.SetActiveLayout(layoutDoc, true, true);
+            //execOp.SetActiveLayout(layoutDoc, true, true);
+            throw new Exception("Active layout code has not been updated for this class");
             return execOp;
         }
         

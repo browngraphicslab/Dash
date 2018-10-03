@@ -55,7 +55,6 @@ namespace Dash
             video.Unloaded += (s, e) => video.MediaPlayer.Pause();
 
 			// setup bindings on the video
-			SetupBindings(video, docController, context);
 			SetupVideoBinding(video, docController, context);
 			
 			return video;

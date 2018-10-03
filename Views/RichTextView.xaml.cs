@@ -97,9 +97,11 @@ namespace Dash
 
             xRichEditBox.Drop += (s, e) =>
             {
-                e.Handled = true;
-                xRichEditBox_Drop(s, e);
-                this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
+                if (!MainPage.Instance.IsAltPressed())
+                {
+                    e.Handled = true;
+                    xRichEditBox_Drop(s, e);
+                }
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;
@@ -159,7 +161,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.IsSelected(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.IsSelected(docView))
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
                 }
@@ -208,7 +210,7 @@ namespace Dash
             if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
-                if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                if (args.DeselectedViews.Contains(docView))
                     docView.DeleteDocument();
             }
         }
@@ -387,7 +389,10 @@ namespace Dash
                         {
                             if (this.IsCtrlPressed())
                                 nearestOnCollection.DeleteDocument();
-                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                            else
+                            {
+                                SplitFrame.TryNavigateToDocument(nearestOnCollection.ViewModel.DocumentController);
+                            }
                         }
                         else
                         {
@@ -666,6 +671,7 @@ namespace Dash
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
         public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
         {
+            return;
             ClearSearchHighlights();
         }
 
