@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -30,9 +31,12 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("6CD6E948-800D-4536-9985-154D7A0347DC", "Access Template List");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             outputs[ResultsKey] = MainPage.Instance.MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.TemplateListKey);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new TemplateAssignmentOperatorController();

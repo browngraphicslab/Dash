@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System.Threading.Tasks;
+
+namespace Dash
 {
     /// <summary>
     /// Class used to execute DSL (Dish Scripting Language).  
@@ -17,7 +19,17 @@
             _scope = scope;
         }
 
-        public FieldControllerBase Run(string script, bool catchErrors =  false, bool undoVar = false)
+        /// <summary>
+        /// Method to call to execute a string as a Dish Script and return the FieldController return value.
+        /// This method should throw exceptions if the string is not a valid script.
+        /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message.
+        /// 
+        /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="catchErrors"></param>
+        /// <returns></returns>
+        public Task<FieldControllerBase> Run(string script, bool catchErrors =  false, bool undoVar = false)
         {
             try
             {
@@ -29,8 +41,8 @@
             {
                 if (!catchErrors) throw e;
 
-                if (e is ScriptExecutionException exception) return exception.Error.GetErrorDoc(); 
-                return new TextController(e.GetHelpfulString());
+                if (e is ScriptExecutionException exception) return Task.FromResult<FieldControllerBase>(exception.Error.GetErrorDoc()); 
+                return Task.FromResult<FieldControllerBase>(new TextController(e.GetHelpfulString()));
             }
         }
 
@@ -89,33 +101,6 @@
         public static bool FuncNameExists(string funcName) => Op.TryParse(funcName, out var funcEnum) && OperatorScript.FuncNameExists(funcEnum);
 
         /// <summary>
-        /// Method to call to execute a string as a Dish Script and return the FieldController return value.
-        /// This method should throw exceptions if the string is not a valid script.
-        /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message.
-        /// 
-        /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
-        /// </summary>
-        /// <param name="script"></param>
-        /// <param name="catchErrors"></param>
-        /// <returns></returns>
-        public static FieldControllerBase Interpret(string script, bool catchErrors = false)
-        {
-            try
-            {
-                return TypescriptToOperatorParser.Interpret(script);
-            }
-            catch (DSLException e)
-            {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
-            }
-        }
-
-
-        /// <summary>
         /// Method to call to get an operator controller that represents the script called
         /// 
         /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
@@ -149,7 +134,7 @@
         /// <param name="input"></param>
         /// <param name="catchErrors"></param>
         /// <returns></returns>
-        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
+        public static Task<FieldControllerBase> InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
         {
             var newInput = input?.Trim() ?? "";
 
@@ -157,7 +142,7 @@
             if (newInput.StartsWith("=="))
             {
                 var dsl = new DSL(scope);
-                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);//TODO we might need to prepend "return " to the input but maybe not?
+                return Task.FromResult(dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors));//TODO we might need to prepend "return " to the input but maybe not?
             }
 
             if (newInput.StartsWith("="))
@@ -167,7 +152,7 @@
             }
 
 
-            return new TextController(newInput);
+            return Task.FromResult<FieldControllerBase>(new TextController(newInput));
         }
 
 

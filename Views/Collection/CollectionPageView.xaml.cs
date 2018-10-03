@@ -57,7 +57,7 @@ namespace Dash
             LosingFocus += CollectionPageView_LosingFocus;
         }
 
-        private void EnterPressed(KeyRoutedEventArgs obj)
+        private async void EnterPressed(KeyRoutedEventArgs obj)
         {
             if (!MainPage.Instance.IsShiftPressed())
             {
@@ -66,7 +66,7 @@ namespace Dash
                 {
                     try
                     {
-                        var result = _dsl.Run(keyString.Substring(1));
+                        var result = await _dsl.Run(keyString.Substring(1));
                         SetHackCaptionText(result == null
                             ? new TextController(
                                 "Field not found, make sure the key name is correct and that you're accessing the right document!")
@@ -336,7 +336,7 @@ namespace Dash
             }
         }
 
-        private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var docs = new List<DocumentController>();
             int i = 0;
@@ -351,7 +351,7 @@ namespace Dash
                 {
                     try
                     {
-                        var result = _dsl.Run(keyString.Substring(1));
+                        var result = await _dsl.Run(keyString.Substring(1));
                         var db = new DataBox(result, i * 50, i * 50);
                         docs.Add(db.Document);
                     }

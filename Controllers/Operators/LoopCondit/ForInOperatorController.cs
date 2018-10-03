@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -47,9 +48,12 @@ namespace Dash
         };
 
         //TODO: remove requirement that output exists
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             outputs[ResultKey] = new NumberController(0);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ForOperatorController();

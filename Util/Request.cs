@@ -109,9 +109,10 @@ namespace Dash
             {
                 Message.Content = MessageBody;
             }
-            if (
-                !(string.IsNullOrWhiteSpace(ApiUri.AbsolutePath) || string.IsNullOrWhiteSpace(Key) ||
-                  string.IsNullOrWhiteSpace(Secret)))
+            if (AuthUri != null &&
+                !string.IsNullOrWhiteSpace(AuthUri.AbsolutePath) &&
+                !string.IsNullOrWhiteSpace(Key) &&
+                !string.IsNullOrWhiteSpace(Secret))
             {
                 TokenMsg = new HttpRequestMessage(AuthRequestType, AuthUri);
                 //var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
