@@ -70,8 +70,6 @@ namespace Dash
 
         protected static void SetupBindings(Grid grid, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(grid, docController, context);
-
             AddBinding(grid, docController, GridRowsTypeKey, context, BindRowDefinitions);
             AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
         }

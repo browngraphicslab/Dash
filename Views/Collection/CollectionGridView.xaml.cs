@@ -64,13 +64,11 @@ namespace Dash
                 
             }
         }
-
-        #region DragAndDrop
+        
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;
         }
-        #endregion
         
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)

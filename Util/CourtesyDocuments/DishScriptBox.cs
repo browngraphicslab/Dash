@@ -23,17 +23,13 @@ namespace Dash
 
         protected static void SetupBindings(DishReplView element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
         }
 
 
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var tb = new DishScriptEditView(docController);
-            SetupBindings(tb, docController, context);
-
-            return tb;
+            return new DishScriptEditView(docController);
         }
     }
 }
