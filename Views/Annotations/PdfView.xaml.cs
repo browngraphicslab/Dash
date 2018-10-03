@@ -162,7 +162,34 @@ namespace Dash
                 {
                     Debug.Assert(allSelections.Last().Range.Value != -1);
                     Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
+                    StringBuilder fontStringBuilder = new StringBuilder("\\fonttbl ");
+                    Dictionary<string, int> fontMap = new Dictionary<string, int>();
+                    int fontNum = 0;
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
+                        {
+                            var ele = _bottomAnnotationOverlay.TextSelectableElements[i];
+                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
+;
+                            var correctedFont = fontFamily;
+                            if ((fontFamily?.Contains("Times") ?? false))
+                            {
+                                correctedFont = "Georgia";
+                            }
+
+                            if (!fontMap.ContainsKey(correctedFont.ToString()))
+                            {
+                                fontMap.Add(correctedFont.ToString(), fontNum);
+                                fontStringBuilder.Append("\\f" + fontNum + " " + correctedFont + "; ");
+                                fontNum++;
+                            }
+                        }
+                    }
+
+
                     StringBuilder sb = new StringBuilder();
+                    sb.Append("{\\rtf1\\ansi {" + fontStringBuilder + "}\\f0\\pard{\\f0");
                     allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
 
                     // get the indices from our selections and ignore any duplicate selections
@@ -184,6 +211,9 @@ namespace Dash
 
                     // if there's ever a jump in our indices, insert two line breaks before adding the next index
                     var prevIndex = indices.First() - 1;
+                    var currentFontSize = 0;
+                    var isItalic = false;
+                    var isBold = false;
                     foreach (var index in indices)
                     {
                         if (prevIndex + 1 != index)
@@ -202,14 +232,47 @@ namespace Dash
                             sb.Append("\r\n\r\n");
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
+                            if ((int) selectableElement.TextData.GetFontSize() != currentFontSize)
+                            {
+                                if (isItalic && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                                        .IsItalic())
+                                {
+                                    sb.Append("}");
+                                    isItalic = false;
+                                }
+                                else if (!isItalic && selectableElement.TextData.GetFont().GetFontProgram()
+                                             .GetFontNames().IsItalic())
+                                {
+                                    sb.Append("{\\i");
+                                    isItalic = true;
+                                }
+
+                                if (isBold && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames().GetFontName()
+                                    .Contains("Bold"))
+                                {
+                                    sb.Append("}");
+                                    isBold = false;
+                                }
+                                else if (!isBold && selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                                             .GetFontName().Contains("Bold"))
+                                {
+                                    sb.Append("{\\b");
+                                    isBold = true;
+                                }
+
+                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                                currentFontSize = (int)selectableElement.TextData.GetFontSize();
+                            }
                             sb.Append((string)selectableElement.Contents);
                         }
 
                         prevIndex = index;
                     }
 
+                    sb.Append("\\f10 Test Font}}");
+
                     var dataPackage = new DataPackage();
-                    dataPackage.SetText(sb.ToString());
+                    dataPackage.SetRtf(sb.ToString());
                     dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
                     Clipboard.SetContent(dataPackage);
                     args.Handled = true;
@@ -552,17 +615,17 @@ namespace Dash
                 _currentPageCount = (int)PDFdoc.PageCount;
             }
 
-            //await Task.Run(() =>
-            //{
+            await Task.Run(() =>
+            {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    //var size = page.GetPageSize();
-                    //strategy.SetPage(i - 1, offset, size, page.GetRotation());
+                    var size = page.GetPageSize();
+                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
-                    //processor.ProcessPageContent(page);
+                    processor.ProcessPageContent(page);
                 }
-            //});
+            });
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;
