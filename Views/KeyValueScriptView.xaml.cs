@@ -25,7 +25,7 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                if (this.xFieldValue.ViewModel.DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                if (((DocumentViewModel) xFieldValue.DataContext).DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
                 {
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);

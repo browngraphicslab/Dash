@@ -10,8 +10,10 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
+using Dash.Converters;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 {
@@ -54,7 +56,16 @@ namespace Dash
             }
             if (data is ImageController img)
             {
-                currView = ImageBox.MakeView(_docController, _context);
+                var image = new Image();
+                var binding = new FieldBinding<ImageController>
+                {
+                    Document = _docController,
+                    Key = KeyStore.DataKey,
+                    Mode = BindingMode.OneWay,
+                    Converter = UriToBitmapImageConverter.Instance
+                };
+                image.AddFieldBinding(Image.SourceProperty, binding);
+                currView = image;
             }
             if (data is PdfController)
             {
@@ -62,7 +73,18 @@ namespace Dash
             }
             if (data is VideoController)
             {
-                currView = VideoBox.MakeView(_docController, _context);
+
+                var vid = new MediaPlayerElement();
+                var binding = new FieldBinding<VideoController>
+                {
+                    Document = _docController,
+                    Key = KeyStore.DataKey,
+                    Mode = BindingMode.OneWay,
+                    Converter = UriToIMediaPlayBackSourceConverter.Instance
+                };
+                vid.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
+                currView = vid;
+                //currView = VideoBox.MakeView(_docController, _context);
             }
             else if (data is AudioController)
             {
@@ -70,11 +92,20 @@ namespace Dash
             }
             else if (data is BoolController val)
             {
+                   
                 var toggleSwitch = new ToggleSwitch();
                 toggleSwitch.OnContent = "True";
                 toggleSwitch.OffContent = "False";
                 toggleSwitch.HorizontalAlignment = HorizontalAlignment.Center;
                 toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController> { Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot });
+                {
+
+
+                    //<SolidColorBrush x:Key="ToggleSwitchFillOff" Color="Green"></SolidColorBrush>
+                    //<SolidColorBrush x:Key="ToggleSwitchFillOn" Color="Yellow"></SolidColorBrush>
+
+                };
+                toggleSwitch.Margin = new Thickness(0, 12, 0, 0);
                 currView = toggleSwitch;
             }
             else if (data is ListController<TextController> textList)
@@ -82,7 +113,7 @@ namespace Dash
                 WrapPanel wrap = new WrapPanel();
                 KVPListText listText = null;
                 wrap.HorizontalAlignment = HorizontalAlignment.Center;
-                wrap.Margin = new Thickness(0, 15, 0, 0);
+                wrap.Margin = new Thickness(0, 12, 0, 0);
                 foreach (var text in textList)
                 {
                     var r = new Random();
@@ -104,16 +135,16 @@ namespace Dash
                 //currView = CollectionBox.MakeView(_docController, _context);
 
                 WrapPanel wrap = new WrapPanel();
+              
                 KVPDocBox docBox = null;
                 wrap.HorizontalAlignment = HorizontalAlignment.Center;
-                wrap.Margin = new Thickness(0, 15, 0, 0);
+                wrap.Margin = new Thickness(0, 10, 0, 0);
                 foreach (var doc in docList)
                 {
                     docBox = new KVPDocBox(doc.DocumentType, doc.Title);
                     wrap.Children.Add(docBox);
                     
                 }
-
                 currView = wrap;
             }
             else if (data is DocumentController dc)
@@ -130,44 +161,53 @@ namespace Dash
             } else if (data is ListController<BoolController> boolList)
             {
                 WrapPanel wrap = new WrapPanel();
-                KVPListText listText = null;
-                wrap.HorizontalAlignment = HorizontalAlignment.Center;
-                wrap.Margin = new Thickness(0, 15, 0, 0);
-                foreach (var booler in boolList)
-                {
-                    Grid grid = new Grid();
+                //KVPListText listText = null;
+                //wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                //wrap.Margin = new Thickness(0, 15, 0, 0);
+                //foreach (var booler in boolList)
+                //{
+                //    Grid grid = new Grid();
 
-                    grid.Width = 24;
-                    grid.Height = 24;
-                    grid.Margin = new Thickness(6, 0, 0, 0);
-                    TextBlock text = new TextBlock();
+                //    grid.Width = 24;
+                //    grid.Height = 24;
+                //    grid.Margin = new Thickness(6, 0, 0, 0);
+                //    TextBlock text = new TextBlock();
 
-                    text.Margin = new Thickness(-1, -4, 0, 0);
+                //    text.Margin = new Thickness(-1, -4, 0, 0);
 
-                    if (booler.Data)
-                    {
-                        text.Text = "T";
-                        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
-                    }
-                    else
-                    {
-                        text.Text = "F";
-                        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
-                    }
-                    grid.Children.Add(text);
-                    wrap.Children.Add(grid);
-                }
+                //    if (booler.Data)
+                //    {
+                //        text.Text = "T";
+                //        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
+                //    }
+                //    else
+                //    {
+                //        text.Text = "F";
+                //        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
+                //    }
+                //    grid.Children.Add(text);
+                //    wrap.Children.Add(grid);
+                //}
 
                 currView = wrap;
 
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
-                currView = TextingBox.MakeView(_docController, _context);
+                FrameworkElement mv = TextingBox.MakeView(_docController, _context);
+                Grid grid = new Grid();
+                grid.Children.Add(mv);
+                grid.Margin = new Thickness(0, 8, 0, 0);
+                currView = grid;
             }
             else if (data is RichTextController)
             {
-                currView = RichTextBox.MakeView(_docController, _context);
+
+                FrameworkElement mv = RichTextBox.MakeView(_docController, _context);
+                Grid grid = new Grid();
+                grid.Children.Add(mv);
+                grid.Margin = new Thickness(0, 8, 0, 0);
+                currView = grid;
             }
             if (currView == null) currView = new Grid();
 
