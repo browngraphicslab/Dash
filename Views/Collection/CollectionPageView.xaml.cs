@@ -257,31 +257,16 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        private void xThumbs_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            var collectionField = ViewModel.ContainerDocument.GetDataDocument().GetField(ViewModel.CollectionKey);
-            if (collectionField is ListController<DocumentController> && args.DropResult == DataPackageOperation.Move)
-            {
-                var docList = ViewModel.DocumentViewModels.Select((dvm) => dvm.DocumentController).ToList();
-                if (xThumbs.IsPointerOver())
-                {
-                    ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
-                }
-                else if (args.Items.FirstOrDefault() is DocumentViewModel draggedDoc)
-                {
-                    docList.Remove(draggedDoc.DocumentController);
-                    ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
-                }
-            }
-        }
+        
         private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
             foreach (object m in e.Items)
             {
                 int ind = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.SetDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
+                var dm = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController);
+                dm.DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] { ViewModel });
+                e.Data.SetDragModel(dm);
             }
         }
 
