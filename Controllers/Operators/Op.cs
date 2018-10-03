@@ -171,6 +171,13 @@ namespace Dash
             point,
             x, y,
 
+            dref,
+            pref,
+
+            k,
+
+            date,
+
             // NULL EQUIVALENT
 
             invalid,
@@ -178,7 +185,7 @@ namespace Dash
             // HELP
 
             help,
-            print
+            print,
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

@@ -1335,6 +1335,15 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            if (this == thisDoc)
+            {
+                return "this";
+            }
+            return DSL.GetFuncName<IdToDocumentOperator>() + $"(\"{Id}\")";
+        }
+
         #endregion
 
         // == OVERRIDEN FROM OBJECT ==
