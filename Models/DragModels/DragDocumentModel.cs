@@ -123,8 +123,8 @@ namespace Dash
                     // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
                     // an arbitrary size for it and zero out its pan position so that it will FitToParent
                     if (vcopy.DocumentType.Equals(RichTextBox.DocumentType) ||
-                        !double.IsNaN(vcopy.GetWidthField().Data) ||
-                        !double.IsNaN(vcopy.GetHeightField().Data))
+                        !double.IsNaN(vcopy.GetWidthField()?.Data ?? double.NaN) ||
+                        !double.IsNaN(vcopy.GetHeightField()?.Data ?? double.NaN))
                         docs.Add(vcopy);
                     else
                     {
@@ -144,27 +144,22 @@ namespace Dash
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    if (DraggedDocumentViews == null ||
-                        DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>() == // bcz: this is hacky -- better to make AnnotationOverlay's be Collections?  
-                        target?.GetFirstAncestorOfType<AnnotationOverlay>())  //Without this, dropping onto an annotation overlay sets the position of the document based on the overlay, but the document isn't added to the overlay so it jumps
+                    var draggedDoc = DraggedDocuments[i];
+                    if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))
                     {
-                        var draggedDoc = DraggedDocuments[i];
-                        if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))
-                        {
-                            draggedDoc = draggedDoc.GetViewCopy();
-                            draggedDoc.SetWidth(400);
-                            draggedDoc.SetHeight(300);
-                            draggedDoc.SetFitToParent(true);
-                        }
-
-                        var pos = GetPosition(i);
-                        if (pos.HasValue)
-                        {
-                            draggedDoc.SetPosition(pos.Value);
-                        }
-
-                        docs.Add(draggedDoc);
+                        draggedDoc = draggedDoc.GetViewCopy();
+                        draggedDoc.SetWidth(400);
+                        draggedDoc.SetHeight(300);
+                        draggedDoc.SetFitToParent(true);
                     }
+
+                    var pos = GetPosition(i);
+                    if (pos.HasValue)
+                    {
+                        draggedDoc.SetPosition(pos.Value);
+                    }
+
+                    docs.Add(draggedDoc);
                 }
             }
 

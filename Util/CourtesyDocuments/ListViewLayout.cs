@@ -79,8 +79,7 @@ namespace Dash
 
             var grid = new Grid();
 	        grid.Background = new SolidColorBrush(Colors.Blue);
-
-            SetupBindings(grid, docController, context);
+            
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,

@@ -87,36 +87,19 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (doc != null)
+            if (ViewModel?.IsDimensionless == true)
             {
-                BindWidth(this, doc, null);
-                BindHeight(this, doc, null);
+                Width = double.NaN;
+                Height = double.NaN;
             }
-        }
-        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            else
             {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.WidthFieldKey,
-                Context = context
-            };
-
-            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
-        }
-
-        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.HeightFieldKey,
-                Context = context
-            };
-
-            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
+                if (doc != null)
+                {
+                    CourtesyDocument.BindWidth(this, doc, null);
+                    CourtesyDocument.BindHeight(this, doc, null);
+                }
+            }
         }
         private void UpdateVisibilityBinding()
         {
@@ -145,6 +128,17 @@ namespace Dash
                 FallbackValue = Visibility.Collapsed
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
+
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
         }
 
         // == CONSTRUCTORs ==
@@ -718,7 +712,7 @@ namespace Dash
             }
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
-            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
+            if (!wasHandled) // (ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (!MainPage.Instance.IsRightBtnPressed())

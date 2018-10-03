@@ -162,17 +162,16 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new CollectionNote(new Point(0, 0),
-                        CollectionView.CollectionViewType.Freeform).Document;
+                    var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                     col.Add(documentController);
                     lastWorkspace = documentController;
+                    lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                    lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
                 }
                 else
                 {
                     lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
                 }
-                lastWorkspace.SetWidth(double.NaN);
-                lastWorkspace.SetHeight(double.NaN);
 
                 XMainSplitter.SetContent(lastWorkspace);
 
@@ -261,7 +260,7 @@ namespace Dash
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
 
-            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is TreeViewNode))
+            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
             {
                 var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
                 if (ctrlDown)
@@ -434,7 +433,9 @@ namespace Dash
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true }, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true } };
                 var overlay = new Grid();
                 overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
 
