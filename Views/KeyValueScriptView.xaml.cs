@@ -25,7 +25,7 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                if (this.xFieldValue.ViewModel.DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                if (((DocumentViewModel) xFieldValue.DataContext).DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
                 {
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);
@@ -37,7 +37,7 @@ namespace Dash
                         this.XTextBox.Text = "==" + this.XTextBox.Text;
                     xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
                     xValueColumn.Width = new GridLength(0);
-                    Focus(FocusState.Programmatic);
+                    XTextBox.Focus(FocusState.Programmatic);
                 }
             };
             KeyDown += (s, e) =>
@@ -52,7 +52,7 @@ namespace Dash
                     MainPage.Instance.Focus(FocusState.Programmatic);
             };
             KeyUp += (s, e) => e.Handled = true;
-            LostFocus += (s, e) =>
+            XTextBox.LostFocus += (s, e) =>
             {
                 CollapseBox();
             };
@@ -172,7 +172,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
-            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
+            _oldDataBox = new TableBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);
         }

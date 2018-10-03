@@ -180,6 +180,7 @@
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
       <DependentUpon>ActionMenu.xaml</DependentUpon>
     </Compile>
@@ -671,6 +672,12 @@
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\KVPDocBox.xaml.cs">
+      <DependentUpon>KVPDocBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\KVPListText.xaml.cs">
+      <DependentUpon>KVPListText.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
@@ -937,6 +944,7 @@
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TableFieldToMakeViewConverter.cs" />
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
@@ -1276,6 +1284,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\KeyValueScriptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\KVPDocBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\KVPListText.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

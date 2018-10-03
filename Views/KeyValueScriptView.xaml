@@ -39,7 +39,7 @@
                 </FlyoutBase.AttachedFlyout>
             </TextBox>
             <Grid  Grid.Column="1">
-                <local:DocumentView Margin="0 -10 0 0" Height="500" x:Name="xFieldValue" IsHitTestVisible="False"/>
+                <ContentPresenter x:Name="xFieldValue" Content="{Binding Content}"/>
             </Grid>
         </Grid>
     </Grid>
