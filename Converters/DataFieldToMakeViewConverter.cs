@@ -15,7 +15,7 @@ namespace Dash.Converters
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
 
-        public DataFieldToMakeViewConverter(DocumentController docController, Context context)
+        public DataFieldToMakeViewConverter(DocumentController docController, Context context = null)
         {
             _docController = docController;
             _context = context;

@@ -87,6 +87,11 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            throw new NotImplementedException();
+        }
+
         public override FieldControllerBase GetDefaultController()
         {
             return new PdfController(new Uri("ms-appx:///Assets/DefaultImage.png"));

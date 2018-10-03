@@ -201,14 +201,22 @@
         /// <summary>
         /// Returns the string script of the given operator tree. 
         /// </summary>
-        /// <param name="fieldController"></param>
-        /// <param name="context"></param>
+        /// <param name="field"></param>
+        /// <param name="thisDoc"></param>
         /// <returns></returns>
-        public static string GetScriptForOperatorTree(FieldControllerBase fieldController, Context context = null)
+        public static string GetScriptForField(FieldControllerBase field, DocumentController thisDoc = null)
         {
-            return (fieldController is TextController) ? 
-                '"' + fieldController.GetValue(context).ToString() +'"' : 
-                fieldController.GetValue(context).ToString();
+            if (field == null)
+            {
+                return "";
+            }
+
+            if (field is TextController text)
+            {
+                return text.Data;
+            }
+
+            return "=" + field.ToScriptString(thisDoc);
         }
     }
 }

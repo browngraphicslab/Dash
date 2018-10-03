@@ -1,15 +1,15 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
+using System.Collections.Specialized;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using static Dash.CollectionDBSchemaHeader;
 using Windows.UI.Xaml.Media;
+using Telerik.UI.Xaml.Controls.Grid;
+using Telerik.UI.Xaml.Controls.Grid.Primitives;
+using Windows.UI.Xaml.Data;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,338 +17,50 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
-        private DocumentController _parentDocument;
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
-        private Dictionary<KeyController, HashSet<TypeInfo>> _typedHeaders;
-
-        /// <summary>
-        ///     Each element in the list renders a column in the records list view
-        /// </summary>
-        private ObservableCollection<CollectionDBSchemaColumnViewModel> ColumnViewModels { get; }
-
-        /// <summary>
-        ///     The observable collection of all documents displayed in the schema, a pointer to this is held by every
-        ///     columnviewmodel so be very careful about changing it (i.e. don't add a setter)
-        /// </summary>
-        private ObservableCollection<DocumentController> CollectionDocuments { get; }
-
-        ////bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
-        //public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
-        //    new ObservableCollection<CollectionDBSchemaRecordViewModel>();
-
-        public ObservableCollection<HeaderViewModel> SchemaHeaders { get; }
-
-        public CollectionViewModel ViewModel { get; set; }
-
-        public DocumentController ParentDocument
+        //ICollectionView implementation
+        public void SetDropIndicationFill(Brush fill)
         {
-            get => _parentDocument;
-            set
-            {
-                _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-            }
         }
 
         public UserControl UserControl => this;
 
+        private HashSet<KeyController> Keys { get; } = new HashSet<KeyController>();
+
         public CollectionDBSchemaView()
         {
             InitializeComponent();
-            Unloaded += CollectionDBSchemaView_Unloaded;
-            Loaded += CollectionDBSchemaView_Loaded;
-            MinWidth = MinHeight = 50;
-            Drop += CollectionDBSchemaView_Drop;
-            ColumnViewModels = new ObservableCollection<CollectionDBSchemaColumnViewModel>();
-            CollectionDocuments = new ObservableCollection<DocumentController>();
-            SchemaHeaders = new ObservableCollection<HeaderViewModel>();
-            xHeaderView.ItemsSource = SchemaHeaders;
+            DataContextChanged += OnDataContextChanged;
+
+            xDataGrid.AutoGenerateColumns = false;
+            xDataGrid.CanUserSortColumns = true;
+            xDataGrid.CanUserResizeColumns = true;
+            xDataGrid.CanUserReorderColumns = true;
+            xDataGrid.ColumnWidth = new DataGridLength(200);
+            xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
+            xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
         }
 
-        private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void XDataGridOnCellEditEnding(object sender, DataGridCellEditEndingEventArgs args)
         {
-            switch (e.Action)
+            if (args.EditAction == DataGridEditAction.Commit)
             {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    for (var i = 0; i < e.NewItems.Count; i++)
+                var box = (TextBox)args.EditingElement;
+                var doc = ((DocumentViewModel)box.DataContext).DataDocument;
+                var col = (WindowsDictionaryColumn)args.Column;
+                using (UndoManager.GetBatchHandle())
+                {
+                    try
                     {
-                        var headerViewModel = e.NewItems[i] as HeaderViewModel;
-                        Debug.Assert(headerViewModel != null);
-                        ColumnViewModels.Insert(e.NewStartingIndex + i,
-                            new CollectionDBSchemaColumnViewModel(headerViewModel.FieldKey, CollectionDocuments,
-                                headerViewModel));
+                        var field = DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
+                        doc.SetField(col.Key, field, true);
                     }
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
-                    
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    for (var i = 0; i < e.OldItems.Count; i++)
+                    catch (DSLException e)
                     {
-                        ColumnViewModels.RemoveAt(e.OldStartingIndex);
                     }
-
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    break;
-            }
-        }
-
-        private void AddViewChanged()
-        {
-            foreach (var scrollViewer in ColumnViewModels.Select(colvm => colvm.ViewModelScrollViewer))
-            {
-                if (scrollViewer != null)
-                {
-                    scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
                 }
             }
-        }
-        
-        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs scrollViewerViewChangedEventArgs)
-        {
-            foreach (var scrollViewer in ColumnViewModels.Select(cvm => cvm.ViewModelScrollViewer))//TODO calling change view in the view changed method causes this to get called way more than it should
-            {
-                if (scrollViewer == null) continue;
-
-                if (!scrollViewer.Equals(sender as ScrollViewer))
-                    scrollViewer.ChangeView(null, (sender as ScrollViewer).VerticalOffset, null, true);
-            }
-
-        }
-
-        private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            DataContextChanged -= CollectionDBView_DataContextChanged;
-            if (ViewModel?.CollectionController != null)
-                ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
-            ParentDocument = null;
-        }
-
-
-        private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
-        {
-            DataContextChanged += CollectionDBView_DataContextChanged;
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
-            CollectionDBView_DataContextChanged(null, null);
-        }
-
-        private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (DataContext is CollectionViewModel cvm)
-            {
-                // if datacontext hasn't actually changed just return
-                if (ViewModel != null && ViewModel.CollectionController.Equals(cvm.CollectionController)) return;
-
-                // remove events from previous datacontext
-                if (ViewModel?.CollectionController != null)
-                    ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
-
-                // add events to new datacontext and set it
-                if (cvm?.CollectionController != null)
-                    cvm.CollectionController.FieldModelUpdated += CollectionController_FieldModelUpdated;
-                ViewModel = cvm;
-
-                // set the parentDocument which is the document holding this collection
-                ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
-                if (ParentDocument != null)
-                {
-                    ResetHeaders();
-                }
-            }
-        }
-
-        private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args,
-            Context context)
-        {
-            // if a field has been replaced or updated then set it's source to be the new element
-            // otherwise replace the entire data source to reflect the new set of fields (due to add or remove)
-            var dargs = (ListController<DocumentController>.ListFieldUpdatedEventArgs) args;
-
-            UpdateHeaders(dargs.NewItems); // TODO find a better way to update this
-
-
-            if (dargs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
-                AddRows(dargs);
-            else if (dargs.ListAction ==
-                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove)
-                RemoveRows(dargs);
-            else if (dargs.ListAction ==
-                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear)
-                ColumnViewModels.Clear();
-            else if (dargs.ListAction ==
-                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace)
-                throw new NotImplementedException();
-        }
-
-        private void UpdateHeaders(List<DocumentController> changedDocuments)
-        {
-            // TODO logic for adding and removing old and new columns using ColumnViewModels
-            var context = new Context(ParentDocument);
-            _typedHeaders = Util.GetDisplayableTypedHeaders(CollectionDocuments);
-            foreach (var doc in changedDocuments.Select(doc =>
-                doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? doc))
-            foreach (var keyFieldPair in doc.EnumDisplayableFields())
-                if (!_typedHeaders.ContainsKey(keyFieldPair.Key))
-                {
-                    _typedHeaders.Add(keyFieldPair.Key, new HashSet<TypeInfo> {keyFieldPair.Value.TypeInfo});
-                    SchemaHeaders.Add(new HeaderViewModel
-                    {
-                        SchemaView = this,
-                        SchemaDocument = ParentDocument,
-                        Width = 150,
-                        FieldKey = keyFieldPair.Key
-                    });
-                }
-                else
-                {
-                    if (!_typedHeaders[keyFieldPair.Key].Contains(keyFieldPair.Value.TypeInfo))
-                        _typedHeaders[keyFieldPair.Key].Add(keyFieldPair.Value.TypeInfo);
-                }
-        }
-
-        private void AddRows(ListController<DocumentController>.ListFieldUpdatedEventArgs dargs)
-        {
-            foreach (var doc in dargs.NewItems.Select(doc => doc.GetDataDocument()))
-                CollectionDocuments.Add(doc);
-        }
-
-        private void RemoveRows(ListController<DocumentController>.ListFieldUpdatedEventArgs dargs)
-        {
-            // TODO
-            throw new NotImplementedException();
-        }
-
-        public void Sort(HeaderViewModel viewModel)
-        {
-            // TODO: ACV might not work?
-            /*
-            var acv = new AdvancedCollectionView(CollectionDocuments, true);
-
-            acv.Filter = x => x != null;
-            acv.SortDescriptions.Add(new SortDescription("Title", SortDirection.Ascending));
-
-            xRecordsView.ItemsSource = acv;
-            */
-        }
-
-        /// <summary>
-        ///     Updates all the fields in the schema view
-        /// </summary>
-        public void ResetHeaders()
-        {
-            var dbDocs = (ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) ??
-                          ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null))?.TypedData;
-            foreach (var dbDoc in dbDocs.Select(db => db.DocumentType.Equals(DataBox.DocumentType) ? db : db.GetDataDocument()))
-            {
-                CollectionDocuments.Add(dbDoc);
-            }
-            _typedHeaders = Util.GetDisplayableTypedHeaders(CollectionDocuments);
-
-            SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
-            SchemaHeaders.Clear();
-            foreach (var typedHeader in _typedHeaders)
-                SchemaHeaders.Add(new HeaderViewModel
-                {
-                    SchemaView = this,
-                    SchemaDocument = ParentDocument,
-                    Width = 150,
-                    FieldKey = typedHeader.Key
-                });
-            SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
-
-            foreach (var typedHeader in _typedHeaders)
-            {
-                var cvm = new CollectionDBSchemaColumnViewModel(typedHeader.Key, CollectionDocuments,
-                    SchemaHeaders.First(hvm => hvm.FieldKey.Equals(typedHeader.Key)));
-                ColumnViewModels.Add(cvm);
-                cvm.PropertyChanged += Cvm_PropertyChanged;
-            }
-        }
-
-        private void Cvm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName.Equals("ViewModelScrollViewer"))
-            {
-                AddViewChanged();
-            }
-        }
-
-        private void xOuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
-        }
-
-        private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            // TODO see if this is still necessary
-            xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
-        }
-
-        private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Util.FixListViewBaseManipulationDeltaPropagation(xRecordsView);
-        }
-
-        private void XRecordsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
-            if (vm == null) return;
-            var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
-        }
-        
-        private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
-        {
-            foreach (var vm in args.Items.Select(item => item as CollectionDBSchemaRecordViewModel))
-            {
-                vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
-                // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
-                args.Data.SetDragModel(new DragDocumentModel(vm.Document));
-                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            }
-        }
-
-        private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            if (e.Items.FirstOrDefault() is HeaderViewModel hitem)
-            {
-                e.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(ParentDocument.GetDataDocument(), hitem.FieldKey)));
-            }
-            //foreach (var m in e.Items)
-            //{
-            //    var viewModel = m as HeaderViewModel;
-            //    var collectionViewModel = viewModel.SchemaView.DataContext as CollectionViewModel;
-            //    var collectionReference =
-            //        new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(),
-            //            collectionViewModel.CollectionKey);
-            //    var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null)
-            //        .TypedData;
-            //    e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-            //        new DragCollectionFieldModel(
-            //            collectionData,
-            //            collectionReference,
-            //            viewModel.FieldKey,
-            //            CollectionView.CollectionViewType.DB
-            //        ));
-            //}
-        }
-
-        private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode =
-                e.GetCurrentPoint(this).Properties.IsRightButtonPressed
-                    ? ManipulationModes.All
-                    : ManipulationModes.None;
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -360,24 +72,219 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newHvm = new HeaderViewModel
-            {
-                SchemaView = this,
-                SchemaDocument = ParentDocument,
-                Width = 150,
-                FieldKey = new KeyController("New Field", Guid.NewGuid().ToString())
-            };
-            SchemaHeaders.Add(newHvm);
-
-            //var cvm = new CollectionDBSchemaColumnViewModel(newHvm.FieldKey, CollectionDocuments, newHvm);
-            //ColumnViewModels.Add(cvm);
-            //cvm.PropertyChanged += Cvm_PropertyChanged;
+            AddKey(new KeyController("New Column"));
 
             e.Handled = true;
         }
 
-        public void SetDropIndicationFill(Brush fill)
+        private CollectionViewModel _oldViewModel;
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (ViewModel == _oldViewModel)
+            {
+                return;
+            }
+
+            if (_oldViewModel != null)
+            {
+                foreach (var doc in _oldViewModel.DocumentViewModels)
+                {
+                    doc.DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
+                }
+                _oldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModelsOnCollectionChanged;
+            }
+
+            _oldViewModel = ViewModel;
+
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModelsOnCollectionChanged;
+
+            Keys.Clear();
+            xDataGrid.Columns.Clear();
+            var docs = ViewModel.DocumentViewModels;
+            var keys = new HashSet<KeyController>();
+            foreach (var doc in docs)
+            {
+                foreach (var field in doc.DataDocument.EnumDisplayableFields())
+                {
+                    keys.Add(field.Key);
+                }
+                doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
+            }
+
+            foreach (var key in keys)
+            {
+                AddKey(key);
+            }
+        }
+
+        private void DataDocumentOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs)
+            {
+                AddKey(dargs.Reference.FieldKey);
+            }
+        }
+
+        private void AddKey(KeyController key)
+        {
+            if (Keys.Contains(key))
+            {
+                return;
+            }
+
+            Keys.Add(key);
+
+            var column = new WindowsDictionaryColumn(key)
+            {
+                Header = key,
+            };
+
+            xDataGrid.Columns.Add(column);
+        }
+
+        private void DocumentViewModelsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            switch (args.Action)
+            {
+            case NotifyCollectionChangedAction.Add:
+                foreach (var argsNewItem in args.NewItems)
+                {
+                    var documentViewModel = (DocumentViewModel)argsNewItem;
+                    var dataDoc = documentViewModel.DataDocument;
+                    dataDoc.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
+                    foreach (var field in documentViewModel.DataDocument.EnumDisplayableFields())
+                    {
+                        AddKey(field.Key);
+                    }
+                }
+
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                foreach (var argsNewItem in args.OldItems)
+                {
+                    ((DocumentViewModel)argsNewItem).DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+
+    public class DataGridDictionaryColumn : DataGridTypedColumn
+    {
+        public KeyController Key { get; set; }
+
+        public DataGridDictionaryColumn(KeyController key)
+        {
+            PropertyName = key.Name;
+            Key = key;
+        }
+
+        public override object GetEditorType(object item)
+        {
+            return typeof(TextBox);
+        }
+
+        public override FrameworkElement CreateEditorContentVisual()
+        {
+            return new TextBox();
+        }
+
+        public override object CreateContainer(object rowItem)
+        {
+            return new MyContentPresenter();
+        }
+
+        public override object GetContainerType(object rowItem)
+        {
+            return typeof(MyContentPresenter);
+        }
+
+        protected override DataGridFilterControlBase CreateFilterControl()
+        {
+            return new DataGridTextFilterControl()
+            {
+                PropertyName = PropertyName
+            };
+        }
+
+        public override void PrepareEditorContentVisual(FrameworkElement editorContent, Binding binding)
+        {
+            var doc = ((DocumentController)binding.Source).GetDataDocument();
+            var field = doc.GetField(Key);
+            ((TextBox)editorContent).Text = DSL.GetScriptForField(field, doc);
+        }
+
+        public override void ClearEditorContentVisual(FrameworkElement editorContent)
+        {
+            editorContent.ClearValue(TextBox.TextProperty);
+        }
+
+        public override void PrepareCell(object container, object value, object item)
+        {
+            base.PrepareCell(container, value, item);
+
+            var thisDoc = (DocumentController)item;//This should be data doc I think
+            var cp = (MyContentPresenter)container;
+            cp.SetDocumentAndKey(thisDoc, Key);
+        }
+    }
+
+    public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
+    {
+        public KeyController Key { get; private set; }
+
+        public WindowsDictionaryColumn(KeyController key)
+        {
+            Key = key;
+        }
+
+        protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
+        {
+            return new TextBox();
+        }
+
+        protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
+        {
+            var contentPresenter = new MyContentPresenter();
+            contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
+            contentPresenter.IsHitTestVisible = false;
+            return contentPresenter;
+        }
+
+        protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
+        {
+            var tb = (TextBox) editingElement;
+
+            var doc = (DocumentViewModel)editingElement.DataContext;
+            var dataDoc = doc.DataDocument;
+
+            tb.Text = DSL.GetScriptForField(dataDoc.GetField(Key), dataDoc);
+
+            return string.Empty;
+        }
+    }
+
+    public class MyContentPresenter : ContentPresenter
+    {
+        public DocumentController Document { get; private set; }
+        public KeyController Key { get; private set; }
+
+        public void SetDocumentAndKey(DocumentController doc, KeyController key)
+        {
+            if (Document == doc && Key == key)
+            {
+                return;
+            }
+            Document = doc;
+            Key = key;
+            DataBox.BindContent(this, new DataBox(new DocumentReferenceController(Document, Key)).Document, null);
         }
     }
 }

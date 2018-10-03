@@ -66,5 +66,10 @@ namespace Dash
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
         }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return Data.ToString();
+        }
     }
 }

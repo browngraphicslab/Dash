@@ -16,25 +16,22 @@ namespace Dash
 
         public RichTextBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToRichText);
             SetupDocument(DocumentType, PrototypeId, "RichTextBox Prototype Layout", fields);
         }
         public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<System.Collections.Generic.List<object>, Windows.UI.Xaml.TextWrapping>
         {
             public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
             {
-                if (data[0] != null && data[0] is double)
+                if (data[0] is double wrapping)
                 {
-                    switch ((int)(double)data[0])
-                    {
-                        case (int)Windows.UI.Xaml.TextWrapping.Wrap:
-                            return Windows.UI.Xaml.TextWrapping.Wrap;
-                        case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
-                            return Windows.UI.Xaml.TextWrapping.NoWrap;
-                    }
+                    return (Windows.UI.Xaml.TextWrapping)(int)wrapping;
                 }
-                double width = (double)data[1];
-                return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
+                if (data[1] is double width && !double.IsNaN(width))
+                {
+                    return Windows.UI.Xaml.TextWrapping.Wrap;
+                }
+                return Windows.UI.Xaml.TextWrapping.NoWrap;
             }
 
             public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
@@ -80,20 +77,20 @@ namespace Dash
             RichTextView rtv = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
-                rtv = new RichTextView()
-                {
-                    LayoutDocument = docController,
-                    DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
-                };
-                rtv.ManipulationMode = ManipulationModes.All;
-                rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
-                //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
-                rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
-                rtv.VerticalAlignment = VerticalAlignment.Stretch;
-                SetupTextBinding(rtv, docController, context);
-			
+            rtv = new RichTextView()
+            {
+                LayoutDocument = docController,
+                DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
+            };
+            rtv.ManipulationMode = ManipulationModes.All;
+            rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
+            //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
+            rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
+            rtv.VerticalAlignment = VerticalAlignment.Stretch;
+            SetupTextBinding(rtv, docController, context);
+
             return rtv;
         }
 

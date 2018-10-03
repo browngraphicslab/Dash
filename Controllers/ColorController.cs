@@ -1,4 +1,5 @@
-﻿using Windows.UI;
+﻿using System;
+using Windows.UI;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -63,6 +64,11 @@ namespace Dash
         {
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            throw new NotImplementedException();
         }
 
         public override FieldControllerBase Copy() => new ColorController(Data);
