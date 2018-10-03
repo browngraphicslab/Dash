@@ -3,6 +3,7 @@ var ws = null;
 var screenHeight = 0;
 var currentUrl = "";
 var isActive = false;
+var isCollapsed = false;
 
 function send(socket, prefix, message) {
     var s = JSON.stringify([JSON.stringify(message)]);
@@ -18,32 +19,38 @@ function isPdf(url) {
 
 // called anytime a tab is added/changed to update the browser window's height
 function updateSize(url) {
-    var targetHeight = 0;
     if (isPdf(url)) {
-        targetHeight = 0;
-    } else {
-        targetHeight = screenHeight;
-    }
-
-    chrome.windows.getCurrent(function (e) {
-        chrome.windows.update(e.id, { height: targetHeight }, function (win) {
-            if (isPdf(url)) {
+        chrome.windows.getCurrent(function (e) {
+            if (!isCollapsed) {
+                screenHeight = e.height;
+            }
+            isCollapsed = true;
+            chrome.windows.update(e.id, { height: 0 }, function (win) {
                 send(ws, "collapse",
                     {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": false,
                         "url": url
                     });
-            } else {
+            });
+            console.log("height = " + e.height);
+        });
+    } else {
+        chrome.windows.getCurrent(function (e) {
+            if (!isCollapsed) {
+                screenHeight = e.height;
+            }
+            isCollapsed = false;
+            chrome.windows.update(e.id, { height: screenHeight }, function (win) {
                 send(ws, "expand",
                     {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": true,
                         "url": url
                     });
-            }
+            });
         });
-    });
+    }
 }
 
 function sendStatus() {
@@ -76,10 +83,6 @@ chrome.runtime.onMessage.addListener(
 
 
         if (request === "toggleActive") {
-
-            chrome.windows.getCurrent(function (e) {
-                screenHeight = e.height;
-            });
 
             if (!isActive) {
                 if (ws == undefined || ws.readyState !== ws.OPEN) {
