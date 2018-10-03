@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using DashShared;
 
@@ -9,10 +10,10 @@ namespace Dash
     [OperatorType(Op.Name.join)]
     public class JoinOperator : OperatorController
     {
-        public static readonly KeyController TableoneKey = new KeyController("Tableone");
-        public static readonly KeyController TabletwoKey = new KeyController("Tabletwo");
-        public static readonly KeyController KeyoneKey = new KeyController("Keyone");
-        public static readonly KeyController KeytwoKey = new KeyController("Keytwo");
+        public static readonly KeyController SourceTableKey = new KeyController("Tableone");
+        public static readonly KeyController TargetTableKey = new KeyController("Tabletwo");
+        public static readonly KeyController SourceKeyKey = new KeyController("Keyone");
+        public static readonly KeyController TargetKeyKey = new KeyController("Keytwo");
 
 
         public static readonly KeyController GencollectionKey = new KeyController("Gencollection");
@@ -37,10 +38,10 @@ namespace Dash
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(TableoneKey, new IOInfo(DashShared.TypeInfo.Document, true)),
-            new KeyValuePair<KeyController, IOInfo>(TabletwoKey, new IOInfo(DashShared.TypeInfo.Document, true)),
-            new KeyValuePair<KeyController, IOInfo>(KeyoneKey, new IOInfo(DashShared.TypeInfo.Key, true)),
-            new KeyValuePair<KeyController, IOInfo>(KeytwoKey, new IOInfo(DashShared.TypeInfo.Key, true)),
+            new KeyValuePair<KeyController, IOInfo>(SourceTableKey, new IOInfo(DashShared.TypeInfo.Document, true)),
+            new KeyValuePair<KeyController, IOInfo>(TargetTableKey, new IOInfo(DashShared.TypeInfo.Document, true)),
+            new KeyValuePair<KeyController, IOInfo>(SourceKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
+            new KeyValuePair<KeyController, IOInfo>(TargetKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
         };
 
         public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
@@ -50,17 +51,30 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var tableone = (DocumentController)inputs[TableoneKey];
-            var tabletwo = (DocumentController)inputs[TabletwoKey];
-            var keyone = (KeyController)inputs[KeyoneKey];
-            var keytwo = (KeyController)inputs[KeytwoKey];
-            var gencollection = Execute(tableone, tabletwo, keyone, keytwo);
+            var sourceTable = (DocumentController)inputs[SourceTableKey];
+            var targetTable = (DocumentController)inputs[TargetTableKey];
+            var sourceKey = (KeyController)inputs[SourceKeyKey];
+            var targetKey = (KeyController)inputs[TargetKeyKey];
+            var gencollection = Execute(sourceTable, targetTable, sourceKey, targetKey);
             outputs[GencollectionKey] = gencollection;
         }
 
-        public DocumentController Execute(DocumentController tableone, DocumentController tabletwo, KeyController keyone, KeyController keytwo)
+        public DocumentController Execute(DocumentController sourceTable, DocumentController targetTable, KeyController sourceKey, KeyController targetKey)
         {
-            return new DocumentController();
+            var generatedCollection = (DocumentController) sourceTable.Copy();
+            var sourceDocs = generatedCollection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            var targetDocs = targetTable.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+            foreach (var row in sourceDocs)
+            {
+                var valToMatch = row.GetField<TextController>(sourceKey).Data;
+                var matchedDoc = targetDocs.First(k => k.GetField<TextController>(sourceKey).Data.Equals(valToMatch));
+                row.SetField(targetKey, matchedDoc.GetField(targetKey), true);
+            }
+
+            MainPage.Instance.ViewModel.AddDocument(generatedCollection);
+
+            return generatedCollection;
         }
 
     }
