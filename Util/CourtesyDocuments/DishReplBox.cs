@@ -28,7 +28,6 @@ namespace Dash
 
         protected static void SetupBindings(DishReplView element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)

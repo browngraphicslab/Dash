@@ -87,7 +87,8 @@ namespace Dash
         /// <param name="doc"></param>
         private static void SetDefaultActiveLayout(DocumentController doc)
         {
-            doc.SetActiveLayout(new DefaultLayout(0, 0, 200, 200).Document, true, true);
+            throw new System.Exception("ActiveLayout code has not been updated yet");
+            //doc.SetActiveLayout(new DefaultLayout(0, 0, 200, 200).Document, true, true);
         }
 
         /// <summary>

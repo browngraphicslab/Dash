@@ -4,7 +4,6 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -45,7 +44,7 @@ namespace Dash
                 return rnote;
             });
 
-            args.Data.AddDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionView.CollectionViewType.Schema));
+            args.Data.SetDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionView.CollectionViewType.Schema));
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)

@@ -2,31 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
-using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public class ActionGroupViewModel : ViewModelBase
+    public class ActionGroupViewModel : ObservableCollection<ActionViewModel>, IGrouping<string, ActionViewModel>
     {
         public string GroupTitle { get; }
-
-        public AdvancedCollectionView BindableActions { get; }
 
         public ObservableCollection<ActionViewModel> Actions { get; }
 
@@ -34,7 +21,60 @@ namespace Dash
         {
             GroupTitle = groupTitle;
             Actions = new ObservableCollection<ActionViewModel>(actions);
-            BindableActions = new AdvancedCollectionView(Actions);
+            foreach (var actionViewModel in actions)
+            {
+                Add(actionViewModel);
+            }
+        }
+
+        private Predicate<ActionViewModel> _predicate;
+        public void Filter(Predicate<ActionViewModel> pred)
+        {
+            _predicate = pred;
+            UpdateFilter();
+        }
+
+        private bool Matches(ActionViewModel vm)
+        {
+            return _predicate?.Invoke(vm) ?? true;
+        }
+
+        private void UpdateFilter()
+        {
+            HashSet<ActionViewModel> set = new HashSet<ActionViewModel>();
+            List<ActionViewModel> toRemove = new List<ActionViewModel>();
+            foreach (var vm in this)
+            {
+                if (Matches(vm))
+                {
+                    set.Add(vm);
+                }
+                else
+                {
+                    toRemove.Add(vm);
+                }
+            }
+
+            foreach (var vm in toRemove)
+            {
+                Remove(vm);
+            }
+
+            int index = 0;
+            foreach (var actionViewModel in Actions)
+            {
+                if (set.Contains(actionViewModel))
+                {
+                    index++;
+                    continue;
+                }
+
+                if (Matches(actionViewModel))
+                {
+                    Insert(index, actionViewModel);
+                    index++;
+                }
+            }
         }
 
         public void SetActions(IEnumerable<ActionViewModel> actions)
@@ -44,7 +84,10 @@ namespace Dash
             {
                 Actions.Add(actionViewModel);
             }
+            UpdateFilter();
         }
+
+        public string Key => GroupTitle;
     }
 
     public sealed partial class ActionMenu : UserControl, INotifyPropertyChanged
@@ -52,14 +95,16 @@ namespace Dash
         private bool _useFilterBox = true;
         public ObservableCollection<ActionGroupViewModel> Groups { get; } = new ObservableCollection<ActionGroupViewModel>();
 
-        public AdvancedCollectionView BindableGroups { get; }
-
         public bool UseFilterBox
         {
             get => _useFilterBox;
             set
             {
-                if (value == _useFilterBox) return;
+                if (value == _useFilterBox)
+                {
+                    return;
+                }
+
                 _useFilterBox = value;
                 OnPropertyChanged();
             }
@@ -75,15 +120,15 @@ namespace Dash
                 var predicate = GetFilterPredicate(value);
                 foreach (var vm in Groups)
                 {
-                    vm.BindableActions.Filter = predicate;
+                    vm.Filter(predicate);
                 }
             }
         }
 
         public ActionMenu()
         {
-            this.InitializeComponent();
-            BindableGroups = new AdvancedCollectionView(Groups);
+            InitializeComponent();
+            GroupCVS.Source = Groups;
         }
 
         private Predicate<object> GetFilterPredicate(string filterText)
@@ -112,7 +157,7 @@ namespace Dash
             if (existingGroup == null)
             {
                 var vm = new ActionGroupViewModel(groupName, new ObservableCollection<ActionViewModel>(actions));
-                vm.BindableActions.Filter = GetFilterPredicate(_filterString);
+                vm.Filter(GetFilterPredicate(_filterString));
                 Groups.Add(vm);
             }
             else

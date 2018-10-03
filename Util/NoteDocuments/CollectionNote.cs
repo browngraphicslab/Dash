@@ -31,7 +31,7 @@ namespace Dash
             return new CollectionBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height, viewType).Document;
         }
         static int count = 1;
-        public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300, List<DocumentController> collectedDocuments = null) :
+        public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300, IEnumerable<DocumentController> collectedDocuments = null) :
             base(_prototypeID)
         {
             DocumentController dataDocument = makeDataDelegate(new ListController<DocumentController>());
@@ -39,13 +39,12 @@ namespace Dash
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;
 
-            // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
-            //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
+            //TODO tfs: this shouldn't need to be called, we should be able to pass collectedDocuments into makeDataDelegate
             SetDocuments(collectedDocuments);
         }
-        public void SetDocuments(List<DocumentController> collectedDocuments)
+        public void SetDocuments(IEnumerable<DocumentController> collectedDocuments)
         {
-            var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
+            var listOfCollectedDocs = collectedDocuments?.ToList() ?? new List<DocumentController>();
             Document.GetDataDocument().SetField(KeyStore.DataKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
             if (listOfCollectedDocs?.Any() == true)

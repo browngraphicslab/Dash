@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using DashShared;
+﻿using DashShared;
 
 namespace Dash
 {
@@ -27,11 +26,6 @@ namespace Dash
         public T Copy<T>() where T : FieldControllerBase
         {
             return Copy() as T;
-        }
-
-        public virtual void Dispose()
-        {
-            // TODO why is the dispose not implemented for most field model controllers!
         }
     }
 }

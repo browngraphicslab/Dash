@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.Devices.Input;
-using Windows.Foundation;
 using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Input;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Point = Windows.Foundation.Point;
@@ -67,8 +63,10 @@ namespace Dash
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            // bcz: don't zoom the contents of collections when FitToParent is set -- instead, it would be better if the container document size changed...
+            if (this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
+                return;
             e.Handled = true;
-
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
@@ -97,7 +95,7 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
+            if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
             {
                 //e.Complete();
                 _processManipulation = false;
@@ -132,7 +130,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;

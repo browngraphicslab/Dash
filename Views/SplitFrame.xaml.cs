@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Media.Devices.Core;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -29,6 +20,8 @@ namespace Dash
 
         public DocumentView Document => XDocView;
 
+        public static event Action<SplitFrame> ActiveDocumentChanged; 
+
         public static SplitFrame ActiveFrame
         {
             get => _activeFrame;
@@ -37,56 +30,31 @@ namespace Dash
                 _activeFrame?.SetActive(false);
                 _activeFrame = value;
                 _activeFrame.SetActive(true);
+
+                OnActiveDocumentChanged(_activeFrame);
             }
         }
 
-        public static void OpenInActiveFrame(DocumentController doc)
-        {
-            ActiveFrame.OpenDocument(doc);
-        }
-
-        public static void OpenInInactiveFrame(DocumentController doc)
-        {
-            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
-            if (frames.Count == 0)
-            {
-                ActiveFrame.TrySplit(SplitDirection.Right, doc, true);
-            }
-            else
-            {
-                var frame = frames[0];
-                var area = frame.ActualWidth * frame.ActualHeight;
-                for (var i = 1; i < frames.Count; ++i)
-                {
-                    var curFrame = frames[i];
-                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
-                    if (curArea > area)
-                    {
-                        area = curArea;
-                        frame = curFrame;
-                    }
-                }
-
-                frame.OpenDocument(doc);
-            }
-        }
-
-        public void OpenDocument(DocumentController doc)
+        public DocumentController OpenDocument(DocumentController doc)
         {
             if (ViewModel.DataDocument.Equals(doc.GetDataDocument()))
             {
-                return;
+                return ViewModel.DocumentController;
             }
 
             doc = doc.GetViewCopy();
             doc.SetWidth(double.NaN);
             doc.SetHeight(double.NaN);
+            doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+            doc.SetVerticalAlignment(VerticalAlignment.Stretch);
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 doc.SetFitToParent(false);
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
+
+            return doc;
         }
 
         public static SplitFrame GetFrameWithDoc(DocumentController doc, bool matchDataDoc)
@@ -150,7 +118,7 @@ namespace Dash
                 ActiveFrame = this;
             }
 
-            //XDocView.RemoveResizeHandlers();
+            XPathView.UseDataDocument = true;
         }
 
         private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
@@ -162,15 +130,19 @@ namespace Dash
             XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
-        public void TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
+        public DocumentController TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
         {
-            splitDoc = splitDoc.GetViewCopy();
-            splitDoc.SetWidth(double.NaN);
-            splitDoc.SetHeight(double.NaN);
+            if (splitDoc.GetHorizontalAlignment() != HorizontalAlignment.Stretch || splitDoc.GetVerticalAlignment() != VerticalAlignment.Stretch)
+            {
+                splitDoc = splitDoc.GetViewCopy();
+                splitDoc.SetWidth(double.NaN);
+                splitDoc.SetHeight(double.NaN);
+            }
             foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
             {
-                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)))
+                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)) is SplitFrame newFrame)
                 {
+                    ActiveFrame = newFrame;
                     break;
                 }
             }
@@ -181,6 +153,8 @@ namespace Dash
             }
 
             CurrentSplitMode = (direction == SplitDirection.Left || direction == SplitDirection.Right) ? SplitMode.HorizontalSplit : SplitMode.VerticalSplit;
+
+            return splitDoc;
         }
 
         private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -395,8 +369,7 @@ namespace Dash
             }
             else
             {
-                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,
-                    collectedDocuments: docs).Document;
+                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
             }
             TrySplit(dir, doc, true);
         }
@@ -441,9 +414,17 @@ namespace Dash
                 return;
             }
 
+            XPathView.Document = DocumentController;
+
+            if (this == ActiveFrame)//If we are the active frame, our document just changed, so the active document changed
+            {
+                OnActiveDocumentChanged(this);
+            }
+
             if (_changingView)
             {
                 _changingView = false;
+                _oldViewModel = ViewModel;
                 return;
             }
 
@@ -479,6 +460,11 @@ namespace Dash
                 _changingView = true;
                 DataContext = new DocumentViewModel(doc);
             }
+        }
+
+        private static void OnActiveDocumentChanged(SplitFrame frame)
+        {
+            ActiveDocumentChanged?.Invoke(frame);
         }
     }
 }

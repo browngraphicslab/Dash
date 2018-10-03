@@ -1,20 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Dash.Views.Document_Menu.Toolbar;
-using System.Collections.ObjectModel;
 using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -120,6 +110,26 @@ namespace Dash
                 }
             }
         }
+        private void FitParent_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var fitting = !_collection.ViewModel.ContainerDocument.GetFitToParent();
+                _collection.ViewModel.ContainerDocument.SetFitToParent(fitting);
+                if (fitting)
+                {
+                    _collection.ViewModel.FitContents(null);
+                    xFitParentIcon.Text = ((char)0xE73F).ToString();
+                    _fit.Content = "Stop Fitting to Bounds";
+                    
+                }
+                else
+                {
+                    xFitParentIcon.Text = ((char)0xE740).ToString();
+                    _fit.Content = "Fit Contents to Bounds";
+                }
+            }
+        }
 
         /// <summary>
         /// Binds the drop down selection of view options with the view of the collection.
@@ -151,15 +161,26 @@ namespace Dash
             _collection = thisCollection;
             xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionView.CollectionViewType)), _collection.ViewModel.ViewType);
 	        _docController = docController;
+            var fitting = _collection.ViewModel.ContainerDocument.GetFitToParent();
+            if (fitting)
+            {
+                xFitParentIcon.Text = ((char)0xE73F).ToString();
+                _fit.Content = "Stop Fitting to Bounds";
+
+            }
+            else
+            {
+                xFitParentIcon.Text = ((char)0xE740).ToString();
+                _fit.Content = "Fit Contents to Bounds";
+            }
         }
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-	            _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
+	        _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
 	    }
 
-        private ToolTip _break;
-        private ToolTip _color;
+        private ToolTip _break, _color, _fit;
 
         private void SetUpToolTips()
         {
@@ -173,6 +194,14 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xBreakGroup, _break);
+
+            _fit = new ToolTip()
+            {
+                Content = "Fit Contents to Bounds",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFitParent, _fit);
 
             _color = new ToolTip()
             {

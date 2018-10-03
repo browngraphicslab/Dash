@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Animation;
 using Dash.Annotations;
-using Syncfusion.Pdf;
 
 namespace Dash
 {
@@ -77,8 +75,8 @@ namespace Dash
             {
                 //list of presentations
                 _listController = new ListController<DocumentController>();
-                MainPage.Instance.MainDocument.SetField(KeyStore.PresentationItemsKey, _listController, true);
-
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.PresentationItemsKey, _listController, true);
+           
                 //make default presentation
                 SetCurrentPresentation(MakeNewPres());
             }
@@ -100,7 +98,7 @@ namespace Dash
             //make list of presentations
             foreach (DocumentController pres in _listController)
             {
-                Presentations.Add(pres);
+                if (!Presentations.Contains(pres)) Presentations.Add(pres);
             }
         }
 

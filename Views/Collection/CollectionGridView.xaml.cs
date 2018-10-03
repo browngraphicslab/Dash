@@ -26,7 +26,7 @@ namespace Dash
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
             var selectedDocControllers =
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel?.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;
@@ -64,13 +64,11 @@ namespace Dash
                 
             }
         }
-
-        #region DragAndDrop
+        
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;
         }
-        #endregion
         
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -78,7 +76,7 @@ namespace Dash
             DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm == null) return;
 
-            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController));
+            e.Data.SetDragModel(new DragDocumentModel(dvm.DocumentController));
         }
 
         private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
@@ -96,7 +94,7 @@ namespace Dash
         private void Viewbox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
-            MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
+            SplitFrame.TryNavigateToDocument(dv.ViewModel.DocumentController, true);
         }
     }
 }

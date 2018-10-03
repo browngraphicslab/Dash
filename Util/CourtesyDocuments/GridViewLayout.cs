@@ -69,7 +69,6 @@ namespace Dash
 
         protected new static void SetupBindings(GridView gridView, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(gridView, docController, context);
             AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 

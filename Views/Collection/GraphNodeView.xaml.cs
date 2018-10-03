@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

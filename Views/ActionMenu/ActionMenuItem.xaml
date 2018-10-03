@@ -8,6 +8,9 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
+    <UserControl.Resources>
+        <local:IsNullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -19,11 +22,10 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5" Margin="3" Padding="5">
-        <Image Source="{Binding ThumbnailSource, Mode=OneWay}" VerticalAlignment="Stretch"></Image>
-</Border>
+        <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5" Margin="3" Padding="5" Visibility="{Binding ThumbnailSource, Mode=OneWay, Converter={StaticResource NullToVisibilityConverter}}">
+            <Image Source="{Binding ThumbnailSource, Mode=OneWay}" VerticalAlignment="Stretch"></Image>
+        </Border>
         <TextBlock Grid.Row="0" Grid.Column="1" Foreground="Black" FontSize="16" Text="{Binding Title, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}"></TextBlock>
         <TextBlock Grid.Row="1" Grid.Column="1" Foreground="DarkGray" FontSize="13"  Text="{Binding HelpText, Mode=OneWay}" Style="{StaticResource SubheaderTextBlockStyle}"></TextBlock>
-
     </Grid>
 </UserControl>

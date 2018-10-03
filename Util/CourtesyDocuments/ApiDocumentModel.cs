@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
-using Windows.Foundation;
 
 namespace Dash
 {
@@ -62,7 +60,6 @@ namespace Dash
                 new ListController<DocumentController>(new List<DocumentController>())
             };
             SetupDocument(DocumentType, PrototypeId, "API Document Prototype Layout", fields);
-            //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
         /// <summary>

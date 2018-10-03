@@ -1,32 +1,18 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Windows.Andy.Code4App.Extension.CommonObjectEx;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Graphics.Display;
-using Windows.Storage.Streams;
 using Windows.Graphics.Imaging;
 using Windows.UI.Input;
-using Windows.UI.Xaml.Media.Animation;
 using MyToolkit.Mathematics;
 
 namespace Dash
@@ -258,6 +244,7 @@ namespace Dash
                 e.Handled = true;
                 e.Complete();
             }
+
             _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
@@ -283,6 +270,8 @@ namespace Dash
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
+
+            LocalSqliteEndpoint.SuspendTimer = false;
             _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
             _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
             _dragViews = null;
@@ -292,15 +281,15 @@ namespace Dash
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
-
+            LocalSqliteEndpoint.SuspendTimer = true;
            
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
             var rawOffsets = _dragViews.Select(args.GetPosition);
             var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
 
-            args.Data.AddDragModel(new DragDocumentModel(_dragViews,
-                _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection : null).ToList(),
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews,
+                _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList(),
                 offsets.ToList(), args.GetPosition(docView)));
 
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -329,30 +318,23 @@ namespace Dash
             // blip a bitmap for each element onto
             var parentBitmap = new WriteableBitmap((int)s1.X, (int)s1.Y);
             var thisOffset = new Point();
-            
+
             var def = args.GetDeferral();
-            foreach (var doc in _dragViews)
+            try
             {
+                var doc =  MainPage.Instance.MainSplitter;
                 // renders a bitmap for each selected document and blits it onto the parent bitmap at the correct position
                 var rtb = new RenderTargetBitmap();
-                var s = new Point(Math.Ceiling(doc.ActualWidth), Math.Ceiling(doc.ActualHeight));
-                var transformToVisual = doc.TransformToVisual(Window.Current.Content);
-                var rect = transformToVisual.TransformBounds(new Rect(0, 0, s.X, s.Y));
-                s = new Point(rect.Width, rect.Height);
-                await rtb.RenderAsync(doc, (int)Math.Floor(s.X), (int)Math.Floor(s.Y));
-                var buf = await rtb.GetPixelsAsync();
+                var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, doc.ActualWidth, doc.ActualHeight));
+                await rtb.RenderAsync(doc);
+                var buf = (await rtb.GetPixelsAsync()).ToArray();
                 var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-                var miniSBitmap = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight);
-                miniSBitmap.CopyToBuffer(miniBitmap.PixelBuffer);
-                var pos = new Point(rect.Left * scaling - tl.X, rect.Top * scaling - tl.Y);
-                parentBitmap.Blit(pos, miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
+                miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+                parentBitmap.Blit(new Point(rect.Left - tl.X, rect.Top - tl.Y), miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
                     Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
+            } catch (Exception)
+            {
 
-                if (doc == docView)
-                {
-                    thisOffset.X = rect.X - tl.X / scaling;
-                    thisOffset.Y = rect.Y - tl.Y / scaling;
-                }
             }
 
             var p = args.GetPosition(Window.Current.Content);

@@ -125,7 +125,6 @@ namespace Dash
             //return Equals(KeyStore.DelegatesKey) ||
             //       Equals(KeyStore.PrototypeKey) ||
             //       Equals(KeyStore.LayoutListKey) ||
-            //       Equals(KeyStore.ActiveLayoutKey) ||
             //       Equals(KeyStore.IconTypeFieldKey);
         }
 

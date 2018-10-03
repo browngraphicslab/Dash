@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,8 +17,6 @@ namespace Dash
 
         public DocumentTree(DocumentController headRef)
         {
-            var title = headRef.GetField<TextController>(KeyStore.TitleKey);
-            headRef.SetField<TextController>(KeyStore.TitleKey, $"*{title}*", true);
             Head = new DocumentNode(headRef, null, Nodes);
         }
 
@@ -129,6 +126,8 @@ namespace Dash
                 path.Reverse();
                 paths.Add(path);
             }
+
+            paths.Sort((l1, l2) => l1.Count - l2.Count);
 
             return paths;
         }

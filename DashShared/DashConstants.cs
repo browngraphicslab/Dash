@@ -2,8 +2,6 @@
 
 //using Windows.Storage;
 
-using System;
-
 namespace DashShared
 {
     public static class DashConstants

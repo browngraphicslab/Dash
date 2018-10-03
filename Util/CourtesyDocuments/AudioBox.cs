@@ -5,7 +5,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
-using Windows.Management.Deployment;
 using Windows.System;
 using Dash.Converters;
 
@@ -21,8 +20,6 @@ namespace Dash
         public AudioBox(FieldControllerBase refToAudio, double x = 0, double y = 0, double w = 320, double h = 180)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToAudio);
-            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
-            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "AudioBox Prototype Layout", fields);
         }
 
@@ -52,7 +49,6 @@ namespace Dash
 			
 
 			// setup bindings on the audio
-			SetupBindings(audio, docController, context);
             SetupAudioBinding(audio, docController, context);
             audio.TransportControls.IsFullWindowEnabled = false;
             audio.TransportControls.IsFullWindowButtonVisible = false;

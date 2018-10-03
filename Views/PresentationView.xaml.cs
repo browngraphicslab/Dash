@@ -116,7 +116,7 @@ namespace Dash
 
                     _startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
                     _startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
-                    MainPage.Instance.SetCurrentWorkspace(_startCollection);
+                    SplitFrame.OpenInActiveFrame(_startCollection);
                 }
                 else
                 {
@@ -126,8 +126,9 @@ namespace Dash
                     xPinnedNodesListView.SelectedIndex = 0;
                     NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
-                    _startCollection =
-                        MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+
+                    _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+
                     _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
                     _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
                     NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
@@ -244,19 +245,18 @@ namespace Dash
         private static void NavigateToDocument(DocumentController dc)
         {
             //if navigation failed, it wasn't in current workspace or something
-            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(dc, true))
+            if (!SplitFrame.TryNavigateToDocument(dc))
             {
                 var tree = DocumentTree.MainPageTree;
                 if (tree.Nodes.ContainsKey(dc)
                 ) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
                 {
                     var docNode = tree.Nodes[dc];
-                    MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument,
-                        docNode.ViewDocument);
+                    SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                 }
                 else
                 {
-                    MainPage.Instance.SetCurrentWorkspace(dc);
+                    SplitFrame.OpenInActiveFrame(dc);
                 }
             }
         }
@@ -778,6 +778,9 @@ namespace Dash
         //opens settings menu to change the working presentation
         private void XSettingsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            //fixes bug with combobox not updating
+            xPresentations.DisplayMemberPath = "Title";
+
             xSettingsFlyout.ShowAt(xSettingsButton);
         }
 
@@ -807,6 +810,7 @@ namespace Dash
         private void XTitleBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             ViewModel.RenamePres(ViewModel.CurrPres, xTitle.Text);
+            
         }
     }
 }

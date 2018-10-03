@@ -17,7 +17,7 @@
     >
     <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All" PointerMoved="xOuterGrid_PointerMoved">
         <Grid.Clip>
-            <RectangleGeometry x:Name="xClippingRect" />
+            <RectangleGeometry />
         </Grid.Clip>
 
         <ContentPresenter x:Name="xBackgroundContentPresenter"/>
@@ -29,13 +29,8 @@
         <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas Background="Transparent"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Width="0"
-                            Height="0"
-                            RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
-                    </Canvas>
+                    <Canvas RenderTransform="{Binding TransformGroup, 
+                            Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 

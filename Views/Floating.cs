@@ -1,6 +1,5 @@
 ﻿namespace Dash
 {
-    using Dash;
     using System;
     using Windows.Foundation;
     using Windows.UI.Xaml;

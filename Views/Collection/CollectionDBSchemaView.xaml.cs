@@ -2,15 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Flurl.Util;
-using Microsoft.Toolkit.Uwp.UI;
 using static Dash.CollectionDBSchemaHeader;
 using Windows.UI.Xaml.Media;
 
@@ -20,7 +17,7 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
-        private DocumentController _parentDocument;
+        private DocumentController ParentDocument => ViewModel.ContainerDocument;
 
         private Dictionary<KeyController, HashSet<TypeInfo>> _typedHeaders;
 
@@ -42,18 +39,6 @@ namespace Dash
         public ObservableCollection<HeaderViewModel> SchemaHeaders { get; }
 
         public CollectionViewModel ViewModel { get; set; }
-
-        public DocumentController ParentDocument
-        {
-            get => _parentDocument;
-            set
-            {
-                _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-            }
-        }
 
         public UserControl UserControl => this;
 
@@ -132,16 +117,15 @@ namespace Dash
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
-            if (ViewModel != null)
+            if (ViewModel?.CollectionController != null)
                 ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
-            ParentDocument = null;
         }
 
 
         private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
+            
             CollectionDBView_DataContextChanged(null, null);
         }
 
@@ -153,19 +137,18 @@ namespace Dash
                 if (ViewModel != null && ViewModel.CollectionController.Equals(cvm.CollectionController)) return;
 
                 // remove events from previous datacontext
-                if (ViewModel != null)
+                if (ViewModel?.CollectionController != null)
                     ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
 
                 // add events to new datacontext and set it
-                cvm.CollectionController.FieldModelUpdated += CollectionController_FieldModelUpdated;
+                if (cvm?.CollectionController != null)
+                    cvm.CollectionController.FieldModelUpdated += CollectionController_FieldModelUpdated;
                 ViewModel = cvm;
 
                 // set the parentDocument which is the document holding this collection
-                ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
                 if (ParentDocument != null)
                 {
                     ResetHeaders();
-                    ResetRecords();
                 }
             }
         }
@@ -197,8 +180,7 @@ namespace Dash
         {
             // TODO logic for adding and removing old and new columns using ColumnViewModels
             var context = new Context(ParentDocument);
-            _typedHeaders = Util.GetDisplayableTypedHeaders(ParentDocument.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context));
+            _typedHeaders = Util.GetDisplayableTypedHeaders(CollectionDocuments);
             foreach (var doc in changedDocuments.Select(doc =>
                 doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? doc))
             foreach (var keyFieldPair in doc.EnumDisplayableFields())
@@ -250,12 +232,15 @@ namespace Dash
         /// </summary>
         public void ResetHeaders()
         {
-            // TODO why is this called about 4 times on start up
-            var context = new Context(ParentDocument);
-            _typedHeaders = Util.GetDisplayableTypedHeaders(ParentDocument.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context));
-            SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
+            var dbDocs = (ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) ??
+                          ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null))?.TypedData;
+            foreach (var dbDoc in dbDocs.Select(db => db.DocumentType.Equals(DataBox.DocumentType) ? db : db.GetDataDocument()))
+            {
+                CollectionDocuments.Add(dbDoc);
+            }
+            _typedHeaders = Util.GetDisplayableTypedHeaders(CollectionDocuments);
 
+            SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
             SchemaHeaders.Clear();
             foreach (var typedHeader in _typedHeaders)
                 SchemaHeaders.Add(new HeaderViewModel
@@ -266,15 +251,6 @@ namespace Dash
                     FieldKey = typedHeader.Key
                 });
             SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
-        }
-
-        private void ResetRecords()
-        {
-            var dbDocs = ParentDocument.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))
-                ?.TypedData;
-            dbDocs = dbDocs.Select(db => db.GetDataDocument()).ToList();
-            foreach (var documentController in dbDocs) CollectionDocuments.Add(documentController);
 
             foreach (var typedHeader in _typedHeaders)
             {
@@ -314,7 +290,7 @@ namespace Dash
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
             var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            ParentDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
         
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
@@ -323,13 +299,17 @@ namespace Dash
             {
                 vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
-                args.Data.AddDragModel(new DragDocumentModel(vm.Document));
+                args.Data.SetDragModel(new DragDocumentModel(vm.Document));
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
         }
 
         private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
+            if (e.Items.FirstOrDefault() is HeaderViewModel hitem)
+            {
+                e.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(ParentDocument.GetDataDocument(), hitem.FieldKey)));
+            }
             //foreach (var m in e.Items)
             //{
             //    var viewModel = m as HeaderViewModel;
@@ -351,8 +331,7 @@ namespace Dash
 
         private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode =
-                e.GetCurrentPoint(this).Properties.IsRightButtonPressed
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode =  e.GetCurrentPoint(this).Properties.IsRightButtonPressed
                     ? ManipulationModes.All
                     : ManipulationModes.None;
         }

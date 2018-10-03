@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Windows.Storage.Streams;
@@ -16,7 +15,6 @@ namespace Dash
     public class InkController : FieldModelController<InkModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
-        private Image _icon = new Image();
 
         public InkController() : base(new InkModel())
         {
