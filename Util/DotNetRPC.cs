@@ -6,6 +6,7 @@ using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
 using Windows.UI.Popups;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -39,6 +40,26 @@ namespace Dash
                     string requestData = data["DATA"] as string;
                     Debug.WriteLine("Request data: " + requestData);
                     await BrowserView.HandleIncomingMessage(requestData);
+                    break;
+                case "SizeChrome":
+                    string sizeData = data["DATA"] as string;
+                    var split = sizeData.Split(",");
+                    if (split.Length == 2)
+                    {
+                        var w = int.Parse(split[0]);
+                        var h = int.Parse(split[1]);
+                        MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                            async () =>
+                            {
+                                if (CollapseRequest.LastFrame != null)
+                                {
+                                    var gsplit = CollapseRequest.LastFrame.GetFirstAncestorOfType<SplitManager>();
+                                    var scol = Grid.GetColumn(gsplit);
+                                    var maingrid = gsplit.GetFirstAncestorOfType<Grid>();
+                                    maingrid.ColumnDefinitions[scol].Width = new Windows.UI.Xaml.GridLength(w);
+                                }
+                            });
+                    }
                     break;
                 default://Unhandled request
                     throw new NotImplementedException();

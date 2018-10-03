@@ -179,8 +179,8 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            snap.SetFitToParent(true);
             return snap;
         }
 
@@ -309,11 +309,9 @@ namespace Dash
             CompositionTarget.Rendering += CompositionTargetOnRendering;
 
             // Begin the animation.
-            _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-
-
+            _storyboard1.Begin();
         }
 
         protected void Storyboard1OnCompleted(object sender, object e)
@@ -685,7 +683,7 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
-                GetSelectionCanvas().Children.Remove(_marquee);
+                GetSelectionCanvas()?.Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;

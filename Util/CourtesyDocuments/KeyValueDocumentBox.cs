@@ -14,20 +14,20 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             SetupDocument(DocumentType, PrototypeId, "KeyValueDocumentBox Prototype Layout", fields);
+
+            Document.SetField(KeyStore.TitleKey, new PointerReferenceController(new DocumentReferenceController(Document, KeyStore.DocumentContextKey),
+                KeyStore.TitleKey), true);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var border = new Border();
-
-            var keyValuePane = new KeyValuePane
+            return new Border()
             {
-                TypeColumnWidth = new GridLength(0),
-                DataContext = docController?.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? docController
+                Child = new KeyValuePane
+                {
+                    TypeColumnWidth = new GridLength(0),
+                    DataContext = docController?.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? docController
+                }
             };
-            border.Child = keyValuePane;
-            SetupBindings(border, docController, context);
-
-            return border;
         }
     }
 }

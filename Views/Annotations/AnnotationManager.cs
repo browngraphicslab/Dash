@@ -139,27 +139,27 @@ namespace Dash
 
             switch (link.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     //navigate to link
                     if (linkContext)
                     {
-                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        if (!SplitFrame.TryNavigateToDocument(document))
                         {
                             var tree = DocumentTree.MainPageTree;
                             if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
                             {
                                 var docNode = tree.Nodes[document];
-                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                                SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                             }
                             else
                             {
-                                MainPage.Instance.SetCurrentWorkspace(document);
+                                SplitFrame.OpenInActiveFrame(document);
                             }
                         }
                     }
                     else
                     {
-                        MainPage.Instance.SetCurrentWorkspace(document);
+                        SplitFrame.OpenInActiveFrame(document);
                     }
 
                     break;

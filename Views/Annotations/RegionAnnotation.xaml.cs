@@ -106,16 +106,19 @@ namespace Dash
 
         public override void EndAnnotation(Point p)
         {
-            XRegionRect = new Rectangle();
-            XRegionRect.StrokeThickness = 2;
-            XRegionRect.StrokeDashArray = new DoubleCollection();
-            XRegionRect.StrokeDashArray.Add(2);
-            XRegionRect.Fill = ParentOverlay.XPreviewRect.Fill;
-            XRegionRect.Opacity = ParentOverlay.XPreviewRect.Opacity;
-            XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
-            XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
-            XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
-            XRegionRect.RenderTransform = ParentOverlay.XPreviewRect.RenderTransform;
+            XRegionRect = new Rectangle
+            {
+                StrokeThickness = 2,
+                StrokeDashArray = new DoubleCollection {2},
+                Fill = ParentOverlay.XPreviewRect.Fill,
+                Opacity = ParentOverlay.XPreviewRect.Opacity,
+                Stroke = new SolidColorBrush(Colors.Black),
+                Width = ParentOverlay.XPreviewRect.Width,
+                Height = ParentOverlay.XPreviewRect.Height,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                RenderTransform = ParentOverlay.XPreviewRect.RenderTransform
+            };
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {

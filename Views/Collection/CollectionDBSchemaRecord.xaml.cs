@@ -48,7 +48,7 @@ namespace Dash
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             DocumentController dataDoc = (DataContext as CollectionDBSchemaRecordViewModel)?.Document;
-            args.Data.AddDragModel(new DragDocumentModel(dataDoc));
+            args.Data.SetDragModel(new DragDocumentModel(dataDoc));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

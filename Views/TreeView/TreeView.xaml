@@ -1,0 +1,29 @@
+﻿<UserControl
+    x:Class="Dash.Views.TreeView.TreeView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views.TreeView"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+            <local:TreeViewList x:Name="XRootList" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
+        </ScrollViewer>
+
+        <ToggleSwitch x:Name="XActiveFrameSwitch" HorizontalAlignment="Right" Grid.Row="1" Foreground="White" OnContent="Attached" OffContent="Detached">
+            <ToggleSwitch.Header>
+                <TextBlock Text="Active Frame" Foreground="White"></TextBlock>
+            </ToggleSwitch.Header>
+        </ToggleSwitch>
+
+        <TextBlock Visibility="Collapsed" Text="*" FontWeight="ExtraBold" FontSize="40" Grid.Row="1" CanDrag="True" DragStarting="UIElement_OnDragStarting" HorizontalAlignment="Left"></TextBlock>
+    </Grid>
+</UserControl>

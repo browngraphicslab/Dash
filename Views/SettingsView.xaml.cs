@@ -183,6 +183,13 @@ namespace Dash
             set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
         }
 
+        public string UserName
+        {
+            //This gets called before the settings are initialized, so _settingsDoc is null
+            get => _settingsDoc?.GetField<TextController>(KeyStore.AuthorKey)?.Data;
+            set => _settingsDoc?.SetField<TextController>(KeyStore.AuthorKey, value, true);
+        }
+
         #endregion
 
         #region CONSTRUCTOR
@@ -300,6 +307,8 @@ namespace Dash
             AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: (sender, dp) => UpdateNumBackups(), mode: BindingMode.OneWay);
             AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => UpdateInterval());
             AddSettingsBinding<NumberController>(xBackgroundOpacitySlider, RangeBase.ValueProperty, KeyStore.BackgroundImageOpacityKey, handler: (sender, dp) => CollectionFreeformView.BackgroundOpacity = BackgroundImageOpacity);
+
+            AddSettingsBinding<TextController>(XAuthorBox, TextBox.TextProperty, KeyStore.AuthorKey);
         }
 
         private void ProcessEnumsAndImage(BackgroundImageState thisState)

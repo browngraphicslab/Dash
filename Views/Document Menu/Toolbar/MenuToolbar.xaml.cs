@@ -320,7 +320,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(reb);
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -354,7 +354,7 @@ namespace Dash
                         }
                         else if (data is ListController<DocumentController>)
                         {
-                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            if (MainPage.Instance.IsCtrlPressed())
                             {
                                 if (!containsInternalContent)
                                 {
@@ -382,7 +382,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -1156,7 +1156,7 @@ namespace Dash
 
         private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
         private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
