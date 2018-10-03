@@ -241,35 +241,58 @@ namespace Dash
                             .GetFontName();
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
-                            sb.Append("{\\sa120");
-                            sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                            if ((int) selectableElement.TextData.GetFontSize() != currentFontSize)
+                            {
+                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                                currentFontSize = (int)selectableElement.TextData.GetFontSize();
+                            }
 
-                            if (selectableElement.TextData.GetFont().GetFontProgram()
+                            if (isItalic && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                                    .IsItalic())
+                            {
+                                sb.Append("}");
+                                isItalic = false;
+                            }
+                            else if (!isItalic && selectableElement.TextData.GetFont().GetFontProgram()
                                          .GetFontNames().IsItalic())
                             {
-                                sb.Append("\\i");
+                                sb.Append("{\\i");
+                                isItalic = true;
                             }
 
-                            if (selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                            if (isBold && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames().GetFontName()
+                                    .Contains("Bold"))
+                            {
+                                sb.Append("}");
+                                isBold = false;
+                            }
+                            else if (!isBold && selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
                                          .GetFontName().Contains("Bold"))
                             {
-                                sb.Append("\\b");
+                                sb.Append("{\\sa120\\b");
+                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                                isBold = true;
                             }
 
-                            sb.Append("\\f" + fontMap[font] + " ");
+                            if (font != currentFont)
+                            {
+                                sb.Append("}{\\sa120\\f" + fontMap[font]);
+                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                                currentFont = font;
+                            }
 
                             var contents = (string)selectableElement.Contents;
                             if (char.IsWhiteSpace(contents, 0))
                             {
                                 sb.Append("\\~");
                             }
-                            else if (contents.Equals("-"))
+                            else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
                             {
                                 sb.Append("\\_");
                             }
                             else
                             {
-                                sb.Append((string)selectableElement.Contents + "}");
+                                sb.Append((string)selectableElement.Contents);
                             }
                         }
 
