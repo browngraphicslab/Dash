@@ -99,11 +99,6 @@ namespace Dash
             return readableText.Contains(searchString) ? new StringSearchModel(readableText) : StringSearchModel.False;
         }
 
-        public override string ToScriptString(DocumentController thisDoc)
-        {
-            throw new NotImplementedException();
-        }
-
         public StringSearchModel SearchForStringInRichText(string searchString)
         {
             int maxStringSize = 125;

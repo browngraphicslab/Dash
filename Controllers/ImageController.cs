@@ -1,7 +1,6 @@
 ﻿using System;
 using DashShared;
 using System.Diagnostics;
-using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -86,11 +85,6 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
-        }
-
-        public override string ToScriptString(DocumentController thisDoc)
-        {
-            return DSL.GetFuncName<TextToImageOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

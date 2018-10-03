@@ -94,8 +94,8 @@
                 CanDragItems="True"
                 CanReorderItems="True"
                 AllowDrop="True"
-                DragItemsStarting="XThumbs_DragItemsStarting"
                 DragItemsCompleted="xThumbs_DragItemsCompleted" 
+                DragItemsStarting="XThumbs_DragItemsStarting"
                 ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
 

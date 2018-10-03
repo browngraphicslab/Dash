@@ -110,7 +110,7 @@ namespace Dash
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
-        public void FitContents()
+        public void FitContents(CollectionView cview)
         {
             if (LocalSqliteEndpoint.SuspendTimer)
                 return;
@@ -223,7 +223,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents();   // pan/zoom collection so all of its contents are visible
+                FitContents(DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
         }
         void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
@@ -290,7 +290,9 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
+                    if (startIndex >= DocumentViewModels.Count)
+                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    else DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
                     startIndex++;
                 }
             }

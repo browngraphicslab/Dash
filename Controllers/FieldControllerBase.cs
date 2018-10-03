@@ -134,12 +134,6 @@ namespace Dash
         public abstract StringSearchModel SearchForString(string searchString);
 
         /// <summary>
-        /// Convert a field to a script that will evaluate to that field
-        /// </summary>
-        /// <returns>A string that is a script that will evaluate to this field</returns>
-        public abstract string ToScriptString(DocumentController thisDoc = null);
-
-        /// <summary>
         ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
         ///     displaying the number of items stored in collection/list
         /// </summary>

@@ -38,7 +38,7 @@ namespace Dash
 
         }
 
-		public static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
+        private static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
 		{
 			var converter = new DataFieldToMakeViewConverter(docController, context);
 

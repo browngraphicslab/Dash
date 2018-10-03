@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Windows.Devices.PointOfService;
 using DashShared;
 
 namespace Dash
 {
-    public class DocumentReferenceController : ReferenceController
+    public class 
+        DocumentReferenceController : ReferenceController
     {
         private DocumentController _documentController;
 
@@ -86,31 +85,6 @@ namespace Dash
                 return new DocumentReferenceController(mapping[GetDocumentController(null)] as DocumentController, FieldKey);
             }
             return null;
-        }
-
-        public override string ToScriptString(DocumentController thisDoc)
-        {
-            var funcString = DSL.GetFuncName<DocumentReferenceOperator>();
-            string DocAndKeyToString(DocumentController doc, KeyController key)
-            {
-                return funcString + $"({doc.ToScriptString(thisDoc)}, {key.ToScriptString(thisDoc)})";
-            }
-            var ops = DocumentController.GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
-            if (ops != null)
-            {
-                var op = ops.FirstOrDefault(o => o.Outputs.ContainsKey(FieldKey));
-                if (op != null)
-                {
-                    //return DSL.GetFuncName(op) + "(" + string.Join(", ", op.Inputs.Select(kvp => DocAndKeyToString(DocumentController, kvp.Key))) + ")";
-                    return DSL.GetFuncName(op) + "(" + string.Join(", ", op.Inputs.Select(kvp => $"this.{kvp.Key.Name}")) + ")";
-                }
-            }
-            if (thisDoc == DocumentController)
-            {
-                return $"this.{FieldKey}";
-            }
-
-            return DocAndKeyToString(DocumentController, FieldKey);
         }
     }
 }

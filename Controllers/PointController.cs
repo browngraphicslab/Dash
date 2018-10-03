@@ -88,11 +88,6 @@ namespace Dash
             return StringSearchModel.False;
         }
 
-        public override string ToScriptString(DocumentController thisDoc)
-        {
-            return DSL.GetFuncName<PointOperator>() + $"({Data.X}, {Data.Y})";
-        }
-
         public override string ToString()
         {
             return $"({Data})";

@@ -110,11 +110,6 @@ namespace Dash
             return StringSearchModel.False;
         }
 
-        public override string ToScriptString(DocumentController thisDoc = null)
-        {
-            return "\"" + Data + "\"";
-        }
-
         public override FieldControllerBase Copy()
         {
             return new TextController(Data);
