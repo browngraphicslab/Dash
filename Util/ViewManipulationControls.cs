@@ -97,16 +97,36 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
             {
                 //e.Complete();
                 _processManipulation = false;
             }
-            else
+            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel())
+            {
+                //drag document 
+                if (!SelectionManager.IsSelected(docView))
+                {
+                    SelectionManager.Select(docView, false);
+                    try
+                    {
+                        SelectionManager.TryInitiateDragDrop(docView, null, e);
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
+
+                    CollectionFreeformBase.NumFingers--;
+                }
+            }
+            else if (!(_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent()))
             {
                 _processManipulation = true;
                 e.Handled = true;
             }
+
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
@@ -148,13 +168,7 @@ namespace Dash
                         e.Handled = true;
                     }
                 }
-                else if(docView != null && CollectionFreeformBase.NumFingers == 1)
-                {
-                    //drag document 
-                    if (!SelectionManager.IsSelected(docView))
-                        SelectionManager.Select(docView, false);
-                    SelectionManager.TryInitiateDragDrop(docView, null, null);
-                }
+                
             }
         }
 
