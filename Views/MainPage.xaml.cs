@@ -264,7 +264,7 @@ namespace Dash
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
 
-            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is TreeViewNode))
+            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
             {
                 var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
                 if (ctrlDown)

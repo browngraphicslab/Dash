@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
 using Windows.Storage.FileProperties;
+using Windows.UI.Xaml.Media;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -39,6 +40,12 @@ namespace Dash
         public event PropertyChangedEventHandler PropertyChanged;
 
         private AnnotationOverlay _annotationOverlay;
+
+        public Stretch Stretch
+        {
+            get => xImage.Stretch;
+            set => xImage.Stretch = value;
+        }
 
         public EditableImage(DocumentController document, Context context)
         {

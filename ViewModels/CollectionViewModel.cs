@@ -290,7 +290,9 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
+                    if (startIndex >= DocumentViewModels.Count)
+                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    else DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
                     startIndex++;
                 }
             }

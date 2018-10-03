@@ -88,10 +88,18 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (doc != null)
+            if (ViewModel?.IsDimensionless == true)
             {
-                CourtesyDocument.BindWidth(this, doc, null);
-                CourtesyDocument.BindHeight(this, doc, null);
+                Width = double.NaN;
+                Height = double.NaN;
+            }
+            else
+            {
+                if (doc != null)
+                {
+                    CourtesyDocument.BindWidth(this, doc, null);
+                    CourtesyDocument.BindHeight(this, doc, null);
+                }
             }
         }
         private void UpdateVisibilityBinding()
@@ -122,8 +130,16 @@ namespace Dash
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
-            CourtesyDocument.BindHorizontalAlignment(this, doc, null);
-            CourtesyDocument.BindVerticalAlignment(this,   doc, null);
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
         }
 
         // == CONSTRUCTORs ==

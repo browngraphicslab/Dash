@@ -17,7 +17,7 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
-        private DocumentController _parentDocument;
+        private DocumentController ParentDocument => ViewModel.ContainerDocument;
 
         private Dictionary<KeyController, HashSet<TypeInfo>> _typedHeaders;
 
@@ -39,18 +39,6 @@ namespace Dash
         public ObservableCollection<HeaderViewModel> SchemaHeaders { get; }
 
         public CollectionViewModel ViewModel { get; set; }
-
-        public DocumentController ParentDocument
-        {
-            get => _parentDocument;
-            set
-            {
-                _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-            }
-        }
 
         public UserControl UserControl => this;
 
@@ -131,14 +119,13 @@ namespace Dash
             DataContextChanged -= CollectionDBView_DataContextChanged;
             if (ViewModel?.CollectionController != null)
                 ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
-            ParentDocument = null;
         }
 
 
         private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
+            
             CollectionDBView_DataContextChanged(null, null);
         }
 
@@ -159,7 +146,6 @@ namespace Dash
                 ViewModel = cvm;
 
                 // set the parentDocument which is the document holding this collection
-                ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
                 if (ParentDocument != null)
                 {
                     ResetHeaders();
@@ -304,7 +290,7 @@ namespace Dash
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
             var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            ParentDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
         
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
@@ -345,8 +331,7 @@ namespace Dash
 
         private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode =
-                e.GetCurrentPoint(this).Properties.IsRightButtonPressed
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode =  e.GetCurrentPoint(this).Properties.IsRightButtonPressed
                     ? ManipulationModes.All
                     : ManipulationModes.None;
         }

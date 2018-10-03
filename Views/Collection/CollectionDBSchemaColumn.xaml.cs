@@ -44,7 +44,7 @@ namespace Dash
             EditableViewModels = new ObservableCollection<EditableScriptViewModel>();
             foreach (var documentController in CollectionDocs)
             {
-                EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController, Key)));
+                EditableViewModels.Add(new EditableScriptViewModel(new DocumentFieldReference(documentController.GetDataDocument(), Key)));
             }
             if (headerViewModel != null)
             {

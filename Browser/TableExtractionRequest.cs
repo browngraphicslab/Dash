@@ -43,7 +43,7 @@ namespace Dash
             var columns = rows.FirstOrDefault()?.GetEnumerator();
             if (columns != null)
             {
-                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, 200, 200).Document;
+                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 200).Document;
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
                 foreach (var c in rows.FirstOrDefault())
                 {
@@ -57,24 +57,27 @@ namespace Dash
                 CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
                 prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
 
-                var docs = rows.Select((jobj, index) => ParseRow(jobj, index, prototype)).ToList().Prepend(prototype);
+                var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype)).ToList().Prepend(prototype);
 
                 return new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
             }
             return null;
         }
 
-        private DocumentController ParseRow(JObject obj, int index, DocumentController proto)
+        private DocumentController ParseRow(JObject obj, KeyController primaryKey, DocumentController proto)
         {
             var doc = proto.GetDataInstance();
             var datadoc = doc.GetDataDocument();
-            datadoc.SetTitle("Row " + index);
             
             foreach (var kvp in obj)
             {
                 var key = new KeyController(kvp.Key);
                 var val = _parser.ParseValue(kvp.Value);
                 datadoc.SetField(key, val, true);
+                if (key.Equals(primaryKey))
+                {
+                    datadoc.SetTitle(val.ToString());
+                }
             }
 
             return doc;
