@@ -821,7 +821,7 @@ namespace Dash
                     collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel
                         .ContainerDocument.GetFitToParent());
                     if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
-                        collectionView.ViewModel.FitContents();
+                        collectionView.ViewModel.FitContents(collectionView);
                 }
             }
         }

@@ -188,7 +188,7 @@ namespace Dash
             {
                 return new Binding
                 {
-                    Path = new PropertyPath(nameof(IsSelected)),
+                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
                     Mode = BindingMode.OneWay,
                     Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
                 };

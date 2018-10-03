@@ -529,7 +529,7 @@ namespace Dash
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
                 else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
             }
         }
         // copy btn
@@ -540,7 +540,7 @@ namespace Dash
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
             }
         }
         // copy btn
