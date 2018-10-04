@@ -215,7 +215,7 @@ namespace Dash
 
 	        _scrollVis = new ToolTip()
 	        {
-		        Content = "Show Annotations on Scroll",
+		        Content = "Hide Annotations on Scroll",
 		        Placement = placementMode,
 		        VerticalOffset = offset
 	        };
@@ -261,13 +261,21 @@ namespace Dash
 
 	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
 	    {
-            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Show Annotations on Scroll";
-	        _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
+            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
+            {
+                tip.Content = "Show All Annotations";
+            }
+
+            _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
 	    }
 
 	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
 	    {
-	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip) tip.Content = "Hide Annotations on Scroll";
+	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
+            {
+                tip.Content = "Hide Annotations on Scroll";
+            }
+
             _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
 	    }
 	}
