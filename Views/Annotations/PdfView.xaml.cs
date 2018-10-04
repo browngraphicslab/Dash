@@ -13,9 +13,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Display;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Input;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -241,43 +243,42 @@ namespace Dash
                             .GetFontName();
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
-                            if ((int) selectableElement.TextData.GetFontSize() != currentFontSize)
+                            var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
+                            var fontSize = (int) (selectableElement.Bounds.Height * 72 / dpi);
+                            if (fontSize != currentFontSize)
                             {
-                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
-                                currentFontSize = (int)selectableElement.TextData.GetFontSize();
+                                sb.Append("\\fs" + 2 * fontSize);
+                                currentFontSize = fontSize;
                             }
 
-                            if (isItalic && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                                    .IsItalic())
+                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
                             {
-                                sb.Append("}");
-                                isItalic = false;
+                                sb.Append("{\\b");
+                                isBold = true;
                             }
-                            else if (!isItalic && selectableElement.TextData.GetFont().GetFontProgram()
-                                         .GetFontNames().IsItalic())
-                            {
-                                sb.Append("{\\i");
-                                isItalic = true;
-                            }
-
-                            if (isBold && !selectableElement.TextData.GetFont().GetFontProgram().GetFontNames().GetFontName()
-                                    .Contains("Bold"))
+                            else if (isBold && selectableElement.Bounds.Width <
+                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
                             {
                                 sb.Append("}");
                                 isBold = false;
                             }
-                            else if (!isBold && selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                                         .GetFontName().Contains("Bold"))
-                            {
-                                sb.Append("{\\sa120\\b");
-                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
-                                isBold = true;
-                            }
+
+                            //if (isBold && !font.Contains("Bold"))
+                            //{
+                            //    sb.Append("}");
+                            //    isBold = false;
+                            //}
+                            //else if (!isBold && font.Contains("Bold"))
+                            //{
+                            //    sb.Append("{\\sa120\\b");
+                            //    sb.Append("\\fs" + 2 * fontSize);
+                            //    isBold = true;
+                            //}
 
                             if (font != currentFont)
                             {
                                 sb.Append("}{\\sa120\\f" + fontMap[font]);
-                                sb.Append("\\fs" + 2 * (int)selectableElement.TextData.GetFontSize());
+                                sb.Append("\\fs" + 2 * fontSize);
                                 currentFont = font;
                             }
 
