@@ -154,6 +154,7 @@
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="ChromeExt2\background.js" />
+    <Content Include="ChromeExt2\content.js" />
     <Content Include="ChromeExt2\popup.html" />
     <Content Include="ChromeExt2\popup.js" />
     <Content Include="HtmlAgilityPack.UWP.csproj" />

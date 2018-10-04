@@ -35,9 +35,9 @@
     Array.from(document.getElementsByTagName("table")).forEach(table => {
         table.addEventListener("dragstart", (e) => {
             if (isEnabled) {
-                e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)))
-                e.dataTransfer.setData("text/tabledrop", JSON.stringify(tableToJson(e.currentTarget)))
             }
+            e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)))
+            e.dataTransfer.setData("Tabledrop", JSON.stringify(tableToJson(e.currentTarget)))
         });
     });
 
