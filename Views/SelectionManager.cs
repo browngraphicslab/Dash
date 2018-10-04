@@ -271,7 +271,6 @@ namespace Dash
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
-
             LocalSqliteEndpoint.SuspendTimer = false;
             _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
             _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
@@ -279,12 +278,21 @@ namespace Dash
             DragManipulationCompleted?.Invoke(sender, null);
         }
 
+        private static readonly DragEventHandler _collectionDragOverHandler = new DragEventHandler(CollectionDragOver);
+        private static void CollectionDragOver(object sender, DragEventArgs e)
+        {
+            if (e.DragUIOverride != null)
+            {
+                e.DragUIOverride.IsContentVisible = true;
+            }
+            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Collapsed);
+            (sender as FrameworkElement).RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
+        }
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             DragManipulationStarted?.Invoke(sender, null);
             LocalSqliteEndpoint.SuspendTimer = true;
 
-            var scaling        = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             var dragDocOffset  = args.GetPosition(docView);
             var relDocOffsets  = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
@@ -299,10 +307,10 @@ namespace Dash
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
             var def = args.GetDeferral();
-            try { await CreateDragDropBitmap(docView, args, scaling, dragBounds); } catch (Exception) { }
+            try { await CreateDragDropBitmap(docView, args, dragBounds); } catch (Exception) { }
             def.Complete();
 
-            if (!docView.IsShiftPressed())
+            if (!docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
                 // unfortunately, there is no synchronization between when the dragDrop feedback begins and
                 // when the document is made (in)visible.
@@ -315,34 +323,31 @@ namespace Dash
             MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
-        private static async Task CreateDragDropBitmap(DocumentView docView, DragStartingEventArgs args, double scaling, Rect dragBounds)
+        private static async Task CreateDragDropBitmap(DocumentView docView, DragStartingEventArgs args, Rect dragBounds)
         {
-            var rect       = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
+            // render the MainPage's entire xOuterGrid into a bitmap
             var rtb        = new RenderTargetBitmap();
             await rtb.RenderAsync(MainPage.Instance.xOuterGrid);
             var buf        = (await rtb.GetPixelsAsync()).ToArray();
             var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-
             miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+
+            // copy out the bitmap rectangle that contains all the documents being dragged
+            var rect         = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
+            var scaling      = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
             parentBitmap.Blit(new Point(rect.Left - dragBounds.X * scaling, rect.Top - dragBounds.Y * scaling),
                               miniBitmap, 
                               new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
                               Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
-            var cursorPt    = args.GetPosition(Window.Current.Content);
-            var docViewTL   = docView.TransformToVisual(Window.Current.Content).TransformPoint(new Point());
+
+            // Convert the dragged documents' bitmap into a software bitmap that can be used for the Drag/Drop UI
+            // and offset it to pick correlate properly with the cursor.
             var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
                                                                   parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
+            var docViewTL   = docView.TransformToVisual(Window.Current.Content).TransformPoint(new Point());
+            var cursorPt    = args.GetPosition(Window.Current.Content);
             args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - (2 * dragBounds.X - docViewTL.X), cursorPt.Y - (2 * dragBounds.Y - docViewTL.Y)));
-        }
-
-        static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);
-        static void collectionDragOver(object sender, DragEventArgs e)
-        {
-            if (e.DragUIOverride != null)
-                e.DragUIOverride.IsContentVisible = true;
-            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Collapsed);
-            (sender as FrameworkElement).RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
         }
 
         #endregion
