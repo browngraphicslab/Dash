@@ -293,23 +293,26 @@ namespace Dash
             DragManipulationStarted?.Invoke(sender, null);
             LocalSqliteEndpoint.SuspendTimer = true;
 
+            // setup the DragModel
             var dragDocOffset  = args.GetPosition(docView);
             var relDocOffsets  = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
-            var dragBounds     = Rect.Empty;
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
+            args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+
+            // compute the drag bounds rectangle and make all dragged documents not hit test visible (so we don't drop on them).
+            // then get the bitmap that contains all the documents being dragged.
+            var dragBounds = Rect.Empty;
             foreach (var dv in _dragViews)
             {
                 dragBounds.Union(dv.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, dv.ActualWidth, dv.ActualHeight)));
                 dv.IsHitTestVisible = false;
             }
-
-            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
-            args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-
             var def = args.GetDeferral();
             try { await CreateDragDropBitmap(docView, args, dragBounds); } catch (Exception) { }
             def.Complete();
 
+            // When moving a document, collapse the original so that only the Drag feedback is visible.
             if (!docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
                 // unfortunately, there is no synchronization between when the dragDrop feedback begins and
