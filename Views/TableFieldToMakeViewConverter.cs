@@ -59,10 +59,6 @@ namespace Dash
                 image.AddFieldBinding(Image.SourceProperty, binding);
                 currView = image;
             }
-            if (data is PdfController)
-            {
-                currView = PdfBox.MakeView(_docController, _context);
-            }
             if (data is VideoController)
             {
 
@@ -70,47 +66,39 @@ namespace Dash
                 var binding = new FieldBinding<VideoController>
                 {
                     Document = _docController,
-                    Key = KeyStore.DataKey,
+                    Key = _key,
                     Mode = BindingMode.OneWay,
                     Converter = UriToIMediaPlayBackSourceConverter.Instance
                 };
                 vid.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
                 currView = vid;
-                //currView = VideoBox.MakeView(_docController, _context);
             }
             else if (data is AudioController)
             {
-                currView = AudioBox.MakeView(_docController, _context);
+                currView = AudioBox.MakeView(_docController, _key, _context);
             }
             else if (data is BoolController val)
             {
-                   
-                var toggleSwitch = new ToggleSwitch();
-                toggleSwitch.OnContent = "True";
-                toggleSwitch.OffContent = "False";
-                toggleSwitch.HorizontalAlignment = HorizontalAlignment.Center;
-                toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController> { Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot });
+
+                var toggleSwitch = new ToggleSwitch
                 {
-
-
-                    //<SolidColorBrush x:Key="ToggleSwitchFillOff" Color="Green"></SolidColorBrush>
-                    //<SolidColorBrush x:Key="ToggleSwitchFillOn" Color="Yellow"></SolidColorBrush>
-
+                    OnContent = "True",
+                    OffContent = "False",
+                    HorizontalAlignment = HorizontalAlignment.Center
                 };
-                toggleSwitch.Margin = new Thickness(0, 12, 0, 0);
+                toggleSwitch.AddFieldBinding(ToggleSwitch.IsOnProperty, new FieldBinding<BoolController> { Document = _docController, Key = _key, Mode = BindingMode.TwoWay, FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot });
                 currView = toggleSwitch;
             }
             else if (data is ListController<TextController> textList)
             {
                 WrapPanel wrap = new WrapPanel();
-                KVPListText listText = null;
                 wrap.HorizontalAlignment = HorizontalAlignment.Center;
                 wrap.Margin = new Thickness(0, 12, 0, 0);
                 foreach (var text in textList)
                 {
                     var r = new Random();
                     var hexColor = Color.FromArgb(150, (byte)r.Next(256), (byte)r.Next(256), (byte)r.Next(256));
-                    listText = new KVPListText(text.Data, hexColor);
+                    var listText = new KVPListText(text.Data, hexColor);
                     wrap.Children.Add(listText);
                 }
 
@@ -127,7 +115,7 @@ namespace Dash
                 //currView = CollectionBox.MakeView(_docController, _context);
 
                 WrapPanel wrap = new WrapPanel();
-              
+
                 KVPDocBox docBox = null;
                 wrap.HorizontalAlignment = HorizontalAlignment.Center;
                 wrap.Margin = new Thickness(0, 10, 0, 0);
@@ -135,22 +123,21 @@ namespace Dash
                 {
                     docBox = new KVPDocBox(doc.DocumentType, doc.Title);
                     wrap.Children.Add(docBox);
-                    
+
                 }
                 currView = wrap;
             }
             else if (data is DocumentController dc)
             {
-                // hack to check if the dc is a view document
-                if (KeyStore.TypeRenderer.ContainsKey(dc.DocumentType))
+                var tb = new TextBlock();
+                tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>()
                 {
-                    currView = dc.MakeViewUI(_context);
-                }
-                else
-                {
-                    currView = dc.GetKeyValueAlias().MakeViewUI(_context);
-                }
-            } else if (data is ListController<BoolController> boolList)
+                    Document = dc,
+                    Key = KeyStore.TitleKey,
+                });
+                currView = tb;
+            }
+            else if (data is ListController<BoolController> boolList)
             {
                 WrapPanel wrap = new WrapPanel();
                 //KVPListText listText = null;
@@ -184,24 +171,30 @@ namespace Dash
                 currView = wrap;
 
             }
-            else if (data is TextController || data is NumberController || data is DateTimeController)
-            {
-                FrameworkElement mv = TextingBox.MakeView(_docController, _context);
-                Grid grid = new Grid();
-                grid.Children.Add(mv);
-                grid.Margin = new Thickness(0, 8, 0, 0);
-                currView = grid;
-            }
             else if (data is RichTextController)
             {
 
-                FrameworkElement mv = RichTextBox.MakeView(_docController, _context);
+                FrameworkElement mv = RichTextBox.MakeView(_docController, _key, _context);
                 Grid grid = new Grid();
                 grid.Children.Add(mv);
                 grid.Margin = new Thickness(0, 8, 0, 0);
                 currView = grid;
             }
-            if (currView == null) currView = new Grid();
+
+            if (currView == null)
+            {
+                var tb = new TextBlock();
+                var binding = new FieldBinding<FieldControllerBase>()
+                {
+                    Document = _docController,
+                    Key = _key,
+                    Mode = BindingMode.TwoWay,
+                    GetConverter = FieldConversion.GetFieldtoStringConverter,
+                    FallbackValue = "<null>",
+                };
+                tb.AddFieldBinding(TextBlock.TextProperty, binding);
+                currView = tb;
+            }
 
             _lastElement = currView;
             _lastType = data?.TypeInfo ?? TypeInfo.None;

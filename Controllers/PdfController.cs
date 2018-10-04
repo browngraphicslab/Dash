@@ -89,7 +89,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            throw new NotImplementedException();
+            return "PdfController";
         }
 
         public override FieldControllerBase GetDefaultController()

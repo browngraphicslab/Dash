@@ -101,7 +101,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            throw new NotImplementedException();
+            return "RichTextController";
         }
 
         public StringSearchModel SearchForStringInRichText(string searchString)

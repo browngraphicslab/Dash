@@ -48,7 +48,7 @@ namespace Dash.Converters
             }
             else if (data is AudioController)
             {
-                currView = AudioBox.MakeView(_docController, _context);
+                currView = AudioBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is ListController<DocumentController> docList)
             {
@@ -77,7 +77,7 @@ namespace Dash.Converters
             }
             else if (data is RichTextController)
             {
-                currView = RichTextBox.MakeView(_docController, _context);
+                currView = RichTextBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             if (currView == null) currView = new Grid();
 

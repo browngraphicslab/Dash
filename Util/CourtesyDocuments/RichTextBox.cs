@@ -39,43 +39,39 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
+        protected static void SetupTextBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
         {
-            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
-            if (data != null)
+            var binding = new FieldBinding<RichTextController>()
             {
-                var binding = new FieldBinding<RichTextController>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = BindingMode.TwoWay,
-                    Context = context,
-                    Tag = "Rich Text Box Text Binding"
-                };
-                element.AddFieldBinding(RichTextView.TextProperty, binding);
+                Document = docController,
+                Key = key,
+                Mode = BindingMode.TwoWay,
+                Context = context,
+                Tag = "Rich Text Box Text Binding"
+            };
+            element.AddFieldBinding(RichTextView.TextProperty, binding);
 
-                var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
-                var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
-                var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
-                {
-                    Mode = BindingMode.OneWay,
-                    Converter = new AutomatedTextWrappingBinding(),
-                    Context = context,
-                    Tag = "Rich Text Box Text Wrapping Binding",
-                    CanBeNull = true
-                };
-                element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
-            }
+            var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
+            var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
+            var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
+            {
+                Mode = BindingMode.OneWay,
+                Converter = new AutomatedTextWrappingBinding(),
+                Context = context,
+                Tag = "Rich Text Box Text Wrapping Binding",
+                CanBeNull = true
+            };
+            element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }
         public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return rtv?.GetRegionDocument();
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             RichTextView rtv = null;
-            var dataField = docController.GetField(KeyStore.DataKey);
+            var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
             rtv = new RichTextView()
             {
@@ -89,7 +85,7 @@ namespace Dash
             //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
-            SetupTextBinding(rtv, docController, context);
+            SetupTextBinding(rtv, docController, key, context);
 
             return rtv;
         }
