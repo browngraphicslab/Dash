@@ -6,10 +6,10 @@
     chrome.runtime.onMessage.addListener( function(message) {
         isEnabled = message.tableExtract;
         Array.from(document.getElementsByTagName("table")).forEach(table => {
-            table.draggable = isEnabled
+            table.draggable = isEnabled;
         });
     });
-    
+
     function tableToJson(table) {
         if (table !== null) {
             var data = [];
@@ -34,10 +34,9 @@
 
     Array.from(document.getElementsByTagName("table")).forEach(table => {
         table.addEventListener("dragstart", (e) => {
-            e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)))
-            e.dataTransfer.setData("text/tabledrop", JSON.stringify(tableToJson(e.currentTarget)))
             if (isEnabled) {
-            
+                e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)))
+                e.dataTransfer.setData("text/tabledrop", JSON.stringify(tableToJson(e.currentTarget)))
             }
         });
     });
