@@ -34,7 +34,6 @@ function updateSize(url) {
                         "url": url
                     });
             });
-            console.log("height = " + e.height);
         });
     } else {
         chrome.windows.getCurrent(function (e) {
@@ -55,8 +54,6 @@ function updateSize(url) {
 }
 
 function sendStatus() {
-    console.log("sendStatus")
-    console.log(tableExtractEnabled)
     if (ws == undefined || ws.readyState != ws.OPEN) {
         chrome.runtime.sendMessage({status: "error", connected: false, tableExtract: tableExtractEnabled});
     } else if (isActive) {
@@ -79,7 +76,6 @@ function sendStatus() {
 var t = this;
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        console.log(request)
         if (request.action === "requestStatus") {
             sendStatus.apply(t);
             return;

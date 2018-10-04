@@ -1,6 +1,6 @@
 ﻿document.getElementById("btnSticky").addEventListener("click", function() {
     chrome.windows.getCurrent(function(e) {
-        chrome.runtime.sendMessage("toggleActive");
+        chrome.runtime.sendMessage({action: "toggleActive"});
     })
 }); 
 
