@@ -271,6 +271,7 @@ namespace Dash
         {
             var doc = ((DocumentViewModel)dataItem).DataDocument;
             var textblock = new TextBlock();
+            textblock.DataContextChanged += Textblock_DataContextChanged;
             var binding = new FieldBinding<FieldControllerBase>
             {
                 Document = doc,
@@ -284,6 +285,18 @@ namespace Dash
             //contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
             //contentPresenter.IsHitTestVisible = false;
             //return contentPresenter;
+        }
+
+        private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var binding = new FieldBinding<FieldControllerBase>
+            {
+                Document = (sender.DataContext as DocumentViewModel).DataDocument,
+                Key = Key,
+                Converter = new ObjectToStringConverter(),
+                Mode = BindingMode.OneWay,
+            };
+            sender.AddFieldBinding(TextBlock.TextProperty, binding);
         }
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
