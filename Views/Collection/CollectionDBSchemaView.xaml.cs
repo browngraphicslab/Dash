@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -40,6 +41,17 @@ namespace Dash
             xDataGrid.ColumnWidth = new DataGridLength(200);
             xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
+
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (ViewModel != null)
+            {
+                xDataGrid.UpdateLayout();
+                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
+            }
         }
 
         private void XDataGridOnCellEditEnding(object sender, DataGridCellEditEndingEventArgs args)
@@ -119,6 +131,11 @@ namespace Dash
             foreach (var key in keys)
             {
                 AddKey(key);
+            }
+
+            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            {
+                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }
         }
 
@@ -252,10 +269,21 @@ namespace Dash
 
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
-            var contentPresenter = new MyContentPresenter();
-            contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
-            contentPresenter.IsHitTestVisible = false;
-            return contentPresenter;
+            var doc = ((DocumentViewModel)dataItem).DataDocument;
+            var textblock = new TextBlock();
+            var binding = new FieldBinding<FieldControllerBase>
+            {
+                Document = doc,
+                Key = Key,
+                Converter = new ObjectToStringConverter(),
+                Mode = BindingMode.OneWay,
+            };
+            textblock.AddFieldBinding(TextBlock.TextProperty, binding);
+            return textblock;
+            //var contentPresenter = new MyContentPresenter();
+            //contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
+            //contentPresenter.IsHitTestVisible = false;
+            //return contentPresenter;
         }
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)

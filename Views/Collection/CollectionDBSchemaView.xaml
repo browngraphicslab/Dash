@@ -20,7 +20,7 @@
             <RowDefinition x:Name="xAddRowArea" Height="42"></RowDefinition>
         </Grid.RowDefinitions>
         <!--<telerikGrid:RadDataGrid x:Name="xDataGrid" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></telerikGrid:RadDataGrid>-->
-        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False" ItemsSource="{Binding BindableDocumentViewModels}"></controls:DataGrid>
+        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False"></controls:DataGrid>
 
         <StackPanel HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <Button HorizontalAlignment="Center" Tapped="AddRow_OnTapped" Margin="2" Width="200" Height="40">Add Row</Button>
