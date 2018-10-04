@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -37,7 +38,9 @@ namespace Dash
             [ResultsKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //search all docs for searchText and get results (list of doc controller)
             string searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
@@ -52,6 +55,7 @@ namespace Dash
             }
             var searchResultDocs = searchRes.Select(res => res.ViewDocument).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new SearchOperatorController();

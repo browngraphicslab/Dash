@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -40,7 +41,7 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("Simple Single Search", "C35B553E-F12A-483A-AED9-30927606B897");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -49,6 +50,7 @@ namespace Dash
 
             var result = Search.Parse(searchQuery).First().ViewDocument;
             outputs[ResultsKey] = result;
+            return Task.CompletedTask;
         }
     }
 }

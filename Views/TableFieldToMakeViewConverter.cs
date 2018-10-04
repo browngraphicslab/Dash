@@ -35,14 +35,6 @@ namespace Dash
 
         public override FrameworkElement ConvertDataToXaml(FieldControllerBase data, object parameter = null)
         {
-            if (data is TextController txt && txt.Data.StartsWith("=="))
-            {
-                try
-                {
-                    data = DSL.InterpretUserInput(txt.Data)?.DereferenceToRoot(null);
-                }
-                catch (Exception) { }
-            }
             //if (data is ListController<DocumentController> documentList)
             //{
             //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));

@@ -175,6 +175,7 @@
     <Compile Include="Browser\TableExtractionRequest.cs" />
     <Compile Include="Browser\UrlChangedRequest.cs" />
     <Compile Include="Browser\ActivateRequest.cs" />
+    <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
@@ -209,7 +210,6 @@
     <Compile Include="Controllers\HtmlController.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
-    <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\ExponentialOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
@@ -467,7 +467,6 @@
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
     <Compile Include="Util\Search\Search.cs" />
-    <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\StateCropControl.xaml.cs">
       <DependentUpon>StateCropControl.xaml</DependentUpon>
     </Compile>
@@ -715,7 +714,6 @@
     <Compile Include="Models\RectModel.cs" />
     <Compile Include="Rest\Exceptions\ApiException.cs" />
     <Compile Include="Rest\RESTClient.cs" />
-    <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\FieldBinding.cs" />
     <Compile Include="Util\EditableImage.xaml.cs">
       <DependentUpon>EditableImage.xaml</DependentUpon>
@@ -733,13 +731,7 @@
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
-    <Compile Include="Views\Operators\ApiOpView.xaml.cs">
-      <DependentUpon>ApiOpView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Converters\BezierConverter.cs" />
-    <Compile Include="Views\Operators\ApiView.xaml.cs">
-      <DependentUpon>ApiView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\DragOutDocIcon.xaml.cs">
       <DependentUpon>DragOutDocIcon.xaml</DependentUpon>
     </Compile>
@@ -808,7 +800,6 @@
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
-    <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
@@ -868,21 +859,8 @@
     <Compile Include="Models\TextModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
-    <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
-      <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\Api\ApiSource.cs" />
     <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
       <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml.cs">
-      <DependentUpon>ApiCreatorAuthenticationDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml.cs">
-      <DependentUpon>ApiCreatorProperty.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml.cs">
-      <DependentUpon>ApiCreatorPropertyGenerator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
       <DependentUpon>ApiProperty.xaml</DependentUpon>
@@ -1321,23 +1299,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Sources\Api\ApiSourceDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -1350,14 +1312,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\EditableTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Operators\ApiOpView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Operators\ApiView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

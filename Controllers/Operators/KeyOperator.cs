@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -41,13 +42,14 @@ namespace Dash
             [KeyKey] = TypeInfo.Key,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyName = (TextController)inputs[KeyNameKey];
             KeyController key = Execute(keyName);
             outputs[KeyKey] = key;
+            return Task.CompletedTask;
         }
 
         public KeyController Execute(TextController keyName)

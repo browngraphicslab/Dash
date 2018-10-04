@@ -54,7 +54,7 @@ namespace Dash
             }
         }
 
-        private void XDataGridOnCellEditEnding(object sender, DataGridCellEditEndingEventArgs args)
+        private async void XDataGridOnCellEditEnding(object sender, DataGridCellEditEndingEventArgs args)
         {
             if (args.EditAction == DataGridEditAction.Commit)
             {
@@ -65,7 +65,7 @@ namespace Dash
                 {
                     try
                     {
-                        var field = DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
+                        var field = await DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
                         doc.SetField(col.Key, field, true);
                     }
                     catch (DSLException e)

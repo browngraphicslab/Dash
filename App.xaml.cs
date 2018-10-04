@@ -88,7 +88,6 @@ namespace Dash
             {
                 if (rootFrame.Content == null)
                 {
-                    KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView, RichTextBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators
@@ -43,13 +44,15 @@ namespace Dash.Controllers.Operators
 
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var dateString = (TextController)inputs[DateStringKey];
             DateTimeController dateTime = Execute(dateString);
             outputs[DateTimeKey] = dateTime;
+
+            return Task.CompletedTask;
         }
 
         public DateTimeController Execute(TextController dateString)

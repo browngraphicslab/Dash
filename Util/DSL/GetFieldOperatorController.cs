@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -38,7 +39,7 @@ namespace Dash
             [ResultFieldKey] = TypeInfo.Any,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -49,7 +50,7 @@ namespace Dash
             {
                 if (!(args.FieldArgs is DocumentController.DocumentFieldUpdatedEventArgs dargs))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 updatedKeyName = dargs.Reference.FieldKey.Name;
@@ -62,7 +63,7 @@ namespace Dash
                 if (field != null)
                 {
                     outputs[ResultFieldKey] = field;
-                    return;
+                    return Task.CompletedTask;
                 }
                 var sb = new StringBuilder();
                 var pattern = @"([a-z])([A-Z])";
@@ -88,6 +89,7 @@ namespace Dash
             }
 
             
+            return Task.CompletedTask;
         }
     }
 }

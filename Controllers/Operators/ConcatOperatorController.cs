@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -38,13 +39,14 @@ namespace Dash
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = (inputs[AKey] as TextController)?.Data;
             var b = (inputs[BKey] as TextController)?.Data;
             outputs[OutputKey] = new TextController(a + b);
+            return Task.CompletedTask;
         }
     }
 }

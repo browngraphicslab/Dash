@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -44,7 +45,7 @@ namespace Dash
             [ReferenceKey] = TypeInfo.DocumentReference,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -52,6 +53,7 @@ namespace Dash
             var key = (KeyController)inputs[KeyKey];
 
             outputs[ReferenceKey] = new DocumentReferenceController(doc, key);
+            return Task.CompletedTask;
         }
     }
 }

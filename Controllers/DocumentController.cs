@@ -44,6 +44,7 @@ namespace Dash
 
         public DocumentController(DocumentModel model) : base(model)
         {
+            _maskExecution = true;
         }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
@@ -64,6 +65,8 @@ namespace Dash
 
         public bool IsMovingCollections { get; set; }
 
+        private bool _maskExecution = false;
+
         public sealed override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
@@ -75,6 +78,8 @@ namespace Dash
 
             SetFields(fields, true);
             DocumentType = DocumentType;
+
+            _maskExecution = false;
         }
 
         /// <summary>
@@ -1092,8 +1097,12 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        public Context ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update=true)
+        public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update=true)
         {
+            if (_maskExecution)
+            {
+                return;
+            }
             context = context ?? new Context(this);
             HashSet<Type> usedOperators = new HashSet<Type>();
             List<OperatorController> ops = new List<OperatorController>();
@@ -1119,14 +1128,14 @@ namespace Dash
 
             foreach (var opField in ops)
             {
-                var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
-                if (exec)
-                    context = Execute(opField, context, update, args);
+                if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
+                {
+                    Execute(opField, context, update, args);
+                }
             }
-            return context;
         }
 
-        public Context Execute(OperatorController opField, Context oldContext, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
+        public async void Execute(OperatorController opField, Context oldContext, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1152,7 +1161,7 @@ namespace Dash
                     // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
-                        return context;
+                        return;
                     }
                 }
                 else
@@ -1161,55 +1170,17 @@ namespace Dash
                 }
             }
 
-            //bool needsToExecute = updatedArgs != null;
-            //var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
-            //var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
-            //    "_Cache Access Key");
-
-            ////TODO We should get rid of old cache values that aren't necessary at some point
-            //var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
-            //if (updatedArgs == null)
-            //{
-            //    foreach (var opFieldOutput in opField.Outputs)
-            //    {
-            //        var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
-            //        if (field == null)
-            //        {
-            //            needsToExecute = true;
-            //            outputs.Clear();
-            //            break;
-            //        }
-            //        else
-            //        {
-            //            outputs[opFieldOutput.Key] = field;
-            //        }
-            //    }
-            //}
-
-
             //if (needsToExecute)
             {
                 // execute the operator
-                opField.Execute(inputs, outputs, updatedArgs);
+                await opField.Execute(inputs, outputs, updatedArgs);
             }
 
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                //if (needsToExecute)
-                //{
-                //    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
-                //        .SetField(key, fieldModel.Value, true);
-                //}
-                var reference = new DocumentFieldReference(this, fieldModel.Key);
-                context.AddData(reference, fieldModel.Value);
-                if (update)
-                {
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                        FieldUpdatedAction.Replace, reference, null, false), context, true);
-                }
+                SetField(fieldModel.Key, fieldModel.Value, true);
             }
-            return context;
         }
         #endregion
 
@@ -1440,8 +1411,9 @@ namespace Dash
         void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
+            //TODO: If operators are added, the operator should be run, and if an operator is removed it's outputs should maybe be removed
             spaces += "  ";
-            newContext =  ShouldExecute(newContext, args.Reference.FieldKey, args);
+            ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
             try
             {

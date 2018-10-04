@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 
@@ -71,7 +72,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Execute html javascript", "D0286E73-D9F6-4341-B901-5ECC27AC76BC");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -89,6 +90,7 @@ namespace Dash
 
                 outputs[OutputDocumentKey] = doc.Document;
             }
+            return Task.CompletedTask;
         }
 
         class execClass
