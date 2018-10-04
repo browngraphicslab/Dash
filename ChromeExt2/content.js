@@ -9,12 +9,7 @@
             table.draggable = isEnabled
         });
     });
-
-    let textfield = document.createElement("textarea");
-    textfield.style.position = "absolute";
-    textfield.style.left = "-10000px";
-    document.body.appendChild(textfield);
-
+    
     function tableToJson(table) {
         if (table !== null) {
             var data = [];
@@ -37,18 +32,12 @@
         }
     }
 
-    document.addEventListener('copy', function(e){
-        e.clipboardData.setData('text/plain', textfield.value);
-        e.clipboardData.setData('text/tabledrop', textfield.value);
-        e.preventDefault(); // We want to write our data to the clipboard, not data from any user selection
-    });
-
     Array.from(document.getElementsByTagName("table")).forEach(table => {
-        table.addEventListener("pointerdown", (e) => {
+        table.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)))
+            e.dataTransfer.setData("text/tabledrop", JSON.stringify(tableToJson(e.currentTarget)))
             if (isEnabled) {
-                textfield.value = JSON.stringify(tableToJson(e.currentTarget));
-                textfield.select();
-                document.execCommand("copy");
+            
             }
         });
     });
