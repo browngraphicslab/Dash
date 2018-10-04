@@ -32,7 +32,7 @@
             </Grid.Clip>
             <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
-                    <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
+                <MenuFlyout x:Name="xMenuFlyout">
 
 
                     <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
@@ -54,8 +54,6 @@
                     <MenuFlyoutSeparator />
 
                     <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
-                    <MenuFlyoutItem x:Name="xAnnotationVisibility" Text="Show Annotation On Scroll" Icon="Priority" Click="ToggleAnnotationVisibility_OnClick" />
-                    <!--<MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click" />-->
                     <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click" />
 
                     <MenuFlyoutSeparator />

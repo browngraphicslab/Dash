@@ -322,15 +322,6 @@ namespace Dash
             }
         }
 
-        private void XMenuFlyout_OnOpening(object sender, object e)
-        {
-            var linkDocs =
-                MainPage.Instance.XDocumentDecorations.TagMap.Values;
-            bool allVisible = linkDocs.All(l =>
-                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
-            xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
-        }
-
         //public void ToggleTemplateEditor()
         //{
         //    if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)

@@ -44,6 +44,7 @@ namespace Dash
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
         }
+        public abstract bool IsInView(Rect bounds);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
