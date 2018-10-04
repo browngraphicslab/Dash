@@ -8,6 +8,7 @@ using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -304,7 +305,7 @@ namespace Dash
             foreach (object m in e.Items)
             {
                 var startInd = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                _dragDoc     = m as DocumentViewModel;
+                _dragDoc = m as DocumentViewModel;
                 var dm = new DragDocumentModel(_dragDoc.DocumentController);
                 dm.DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] { ViewModel });
                 e.Data.SetDragModel(dm);
@@ -314,7 +315,84 @@ namespace Dash
         private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                _originalSender = (FrameworkElement)sender;
+                var mF = new MenuFlyout();
+                MenuFlyoutItem rename = new MenuFlyoutItem();
+                MenuFlyoutItem delete = new MenuFlyoutItem();
+                rename.Text = "Rename";
+                delete.Text = "Delete";
+                mF.Items.Add(rename);
+                mF.Items.Add(delete);
+                mF.ShowAt(_originalSender);
+                rename.Click += rename_OnClicked;
+                delete.Click += delete_OnClicked;
+            }
         }
+
+        private void delete_OnClicked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RemoveDocument(CurPage.DocumentController);
+        }
+
+        private FrameworkElement _originalSender;
+        private TextBox renameBox;
+        private Flyout flyout;
+
+        private void rename_OnClicked(object sender, RoutedEventArgs e)
+        {
+            flyout = new Flyout();
+            renameBox = new TextBox();
+            renameBox.GotFocus += XRenameBox_OnGotFocus;
+            renameBox.LostFocus += XRenameBox_OnLostFocus;
+            renameBox.KeyDown += XRenameBox_OnKeyDown;
+            flyout.Content = renameBox;
+            flyout.ShowAt(_originalSender);
+        }
+
+        private void CommitEdit()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (CurPage.DocumentController.GetField<TextController>(KeyStore.TitleKey) != null)
+                    CurPage.DocumentController.SetTitle(renameBox.Text);
+                else CurPage.DataDocument.SetTitle(renameBox.Text);
+            }
+            flyout.Hide();
+        }
+
+        private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            renameBox.Text = CurPage.DocumentController.Title ?? CurPage.DataDocument.Title;
+            renameBox.SelectAll();
+        }
+
+        private void XRenameBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            CommitEdit();
+        }
+
+        private void XRenameBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                CommitEdit();
+            }
+            else if (e.Key == VirtualKey.Escape)
+            {
+                CancelEdit();
+            }
+        }
+
+        private void CancelEdit()
+        {
+            flyout.Hide();
+            // prevents CommitEdit() from being called when esc is pressed
+            renameBox.LostFocus -= XRenameBox_OnLostFocus;
+
+        }
+
 
 
         /// <summary>
@@ -438,6 +516,20 @@ namespace Dash
             newDoc.SetFitToParent(true);
             XDocDisplay.Content = new DocumentView() {DataContext = new DocumentViewModel(newDoc)};
 
+        }
+
+        private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue is DocumentViewModel dvm)
+            {
+                var binding = new FieldBinding<TextController>
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = dvm.DocumentController,
+                    Key = KeyStore.TitleKey,
+                };
+                sender.AddFieldBinding(TextBlock.TextProperty, binding);
+            }
         }
     }
 }

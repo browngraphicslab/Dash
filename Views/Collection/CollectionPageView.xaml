@@ -106,10 +106,18 @@
                         <ItemsStackPanel Orientation="Vertical" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <!--this could be bound to have left/right aligned columns for instance text vs numbers-->
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid PointerPressed="xThumbs_PointerPressed">
-                            <TextBlock Text="{Binding Title}" />
+                        <Grid PointerPressed="xThumbs_PointerPressed" HorizontalAlignment="Stretch">
+                            <TextBlock DataContextChanged="FrameworkElement_OnDataContextChanged" />
                             <!--<local:DocumentView IsHitTestVisible="False"/>-->
                         </Grid>
                     </DataTemplate>
