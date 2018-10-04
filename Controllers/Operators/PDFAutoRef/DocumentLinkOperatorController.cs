@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -50,7 +51,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Text Link Documents", "3830D32F-FC05-427B-9761-A47DFCEA503B");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var sourceDoc = inputs[SourceDocKey] as DocumentController;
             var targetDoc = inputs[TargetDocKey] as DocumentController;
@@ -64,6 +67,7 @@ namespace Dash
             var linkType = (TextController) inputs[LinkTypeKey];
 
             AnnotationOverlay.LinkRegion(sourceDoc, targetDoc, sStart, sEnd, tStart, tEnd, linkType.Data);
+            return Task.CompletedTask;
         }
     }
 }

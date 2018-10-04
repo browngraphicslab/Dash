@@ -66,6 +66,11 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "";
+        }
+
         public override FieldControllerBase GetDefaultController()
         {
             return new AudioController(new Uri("ms-appx:///Assets/DefaultAudio.mp3"));

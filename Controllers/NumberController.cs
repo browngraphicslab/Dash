@@ -103,6 +103,11 @@ namespace Dash
             return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
         }
 
+        public override string ToScriptString(DocumentController thisDoc = null)
+        {
+            return Data.ToString();
+        }
+
         public override FieldControllerBase Copy()
         {
             return new NumberController(Data);

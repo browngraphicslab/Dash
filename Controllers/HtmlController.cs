@@ -83,6 +83,11 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "HtmlController";
+        }
+
         public override FieldControllerBase Copy()
         {
             return new HtmlController(Data);

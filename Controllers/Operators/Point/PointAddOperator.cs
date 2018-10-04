@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators.Point
@@ -44,13 +45,14 @@ namespace Dash.Controllers.Operators.Point
 
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = ((PointController)inputs[AKey]).Data;
             var b = ((PointController)inputs[BKey]).Data;
             outputs[OutputKey] = new PointController(a.X + b.X, a.Y + b.Y);
+            return Task.CompletedTask;
         }
 
     }

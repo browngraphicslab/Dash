@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable CheckNamespace
@@ -36,13 +37,16 @@ namespace Dash
 
         private static readonly KeyController TypeKey = new KeyController("Simple Search", "F0D6FCB0-4635-4ECF-880F-81D2738A1350");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
             var results = new ListController<FieldControllerBase>();
             results.AddRange(Search.Parse(searchQuery).Select(res => res.ViewDocument).ToList());
             outputs[ResultsKey] = results;
+            return Task.CompletedTask;
         }
     }
 }

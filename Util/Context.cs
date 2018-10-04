@@ -125,17 +125,6 @@ namespace Dash
             return false;
         }
 
-        public bool TryDereferenceToRoot(FieldReference reference, out FieldControllerBase data)
-        {
-            reference = reference.Resolve(this);
-            if (_data.ContainsKey(reference))
-            {
-                data = _data[reference];
-                return true;
-            }
-            data = null;
-            return false;
-        }
 
         /// <summary>
         /// Returns the id of the deepest delegate of the document associated with the passed in id.
