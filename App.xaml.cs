@@ -88,15 +88,13 @@ namespace Dash
             {
                 if (rootFrame.Content == null)
                 {
-                    KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView, RichTextBox.MakeRegionDocument);
-                    //KeyStore.RegisterDocumentTypeRenderer(TemplateEditorBox.DocumentType, TemplateEditorBox.MakeView, null);
-                    //KeyStore.RegisterDocumentTypeRenderer(TemplateBox.DocumentType, TemplateBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc, context) => RichTextBox.MakeView(doc, KeyStore.DataKey, context), RichTextBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
-                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc, context) => TableBox.MakeView(doc, KeyStore.DataKey, context), null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView, ImageBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
@@ -114,7 +112,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
 					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, AudioBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc, context) => AudioBox.MakeView(doc, KeyStore.DataKey, context), null);
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter

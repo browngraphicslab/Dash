@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -42,7 +43,7 @@ namespace Dash
             [OutputKey] = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -51,6 +52,7 @@ namespace Dash
             var c = ((NumberController)inputs[CKey]).Data;
             var d = ((NumberController)inputs[DKey]).Data;
             outputs[OutputKey] = new NumberController(a + b + c + d);
+            return Task.CompletedTask;
         }
     }
 
@@ -85,12 +87,13 @@ namespace Dash
             [OutputKey] = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = ((NumberController)inputs[AKey]).Data;
             outputs[OutputKey] = new NumberController(a);
+            return Task.CompletedTask;
         }
     }
 
@@ -124,13 +127,14 @@ namespace Dash
             [OutputKey] = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = ((NumberController)inputs[AKey]).Data;
             var b = ((NumberController)inputs[BKey]).Data;
             outputs[OutputKey] = new NumberController(a + b);
+            return Task.CompletedTask;
         }
     }
 
@@ -164,13 +168,14 @@ namespace Dash
             [OutputKey] = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = ((NumberController)inputs[AKey]).Data;
             var b = ((NumberController)inputs[BKey]).Data;
             outputs[OutputKey] = new NumberController(a + b);
+            return Task.CompletedTask;
         }
     }
 }

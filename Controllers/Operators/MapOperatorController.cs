@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -41,7 +42,7 @@ namespace Dash
         }
 
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -49,7 +50,7 @@ namespace Dash
             var op = (OperatorController)inputs[OperatorKey];
             if (op.Inputs.Count != 1 || op.Outputs.Count != 1)
             {
-                return;
+                return Task.CompletedTask;
             }
             List<FieldControllerBase> outputList = new List<FieldControllerBase>(input.Data.Count);
             Dictionary<KeyController, FieldControllerBase> inDict = new Dictionary<KeyController, FieldControllerBase>();
@@ -65,6 +66,7 @@ namespace Dash
             }
 
             outputs[OutputKey] = new ListController<FieldControllerBase>(outputList);//TODO Can this be more specific?
+            return Task.CompletedTask;
         }
     }
 }

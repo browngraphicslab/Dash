@@ -129,7 +129,7 @@ namespace Dash
         }
 
         public static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
-            Context context=null)
+            HorizontalAlignment defaultValue)
         {
             var binding = docController == null ? null : new FieldBinding<TextController>()
             {
@@ -137,15 +137,15 @@ namespace Dash
                 Document = docController,
                 Key = KeyStore.HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
-                Context = context,
                 Tag = "HorizontalAlignment binding in CourtesyDocument",
+                FallbackValue = defaultValue
             };
 
             element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
         public static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
-            Context context)
+            VerticalAlignment defaultValue)
         {
             var binding = docController == null ? null : new FieldBinding<TextController>()
             {
@@ -153,8 +153,8 @@ namespace Dash
                 Document = docController,
                 Key = KeyStore.VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
-                Context = context,
                 Tag = "VerticalAlignment binding in CourtesyDocument",
+                FallbackValue = defaultValue
             };
 
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);

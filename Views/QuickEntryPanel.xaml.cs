@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -153,7 +154,7 @@ namespace Dash.Views
             }
         }
 
-        private void ProcessInput()
+        private async Task ProcessInput()
         {
             string rawKeyText = xKeyBox.Text;
             string rawValueText = xValueBox.Text;
@@ -183,7 +184,7 @@ namespace Dash.Views
                 return;
             }
 
-            FieldControllerBase computedValue = DSL.InterpretUserInput(rawValueText, true);
+            FieldControllerBase computedValue = await DSL.InterpretUserInput(rawValueText, true);
             foreach (var d in _selectedDocs)
             {
                 DocumentController target = docSpec.Equals("d") ? d.ViewModel.DataDocument : d.ViewModel.LayoutDocument;
@@ -212,18 +213,18 @@ namespace Dash.Views
             xKeyBox.Focus(FocusState.Keyboard);
         }
 
-        private void KeyBoxOnEnter(KeyRoutedEventArgs obj)
+        private async void KeyBoxOnEnter(KeyRoutedEventArgs obj)
         {
             obj.Handled = true;
-            ProcessInput();
+            await ProcessInput();
         }
 
-        private void ValueBoxOnEnter(KeyRoutedEventArgs obj)
+        private async void ValueBoxOnEnter(KeyRoutedEventArgs obj)
         {
             obj.Handled = true;
             using (UndoManager.GetBatchHandle())
             {
-                ProcessInput();
+                await ProcessInput();
             }
 
         }

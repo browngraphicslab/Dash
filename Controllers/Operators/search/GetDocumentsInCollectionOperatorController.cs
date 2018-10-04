@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -37,12 +38,12 @@ namespace Dash
             [ResultsKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var searchTerm = inputs[TextKey] as TextController;
-            if (searchTerm == null || searchTerm.Data == null) return;
+            if (searchTerm == null || searchTerm.Data == null) return Task.CompletedTask;
 
             var term = searchTerm.Data;
             var tree = DocumentTree.MainPageTree;
@@ -51,6 +52,7 @@ namespace Dash
             var final = tree.Where(doc => reg.IsMatch(doc.DataDocument.Title));
             var docs = final.SelectMany(node => node.Children, (colNode, documentNode) => documentNode.ViewDocument);
             outputs[ResultsKey] = new ListController<DocumentController>(docs.Distinct());
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new GetDocumentsInCollectionOperatorController();

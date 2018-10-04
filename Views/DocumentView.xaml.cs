@@ -87,10 +87,18 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (doc != null)
+            if (ViewModel?.IsDimensionless == true)
             {
-                CourtesyDocument.BindWidth(this, doc, null);
-                CourtesyDocument.BindHeight(this, doc, null);
+                Width = double.NaN;
+                Height = double.NaN;
+            }
+            else
+            {
+                if (doc != null)
+                {
+                    CourtesyDocument.BindWidth(this, doc, null);
+                    CourtesyDocument.BindHeight(this, doc, null);
+                }
             }
         }
         private void UpdateVisibilityBinding()
@@ -121,8 +129,16 @@ namespace Dash
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
-            CourtesyDocument.BindHorizontalAlignment(this, doc, null);
-            CourtesyDocument.BindVerticalAlignment(this,   doc, null);
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
         }
 
         // == CONSTRUCTORs ==
@@ -304,15 +320,6 @@ namespace Dash
                     l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
                 }
             }
-        }
-
-        private void XMenuFlyout_OnOpening(object sender, object e)
-        {
-            var linkDocs =
-                MainPage.Instance.XDocumentDecorations.TagMap.Values;
-            bool allVisible = linkDocs.All(l =>
-                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
-            xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
 
         //public void ToggleTemplateEditor()
@@ -821,7 +828,7 @@ namespace Dash
                     collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel
                         .ContainerDocument.GetFitToParent());
                     if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
-                        collectionView.ViewModel.FitContents(collectionView);
+                        collectionView.ViewModel.FitContents();
                 }
             }
         }

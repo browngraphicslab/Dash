@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -22,7 +23,7 @@ namespace Dash
             if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             if (_unassignVar)
             {
@@ -31,7 +32,7 @@ namespace Dash
                 return new TextController("");
             }
 
-            FieldControllerBase val = _value.Execute(scope);
+            FieldControllerBase val = await _value.Execute(scope);
 
             scope?.SetVariable(_variableName, val);
 

@@ -176,7 +176,6 @@ namespace Dash.Views.TreeView
                 if (collectionField != null)
                 {
                     IsCollection = true;
-                    IsExpanded = true;
                     XTreeViewList.DataContext = new CollectionViewModel(ViewModel.DocumentController, KeyStore.DataKey);
                 }
             }

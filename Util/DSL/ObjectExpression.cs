@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -21,12 +22,12 @@ namespace Dash
             throw new System.NotImplementedException();
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             DocumentController doc;
             if (_dictionary.ContainsKey(KeyStore.DataKey.Name))
             {
-                FieldControllerBase dataVal = _dictionary[KeyStore.DataKey.Name].Execute(scope);
+                FieldControllerBase dataVal = await _dictionary[KeyStore.DataKey.Name].Execute(scope);
 
                 //TODO ScriptLang - this is probably gonna be turned into separate functions, so this can maybe just return a normal document all the time
                 switch (dataVal.TypeInfo)
@@ -53,7 +54,7 @@ namespace Dash
                 var keyString = scriptExpression.Key;
                 if (keyString == KeyStore.DataKey.Name) continue;
                 var key = new KeyController(keyString);
-                var value = scriptExpression.Value.Execute(scope);
+                var value = await scriptExpression.Value.Execute(scope);
                 doc.SetField(key, value, true);
             }
 

@@ -108,91 +108,64 @@ namespace Dash
                 return;
             }
 
+            var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
+            if (cp != this)
+                return;
+
             #region CollectionView context menu 
 
-            var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
-            // add a horizontal separator in context menu
             var contextMenu = ParentDocumentView.MenuFlyout;
-            var separatorOne = new MenuFlyoutSeparator();
-            contextMenu.Items.Add(separatorOne);
-            elementsToBeRemoved.Add(separatorOne);
+            if (!contextMenu.Items.OfType<MenuFlyoutItem>().Select((mfi) => mfi.Text).Contains("Create Scripting REPL")) {
 
+                var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
+                // add a horizontal separator in context menu
+                elementsToBeRemoved.Add(new MenuFlyoutSeparator());
 
-            // add the item to create a repl
-            var newRepl = new MenuFlyoutItem() {Text = "Create Scripting REPL"};
-
-            var icon5 = new FontIcons.FontAwesome
-            {
-                Icon = FontAwesomeIcon.Code
-            };
-            newRepl.Icon = icon5;
-            newRepl.Click += ReplFlyout_OnClick;
-            contextMenu.Items.Add(newRepl);
-            elementsToBeRemoved.Add(newRepl);
-
-            // add the item to create a scripting view
-            var newScriptEdit = new MenuFlyoutItem() {Text = "Create Script Editor"};
-            var icon6 = new FontIcons.FontAwesome
-            {
-                Icon = FontAwesomeIcon.WindowMaximize
-            };
-            newScriptEdit.Icon = icon6;
-            newScriptEdit.Click += ScriptEdit_OnClick;
-            contextMenu.Items.Add(newScriptEdit);
-            elementsToBeRemoved.Add(newScriptEdit);
-
-            // add another horizontal separator
-            var separatorThree = new MenuFlyoutSeparator();
-            contextMenu.Items.Add(separatorThree);
-            elementsToBeRemoved.Add(separatorThree);
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionAs = new MenuFlyoutSubItem() {Text = "View Collection As"};
-            var icon2 = new FontIcons.FontAwesome
-            {
-                Icon = FontAwesomeIcon.Eye
-            };
-            viewCollectionAs.Icon = icon2;
-            contextMenu.Items.Add(viewCollectionAs);
-            elementsToBeRemoved.Add(viewCollectionAs);
-
-            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
-            {
-                var vtype = new MenuFlyoutItem() {Text = n.ToString()};
-
-                void VTypeOnClick(object sender, RoutedEventArgs e)
+                // add the item to create a repl
+                elementsToBeRemoved.Add(new MenuFlyoutItem()
                 {
-                    using (UndoManager.GetBatchHandle())
-                        SetView(n);
+                    Text = "Create Scripting REPL",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
+                });
+                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ReplFlyout_OnClick;
+
+                // add the item to create a scripting view
+                elementsToBeRemoved.Add(new MenuFlyoutItem()
+                {
+                    Text = "Create Script Editor",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
+                });
+                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
+
+                // add another horizontal separator
+                elementsToBeRemoved.Add(new MenuFlyoutSeparator());
+
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                elementsToBeRemoved.Add(new MenuFlyoutSubItem()
+                {
+                    Text = "View Collection As",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Eye }
+                });
+
+                foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+                {
+                     (elementsToBeRemoved.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
+                    ((elementsToBeRemoved.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => { using (UndoManager.GetBatchHandle()) SetView(n); };
                 }
 
-                vtype.Click += VTypeOnClick;
-                viewCollectionAs.Items?.Add(vtype);
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                elementsToBeRemoved.Add(new MenuFlyoutItem()
+                {
+                    Text = "Toggle Fit To Parent",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
+                });
+                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
+
+                elementsToBeRemoved.ForEach((ele) => contextMenu.Items.Add(ele));
+                Unloaded += (sender, e) => elementsToBeRemoved.ForEach((ele) => contextMenu.Items.Remove(ele));
             }
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var fitToParent = new MenuFlyoutItem() {Text = "Toggle Fit To Parent"};
-            fitToParent.Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
-            var icon4 = new FontIcons.FontAwesome
-            {
-                Icon = FontAwesomeIcon.WindowMaximize
-            };
-            fitToParent.Icon = icon4;
-            contextMenu.Items.Add(fitToParent);
-            elementsToBeRemoved.Add(fitToParent);
-
-            Unloaded += (sender, e) =>
-            {
-                foreach (var flyoutItem in elementsToBeRemoved)
-                {
-                    contextMenu.Items.Remove(flyoutItem);
-                }
-
-                newRepl.Click -= ReplFlyout_OnClick;
-                newScriptEdit.Click -= ScriptEdit_OnClick;
-            };
 
             SetView(_viewType);
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -43,7 +44,7 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("Intersect by value", "9B073C2B-8B11-4939-818F-903A067D412E");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -66,6 +67,7 @@ namespace Dash
             }
 
             outputs[IntersectionKey] = returnSet;
+            return Task.CompletedTask;
         }
     }
 }

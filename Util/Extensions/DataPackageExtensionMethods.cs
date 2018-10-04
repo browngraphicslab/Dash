@@ -112,6 +112,11 @@ namespace Dash
                 dropDocs.Add(await ConvertPlainTextData(packageView, where ?? new Point()));
             }
 
+            else if ( packageView.Contains(StandardDataFormats.Text))
+            {
+                dropDocs.Add(await TableExtractionRequest.ProcessTableData((await packageView.GetTextAsync())));
+            }
+
             // Image (rarely hit, most images fall under Storage Items)
 
             else if (transferType.HasFlag(Image) && packageView.Contains(StandardDataFormats.Bitmap))
