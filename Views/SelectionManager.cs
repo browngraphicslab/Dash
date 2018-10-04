@@ -14,6 +14,7 @@ using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
 using Windows.UI.Input;
 using MyToolkit.Mathematics;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -282,67 +283,25 @@ namespace Dash
         {
             DragManipulationStarted?.Invoke(sender, null);
             LocalSqliteEndpoint.SuspendTimer = true;
-           
-            double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
-            var rawOffsets = _dragViews.Select(args.GetPosition);
-            var offsets = rawOffsets.Select(ro => new Point((ro.X - args.GetPosition(docView).X), (ro.Y - args.GetPosition(docView).Y)));
+            var scaling        = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+            var dragDocOffset  = args.GetPosition(docView);
+            var relDocOffsets  = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
+            var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
+            var dragBounds     = Rect.Empty;
+            foreach (var dv in _dragViews)
+            {
+                dragBounds.Union(dv.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, dv.ActualWidth, dv.ActualHeight)));
+                dv.IsHitTestVisible = false;
+            }
 
-            args.Data.SetDragModel(new DragDocumentModel(_dragViews,
-                _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlay>() == null ? dv.ParentCollection?.ViewModel : null).ToList(),
-                offsets.ToList(), args.GetPosition(docView)));
-
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
             args.AllowedOperations =  DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
 
-            //combine all selected docs into an image to display on drag
-            //use size of each doc to get size of combined image
-            var tl = new Point(double.PositiveInfinity, double.PositiveInfinity);
-            var br = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            foreach (var doc in _dragViews)
-            {
-                var bounds = new Rect(0, 0, doc.ActualWidth, doc.ActualHeight);
-                bounds = doc.TransformToVisual(Window.Current.Content).TransformBounds(bounds);
-                tl.X = Math.Min(tl.X, bounds.Left * scaling);
-                tl.Y = Math.Min(tl.Y, bounds.Top * scaling);
-                br.X = Math.Max(br.X, bounds.Right * scaling);
-                br.Y = Math.Max(br.Y, bounds.Bottom * scaling);
-                doc.IsHitTestVisible = false;
-                doc.Tag = "INVISIBLE";
-            }
-
-            var width = (br.X - tl.X);
-            var height = (br.Y - tl.Y);
-            var s1 = new Point(width, height);
-
-            // create an empty parent bitmap large enough for all selected elements that we can
-            // blip a bitmap for each element onto
-            var parentBitmap = new WriteableBitmap((int)s1.X, (int)s1.Y);
-            var thisOffset = new Point();
-
             var def = args.GetDeferral();
-            try
-            {
-                var doc =  MainPage.Instance.MainSplitter;
-                // renders a bitmap for each selected document and blits it onto the parent bitmap at the correct position
-                var rtb = new RenderTargetBitmap();
-                var rect = doc.TransformToVisual(Window.Current.Content).TransformBounds(new Rect(0, 0, doc.ActualWidth, doc.ActualHeight));
-                await rtb.RenderAsync(doc);
-                var buf = (await rtb.GetPixelsAsync()).ToArray();
-                var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-                miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
-                parentBitmap.Blit(new Point(rect.Left - tl.X, rect.Top - tl.Y), miniBitmap, new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
-                    Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
-            } catch (Exception)
-            {
+            try { await CreateDragDropBitmap(docView, args, scaling, dragBounds); } catch (Exception) { }
+            def.Complete();
 
-            }
-
-            var p = args.GetPosition(Window.Current.Content);
-            p.X = p.X - tl.X / scaling + thisOffset.X;
-            p.Y = p.Y - tl.Y / scaling + thisOffset.Y;
-            var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
-                parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
-            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, p);
             if (!docView.IsShiftPressed())
             {
                 // unfortunately, there is no synchronization between when the dragDrop feedback begins and
@@ -352,9 +311,29 @@ namespace Dash
                 MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
                 MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }
-            def.Complete();
             MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
             MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
+        }
+
+        private static async Task CreateDragDropBitmap(DocumentView docView, DragStartingEventArgs args, double scaling, Rect dragBounds)
+        {
+            var rect       = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
+            var rtb        = new RenderTargetBitmap();
+            await rtb.RenderAsync(MainPage.Instance.xOuterGrid);
+            var buf        = (await rtb.GetPixelsAsync()).ToArray();
+            var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+
+            miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+            var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
+            parentBitmap.Blit(new Point(rect.Left - dragBounds.X * scaling, rect.Top - dragBounds.Y * scaling),
+                              miniBitmap, 
+                              new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
+                              Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
+            var cursorPt    = args.GetPosition(Window.Current.Content);
+            var docViewTL   = docView.TransformToVisual(Window.Current.Content).TransformPoint(new Point());
+            var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
+                                                                  parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
+            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - (2 * dragBounds.X - docViewTL.X), cursorPt.Y - (2 * dragBounds.Y - docViewTL.Y)));
         }
 
         static DragEventHandler _collectionDragOverHandler = new DragEventHandler(collectionDragOver);

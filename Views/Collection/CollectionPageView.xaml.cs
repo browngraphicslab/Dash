@@ -262,7 +262,7 @@ namespace Dash
         {
             if (xThumbs.IsPointerOver() && args.DropResult == DataPackageOperation.Move)
             {
-                var ind =  ViewModel.DocumentViewModels.IndexOf(_dragDoc);
+                var ind = ViewModel.DocumentViewModels.IndexOf(_dragDoc);
                 ViewModel.RemoveDocument(_dragDoc.DocumentController);
                 ViewModel.InsertDocument(_dragDoc.DocumentController, ind);
             }
