@@ -117,7 +117,7 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static Task<FieldControllerBase> Interpret(string script, Scope scope = null, bool undoVar = false)
+        public static async Task<FieldControllerBase> Interpret(string script, Scope scope = null, bool undoVar = false)
         {
             _undoVar = undoVar;
 
@@ -125,7 +125,7 @@ namespace Dash
 
             if (_currentScriptExecutions.Contains(hash))
             {
-                return Task.FromResult<FieldControllerBase>(new TextController(script));
+                return new TextController(script);
             }
 
             _currentScriptExecutions.Add(hash);
@@ -135,11 +135,11 @@ namespace Dash
                 var se = ParseToExpression(script);
                 try
                 {
-                    return se?.Execute(scope ?? new Scope());
+                    return await se?.Execute(scope ?? new Scope());
                 }
                 catch (ReturnException)
                 {
-                    return Task.FromResult(scope?.GetReturn);
+                    return scope?.GetReturn;
                 }
             }
             catch (ScriptException scriptException)

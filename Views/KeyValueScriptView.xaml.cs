@@ -26,7 +26,7 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                if (((DocumentViewModel) xFieldValue.DataContext).DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                if (((EditableScriptViewModel) xFieldValue.DataContext).Reference.DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
                 {
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);
@@ -69,7 +69,7 @@ namespace Dash
                             ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                     ViewModel?.Reference.SetField(field, ViewModel.Context);
                 }
-                catch (DSLException)
+                catch (DSLException ex)
                 {
                 }
             }

@@ -290,6 +290,11 @@ namespace Dash
         }
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
+            if (docView.IsTopLevel() && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
+            {
+                args.Cancel = true;
+                return;
+            }
             DragManipulationStarted?.Invoke(sender, null);
             LocalSqliteEndpoint.SuspendTimer = true;
 
@@ -319,6 +324,7 @@ namespace Dash
                 // when the document is made (in)visible.
                 // To avoid the jarring temporary artifact of the document appearing to be deleted, we 
                 // wait until we start getting DragOver events and then collapse the dragged document.
+                MainPage.Instance.xOuterGrid.AllowDrop = true;
                 MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
                 MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
             }

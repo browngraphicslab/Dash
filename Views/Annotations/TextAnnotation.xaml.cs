@@ -133,6 +133,10 @@ namespace Dash
 
         public void HelpRenderRegion()
         {
+            if (RegionDocumentController == null)
+            {
+                return;
+            }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
             if (ParentOverlay.TextSelectableElements != null && indexList.Any() && _selectionViewModel != null)
