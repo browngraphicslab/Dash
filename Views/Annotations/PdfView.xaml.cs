@@ -634,11 +634,7 @@ namespace Dash
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
                 }
-<<<<<<< HEAD
             });
-=======
-             });
->>>>>>> d1aacf892141f1f53a0a083653085ba3c99c7b7d
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;
