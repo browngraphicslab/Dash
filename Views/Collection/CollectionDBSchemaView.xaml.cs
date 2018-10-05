@@ -31,6 +31,10 @@ namespace Dash
         {
         }
 
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
         public UserControl UserControl => this;
 
         private ListController<KeyController> Keys { get; set; }

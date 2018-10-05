@@ -56,6 +56,10 @@ namespace Dash
             xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             LosingFocus += CollectionPageView_LosingFocus;
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         private async void EnterPressed(KeyRoutedEventArgs obj)
         {
