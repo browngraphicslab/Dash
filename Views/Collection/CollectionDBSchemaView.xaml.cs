@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -41,8 +39,22 @@ namespace Dash
             xDataGrid.ColumnWidth = new DataGridLength(200);
             xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
+            xDataGrid.LoadingRow += XDataGrid_LoadingRow;
 
             Loaded += OnLoaded;
+        }
+
+        private void XDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            e.Row.CanDrag = true;
+            e.Row.DragStarting -= RowOnDragStarting;
+            e.Row.DragStarting += RowOnDragStarting;
+        }
+
+        private void RowOnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var dvm = (DocumentViewModel) ((FrameworkElement)sender).DataContext;
+            args.Data.SetDragModel(new DragDocumentModel(dvm.LayoutDocument){DraggedDocCollectionViews = new List<CollectionViewModel>{ViewModel}});
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
