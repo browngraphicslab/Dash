@@ -56,7 +56,22 @@ namespace Dash
             {
                 xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
-                AddKeys();
+
+                var keys =
+                    ViewModel.ContainerDocument
+                        .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
+                if (keys != null || keys.Any())
+                {
+                    InitializeDocs();
+                    foreach (var key in keys)
+                    {
+                        AddKey(key);
+                    }
+                }
+                else
+                {
+                    AddKeys();
+                }
             }
         }
 
@@ -179,6 +194,11 @@ namespace Dash
             }
 
             Keys.Add(key);
+            if (!ViewModel.ContainerDocument
+                .GetFieldOrCreateDefault<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Contains(key))
+            {
+                ViewModel.ContainerDocument.AddToListField(KeyStore.SchemaDisplayedColumns, key);
+            }
 
             var column = new WindowsDictionaryColumn(key, this)
             {
@@ -216,11 +236,6 @@ namespace Dash
             }
         }
 
-        private void Flyout_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
@@ -243,6 +258,7 @@ namespace Dash
             }
 
             Keys.Remove(key);
+            ViewModel.ContainerDocument.RemoveFromListField(KeyStore.SchemaDisplayedColumns, key);
 
             var column = xDataGrid.Columns.First(col => col.Header.Equals(key));
             xDataGrid.Columns.Remove(column);
@@ -293,10 +309,8 @@ namespace Dash
             }
         }
 
-        private void AddKeys()
+        private HashSet<KeyController> InitializeDocs()
         {
-            Keys.Clear();
-            xDataGrid.Columns.Clear();
             var docs = ViewModel.DocumentViewModels;
             var keys = new HashSet<KeyController>();
             foreach (var doc in docs)
@@ -307,6 +321,15 @@ namespace Dash
                 }
                 doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
             }
+
+            return keys;
+        }
+
+        private void AddKeys()
+        {
+            Keys.Clear();
+            xDataGrid.Columns.Clear();
+            var keys = InitializeDocs();
 
             foreach (var key in keys)
             {

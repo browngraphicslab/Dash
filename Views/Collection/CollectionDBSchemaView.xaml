@@ -20,12 +20,13 @@
             <RowDefinition x:Name="xAddRowArea" Height="42"></RowDefinition>
         </Grid.RowDefinitions>
         <!--<telerikGrid:RadDataGrid x:Name="xDataGrid" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></telerikGrid:RadDataGrid>-->
-        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False"></controls:DataGrid>
+        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False">
+        </controls:DataGrid>
 
         <StackPanel HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <Button HorizontalAlignment="Center" Tapped="AddRow_OnTapped" Margin="2" Width="200" Height="40">Add Row</Button>
             <Button HorizontalAlignment="Center" Tapped="AddColumn_OnTapped" Margin="2" Width="200" Height="40">Add Column</Button>
-            <Button HorizontalAlignment="Center" Tapped="Flyout_OnTapped" Margin="2" Width="200" Height="40">
+            <Button HorizontalAlignment="Center" Margin="2" Width="200" Height="40">
                 <Button.Flyout>
                     <Flyout x:Name="xColumnFlyout" Placement="Bottom" Opening="XColumnFlyout_OnOpening">
                         <ItemsControl x:Name="xColumnsList">
