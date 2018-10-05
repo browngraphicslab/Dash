@@ -8,7 +8,7 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.join)]
-    public class JoinOperator : OperatorController
+    public sealed class JoinOperator : OperatorController
     {
         public static readonly KeyController SourceTableKey = new KeyController("TableOne");
         public static readonly KeyController TargetTableKey = new KeyController("TableTwo");
@@ -19,10 +19,7 @@ namespace Dash
         public static readonly KeyController GencollectionKey = new KeyController("GenCollection");
 
 
-        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public JoinOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -42,7 +39,7 @@ namespace Dash
             new KeyValuePair<KeyController, IOInfo>(TargetTableKey, new IOInfo(DashShared.TypeInfo.Document, true)),
             new KeyValuePair<KeyController, IOInfo>(SourceKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
             new KeyValuePair<KeyController, IOInfo>(TargetKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
-            new KeyValuePair<KeyController, IOInfo>(TargetKeyKey, new IOInfo(DashShared.TypeInfo.Text, false)),
+            new KeyValuePair<KeyController, IOInfo>(OptionsKey, new IOInfo(DashShared.TypeInfo.Text, false))
         };
 
         public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
@@ -56,7 +53,8 @@ namespace Dash
             var targetTable = (DocumentController)inputs[TargetTableKey];
             var sourceKey = (KeyController)inputs[SourceKeyKey];
             var targetKey = (KeyController)inputs[TargetKeyKey];
-            var optionsMessage = (TextController)inputs[OptionsKey];
+            TextController optionsMessage = null;
+            if (inputs.ContainsKey(OptionsKey)) optionsMessage = (TextController)inputs[OptionsKey];
             var gencollection = Execute(sourceTable, targetTable, sourceKey, targetKey, optionsMessage);
             outputs[GencollectionKey] = gencollection;
         }
@@ -65,7 +63,7 @@ namespace Dash
         {
             // if join mode is unspecified or "New", edit a copy of the source table. 
             // If set to "Add", will add the fields to matched documents in the original table, and no filtering takes place
-            var addMode = opMess != null && opMess.Data.Equals("Add");
+            var addMode = opMess != null && opMess.Data.Equals("Append");
             var generatedCollection = addMode ? sourceTable : (DocumentController)sourceTable.Copy();
             var sourceDocs = generatedCollection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var targetDocs = targetTable.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
