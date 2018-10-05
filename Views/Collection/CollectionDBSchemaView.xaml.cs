@@ -144,13 +144,13 @@ namespace Dash
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, 200,50).Document;
+            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, 200, 200).Document;
             var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
             int placement = 0;
             foreach (var key in Keys)
             {
                 //newDoc.GetDataDocument().SetField<TextController>(key, "<empty>", true);
-                docs.Add(new DataBox(new DocumentReferenceController(newDoc.GetDataDocument(), key), 0, placement, 100, 50).Document);
+                docs.Add(new DataBox(new DocumentReferenceController(newDoc.GetDataDocument(), key), 0, placement, 100, double.NaN).Document);
                 docs.Last().SetTitle(key.Name);
                 placement += 35;
             }
@@ -227,7 +227,7 @@ namespace Dash
             if (db == null)
             {
                 //dvm.DocumentController.GetDataDocument().SetField<TextController>(key, "<empty>", true);
-                docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, 100, 50).Document);
+                docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, 100, double.NaN).Document);
                 docs.Last().SetTitle(key.Name);
                 dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
             }

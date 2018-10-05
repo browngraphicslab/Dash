@@ -39,15 +39,9 @@ namespace Dash
             {
                 (contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
                 ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
-                    foreach (var child in xGridView.ItemsPanelRoot.Children.OfType<GridViewItem>())
+                    foreach (var dvm in ViewModel.DocumentViewModels)
                     {
-                        var content = child.GetFirstDescendantOfType<ListViewItemPresenter>().GetFirstDescendantOfType<DocumentView>()?.ViewModel.Content;
-                        var cview = content is CollectionView ? content as CollectionView : content is ContentPresenter ? (content as ContentPresenter).Content as CollectionView : null;
-                        using (UndoManager.GetBatchHandle())
-                        {
-                            if (cview != null)
-                                cview.SetView(n);
-                        }
+                        dvm.LayoutDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, n.ToString(), true);
                     }
                 };
             }
