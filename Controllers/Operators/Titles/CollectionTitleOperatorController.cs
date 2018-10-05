@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -37,7 +38,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -66,6 +67,7 @@ namespace Dash
             //    return;
 
             outputs[ComputedTitle] = new TextController(output?.Data ?? "Untitled") { ReadOnly = true };
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

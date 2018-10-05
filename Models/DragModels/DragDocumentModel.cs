@@ -82,19 +82,9 @@ namespace Dash
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             Point? GetPosition(int i)
             {
-                Point? pos;
-                if (where == null)
-                {
-                    pos = null;
-                }
-                else
-                {
-                    Point wherePoint = (Point)where;
-                    pos = new Point(wherePoint.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
-                        wherePoint.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
-                }
-
-                return pos;
+                return where == null ? where:
+                        new Point(where.Value.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
+                                  where.Value.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
             }
             // ...if CTRL pressed, create a key value pane
             if (MainPage.Instance.IsCtrlPressed())

@@ -1,9 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Dash.FontIcons;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Dash.CollectionView;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,6 +25,32 @@ namespace Dash
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
             Loaded += CollectionGridView_Loaded;
+        }
+
+
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+            contextMenu.Items.Add(new MenuFlyoutSubItem()
+            {
+                Text = "View Children As",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Eye }
+            });
+            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            {
+                (contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
+                ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
+                    foreach (var child in xGridView.ItemsPanelRoot.Children.OfType<GridViewItem>())
+                    {
+                        var content = child.GetFirstDescendantOfType<ListViewItemPresenter>().GetFirstDescendantOfType<DocumentView>()?.ViewModel.Content;
+                        var cview = content is CollectionView ? content as CollectionView : content is ContentPresenter ? (content as ContentPresenter).Content as CollectionView : null;
+                        using (UndoManager.GetBatchHandle())
+                        {
+                            if (cview != null)
+                                cview.SetView(n);
+                        }
+                    }
+                };
+            }
         }
 
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)

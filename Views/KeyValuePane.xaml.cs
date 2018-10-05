@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -18,7 +19,7 @@ namespace Dash
 
         private bool _showDataDoc = true;
 
-        DocumentController activeContextDoc {  get => _showDataDoc ? _dataContextDocument : _layoutContextDocument; }
+        DocumentController activeContextDoc { get => _showDataDoc ? _dataContextDocument : _layoutContextDocument; }
 
         /// <summary>
         /// This is a local reference to the DataContext and the Document we render fields for
@@ -39,7 +40,7 @@ namespace Dash
             InitializeComponent();
 
             ListItemSource = new ObservableCollection<EditableScriptViewModel>();
-            
+
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
@@ -98,7 +99,7 @@ namespace Dash
                 }
 
                 // assign the new datacontext to a variable, and add events
-                _dataContextDocument =  dc.GetDataDocument();
+                _dataContextDocument = dc.GetDataDocument();
                 _layoutContextDocument = dc;
                 _dataContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
                 _dataContextDocument.FieldModelUpdated += ViewDocumentFieldUpdated;
@@ -164,7 +165,7 @@ namespace Dash
         ///     successful in adding the pair.
         ///     
         /// </summary>
-        private void AddKeyValuePair()
+        private async Task AddKeyValuePair()
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -176,7 +177,7 @@ namespace Dash
                 try
                 {
                     //fmController = DSL.InterpretUserInput(stringValue, true);
-                    fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
+                    fmController = await DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
                 }
                 catch (DSLException e)
                 {
@@ -209,7 +210,7 @@ namespace Dash
             }
         }
 
-        private void XNewValueField_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        private async void XNewValueField_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
             // focus on the button if the user hits the tab key
             if (e.Key == VirtualKey.Tab)
@@ -220,7 +221,7 @@ namespace Dash
             // add the field if the user hits enter
             if (e.Key == VirtualKey.Enter)
             {
-                AddKeyValuePair();
+                await AddKeyValuePair();
             }
         }
 
@@ -233,7 +234,7 @@ namespace Dash
         private void ListItemPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var container = (Panel)sender;
-            container.Background = new SolidColorBrush(Color.FromArgb(80,180,180,180));
+            container.Background = new SolidColorBrush(Color.FromArgb(80, 180, 180, 180));
         }
         /// <summary>
         /// changes bg color back
@@ -243,7 +244,7 @@ namespace Dash
         private void ListItemPointerExited(object sender, PointerRoutedEventArgs e)
         {
             var container = (Panel)sender;
-            container.Background = new SolidColorBrush(Color.FromArgb(0,255,255, 255));
+            container.Background = new SolidColorBrush(Color.FromArgb(0, 255, 255, 255));
         }
 
         /// <summary>
@@ -251,20 +252,17 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AddKeyValueFieldOnEnter(object sender, KeyRoutedEventArgs e)
+        private async void AddKeyValueFieldOnEnter(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Enter)
             {
-	            using (UndoManager.GetBatchHandle())
-	            {
-		            // check key field is filled in
-		            if (xNewKeyText.Text != "")
-		            {
-			            AddKeyValuePair();
-			            xNewKeyText.Focus(FocusState.Programmatic);
-		            }
-		            xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
-				}
+                // check key field is filled in
+                if (xNewKeyText.Text != "")
+                {
+                    await AddKeyValuePair();
+                    xNewKeyText.Focus(FocusState.Programmatic);
+                }
+                xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
             }
         }
 
@@ -296,13 +294,13 @@ namespace Dash
             if (xKeyListView.ContainerFromIndex(index) is ListViewItem key)
                 key.Style = Resources["CollapseBox"] as Style;
         }
-        
+
         private void XFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (object m in args.Items)
             {
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel)?.Key);
-                args.Data.SetDragModel(docField != null ? (DragModelBase) new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
+                args.Data.SetDragModel(docField != null ? (DragModelBase)new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;

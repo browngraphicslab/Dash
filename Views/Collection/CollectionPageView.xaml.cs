@@ -62,8 +62,12 @@ namespace Dash
             LosingFocus += CollectionPageView_LosingFocus;
             //Debug.WriteLine(ViewModel.DocumentViewModels.Select((dvm) => dvm.DocumentController).ToList().Count);
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
 
-        private void EnterPressed(KeyRoutedEventArgs obj)
+        }
+
+        private async void EnterPressed(KeyRoutedEventArgs obj)
         {
             if (!MainPage.Instance.IsShiftPressed())
             {
@@ -72,8 +76,7 @@ namespace Dash
                 {
                     if (CurPage != null)
                     {
-                        newDoc.SetField(KeyStore.DocumentContextKey,
-                            CurPage.DataDocument, true);
+                        newDoc.SetField(KeyStore.DocumentContextKey, CurPage.DataDocument, true);
                     }
                 }
                 else
@@ -82,7 +85,7 @@ namespace Dash
                     {
                         try
                         {
-                            var result = _dsl.Run(keyString.Substring(1));
+                            var result = await _dsl.Run(keyString.Substring(1));
                             SetHackCaptionText(result == null
                                 ? new TextController(
                                     "Field not found, make sure the key name is correct and that you're accessing the right document!")
@@ -293,7 +296,7 @@ namespace Dash
         {
             if (xThumbs.IsPointerOver() && args.DropResult == DataPackageOperation.Move)
             {
-                var ind =  ViewModel.DocumentViewModels.IndexOf(_dragDoc);
+                var ind = ViewModel.DocumentViewModels.IndexOf(_dragDoc);
                 ViewModel.RemoveDocument(_dragDoc.DocumentController);
                 ViewModel.InsertDocument(_dragDoc.DocumentController, ind);
             }
@@ -440,7 +443,7 @@ namespace Dash
             }
         }
 
-        private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var docs = new List<DocumentController>();
             int i = 0;
@@ -455,7 +458,7 @@ namespace Dash
                 {
                     try
                     {
-                        var result = _dsl.Run(keyString.Substring(1));
+                        var result = await _dsl.Run(keyString.Substring(1));
                         var db = new DataBox(result, i * 50, i * 50);
                         docs.Add(db.Document);
                     }

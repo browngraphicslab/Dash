@@ -118,6 +118,11 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "InkController";
+        }
+
         public IReadOnlyList<InkStroke> GetStrokes()
         {
             return _strokeContainer.GetStrokes();

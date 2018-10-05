@@ -14,31 +14,29 @@ namespace Dash
     public class TableExtractionRequest : BrowserRequest
     {
         public string data { get; set; }
-
-        private JsonToDashUtil _parser = new JsonToDashUtil();
-
+        
         public override async Task Handle(BrowserView browser)
         {
-            var token = JToken.Parse(data);
-            if (!(token is JArray tables))
+            var tab = await ProcessTableData(data);
+            if (tab != null)
             {
-                return;
-            }
-
-            double x = 400;
-            foreach (var rows in tables.OfType<JArray>())
-            {
-                var tab = ParseTable(rows.OfType<JObject>());
-                if (tab != null)
-                {
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                        () => MainPage.Instance.AddFloatingDoc(tab, new Point(400, 300), new Point(x, 400)));
-                    x += 450;
-                }
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    () => MainPage.Instance.AddFloatingDoc(tab, new Point(400,300), new Point(400,400)));
             }
         }
 
-        private DocumentController ParseTable(IEnumerable<JObject> rows)
+        public static async Task<DocumentController> ProcessTableData(string data)
+        {
+            var token = JToken.Parse(data);
+            if (token is JArray tables)
+            {
+                    var tab = ParseTable(tables.OfType<JObject>(), new JsonToDashUtil());
+                    return tab;
+            }
+            return null;
+        }
+
+        private static DocumentController ParseTable(IEnumerable<JObject> rows, JsonToDashUtil parser)
         {
             var columns = rows.FirstOrDefault()?.GetEnumerator();
             if (columns != null)
@@ -57,14 +55,14 @@ namespace Dash
                 CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
                 prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
 
-                var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype)).ToList().Prepend(prototype);
+                var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser)).ToList().Prepend(prototype);
 
                 return new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
             }
             return null;
         }
 
-        private DocumentController ParseRow(JObject obj, KeyController primaryKey, DocumentController proto)
+        private static DocumentController ParseRow(JObject obj, KeyController primaryKey, DocumentController proto, JsonToDashUtil parser)
         {
             var doc = proto.GetDataInstance();
             var datadoc = doc.GetDataDocument();
@@ -72,7 +70,7 @@ namespace Dash
             foreach (var kvp in obj)
             {
                 var key = new KeyController(kvp.Key);
-                var val = _parser.ParseValue(kvp.Value);
+                var val = parser.ParseValue(kvp.Value);
                 datadoc.SetField(key, val, true);
                 if (key.Equals(primaryKey))
                 {

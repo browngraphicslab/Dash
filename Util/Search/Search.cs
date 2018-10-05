@@ -232,7 +232,7 @@ namespace Dash
             try
             {
                 paramName = paramName.Trim('"');
-                var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
+                var resultDocs = new DSL().Run(name + "(\"" + paramName + "\")").GetAwaiter().GetResult();
                 if (resultDocs is BaseListController resultList)
                 {
                     var res = DocumentTree.MainPageTree.GetAllNodes().Where(node => resultList.Data.Contains(node.ViewDocument) ||
