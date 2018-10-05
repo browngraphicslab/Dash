@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -8,7 +12,10 @@ using Windows.UI.Xaml.Media;
 using Telerik.UI.Xaml.Controls.Grid;
 using Telerik.UI.Xaml.Controls.Grid.Primitives;
 using Windows.UI.Xaml.Data;
+using Microsoft.Office.Interop.Word;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using CheckBox = Windows.UI.Xaml.Controls.CheckBox;
+using Task = System.Threading.Tasks.Task;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,6 +24,7 @@ namespace Dash
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+        public DataGrid DataGrid => xDataGrid;
 
         //ICollectionView implementation
         public void SetDropIndicationFill(Brush fill)
@@ -25,7 +33,7 @@ namespace Dash
 
         public UserControl UserControl => this;
 
-        private HashSet<KeyController> Keys { get; } = new HashSet<KeyController>();
+        private ListController<KeyController> Keys { get; set; }
 
         public CollectionDBSchemaView()
         {
@@ -40,8 +48,22 @@ namespace Dash
             xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
             xDataGrid.LoadingRow += XDataGrid_LoadingRow;
+            xDataGrid.ColumnReordered += XDataGridOnColumnReordered;
+
+            XNewColumnEntry.AddKeyHandler(VirtualKey.Enter, args =>
+            {
+                AddNewColumn();
+            });
 
             Loaded += OnLoaded;
+        }
+
+        private void XDataGridOnColumnReordered(object sender, DataGridColumnEventArgs dataGridColumnEventArgs)
+        {
+            var col = (WindowsDictionaryColumn)dataGridColumnEventArgs.Column;
+            var removed = Keys.Remove(col.Key);
+            Debug.Assert(removed);
+            Keys.Insert(col.DisplayIndex, col.Key);
         }
 
         private void XDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
@@ -54,7 +76,7 @@ namespace Dash
         private void RowOnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var dvm = (DocumentViewModel) ((FrameworkElement)sender).DataContext;
-            args.Data.SetDragModel(new DragDocumentModel(dvm.LayoutDocument){DraggedDocCollectionViews = new List<CollectionViewModel>{ViewModel}});
+            args.Data.SetDragModel(new DragDocumentModel(dvm.LayoutDocument) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -63,6 +85,47 @@ namespace Dash
             {
                 xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
+
+                var keys =
+                    ViewModel.ContainerDocument
+                        .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
+                if (keys != null || keys.Any())
+                {
+                    InitializeDocs();
+                    foreach (var key in keys)
+                    {
+                        AddKey(key);
+                    }
+                }
+                else
+                {
+                    AddKeys();
+                }
+            }
+        }
+
+        private async Task CommitEdit(string script, DocumentController doc, KeyController key, int index)
+        {
+            try
+            {
+                var scope = Scope.CreateStateWithThisDocument(doc);
+                scope.DeclareVariable("index", new NumberController(index));
+                scope.DeclareVariable("table", ViewModel.ContainerDocument.GetDataDocument());
+                var field = await DSL.InterpretUserInput(script, scope: scope);
+                doc.SetField(key, field, true);
+            }
+            catch (DSLException e) { }
+        }
+
+        public async Task FillColumn(ActionTextBox sender, KeyController key)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                for (int i = 0; i < ViewModel.DocumentViewModels.Count; ++i)
+                {
+                    var doc = ViewModel.DocumentViewModels[i].DataDocument;
+                    await CommitEdit(sender.Text, doc, key, i);
+                }
             }
         }
 
@@ -70,19 +133,12 @@ namespace Dash
         {
             if (args.EditAction == DataGridEditAction.Commit)
             {
-                var box = (TextBox)args.EditingElement;
+                var box = (ActionTextBox)args.EditingElement;
                 var doc = ((DocumentViewModel)box.DataContext).DataDocument;
                 var col = (WindowsDictionaryColumn)args.Column;
                 using (UndoManager.GetBatchHandle())
                 {
-                    try
-                    {
-                        var field = await DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
-                        doc.SetField(col.Key, field, true);
-                    }
-                    catch (DSLException e)
-                    {
-                    }
+                    await CommitEdit(box.Text, doc, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
             }
         }
@@ -94,28 +150,12 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            AddKey(new KeyController("New Column"));
-
-            e.Handled = true;
-        }
-
         private CollectionViewModel _oldViewModel;
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == _oldViewModel)
             {
                 return;
-            }
-
-            if (_oldViewModel != null)
-            {
-                foreach (var doc in _oldViewModel.DocumentViewModels)
-                {
-                    doc.DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
-                }
-                _oldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModelsOnCollectionChanged;
             }
 
             _oldViewModel = ViewModel;
@@ -125,10 +165,125 @@ namespace Dash
                 return;
             }
 
-            ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModelsOnCollectionChanged;
-
-            Keys.Clear();
             xDataGrid.Columns.Clear();
+            Keys = ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
+            if (Keys == null)
+            {
+                Keys = new ListController<KeyController> { KeyStore.TitleKey };
+                ViewModel.ContainerDocument.SetField(KeyStore.SchemaDisplayedColumns,
+                    Keys, true);
+            }
+
+
+            foreach (var key in Keys)
+            {
+
+                var column = new WindowsDictionaryColumn(key, this)
+                {
+                    Header = key,
+                };
+                xDataGrid.Columns.Add(column);
+            }
+
+            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            {
+                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
+            }
+        }
+
+        private void AddKey(KeyController key)
+        {
+            if (Keys.Contains(key))
+            {
+                return;
+            }
+
+            //ViewModel.ContainerDocument.AddToListField(KeyStore.SchemaDisplayedColumns, key);
+            Keys.Add(key);
+
+            var column = new WindowsDictionaryColumn(key, this)
+            {
+                Header = key,
+            };
+
+            xDataGrid.Columns.Add(column);
+        }
+
+        private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            var key = checkBox.DataContext as KeyController;
+            if (checkBox.IsChecked is bool b && b)
+            {
+                AddKey(key);
+            }
+            else
+            {
+                RemoveKey(key);
+            }
+        }
+
+        private void RemoveKey(KeyController key)
+        {
+            var index = Keys.IndexOf(key);
+            if (index == -1)
+            {
+                return;
+            }
+
+            Keys.RemoveAt(index);
+            //ViewModel.ContainerDocument.RemoveFromListField(KeyStore.SchemaDisplayedColumns, key);
+
+            xDataGrid.Columns.RemoveAt(index);
+        }
+
+        private void XColumnFlyout_OnOpening(object sender, object e)
+        {
+            xColumnsList.ItemsSource = null;
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            var keys = new HashSet<KeyController>();
+            foreach (var dvm in ViewModel.DocumentViewModels)
+            {
+                foreach (var enumDisplayableField in dvm.DataDocument.EnumDisplayableFields())
+                {
+                    keys.Add(enumDisplayableField.Key);
+                }
+            }
+
+            foreach (var keyController in Keys)//Need to do this to include added columns that haven't been filled in yet
+            {
+                keys.Add(keyController);
+            }
+
+            xColumnsList.ItemsSource = new ObservableCollection<KeyController>(keys);
+        }
+
+        private void CheckBox_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if ((sender as CheckBox).DataContext != null)
+            {
+                var checkBox = sender as CheckBox;
+                var key = checkBox.DataContext as KeyController;
+                if (Keys.Contains(key))
+                {
+                    checkBox.IsChecked = true;
+                }
+                else
+                {
+                    checkBox.IsChecked = false;
+                }
+
+                checkBox.Checked += ColumnVisibility_Changed;
+                checkBox.Unchecked += ColumnVisibility_Changed;
+            }
+        }
+
+        private HashSet<KeyController> InitializeDocs()
+        {
             var docs = ViewModel.DocumentViewModels;
             var keys = new HashSet<KeyController>();
             foreach (var doc in docs)
@@ -137,8 +292,16 @@ namespace Dash
                 {
                     keys.Add(field.Key);
                 }
-                doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
             }
+
+            return keys;
+        }
+
+        private void AddKeys()
+        {
+            Keys.Clear();
+            xDataGrid.Columns.Clear();
+            var keys = InitializeDocs();
 
             foreach (var key in keys)
             {
@@ -151,57 +314,24 @@ namespace Dash
             }
         }
 
-        private void DataDocumentOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void AddNewColumn()
         {
-            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs)
+            if (!string.IsNullOrWhiteSpace(XNewColumnEntry.Text))
             {
-                AddKey(dargs.Reference.FieldKey);
+                var key = new KeyController(XNewColumnEntry.Text);
+                if (!Keys.Contains(key))
+                {
+                    AddKey(key);
+                    ((IList<KeyController>)xColumnsList.ItemsSource).Add(key);
+                }
             }
+
+            XNewColumnEntry.Text = "";
         }
 
-        private void AddKey(KeyController key)
+        private void XNewColumnButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (Keys.Contains(key))
-            {
-                return;
-            }
-
-            Keys.Add(key);
-
-            var column = new WindowsDictionaryColumn(key)
-            {
-                Header = key,
-            };
-
-            xDataGrid.Columns.Add(column);
-        }
-
-        private void DocumentViewModelsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
-        {
-            switch (args.Action)
-            {
-            case NotifyCollectionChangedAction.Add:
-                foreach (var argsNewItem in args.NewItems)
-                {
-                    var documentViewModel = (DocumentViewModel)argsNewItem;
-                    var dataDoc = documentViewModel.DataDocument;
-                    dataDoc.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
-                    foreach (var field in documentViewModel.DataDocument.EnumDisplayableFields())
-                    {
-                        AddKey(field.Key);
-                    }
-                }
-
-                break;
-            case NotifyCollectionChangedAction.Remove:
-                foreach (var argsNewItem in args.OldItems)
-                {
-                    ((DocumentViewModel)argsNewItem).DataDocument.FieldModelUpdated -= DataDocumentOnFieldModelUpdated;
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-            }
+            AddNewColumn();
         }
     }
 
@@ -268,21 +398,39 @@ namespace Dash
     public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
     {
         public KeyController Key { get; private set; }
+        public CollectionDBSchemaView Parent { get; }
 
-        public WindowsDictionaryColumn(KeyController key)
+        public WindowsDictionaryColumn(KeyController key, CollectionDBSchemaView parent)
         {
             Key = key;
+            Parent = parent;
         }
 
         protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
         {
-            return new TextBox();
+            var atb = new ActionTextBox
+            {
+                IsSpellCheckEnabled = false
+            };
+            atb.AddKeyHandler(VirtualKey.Enter, async args =>
+            {
+                if (cell.IsCtrlPressed())
+                {
+                    await Parent.FillColumn(atb, Key);
+                    Parent.DataGrid.CancelEdit();
+                    args.Handled = true;
+                }
+            });
+            return atb;
         }
 
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
             var doc = ((DocumentViewModel)dataItem).DataDocument;
-            var textblock = new TextBlock();
+            var textblock = new TextBlock
+            {
+                IsDoubleTapEnabled = false
+            };
             textblock.DataContextChanged += Textblock_DataContextChanged;
             var binding = new FieldBinding<FieldControllerBase>
             {
@@ -290,6 +438,7 @@ namespace Dash
                 Key = Key,
                 Converter = new ObjectToStringConverter(),
                 Mode = BindingMode.OneWay,
+                FallbackValue = "<null>"
             };
             textblock.AddFieldBinding(TextBlock.TextProperty, binding);
             return textblock;
@@ -313,7 +462,7 @@ namespace Dash
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
         {
-            var tb = (TextBox) editingElement;
+            var tb = (ActionTextBox)editingElement;
 
             var doc = (DocumentViewModel)editingElement.DataContext;
             var dataDoc = doc.DataDocument;
