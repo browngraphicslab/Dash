@@ -151,6 +151,7 @@ namespace Dash
             {
                 //newDoc.GetDataDocument().SetField<TextController>(key, "<empty>", true);
                 docs.Add(new DataBox(new DocumentReferenceController(newDoc.GetDataDocument(), key), 0, placement, 100, 50).Document);
+                docs.Last().SetTitle(key.Name);
                 placement += 35;
             }
 
@@ -227,6 +228,7 @@ namespace Dash
             {
                 //dvm.DocumentController.GetDataDocument().SetField<TextController>(key, "<empty>", true);
                 docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, 100, 50).Document);
+                docs.Last().SetTitle(key.Name);
                 dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
             }
         }
