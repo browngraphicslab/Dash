@@ -64,7 +64,7 @@ namespace Dash
 
         private void XDataGridOnColumnReordered(object sender, DataGridColumnEventArgs dataGridColumnEventArgs)
         {
-            var col = (WindowsDictionaryColumn)dataGridColumnEventArgs.Column;
+            var col     = (WindowsDictionaryColumn)dataGridColumnEventArgs.Column;
             var removed = Keys.Remove(col.Key);
             Debug.Assert(removed);
             Keys.Insert(col.DisplayIndex, col.Key);
@@ -89,21 +89,13 @@ namespace Dash
             {
                 xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
-
-                var keys =
-                    ViewModel.ContainerDocument
-                        .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
-                if (keys != null || keys.Any())
+                
+                var keys = InitializeDocs().ToList();
+                var savedKeys = ViewModel.ContainerDocument
+                            .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).TypedData;
+                foreach (var key in savedKeys ?? keys)
                 {
-                    InitializeDocs();
-                    foreach (var key in keys)
-                    {
-                        AddKey(key);
-                    }
-                }
-                else
-                {
-                    AddKeys();
+                    AddKey(key);
                 }
             }
         }
@@ -117,7 +109,7 @@ namespace Dash
                 scope.DeclareVariable("table", ViewModel.ContainerDocument.GetDataDocument());
                 var field = await DSL.InterpretUserInput(script, scope: scope);
                 doc.SetField(key, field, true);
-            }
+               }
             catch (DSLException e) { }
         }
 
@@ -138,19 +130,33 @@ namespace Dash
             if (args.EditAction == DataGridEditAction.Commit)
             {
                 var box = (ActionTextBox)args.EditingElement;
-                var doc = ((DocumentViewModel)box.DataContext).DataDocument;
+                var dvm = ((DocumentViewModel)box.DataContext);
                 var col = (WindowsDictionaryColumn)args.Column;
+
                 using (UndoManager.GetBatchHandle())
                 {
-                    await CommitEdit(box.Text, doc, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
+                    await CommitEdit(box.Text, dvm.DataDocument, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
+
+                AddDataBoxForKey(col.Key, dvm);
             }
         }
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, 200,50).Document;
+            var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
+            int placement = 0;
+            foreach (var key in Keys)
+            {
+                //newDoc.GetDataDocument().SetField<TextController>(key, "<empty>", true);
+                docs.Add(new DataBox(new DocumentReferenceController(newDoc.GetDataDocument(), key), 0, placement, 100, 50).Document);
+                placement += 35;
+            }
+
+            newDoc.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote());
+            ViewModel.AddDocument(newDoc);
             e.Handled = true;
         }
 
@@ -174,19 +180,13 @@ namespace Dash
             if (Keys == null)
             {
                 Keys = new ListController<KeyController> { KeyStore.TitleKey };
-                ViewModel.ContainerDocument.SetField(KeyStore.SchemaDisplayedColumns,
-                    Keys, true);
+                ViewModel.ContainerDocument.SetField(KeyStore.SchemaDisplayedColumns, Keys, true);
             }
 
 
             foreach (var key in Keys)
             {
-
-                var column = new WindowsDictionaryColumn(key, this)
-                {
-                    Header = key,
-                };
-                xDataGrid.Columns.Add(column);
+                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { Header = key });
             }
 
             if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
@@ -197,20 +197,38 @@ namespace Dash
 
         private void AddKey(KeyController key)
         {
-            if (Keys.Contains(key))
+            if (!Keys.Contains(key))
             {
-                return;
+                Keys.Add(key);
+                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { Header = key });
+
+                foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
+                {
+                    AddDataBoxForKey(key, dvm);
+                }
             }
+        }
 
-            //ViewModel.ContainerDocument.AddToListField(KeyStore.SchemaDisplayedColumns, key);
-            Keys.Add(key);
+        private void AddDataBoxForKey(KeyController key, DocumentViewModel dvm)
+        {
+            var docs = dvm.DocumentController.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+            DocumentController db = null;
 
-            var column = new WindowsDictionaryColumn(key, this)
+            foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
             {
-                Header = key,
-            };
-
-            xDataGrid.Columns.Add(column);
+                var fkey = (doc.GetField(KeyStore.DataKey) as DocumentReferenceController)?.FieldKey;
+                if (key.Equals(fkey) == true)
+                {
+                    db = doc;
+                    break;
+                }
+            }
+            if (db == null)
+            {
+                //dvm.DocumentController.GetDataDocument().SetField<TextController>(key, "<empty>", true);
+                docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, 100, 50).Document);
+                dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
+            }
         }
 
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
@@ -271,17 +289,9 @@ namespace Dash
             if ((sender as CheckBox).DataContext != null)
             {
                 var checkBox = sender as CheckBox;
-                var key = checkBox.DataContext as KeyController;
-                if (Keys.Contains(key))
-                {
-                    checkBox.IsChecked = true;
-                }
-                else
-                {
-                    checkBox.IsChecked = false;
-                }
+                checkBox.IsChecked = Keys.Contains(checkBox.DataContext as KeyController);
 
-                checkBox.Checked += ColumnVisibility_Changed;
+                checkBox.Checked   += ColumnVisibility_Changed;
                 checkBox.Unchecked += ColumnVisibility_Changed;
             }
         }
@@ -299,23 +309,6 @@ namespace Dash
             }
 
             return keys;
-        }
-
-        private void AddKeys()
-        {
-            Keys.Clear();
-            xDataGrid.Columns.Clear();
-            var keys = InitializeDocs();
-
-            foreach (var key in keys)
-            {
-                AddKey(key);
-            }
-
-            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
-            {
-                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
-            }
         }
 
         private void AddNewColumn()
