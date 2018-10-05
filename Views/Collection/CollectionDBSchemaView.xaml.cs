@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -19,6 +23,7 @@ namespace Dash
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+        public DataGrid DataGrid => xDataGrid;
 
         //ICollectionView implementation
         public void SetDropIndicationFill(Brush fill)
@@ -27,7 +32,7 @@ namespace Dash
 
         public UserControl UserControl => this;
 
-        private HashSet<KeyController> Keys { get; } = new HashSet<KeyController>();
+        public HashSet<KeyController> Keys { get; } = new HashSet<KeyController>();
 
         public CollectionDBSchemaView()
         {
@@ -51,6 +56,32 @@ namespace Dash
             {
                 xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
+                AddKeys();
+            }
+        }
+
+        private async Task CommitEdit(string script, DocumentController doc, KeyController key, int index)
+        {
+            try
+            {
+                var scope = Scope.CreateStateWithThisDocument(doc);
+                scope.DeclareVariable("index", new NumberController(index));
+                scope.DeclareVariable("table", ViewModel.ContainerDocument.GetDataDocument());
+                var field = await DSL.InterpretUserInput(script, scope: scope);
+                doc.SetField(key, field, true);
+            }
+            catch (DSLException e) { }
+        }
+
+        public async Task FillColumn(ActionTextBox sender, KeyController key)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                for (int i = 0; i < ViewModel.DocumentViewModels.Count; ++i)
+                {
+                    var doc = ViewModel.DocumentViewModels[i].DataDocument;
+                    await CommitEdit(sender.Text, doc, key, i);
+                }
             }
         }
 
@@ -58,19 +89,12 @@ namespace Dash
         {
             if (args.EditAction == DataGridEditAction.Commit)
             {
-                var box = (TextBox)args.EditingElement;
+                var box = (ActionTextBox)args.EditingElement;
                 var doc = ((DocumentViewModel)box.DataContext).DataDocument;
                 var col = (WindowsDictionaryColumn)args.Column;
                 using (UndoManager.GetBatchHandle())
                 {
-                    try
-                    {
-                        var field = await DSL.InterpretUserInput(box.Text, scope: Scope.CreateStateWithThisDocument(doc));
-                        doc.SetField(col.Key, field, true);
-                    }
-                    catch (DSLException e)
-                    {
-                    }
+                    await CommitEdit(box.Text, doc, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
             }
         }
@@ -115,28 +139,28 @@ namespace Dash
 
             ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModelsOnCollectionChanged;
 
-            Keys.Clear();
-            xDataGrid.Columns.Clear();
-            var docs = ViewModel.DocumentViewModels;
-            var keys = new HashSet<KeyController>();
-            foreach (var doc in docs)
-            {
-                foreach (var field in doc.DataDocument.EnumDisplayableFields())
-                {
-                    keys.Add(field.Key);
-                }
-                doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
-            }
+            //Keys.Clear();
+            //xDataGrid.Columns.Clear();
+            //var docs = ViewModel.DocumentViewModels;
+            //var keys = new HashSet<KeyController>();
+            //foreach (var doc in docs)
+            //{
+            //    foreach (var field in doc.DataDocument.EnumDisplayableFields())
+            //    {
+            //        keys.Add(field.Key);
+            //    }
+            //    doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
+            //}
 
-            foreach (var key in keys)
-            {
-                AddKey(key);
-            }
+            //foreach (var key in keys)
+            //{
+            //    AddKey(key);
+            //}
 
-            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
-            {
-                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
-            }
+            //if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            //{
+            //    xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
+            //}
         }
 
         private void DataDocumentOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -156,7 +180,7 @@ namespace Dash
 
             Keys.Add(key);
 
-            var column = new WindowsDictionaryColumn(key)
+            var column = new WindowsDictionaryColumn(key, this)
             {
                 Header = key,
             };
@@ -189,6 +213,109 @@ namespace Dash
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void Flyout_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            var key = checkBox.DataContext as KeyController;
+            if ((bool)checkBox.IsChecked)
+            {
+                AddKey(key);
+            }
+            else
+            {
+                RemoveKey(key);
+            }
+        }
+
+        private void RemoveKey(KeyController key)
+        {
+            if (!Keys.Contains(key))
+            {
+                return;
+            }
+
+            Keys.Remove(key);
+
+            var column = xDataGrid.Columns.First(col => col.Header.Equals(key));
+            xDataGrid.Columns.Remove(column);
+        }
+
+        private void XColumnFlyout_OnOpening(object sender, object e)
+        {
+            xColumnsList.ItemsSource = null;
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            var keys = new HashSet<KeyController>();
+            foreach (var dvm in ViewModel.DocumentViewModels)
+            {
+                foreach (var enumDisplayableField in dvm.DataDocument.EnumDisplayableFields())
+                {
+                    keys.Add(enumDisplayableField.Key);
+                }
+            }
+
+            xColumnsList.ItemsSource = keys;
+        }
+
+        private void CheckBox_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if ((sender as CheckBox).DataContext != null)
+            {
+                var checkBox = sender as CheckBox;
+                var key = checkBox.DataContext as KeyController;
+                if (Keys.Contains(key))
+                {
+                    checkBox.IsChecked = true;
+                }
+                else
+                {
+                    checkBox.IsChecked = false;
+                }
+
+                checkBox.GetFirstAncestorOfType<Grid>().GetFirstDescendantOfType<TextBlock>().Tapped += (s, args) =>
+                    {
+                        checkBox.IsChecked = !(bool)checkBox.IsChecked;
+                    };
+
+                checkBox.Checked += ColumnVisibility_Changed;
+                checkBox.Unchecked += ColumnVisibility_Changed;
+            }
+        }
+
+        private void AddKeys()
+        {
+            Keys.Clear();
+            xDataGrid.Columns.Clear();
+            var docs = ViewModel.DocumentViewModels;
+            var keys = new HashSet<KeyController>();
+            foreach (var doc in docs)
+            {
+                foreach (var field in doc.DataDocument.EnumDisplayableFields())
+                {
+                    keys.Add(field.Key);
+                }
+                doc.DataDocument.FieldModelUpdated += DataDocumentOnFieldModelUpdated;
+            }
+
+            foreach (var key in keys)
+            {
+                AddKey(key);
+            }
+
+            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            {
+                xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }
         }
     }
@@ -256,21 +383,39 @@ namespace Dash
     public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
     {
         public KeyController Key { get; private set; }
+        public CollectionDBSchemaView Parent { get; }
 
-        public WindowsDictionaryColumn(KeyController key)
+        public WindowsDictionaryColumn(KeyController key, CollectionDBSchemaView parent)
         {
             Key = key;
+            Parent = parent;
         }
 
         protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
         {
-            return new TextBox();
+            var atb = new ActionTextBox
+            {
+                IsSpellCheckEnabled = false
+            };
+            atb.AddKeyHandler(VirtualKey.Enter, async args =>
+            {
+                if (cell.IsCtrlPressed())
+                {
+                    await Parent.FillColumn(atb, Key);
+                    Parent.DataGrid.CancelEdit();
+                    args.Handled = true;
+                }
+            });
+            return atb;
         }
 
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
             var doc = ((DocumentViewModel)dataItem).DataDocument;
-            var textblock = new TextBlock();
+            var textblock = new TextBlock
+            {
+                IsDoubleTapEnabled = false
+            };
             textblock.DataContextChanged += Textblock_DataContextChanged;
             var binding = new FieldBinding<FieldControllerBase>
             {
@@ -301,7 +446,7 @@ namespace Dash
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
         {
-            var tb = (TextBox) editingElement;
+            var tb = (ActionTextBox)editingElement;
 
             var doc = (DocumentViewModel)editingElement.DataContext;
             var dataDoc = doc.DataDocument;

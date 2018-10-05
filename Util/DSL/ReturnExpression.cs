@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Threading.Tasks;
+using Flurl.Util;
 
 namespace Dash
 {
