@@ -27,16 +27,6 @@ public interface SearchGrammarListener extends ParseTreeListener {
 	 */
 	void exitKeylist(SearchGrammarParser.KeylistContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SearchGrammarParser#valuesearch}.
-	 * @param ctx the parse tree
-	 */
-	void enterValuesearch(SearchGrammarParser.ValuesearchContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SearchGrammarParser#valuesearch}.
-	 * @param ctx the parse tree
-	 */
-	void exitValuesearch(SearchGrammarParser.ValuesearchContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SearchGrammarParser#kvsearch}.
 	 * @param ctx the parse tree
 	 */

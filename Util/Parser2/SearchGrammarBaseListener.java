@@ -39,18 +39,6 @@ public class SearchGrammarBaseListener implements SearchGrammarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValuesearch(SearchGrammarParser.ValuesearchContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitValuesearch(SearchGrammarParser.ValuesearchContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterKvsearch(SearchGrammarParser.KvsearchContext ctx) { }
 	/**
 	 * {@inheritDoc}

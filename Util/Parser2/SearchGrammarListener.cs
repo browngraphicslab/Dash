@@ -51,16 +51,6 @@ public interface ISearchGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitKeylist([NotNull] SearchGrammarParser.KeylistContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="SearchGrammarParser.valuesearch"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterValuesearch([NotNull] SearchGrammarParser.ValuesearchContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="SearchGrammarParser.valuesearch"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitValuesearch([NotNull] SearchGrammarParser.ValuesearchContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="SearchGrammarParser.kvsearch"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

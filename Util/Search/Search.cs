@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Antlr4.Runtime;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -369,6 +370,43 @@ namespace Dash
         public static IEnumerable<SearchResult> Parse(string inputString)
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
+
+
+
+            var searchBoxLexer = new SearchGrammarLexer(new AntlrInputStream(inputString));
+            var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
+            var visitor = new DashSearchGrammarVisitor();
+            var parseTree = visitor.Visit(parser.query());
+
+            var results = new List<SearchResult>();
+            var keyRefs = new List<string>();
+            var fieldRefs = new List<string>();
+            foreach (var node in DocumentTree.MainPageTree)//TODO .GetAllNodes()
+            {
+                var layoutResults = parseTree(node.ViewDocument);
+                var dataResults = parseTree(node.DataDocument);
+                foreach (var layoutResult in layoutResults)
+                {
+                    keyRefs.Add(layoutResult.Key.Name);
+                    fieldRefs.Add(layoutResult.Value.RelatedString);
+                }
+                foreach (var dataResult in dataResults)
+                {
+                    keyRefs.Add(dataResult.Key.Name);
+                    fieldRefs.Add(dataResult.Value.RelatedString);
+                }
+
+                if (keyRefs.Any())
+                {
+                    results.Add(new SearchResult(node, keyRefs, fieldRefs, layoutResults.Count + dataResults.Count));
+                }
+
+                keyRefs.Clear();
+                fieldRefs.Clear();
+            }
+
+            return results;
+
 
             int dividerIndex = FindNextDivider(inputString);
             string searchTerm = inputString.Substring(0, dividerIndex);

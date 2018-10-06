@@ -3,38 +3,81 @@ using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime.Misc;
 
+
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<Predicate<DocumentController>>
+    using SearchPair = KeyValuePair<KeyController, StringSearchModel>;
+    using Result = List<KeyValuePair<KeyController, StringSearchModel>>;
+
+    public delegate Result SearchPredicate(DocumentController document);
+
+    public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<SearchPredicate>
     {
-        public override Predicate<DocumentController> VisitAnd([NotNull] SearchGrammarParser.AndContext context)
+        public override SearchPredicate VisitAnd([NotNull] SearchGrammarParser.AndContext context)
         {
             var l = context.or().Select(c => c.Accept(this)).ToList();
             return doc =>
             {
-                bool accept = true;
-                foreach (var predicate in l)
+                var result = new Result();
+                foreach (var searchPredicate in l)
                 {
-                    accept &= predicate(doc);
+                    var keyValuePairs = searchPredicate(doc);
+                    if (!keyValuePairs.Any())
+                    {
+                        return new Result();
+                    }
+                    result.AddRange(keyValuePairs);
                 }
-                return accept;
+                return result;
             };
         }
 
-        public override Predicate<DocumentController> VisitFunction([NotNull] SearchGrammarParser.FunctionContext context)
+        public override SearchPredicate VisitFunction([NotNull] SearchGrammarParser.FunctionContext context)
         {
             return base.VisitFunction(context);
         }
 
-        public override Predicate<DocumentController> VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context)
+        public override SearchPredicate VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context)
         {
-            var keys = context.keylist().Accept(new DashSearchGrammarKvVisitor());
+            var keys = new HashSet<KeyController>(context.keylist().Accept(new DashSearchGrammarKvVisitor()));
             var value = context.value().GetText().Trim('"');
-            return doc => doc == null; //<-- ignore, filler. Correct --> Search.SearchByKeyValuePair(keys, value, context.ChildCount == 4);
+            var negate = context.ChildCount == 4;
+            return doc =>
+            {
+                var result = new Result();
+                if (negate)
+                {
+                    foreach (var field in doc.EnumDisplayableFields())
+                    {
+                        if (keys.Contains(field.Key))
+                        {
+                            continue;
+                        }
+                        var res = field.Value.SearchForString(value);
+                        if (res.StringFound)
+                        {
+                            result.Add(new SearchPair(field.Key, res));
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var key in keys)
+                    {
+                        var res = doc.GetDereferencedField(key, null)?.SearchForString(value);
+                        if (res?.StringFound ?? false)
+                        {
+                            result.Add(new SearchPair(key, res));
+                        }
+                    }
+                }
+                
+                return result;
+            };
         }
 
-        public override Predicate<DocumentController> VisitNegation([NotNull] SearchGrammarParser.NegationContext context)
+        public override SearchPredicate VisitNegation([NotNull] SearchGrammarParser.NegationContext context)
         {
             var visitNegation = context.term().Accept(this);
             if (context.ChildCount == 1)
@@ -42,32 +85,56 @@ namespace Dash
                 return visitNegation;
             }
 
-            return doc => !visitNegation(doc);
+            return doc =>
+            {
+                var result = visitNegation(doc);
+                if (result.Any())
+                {
+                    return new Result();
+                }
+                return new Result
+                {
+                    new SearchPair(null, new StringSearchModel(""))
+                };
+            };
         }
 
-        public override Predicate<DocumentController> VisitOr([NotNull] SearchGrammarParser.OrContext context)
+        public override SearchPredicate VisitOr([NotNull] SearchGrammarParser.OrContext context)
         {
             var l = context.negation().Select(c => c.Accept(this)).ToList();
             return doc =>
             {
-                bool returnDoc = false;
-                foreach (var predicate in l)
+                var result = new Result();
+                foreach (var searchPredicate in l)
                 {
-                    returnDoc |= predicate(doc);
+                    result.AddRange(searchPredicate(doc));
                 }
-                return returnDoc;
+                return result;
             };
         }
 
-        public override Predicate<DocumentController> VisitTerm([NotNull] SearchGrammarParser.TermContext context)
+        public override SearchPredicate VisitTerm([NotNull] SearchGrammarParser.TermContext context)
         {
             return context.ChildCount == 1 ? base.VisitTerm(context) : context.query().Accept(this);
         }
 
-        public override Predicate<DocumentController> VisitValue([NotNull] SearchGrammarParser.ValueContext context)
+        public override SearchPredicate VisitValue([NotNull] SearchGrammarParser.ValueContext context)
         {
             //string textToSearch = context.WORD().Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
-            return doc => doc.SearchForString(context.GetText().ToLower()).StringFound;
+            return doc =>
+            {
+                var searchString = context.GetText().ToLower();
+                var result = new Result();
+                foreach (var field in doc.EnumDisplayableFields())
+                {
+                    var res = field.Value.SearchForString(searchString);
+                    if (res.StringFound)
+                    {
+                        result.Add(new SearchPair(field.Key, res));
+                    }
+                }
+                return result;
+            };
         }
     }
 }

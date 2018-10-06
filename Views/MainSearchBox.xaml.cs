@@ -338,10 +338,6 @@ namespace Dash
 
             IEnumerable<SearchResult> searchRes;
             try {
-                var searchBoxLexer = new SearchGrammarLexer(new AntlrInputStream(text));
-                var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
-                var visitor = new DashSearchGrammarVisitor();
-                visitor.Visit(parser.query());
 
                 searchRes = Search.Parse(text).ToList();
             }

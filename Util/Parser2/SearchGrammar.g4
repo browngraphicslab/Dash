@@ -22,7 +22,7 @@ grammar SearchGrammar;
  							;
 
  	term					: kvsearch
- 							| valuesearch
+ 							| value
  							| function
  							| '(' WS* query WS* ')'
  							;
