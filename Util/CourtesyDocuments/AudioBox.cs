@@ -26,7 +26,7 @@ namespace Dash
         /// <summary>
         ///   Creates a MediaPlayerElement that will be binded to audio reference.
         /// </summary>
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             //create the media player element 
             MediaPlayerElement audio = new MediaPlayerElement
@@ -49,7 +49,7 @@ namespace Dash
 			
 
 			// setup bindings on the audio
-            SetupAudioBinding(audio, docController, context);
+            BindAudioSource(audio, docController, key, context);
             audio.TransportControls.IsFullWindowEnabled = false;
             audio.TransportControls.IsFullWindowButtonVisible = false;
 
@@ -60,38 +60,15 @@ namespace Dash
             return audio;
         }
 
-        protected static void SetupAudioBinding(MediaPlayerElement audio, DocumentController controller,
-            Context context)
-        {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceController reference)
-            {
-                //add fieldUpdatedListener to the doc controller of the reference
-                var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
-                    {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
-                            return;
-                        //bind the MediaPlayerElement source to the new audio
-                        BindAudioSource(audio, sender, c, reference.FieldKey);
-                    });
-            }
-            BindAudioSource(audio, controller, context, KeyStore.DataKey);
-        }
-
         /// <summary>
         ///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the audio.
         /// </summary>
-        protected static void BindAudioSource(MediaPlayerElement audio, DocumentController docController, Context context,
-            KeyController key)
+        protected static void BindAudioSource(MediaPlayerElement audio, DocumentController docController, KeyController key, Context context)
         {
-            var data = docController.GetDereferencedField(key, context) as AudioController;
-            Debug.Assert(data != null);
             var binding = new FieldBinding<AudioController>
             {
                 Document = docController,
-                Key = KeyStore.DataKey,
+                Key = key,
                 Mode = BindingMode.OneWay,
                 Context = context,
                 //converts uri to source data of the MediaPlayerElement

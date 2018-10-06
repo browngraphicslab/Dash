@@ -178,6 +178,8 @@ namespace Dash
 
             date,
 
+            api,
+
             // NULL EQUIVALENT
 
             invalid,

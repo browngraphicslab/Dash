@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -28,7 +29,9 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo> { [ComputedResultKey] = TypeInfo.Number };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var source = inputs[SourceKey];
             BaseListController newList = null;
@@ -53,6 +56,7 @@ namespace Dash
             }
 
             outputs[ComputedResultKey] = newList ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ToListOperatorController();

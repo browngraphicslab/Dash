@@ -47,6 +47,22 @@ namespace Dash
             }
         }
 
+        public override bool IsInView(Rect bounds)
+        {
+            foreach (var r in LayoutRoot.Children)
+            {
+                if (r is Rectangle annotationRect)
+                {
+                    var annotationBounds = annotationRect.GetBoundingRect(this);
+                    annotationBounds.Intersect(bounds);
+                    if (!annotationBounds.IsEmpty)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
         {
             r.Stroke = new SolidColorBrush(Colors.Black);

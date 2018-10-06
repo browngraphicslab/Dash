@@ -3,6 +3,8 @@ var ws = null;
 var screenHeight = 0;
 var currentUrl = "";
 var isActive = false;
+var isCollapsed = false;
+var tableExtractEnabled = false;
 
 function send(socket, prefix, message) {
     var s = JSON.stringify([JSON.stringify(message)]);
@@ -18,75 +20,80 @@ function isPdf(url) {
 
 // called anytime a tab is added/changed to update the browser window's height
 function updateSize(url) {
-    var targetHeight = 0;
     if (isPdf(url)) {
-        targetHeight = 0;
-    } else {
-        targetHeight = screenHeight;
-    }
-
-    chrome.windows.getCurrent(function (e) {
-        chrome.windows.update(e.id, { height: targetHeight }, function (win) {
-            if (isPdf(url)) {
+        chrome.windows.getCurrent(function (e) {
+            if (!isCollapsed) {
+                screenHeight = e.height;
+            }
+            isCollapsed = true;
+            chrome.windows.update(e.id, { height: 0 }, function (win) {
                 send(ws, "collapse",
                     {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": false,
                         "url": url
                     });
-            } else {
+            });
+        });
+    } else {
+        chrome.windows.getCurrent(function (e) {
+            if (!isCollapsed) {
+                screenHeight = e.height;
+            }
+            isCollapsed = false;
+            chrome.windows.update(e.id, { height: screenHeight }, function (win) {
                 send(ws, "expand",
                     {
                         "$type": "Dash.CollapseRequest, Dash",
                         "expanded": true,
                         "url": url
                     });
-            }
+            });
         });
-    });
+    }
 }
 
 function sendStatus() {
     if (ws == undefined || ws.readyState != ws.OPEN) {
-        chrome.runtime.sendMessage("status:error");
+        chrome.runtime.sendMessage({status: "error", connected: false, tableExtract: tableExtractEnabled});
     } else if (isActive) {
-        chrome.runtime.sendMessage("status:connected");
+        chrome.runtime.sendMessage({connected: true, tableExtract: tableExtractEnabled});        
+    
     } else {
-        chrome.runtime.sendMessage("status:disconnected");
+        chrome.runtime.sendMessage({status: "disconnected", connected: false, tableExtract: tableExtractEnabled});
     }
+
+
+
+    chrome.tabs.query({}, function(tabs) {
+        for (var i=0; i<tabs.length; ++i) {
+            chrome.tabs.sendMessage(tabs[i].id, {connected: true, tableExtract: tableExtractEnabled});
+        }
+    });
 }
 
 // called when the button in the popup is clicked
+var t = this;
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-
-        if (request === "requestStatus") {
-            sendStatus();
+        if (request.action === "requestStatus") {
+            sendStatus.apply(t);
             return;
         };
 
-        if (request.type === "extractTable") {
-            send(ws,
-                "extract",
-                {
-                    "$type": "Dash.TableExtractionRequest, Dash",
-                    "data": JSON.stringify(request.data)
-                });
+        if (request.action === "toggleTableExtract") {
+            tableExtractEnabled = !tableExtractEnabled
+            sendStatus.apply(t);
         }
 
-
-        if (request === "toggleActive") {
-
-            chrome.windows.getCurrent(function (e) {
-                screenHeight = e.height;
-            });
+        if (request.action === "toggleActive") {
 
             if (!isActive) {
                 if (ws == undefined || ws.readyState !== ws.OPEN) {
                     ws = new WebSocket(ENDPOINT);
                     ws.onopen = function () {
                         isActive = true;
-                        sendStatus();
+                        sendStatus.apply(t);
                         send(ws, "activate",
                             {
                                 "$type": "Dash.ActivateRequest, Dash",
@@ -94,11 +101,11 @@ chrome.runtime.onMessage.addListener(
                             });
                     }
                     ws.onerror = function () {
-                        sendStatus();
+                        sendStatus.apply(t);
                     }
                 } else {
                     isActive = true;
-                    sendStatus();
+                    sendStatus.apply(t);
                     send(ws, "activate",
                         {
                             "$type": "Dash.ActivateRequest, Dash",
@@ -107,7 +114,7 @@ chrome.runtime.onMessage.addListener(
                 }
             } else {
                 isActive = !isActive;
-                sendStatus();
+                sendStatus.apply(t);
                 if (isActive) {
                     send(ws,
                         "activate",

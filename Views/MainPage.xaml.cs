@@ -260,7 +260,7 @@ namespace Dash
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
 
-            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is TreeViewNode))
+            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
             {
                 var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
                 if (ctrlDown)
@@ -954,7 +954,8 @@ namespace Dash
                 ActionMenu menu = new ActionMenu
                 {
                     Width = 400,
-                    Height = 500
+                    Height = 500,
+                    UseFilterBox = false
                 };
                 ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
                 menu.AddGroup("BASIC", new List<ActionViewModel>
@@ -985,6 +986,7 @@ namespace Dash
                 return menu;
             }
 
+            xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
     }

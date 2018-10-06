@@ -14,7 +14,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.UI.Xaml.Media.Animation;
+using Dash.FontIcons;
 using Dash.Converters;
 using DashShared;
 
@@ -87,10 +87,18 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (doc != null)
+            if (ViewModel?.IsDimensionless == true)
             {
-                CourtesyDocument.BindWidth(this, doc, null);
-                CourtesyDocument.BindHeight(this, doc, null);
+                Width = double.NaN;
+                Height = double.NaN;
+            }
+            else
+            {
+                if (doc != null)
+                {
+                    CourtesyDocument.BindWidth(this, doc, null);
+                    CourtesyDocument.BindHeight(this, doc, null);
+                }
             }
         }
         private void UpdateVisibilityBinding()
@@ -121,8 +129,16 @@ namespace Dash
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
-            CourtesyDocument.BindHorizontalAlignment(this, doc, null);
-            CourtesyDocument.BindVerticalAlignment(this,   doc, null);
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
         }
 
         // == CONSTRUCTORs ==
@@ -211,7 +227,7 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed())
+                if (this.IsRightBtnPressed() && this.ViewModel.IsNotBackgroundPinned)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                         e.Handled = true;
@@ -304,15 +320,6 @@ namespace Dash
                     l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
                 }
             }
-        }
-
-        private void XMenuFlyout_OnOpening(object sender, object e)
-        {
-            var linkDocs =
-                MainPage.Instance.XDocumentDecorations.TagMap.Values;
-            bool allVisible = linkDocs.All(l =>
-                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
-            xAnnotationVisibility.Text = allVisible ? "Hide Annotations on Scroll" : "Show Annotations on Scroll";
         }
 
         //public void ToggleTemplateEditor()
@@ -986,6 +993,76 @@ namespace Dash
             }
         }
 
+        private void xMenuFlyout_Opening(object sender, object e)
+        {
+            xMenuFlyout.Items.Clear();
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Open",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FolderOpen }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Delete",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemDelete_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Hide",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Close }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemHide_Click;
+
+            xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Duplicate",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Copy }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCopy_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Alias",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Link }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAlias_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Fields",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Database }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
+
+            xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add to Presentation",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemPin_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = ViewModel.LayoutDocument.GetIsAdornment() ? "Remove Adornment Behavior" : "Add Adornment Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+
+            if (ViewModel.Content is CollectionView collectionView)
+            {
+                collectionView.SetupContextMenu(this.xMenuFlyout);
+            }
+            if ((ViewModel.Content is ContentPresenter cpresent) &&
+                (cpresent.Content is CollectionView collectionView2))
+            {
+                collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
         private void MenuFlyoutItemHide_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -1095,7 +1172,5 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-       
     }
 }

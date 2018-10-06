@@ -35,6 +35,7 @@ namespace Dash
         public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
         public TransformGroupData TransformGroup
+
         {
             get
             {
@@ -290,7 +291,9 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
+                    if (startIndex >= DocumentViewModels.Count)
+                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    else DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
                     startIndex++;
                 }
             }
@@ -753,7 +756,7 @@ namespace Dash
                 var where = new Point();
                 if ((sender as CollectionView)?.CurrentView is CollectionFreeformBase freeformBase)
                 {
-                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xOuterGrid));
                 }
                 else if (DocumentViewModels.LastOrDefault() is DocumentViewModel last)
                 {
@@ -767,6 +770,7 @@ namespace Dash
                 }
                 else
                 {
+
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
                 }
@@ -813,6 +817,7 @@ namespace Dash
 
                     }
                 }
+
             }
 
             return docsToAdd;

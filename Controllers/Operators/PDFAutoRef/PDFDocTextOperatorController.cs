@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DashShared;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -31,17 +32,20 @@ namespace Dash
             [DocumentTextKey] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var doc = inputs[DocumentKey] as DocumentController;
 
             if (doc == null)
             {
                 outputs[DocumentTextKey] = new TextController("Invalid document input...");
-                return;
+                return Task.CompletedTask;
             }
 
             outputs[DocumentTextKey] = new TextController(doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data ?? "");
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new RegexOperatorController(OperatorFieldModel);

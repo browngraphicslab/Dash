@@ -120,7 +120,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            throw new NotImplementedException();
+            return "InkController";
         }
 
         public IReadOnlyList<InkStroke> GetStrokes()

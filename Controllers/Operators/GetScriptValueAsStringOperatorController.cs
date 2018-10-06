@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -42,7 +43,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Exec to string", "99E9328B-7341-403F-819B-26CDAB2F9A51");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -52,7 +53,7 @@ namespace Dash
                 var script = inputs[ScriptKey] as TextController;
                 var dsl = new DSL(new Scope());
                 var scriptToRun = (script)?.Data ?? "";
-                var controller = dsl.Run(scriptToRun, true);
+                var controller = await dsl.Run(scriptToRun, true);
                 if (controller != null)
                 {
                     if (controller is ReferenceController)

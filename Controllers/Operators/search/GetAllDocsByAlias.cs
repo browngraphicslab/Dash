@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -42,7 +43,9 @@ namespace Dash
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
             var id = (inputs[IdKey] as TextController)?.Data;
@@ -53,6 +56,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = toReturn;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new GetAllDocsByAlias();

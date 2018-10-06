@@ -51,29 +51,7 @@ namespace Dash
 
         public FieldControllerBase Dereference(Context context)
         {
-            FieldControllerBase controller;
-            if (context != null)
-            {
-                if (context.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-            }
-            var doc = GetDocumentController(context);
-            if (doc != null)
-            {
-                context = new Context(context);
-                var newContext = doc.ShouldExecute(context, FieldKey, null, false);
-                if (newContext.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-
-                var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
-
-                return fmc;
-            }
-            return null;
+            return GetDocumentController(context)?.GetField(FieldKey);
         }
 
         public FieldControllerBase DereferenceToRoot(Context context)
@@ -88,13 +66,14 @@ namespace Dash
             FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceController referenceController)
             {
-                documentController = referenceController.GetDocumentController(context);
-                if (documentController == null)
+                var doc = ((ReferenceController)reference).GetDocumentController(context);
+                if (doc != null)
                 {
-                    return null;
+                    context?.AddDocumentContext(doc);
+                    reference = reference.Dereference(context);
                 }
-                context.AddDocumentContext(documentController);
-                reference = reference.Dereference(context);
+                else
+                    break;
             }
 
             return reference;

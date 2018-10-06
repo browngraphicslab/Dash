@@ -93,7 +93,8 @@ namespace Dash
                     _elements.Add(new SelectableElement(-1, " ",
                         new Rect(_elements.Last().Bounds.X + _elements.Last().Bounds.Width,
                             _elements.Last().Bounds.Y, // pageHeight - (start.Y + _pageOffset),
-                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Y - start.Y))));
+                            width > 0 ? width : textData.GetSingleSpaceWidth(), Math.Abs(end.Y - start.Y)),
+                        textData));
                 }
 
                 var newBounds = new Rect(start.X, pageHeight - start.Y + _pageOffset,
@@ -101,7 +102,7 @@ namespace Dash
                     Math.Abs(end.Y - start.Y));
                 if (!_elements.Any() || _elements.Last().Bounds != newBounds)
                 {
-                    _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds));
+                    _elements.Add(new SelectableElement(-1, textData.GetText(), newBounds, textData));
                 }
             }
         }

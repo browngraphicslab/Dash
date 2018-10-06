@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -35,7 +36,9 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("A41EC14D-6E29-43D0-A9CF-C6751F5D732B", "Substring extraction");
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var stringToEdit = (inputs[StringKey] as TextController)?.Data;
             var startingIndex = (int)((NumberController)inputs[StartingIndexKey]).Data;
@@ -46,6 +49,7 @@ namespace Dash
             FieldControllerBase output = null;
             if (stringToEdit != null) output = new TextController(stringToEdit.Substring(startingIndex, length));
             outputs[ResultsKey] = output;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new SubstringOperatorController();
@@ -79,7 +83,9 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("F03BF0D6-411D-4788-B359-AB26B882202A", "Substring extraction");
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var stringToEdit = (inputs[StringKey] as TextController)?.Data;
             var startingIndex = (int)((NumberController)inputs[StartingIndexKey]).Data;
@@ -89,6 +95,7 @@ namespace Dash
             FieldControllerBase output = null;
             if (stringToEdit != null) output = new TextController(stringToEdit.Substring(startingIndex));
             outputs[ResultsKey] = output;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new SubstringOperatorController();

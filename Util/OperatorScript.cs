@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using DashShared;
 using TypeInfo = DashShared.TypeInfo;
 
@@ -245,7 +246,7 @@ namespace Dash
             }
         }
 
-        public static FieldControllerBase Run(Op.Name funcName, List<FieldControllerBase> args, Scope scope = null)
+        public static Task<FieldControllerBase> Run(Op.Name funcName, List<FieldControllerBase> args, Scope scope = null)
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
 
@@ -276,13 +277,17 @@ namespace Dash
             return Run(op, args, scope);
         }
 
-        public static FieldControllerBase Run(OperatorController op, List<FieldControllerBase> args, Scope scope)
+        public static async Task<FieldControllerBase> Run(OperatorController op, List<FieldControllerBase> args, Scope scope)
         {
             var outDict = new Dictionary<KeyController, FieldControllerBase>();
 
+            while (args.Count < op.Inputs.Count)
+            {
+                args.Add(null);
+            }
             var inputs = new Dictionary<KeyController, FieldControllerBase>(args.Zip(op.Inputs, (arg, pair) => new KeyValuePair<KeyController, FieldControllerBase>(pair.Key, arg)));
 
-            op.Execute(inputs, outDict, null, scope);
+            await op.Execute(inputs, outDict, null, scope);
             return outDict.Count == 0 ? null : outDict.First().Value;
         }
 

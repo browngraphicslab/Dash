@@ -25,6 +25,10 @@ namespace Dash
         }
 
 
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
         private void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;

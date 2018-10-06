@@ -71,7 +71,7 @@ namespace Dash
 
 	    public override string ToScriptString(DocumentController thisDoc)
 	    {
-	        throw new NotImplementedException();
+	        return "VideoController";
 	    }
 
 	    public override FieldControllerBase GetDefaultController()

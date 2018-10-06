@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -47,16 +48,20 @@ namespace Dash
             [GencollectionKey] = DashShared.TypeInfo.Document,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var sourceTable = (DocumentController)inputs[SourceTableKey];
             var targetTable = (DocumentController)inputs[TargetTableKey];
             var sourceKey = (KeyController)inputs[SourceKeyKey];
             var targetKey = (KeyController)inputs[TargetKeyKey];
+
             TextController optionsMessage = null;
             if (inputs.ContainsKey(OptionsKey)) optionsMessage = (TextController)inputs[OptionsKey];
+
             var gencollection = Execute(sourceTable, targetTable, sourceKey, targetKey, optionsMessage);
             outputs[GencollectionKey] = gencollection;
+
+            return Task.CompletedTask;
         }
 
         public DocumentController Execute(DocumentController sourceTable, DocumentController targetTable, KeyController sourceKey, KeyController targetKey, TextController opMess)

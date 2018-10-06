@@ -85,7 +85,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            throw new System.NotImplementedException();
+            return "HtmlController";
         }
 
         public override FieldControllerBase Copy()

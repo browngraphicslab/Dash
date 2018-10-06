@@ -33,7 +33,7 @@ namespace Dash
                 toSearch.RemoveAt(toSearch.Count - 1);
                 if (doc.GetField(KeyStore.RegionsKey) == null && doc.GetField(KeyStore.LinkDestinationKey) == null)
                 {
-                    cachedNodes[doc] = new DocumentNode(doc, null, null);
+                    cachedNodes[doc] = new DocumentNode(doc, null, cachedNodes);
                 }
 
                 var dfields = doc.EnumDisplayableFields().ToList();

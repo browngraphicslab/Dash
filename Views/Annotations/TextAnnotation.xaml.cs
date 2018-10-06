@@ -18,6 +18,7 @@ namespace Dash
         public int EndIndex = -1;
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
+        private Selection _selectionViewModel;
 
         public TextAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
@@ -28,12 +29,22 @@ namespace Dash
 
             AnnotationType = AnnotationType.Selection;
 
-            if (selectionViewModel != null)
-            {
-                HelpRenderRegion(selectionViewModel);
-            }
+            _selectionViewModel = selectionViewModel;
+            HelpRenderRegion();
         }
-
+        public override bool IsInView(Rect bounds)
+        {
+            foreach (var p in LayoutRoot.Children.OfType<Path>())
+            {
+                var pbounds = p.GetBoundingRect(this);
+                pbounds.Intersect(bounds);
+                if (!pbounds.IsEmpty)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public override void StartAnnotation(Point p)
         {
             _selectionStartPoint = p;
@@ -120,11 +131,15 @@ namespace Dash
             }
         }
 
-        private void HelpRenderRegion(Selection vm)
+        public void HelpRenderRegion()
         {
+            if (RegionDocumentController == null)
+            {
+                return;
+            }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            if (ParentOverlay.TextSelectableElements != null && indexList.Any())
+            if (ParentOverlay.TextSelectableElements != null && indexList.Any() && _selectionViewModel != null)
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -150,8 +165,10 @@ namespace Dash
                 var path = new Path
                 {
                     Data = geometryGroup,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false
+                    DataContext = _selectionViewModel,
+                    IsDoubleTapEnabled = false,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Left
                 };
                 InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
                 LayoutRoot.Children.Add(path);
