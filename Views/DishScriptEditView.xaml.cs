@@ -101,7 +101,7 @@ namespace Dash
         }
 
 
-        private void XRepl_OnClick(object sender, RoutedEventArgs e)
+        private async void XRepl_OnClick(object sender, RoutedEventArgs e)
         {
             var collection = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
             if (collection == null) return;
@@ -118,7 +118,7 @@ namespace Dash
                 FieldControllerBase returnValue;
                 try
                 {
-                    returnValue = _dsl.Run(command.Data, true);
+                    returnValue = await _dsl.Run(command.Data, true);
                 }
                 catch (Exception ex)
                 {
@@ -143,7 +143,7 @@ namespace Dash
         
          }
 
-        private void XRun_OnClick(object sender, RoutedEventArgs e)
+        private async void XRun_OnClick(object sender, RoutedEventArgs e)
         {
             //make new scope
             _scope = new OuterReplScope();
@@ -153,7 +153,7 @@ namespace Dash
             _running = true;
             try
             {
-                returnValue = _dsl.Run(xTextBox.Text, true);
+                returnValue = await _dsl.Run(xTextBox.Text, true);
             }
             catch (Exception ex)
             {

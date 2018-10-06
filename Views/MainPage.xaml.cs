@@ -458,7 +458,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) =>
                 {
                     var cview = xMapDocumentView.ViewModel.Content as CollectionView;
-                    cview?.ViewModel?.FitContents(cview);
+                    cview?.ViewModel?.FitContents();
                 };
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
             }
@@ -958,7 +958,8 @@ namespace Dash
                 ActionMenu menu = new ActionMenu
                 {
                     Width = 400,
-                    Height = 500
+                    Height = 500,
+                    UseFilterBox = false
                 };
                 ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
                 menu.AddGroup("BASIC", new List<ActionViewModel>
@@ -989,6 +990,7 @@ namespace Dash
                 return menu;
             }
 
+            xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
     }

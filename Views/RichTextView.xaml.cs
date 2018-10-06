@@ -321,7 +321,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && (true || IsLoaded))
             {
                 //var s1 = xRichEditBox.Document.Selection.StartPosition;
                 //var s2 = xRichEditBox.Document.Selection.EndPosition;

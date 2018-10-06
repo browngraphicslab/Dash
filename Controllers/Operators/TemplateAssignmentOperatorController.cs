@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -37,7 +38,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("53F162D1-3D49-4872-B0E2-2A1FBEB463E4", "Apply Template");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var template = (DocumentController) inputs[TemplateKey];
 
@@ -63,6 +66,7 @@ namespace Dash
             {
                 outputs[ResultsKey] = output;
             }
+            return Task.CompletedTask;
         }
 
         private static DocumentController ApplyTemplate(DocumentController workingDoc, DocumentController template)

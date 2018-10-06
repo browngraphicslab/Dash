@@ -117,6 +117,10 @@ namespace Dash
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         public TimelineMetadata Metadata { get; }
         public KeyController SortKey { get; set; }

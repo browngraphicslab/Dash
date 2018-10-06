@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Controls;
@@ -37,7 +38,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("Doc Text", "A0BB0580-31E8-441E-907A-8A9C74224964");
         private static RichEditBox richEditBox = new RichEditBox();
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -50,6 +51,7 @@ namespace Dash
                 readableText = readableText.Replace("\r", "\n");
                 outputs[ReadableTextKey] = new TextController(readableText ?? "");
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

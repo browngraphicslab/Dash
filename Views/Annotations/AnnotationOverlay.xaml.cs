@@ -121,8 +121,11 @@ namespace Dash
                 {
                     foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
                     {
-                        nvo.SelectedRegion.IsSelected = false;
-                        nvo.SelectedRegion = null;
+                        if (nvo.SelectedRegion != null)
+                        {
+                            nvo.SelectedRegion.IsSelected = false;
+                            nvo.SelectedRegion = null;
+                        }
                     }
                 }
             }

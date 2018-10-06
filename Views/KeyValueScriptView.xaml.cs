@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -25,7 +26,7 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                if (((DocumentViewModel) xFieldValue.DataContext).DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                if (((EditableScriptViewModel) xFieldValue.DataContext).Reference.DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
                 {
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);
@@ -40,11 +41,11 @@ namespace Dash
                     XTextBox.Focus(FocusState.Programmatic);
                 }
             };
-            KeyDown += (s, e) =>
+            KeyDown += async (s, e) =>
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    SetExpression(XTextBox.Text);
+                    await SetExpression(XTextBox.Text);
                     MainPage.Instance.Focus(FocusState.Programmatic);
                 }
 
@@ -57,28 +58,24 @@ namespace Dash
                 CollapseBox();
             };
         }
-        private bool SetExpression(string text)
+        private async Task SetExpression(string text)
         {
-            try
+            using (UndoManager.GetBatchHandle())
             {
-                UndoManager.StartBatch();
-                var field = DSL.InterpretUserInput(text,
-                    scope: Scope.CreateStateWithThisDocument(
-                        ViewModel.Reference.GetDocumentController(ViewModel.Context)));
-                ViewModel?.Reference.SetField(field, ViewModel.Context);
+                try
+                {
+                    var field = await DSL.InterpretUserInput(text,
+                        scope: Scope.CreateStateWithThisDocument(
+                            ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                    ViewModel?.Reference.SetField(field, ViewModel.Context);
+                }
+                catch (DSLException ex)
+                {
+                }
             }
-            catch (DSLException)
-            {
-                return false;
-            }
-            finally
-            {
-                UndoManager.EndBatch();
-            }
-            return true;
         }
 
-        async void UserControl_Drop(object sender, DragEventArgs e)
+        private async void UserControl_Drop(object sender, DragEventArgs e)
         {
             //if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             //{

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -19,58 +20,31 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
-           var inputs = new Dictionary<KeyController, FieldControllerBase>
-            {
-                { WhileOperatorController.BoolKey, _parameters[WhileOperatorController.BoolKey].Execute(scope) }
-            };
+            //var inputs = new Dictionary<KeyController, FieldControllerBase>
+            //{
+            //    { WhileOperatorController.BoolKey, await _parameters[WhileOperatorController.BoolKey].Execute(scope) }
+            //};
 
-            var BlockKey = WhileOperatorController.BlockKey;
+            var blockKey = WhileOperatorController.BlockKey;
             
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
-            var whileTimer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
+            var timer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
 
             //if there hasn't been an infinite loop timeout, keep looping
             while (_output != _recursiveError)
             {
                 //see if boolean is true or false
-                var boolRes = ((BoolController)_parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
+                var boolRes = ((BoolController)await _parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
                  if (boolRes)
                 {
                     //boolean is true, so execute block again
-                    if (inputs.ContainsKey(BlockKey))
-                    {
-                        inputs[BlockKey] = _parameters[BlockKey].Execute(scope);
-                    }
-                    else
-                    {
-                        inputs.Add(BlockKey, _parameters[BlockKey].Execute(scope));
-                    }
-                    
-
-                    try
-                    {
-                        var newOutput = OperatorScript.Run(_opName, inputs.Values.ToList(), scope);
-                        if (_output != _recursiveError)
-                        {
-
-                            _output = newOutput;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
-                    }
+                    await _parameters[blockKey].Execute(scope);
                 }
                 else
                 {
                     //now that boolean is false, give it a null input and stop looping
-                    if (!inputs.ContainsKey(BlockKey))
-                    {
-                        inputs.Add(BlockKey, null);
-                    }
-                   
                     break;
                 }
             }

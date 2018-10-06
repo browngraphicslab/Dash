@@ -269,23 +269,33 @@ namespace Dash
 
             //int id = ID++;
             int refCount = 0;
-            bool mask = false;
+            bool loading = false;
 
             element.Unloaded += OnElementOnUnloaded;
-            element.Loaded += OnElementOnLoaded;
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if (true || element.IsInVisualTree())
+            if (element.IsInVisualTree())
             {
-                mask = true;
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Add(handler);
-                refCount++;
-                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
+                loading = true;
+                element.Loading += OnElementOnLoading;
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+            }
+            else
+            {
+                element.Loaded += OnElementOnLoading;
+            }
+
+            void AddBinding()
+            {
+                if (refCount++ == 0)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Add(handler);
+                }
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                mask = false;
                 if (--refCount == 0)
                 {
                     binding.Remove(handler);
@@ -301,26 +311,21 @@ namespace Dash
                 //Debug.Assert(refCount >= 0);
             }
 
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            void OnElementOnLoading(object frameworkElement, object o)
             {
-                if (mask)
+                if (loading && element.IsInVisualTree())
                 {
-                    mask = false;
-                    //Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
                     return;
                 }
+                AddBinding();
 
-                if (refCount++ == 0)
-                {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                }
-                //Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
+                element.Loading -= OnElementOnLoading;
+                element.Loaded -= OnElementOnLoading;
                 element.Unloaded -= OnElementOnUnloaded;
                 binding.Remove(handler);
                 refCount = 0;
@@ -364,30 +369,42 @@ namespace Dash
 
             long token = -1;
             int refCount = 0;
-            bool mask = false;
-            element.Loaded += OnElementOnLoaded;
+            bool loading = false;
             element.Unloaded += OnElementOnUnloaded;
 
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if (true || element.IsInVisualTree())
+            if (element.IsInVisualTree())
             {
-                mask = true;
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Add(handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-                refCount++;
-                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}");
+                loading = true;
+                element.Loading += OnElementOnLoaded;
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+            }
+            else
+            {
+                element.Loaded += OnElementOnLoaded;
+            }
+
+            void AddBinding()
+            {
+                if (refCount++ == 0)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Add(handler);
+                    token = element.RegisterPropertyChangedCallback(property, callback);
+                    //Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
+                }
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                mask = false;
 
                 if (--refCount == 0)
                 {
                     binding.Remove(handler);
                     element.UnregisterPropertyChangedCallback(property, token);
                     token = -1;
+                    //Debug.WriteLine($"Binding {id,-5} Remove :         RefCount = {refCount,5}, {element.GetType().Name}");
                 }
 
                 //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
@@ -400,25 +417,19 @@ namespace Dash
                 //Debug.Assert(refCount >= 0);
             }
 
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            void OnElementOnLoaded(object frameworkElement, object o)
             {
-                if (mask)
+                if (loading && element.IsInVisualTree())
                 {
-                    mask = false;
-                    //Debug.WriteLine($"Binding {id,-5} Masked load :         RefCount = {refCount,5}");
                     return;
                 }
-                if (refCount++ == 0)
-                {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                    token = element.RegisterPropertyChangedCallback(property, callback);
-                }
-                //Debug.WriteLine($"Binding {id,-5} Loaded :         RefCount = {refCount,5}");
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void RemoveBinding()
             {
+                element.Loading -= OnElementOnLoaded;
                 element.Loaded -= OnElementOnLoaded;
                 element.Unloaded -= OnElementOnUnloaded;
                 binding.Remove(handler);
