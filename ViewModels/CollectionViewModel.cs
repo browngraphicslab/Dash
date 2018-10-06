@@ -732,6 +732,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("DROP ");
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;

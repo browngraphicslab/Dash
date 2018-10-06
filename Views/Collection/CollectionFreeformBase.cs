@@ -29,6 +29,7 @@ using System.Threading;
 using Windows.Devices.Input;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Windows.UI.Input;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -681,13 +682,13 @@ namespace Dash
         #region Marquee Select
 
         Rectangle _marquee;
-        Point _marqueeAnchor;
+        public Point _marqueeAnchor;
         bool _isMarqueeActive;
         private MarqueeInfo mInfo;
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e!= null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
                 handledTouch.Add(e);
                 if (NumFingers > 0) NumFingers--;
@@ -733,6 +734,13 @@ namespace Dash
             {
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
+
+                //Debug.WriteLine(dX + " and " + dY);
+
+                //if (_marquee == null)
+                //{
+                //    dX = dX + MainPage.Instance.xMainTreeView.ActualWidth;
+                //}
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -785,6 +793,10 @@ namespace Dash
         /// <param name="args"></param>
         protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind != PointerUpdateKind.Other)
+            {
+                return;
+            }
             var pos = args.GetCurrentPoint(SelectionCanvas).Position;
             if (StartMarquee(pos))
                 args.Handled = true;
@@ -801,8 +813,12 @@ namespace Dash
 		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
 		    {
                 handledTouch.Add(args);
-		        NumFingers++;
-		    }
+                NumFingers++;
+                //var docview = this.GetFirstAncestorOfType<DocumentView>();
+                //      if (SelectionManager.IsSelected(docview))
+                //    //SelectionManager.Select(docview, false);
+                //SelectionManager.TryInitiateDragDrop(docview, args, null);
+            }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
 			{
@@ -817,8 +833,8 @@ namespace Dash
 						SelectionManager.DeselectAll();
 
 					GetOuterGrid().CapturePointer(args.Pointer);
-					_marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
-					_isMarqueeActive = true;
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
 					    ParentDocument.ManipulationMode = ManipulationModes.None;
@@ -926,7 +942,7 @@ namespace Dash
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    OnPointerReleased(null, null);
+                    ResetMarquee();
                 } else
                 {
                     var bounds = GetBoundingRectFromSelection();

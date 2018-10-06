@@ -374,7 +374,10 @@ namespace Dash
         private void StrokeInputOnStrokeContinued(InkStrokeInput sender, PointerEventArgs e)
         {
             if (e.CurrentPoint.Properties.IsBarrelButtonPressed ||
-                e.CurrentPoint.Properties.IsRightButtonPressed) _analyzeStrokes = true;
+                e.CurrentPoint.Properties.IsRightButtonPressed)
+            {
+                _analyzeStrokes = true;
+            }
         }
 
         #endregion

@@ -1018,7 +1018,7 @@ namespace Dash
                 {
                     foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
                     {
-                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        var dvalue = d?.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
                         if (dvalue != xHeaderText.Text)
                         {
                             xHeaderText.Text = "...";
