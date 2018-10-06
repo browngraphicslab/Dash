@@ -162,12 +162,11 @@ namespace Dash
                 var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
                 if (docView?.IsTopLevel() ?? false)
                 {
-                    var point = (Window.Current.Content)//_freeformView
+                    var point = _freeformView //(Window.Current.Content)
                     .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
-                //gets funky with nested collections, but otherwise works
-                //point = new Point(point.X - MainPage.Instance.xMainTreeView.ActualWidth, point.Y);
-                ////handle touch interactions with just one finger - equivalent to drag without ctr
-                if (_freeformView.StartMarquee(point))
+                    //gets funky with nested collections, but otherwise works
+                    ////handle touch interactions with just one finger - equivalent to drag without ctr
+                    if (_freeformView.StartMarquee(point))
                     {
                         e.Handled = true;
                     }

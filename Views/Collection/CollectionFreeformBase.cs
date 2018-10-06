@@ -731,6 +731,8 @@ namespace Dash
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
+                //Debug.WriteLine(dX + " and " + dY);
+
                 //if (_marquee == null)
                 //{
                 //    dX = dX + MainPage.Instance.xMainTreeView.ActualWidth;
