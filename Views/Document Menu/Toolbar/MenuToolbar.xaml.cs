@@ -390,9 +390,9 @@ namespace Dash
                         {
                             containsInternalContent = true;
                             baseLevelContentToolbar = xPlainTextToolbar;
-                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             xPlainTextToolbar.SetDocs(selection);
                             subtoolbarElement = xPlainTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
@@ -529,7 +529,7 @@ namespace Dash
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
                 else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }
         // copy btn
@@ -540,7 +540,7 @@ namespace Dash
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }
         // copy btn

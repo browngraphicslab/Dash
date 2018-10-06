@@ -119,6 +119,10 @@ namespace Dash
             }
 
             XPathView.UseDataDocument = true;
+
+            _pointerMoved = new PointerEventHandler(UserControl_PointerMoved);
+            _draggedOver = new DragEventHandler(UserControl_DragOver);
+            this.AddHandler(DragOverEvent, _draggedOver, true);
         }
 
         private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
@@ -350,7 +354,7 @@ namespace Dash
 
         private void DropTarget_OnDragLeave(object sender, DragEventArgs e)
         {
-            (sender as Rectangle).Fill = Transparent;
+            (sender as Rectangle).Fill = new SolidColorBrush(Color.FromArgb(0x10, 0x10, 0x10, 0x10));
             e.Handled = true;
         }
 
@@ -465,6 +469,30 @@ namespace Dash
         private static void OnActiveDocumentChanged(SplitFrame frame)
         {
             ActiveDocumentChanged?.Invoke(frame);
+        }
+
+        PointerEventHandler _pointerMoved ;
+        DragEventHandler    _draggedOver ;
+
+        private void UserControl_DragOver(object sender, DragEventArgs e)
+        {
+
+            XRightDropTarget.Visibility = Visibility.Visible;
+            XLeftDropTarget.Visibility = Visibility.Visible;
+            XTopDropTarget.Visibility = Visibility.Visible;
+            XBottomDropTarget.Visibility = Visibility.Visible;
+            this.RemoveHandler(DragOverEvent, _draggedOver);
+            this.AddHandler(PointerMovedEvent, _pointerMoved, true);
+        }
+
+        private void UserControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            XRightDropTarget.Visibility = Visibility.Collapsed;
+            XLeftDropTarget.Visibility = Visibility.Collapsed;
+            XTopDropTarget.Visibility = Visibility.Collapsed;
+            XBottomDropTarget.Visibility = Visibility.Collapsed;
+            this.AddHandler(DragOverEvent, _draggedOver, true);
+            this.RemoveHandler(PointerMovedEvent, _pointerMoved);
         }
     }
 }

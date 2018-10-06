@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -15,7 +16,7 @@ namespace Dash
             _newScope = newScope;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             var newScope = _newScope ? new Scope(scope) : scope;
 
@@ -24,7 +25,7 @@ namespace Dash
             FieldControllerBase retVal = null;
             for(var i = 0; i < length; i++)
             {
-                var ret = exps[i].Execute(newScope);
+                var ret = await exps[i].Execute(newScope);
                 if (ret != null)
                 {
                     retVal = ret;

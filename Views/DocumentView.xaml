@@ -32,44 +32,12 @@
             </Grid.Clip>
             <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
-                    <MenuFlyout x:Name="xMenuFlyout" Opening="XMenuFlyout_OnOpening">
-
-
-                    <!--There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-
-                    <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
-                    <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click" />
-                    <MenuFlyoutItem Text="Hide" Icon="Preview" Click="MenuFlyoutItemHide_Click" />
-
-                    <MenuFlyoutSeparator />
-
-                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click" />
-                    <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click" />
-
-                    <MenuFlyoutSeparator />
-
-                    <MenuFlyoutItem Text="Fields" Icon="ShowResults" Click="MenuFlyoutItemFields_Click" />
-                    <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click" />
-
-                    <MenuFlyoutSeparator />
-
-                    <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin" Click="MenuFlyoutItemPin_Click" />
-                    <MenuFlyoutItem x:Name="xAnnotationVisibility" Text="Show Annotation On Scroll" Icon="Priority" Click="ToggleAnnotationVisibility_OnClick" />
-                    <!--<MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click" />-->
-                    <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click" />
-
-                    <MenuFlyoutSeparator />
-
-                    <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click" />
-                    <MenuFlyoutItem Text="Launch App" Icon="Go" Click="MenuFlyoutLaunch_Click" />
-                    <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click" />
-
-                </MenuFlyout>
+                <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
             </Grid.ContextFlyout>
             
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
                 <ContentPresenter.RenderTransform>
-                    <MatrixTransform x:Name="xContentTransform"></MatrixTransform>
+                    <MatrixTransform x:Name="xContentTransform"/>
                 </ContentPresenter.RenderTransform>
             </ContentPresenter>
         </Grid>

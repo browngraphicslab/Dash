@@ -118,7 +118,7 @@ namespace Dash
                 _collection.ViewModel.ContainerDocument.SetFitToParent(fitting);
                 if (fitting)
                 {
-                    _collection.ViewModel.FitContents(null);
+                    _collection.ViewModel.FitContents();
                     xFitParentIcon.Text = ((char)0xE73F).ToString();
                     _fit.Content = "Stop Fitting to Bounds";
                     
